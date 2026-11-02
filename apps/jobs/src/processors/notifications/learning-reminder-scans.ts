@@ -1,13 +1,12 @@
-import { db, eq } from '@cio/db/drizzle';
+import { db } from '@cio/db/drizzle';
 import {
   listAssignedEnrollmentsForReminder,
-  listExpiredAssignedEnrollments,
+  listEnrollmentsToReopen,
   updateEnrollmentDueDate
 } from '@cio/db/queries/course/enrollment';
-import { deleteStudentCourseProgress } from '@cio/db/queries/course/reset-progress';
+import { reopenExpiredCompletionCycle } from '@cio/db/queries/course/reset-progress';
 import { EmailPreferenceLookupCache } from '@cio/db/queries/notifications';
 import { getOrganizationById } from '@cio/db/queries/organization';
-import * as schema from '@cio/db/schema';
 import { buildEmailBranding, buildEmailFromName } from '@cio/email';
 import { enqueueEmailSend } from '@cio/jobs';
 import { getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
@@ -127,30 +126,33 @@ export async function processAssignmentDueReminderScan() {
 }
 
 /**
- * Reopens assignments whose completion has expired: clears learner progress, sets a new due date
- * (`valid_until` plus the grace period, never in the past) and emails the learner.
+ * Starts a new cycle for every learner whose recertification has expired, keeping the expired cycle and its
+ * submissions in history. Assignments also get a new due date (`valid_until` plus the grace period, never in the
+ * past) and an email; self-enrolled learners only get their progress reopened.
  */
 export async function processRecertificationExpiryScan() {
-  const rows = await listExpiredAssignedEnrollments();
+  const rows = await listEnrollmentsToReopen();
   const orgCache = new Map<string, OrgEmailContext | null>();
   const preferences = new EmailPreferenceLookupCache();
   let reopened = 0;
   for (const row of rows) {
     const graceEnd = new Date(row.validUntil).getTime() + RECERTIFICATION_GRACE_DAYS * DAY_MS;
     const dueDateIso = new Date(Math.max(graceEnd, Date.now() + RECERTIFICATION_GRACE_DAYS * DAY_MS)).toISOString();
-    await db.transaction(async (tx) => {
-      await deleteStudentCourseProgress(tx, {
+    const reopenedCycle = await db.transaction(async (tx) => {
+      const cycleNumber = await reopenExpiredCompletionCycle(tx, {
         courseId: row.courseId,
         groupMemberId: row.groupMemberId,
         profileId: row.profileId
       });
-      await tx
-        .update(schema.groupmember)
-        .set({ completedAt: null, certificateEarnedAt: null, certificationEmailSentAt: null })
-        .where(eq(schema.groupmember.id, row.groupMemberId));
-      await updateEnrollmentDueDate(row.enrollmentId, dueDateIso, tx);
+      if (cycleNumber !== null && row.kind === 'ASSIGNED')
+        await updateEnrollmentDueDate(row.enrollmentId, dueDateIso, tx);
+
+      return cycleNumber;
     });
+    if (reopenedCycle === null) continue;
+
     reopened += 1;
+    if (row.kind !== 'ASSIGNED') continue;
 
     const org = await loadOrgEmailContext(orgCache, row.organizationId, 'recertificationReopened');
     if (!org) continue;

@@ -932,6 +932,7 @@ export const courseCompletionRecord = pgTable(
     completedAt: timestamp('completed_at', { withTimezone: true, mode: 'string' }).notNull(),
     validUntil: timestamp('valid_until', { withTimezone: true, mode: 'string' }),
     score: integer(),
+    reopenedAt: timestamp('reopened_at', { withTimezone: true, mode: 'string' }),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
   },
@@ -956,6 +957,21 @@ export const courseCompletionRecord = pgTable(
     index('idx_course_completion_record_profile_id').on(table.profileId),
     index('idx_course_completion_record_valid_until').on(table.validUntil)
   ]
+);
+
+export const courseCycleArchive = pgTable(
+  'course_cycle_archive',
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    courseId: uuid('course_id')
+      .notNull()
+      .references(() => course.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id').notNull(),
+    cycleNumber: integer('cycle_number').notNull(),
+    submissions: jsonb().$type<unknown[]>().default([]).notNull(),
+    archivedAt: timestamp('archived_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [index('idx_course_cycle_archive_course_profile').on(table.courseId, table.profileId)]
 );
 
 export const courseCertificateIssue = pgTable(

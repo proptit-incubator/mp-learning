@@ -36,6 +36,9 @@ vi.mock('@cio/db/queries/course/people', () => ({
   claimMemberCertificateEarned: mocks.claimMemberCertificateEarned,
   claimMemberCompleted: mocks.claimMemberCompleted
 }));
+vi.mock('@cio/db/drizzle', () => ({
+  db: { transaction: (run: (transaction: object) => Promise<unknown>) => run({}) }
+}));
 vi.mock('@cio/db/queries/course/enrollment', () => ({
   recordCourseCompletion: mocks.recordCourseCompletion
 }));
@@ -132,6 +135,7 @@ describe('course_completed', () => {
     mocks.getCourseCertificationRow.mockResolvedValue({ orgId: 'org-1', certificate: {}, recertificationMonths: null });
     mocks.claimMemberCertificateEarned.mockResolvedValue(true);
     mocks.claimMemberCompleted.mockResolvedValue(true);
+    mocks.recordCourseCompletion.mockResolvedValue({ id: 'cycle-1', cycle_number: 1 });
   });
 
   it('fires when the certificate is first claimed', async () => {

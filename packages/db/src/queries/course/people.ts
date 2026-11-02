@@ -13,7 +13,7 @@ import {
   type TCoursePeopleSortBy,
   type TCoursePeopleSortOrder
 } from '@cio/utils/validation/course';
-import { db } from '@db/drizzle';
+import { db, type DbOrTxClient } from '@db/drizzle';
 import { isExerciseCompletedSql } from '@db/queries/course/progression';
 import { learnerAccessSql } from './enrollment';
 
@@ -667,9 +667,13 @@ export async function claimMemberCertificateEarned(memberId: string, earnedAt: s
  * Atomically marks the member's course completion as announced.
  * Returns true when this caller won the claim, so `course.completed` fires exactly once.
  */
-export async function claimMemberCompleted(memberId: string, completedAt: string): Promise<boolean> {
+export async function claimMemberCompleted(
+  memberId: string,
+  completedAt: string,
+  client: DbOrTxClient = db
+): Promise<boolean> {
   try {
-    const updated = await db
+    const updated = await client
       .update(schema.groupmember)
       .set({ completedAt })
       .where(and(eq(schema.groupmember.id, memberId), isNull(schema.groupmember.completedAt)))

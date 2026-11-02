@@ -25,6 +25,9 @@ vi.mock('@cio/db/queries/course/people', () => ({
   claimMemberCompleted: mocks.claimMemberCompleted
 }));
 
+vi.mock('@cio/db/drizzle', () => ({
+  db: { transaction: (run: (transaction: object) => Promise<unknown>) => run({}) }
+}));
 vi.mock('@cio/db/queries/course/enrollment', () => ({
   recordCourseCompletion: mocks.recordCourseCompletion
 }));
@@ -102,6 +105,7 @@ describe('evaluateCourseCertification webhooks', () => {
     mocks.getCourseProgress.mockResolvedValue(completedProgress);
     mocks.getCourseCertificationRow.mockResolvedValue({ orgId: 'org-1', certificate: {}, recertificationMonths: null });
     mocks.claimMemberCompleted.mockResolvedValue(true);
+    mocks.recordCourseCompletion.mockResolvedValue({ id: 'cycle-1', cycle_number: 1 });
     mocks.claimMemberCertificateEarned.mockResolvedValue(true);
   });
 
@@ -126,6 +130,7 @@ describe('evaluateCourseCertification webhooks', () => {
 
   it('does not announce completion twice', async () => {
     mocks.getCourseProgress.mockResolvedValue({ ...completedProgress, completedAt: '2026-10-01T00:00:00Z' });
+    mocks.recordCourseCompletion.mockResolvedValue(null);
     mocks.getActiveOrganizationPlan.mockResolvedValue({ planName: 'BASIC' });
 
     await evaluateCourseCertification('course-1', 'ada');
@@ -140,22 +145,26 @@ describe('evaluateCourseCertification webhooks', () => {
 
     await evaluateCourseCertification('course-1', 'ada');
 
-    expect(mocks.recordCourseCompletion).toHaveBeenCalledWith({
-      courseId: 'course-1',
-      groupMemberId: 'member-1',
-      profileId: 'ada',
-      completedAt: expect.any(String),
-      recertificationMonths: 12
-    });
+    expect(mocks.recordCourseCompletion).toHaveBeenCalledWith(
+      {
+        courseId: 'course-1',
+        groupMemberId: 'member-1',
+        profileId: 'ada',
+        completedAt: expect.any(String),
+        recertificationMonths: 12
+      },
+      expect.anything()
+    );
+    expect(mocks.claimMemberCompleted).toHaveBeenCalledWith('member-1', expect.any(String), expect.anything());
   });
 
-  it('does not record a completion that was already claimed', async () => {
-    mocks.claimMemberCompleted.mockResolvedValue(false);
+  it('opens a new cycle for a learner whose earlier completion flag is still set', async () => {
+    mocks.getCourseProgress.mockResolvedValue({ ...completedProgress, completedAt: '2025-10-01T00:00:00Z' });
     mocks.getActiveOrganizationPlan.mockResolvedValue({ planName: 'BASIC' });
 
     await evaluateCourseCertification('course-1', 'ada');
 
-    expect(mocks.recordCourseCompletion).not.toHaveBeenCalled();
-    expect(mocks.emitWebhookEvent).not.toHaveBeenCalled();
+    const emittedTypes = mocks.emitWebhookEvent.mock.calls.map(([, type]) => type);
+    expect(emittedTypes).toEqual(['course.completed']);
   });
 });

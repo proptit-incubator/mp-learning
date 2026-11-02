@@ -253,16 +253,118 @@ integration('course enrollment on isolated PostgreSQL', () => {
       .set({ validUntil: '2020-06-01T00:00:00.000Z' })
       .where(database.eq(database.courseCompletionRecord.profileId, learnerId));
     expect(await stateOf(row.id)).toBe('expired');
-    await database.db
-      .update(database.courseEnrollment)
-      .set({ updatedAt: '2020-01-01T00:00:00.000Z' })
-      .where(database.eq(database.courseEnrollment.id, row.id));
-    const expired = await enrollment.listExpiredAssignedEnrollments();
-    expect(expired.map((item) => item.enrollmentId)).toContain(row.id);
-
     await enrollment.updateEnrollmentDueDate(row.id, '2031-01-01T00:00:00.000Z');
-    const afterReopen = await enrollment.listExpiredAssignedEnrollments();
-    expect(afterReopen.map((item) => item.enrollmentId)).not.toContain(row.id);
+    const expired = await enrollment.listEnrollmentsToReopen();
+    expect(expired.map((item) => item.enrollmentId)).toContain(row.id);
+  });
+
+  describe('recertification cycles', () => {
+    async function completeExpiredCycle(courseId: string) {
+      const [member] = await database.db
+        .select()
+        .from(database.groupmember)
+        .where(database.eq(database.groupmember.profileId, learnerId));
+      const [lesson] = await database.db
+        .select()
+        .from(database.lesson)
+        .where(database.eq(database.lesson.courseId, courseId));
+      const [exercise] = await database.db
+        .insert(database.exercise)
+        .values({ courseId, title: 'Final quiz', slug: randomUUID(), order: 2 })
+        .returning();
+      await database.db
+        .insert(database.lessonCompletion)
+        .values({ lessonId: lesson.id, profileId: learnerId, isComplete: true });
+      await database.db
+        .insert(database.submission)
+        .values({ exerciseId: exercise.id, submittedBy: member.id, courseId, total: 8 });
+      const cycle = {
+        courseId,
+        groupMemberId: member.id,
+        profileId: learnerId,
+        completedAt: '2024-01-01T00:00:00.000Z',
+        recertificationMonths: 12
+      };
+      expect(await enrollment.recordCourseCompletion(cycle)).not.toBeNull();
+      await database.db
+        .update(database.groupmember)
+        .set({ completedAt: cycle.completedAt })
+        .where(database.eq(database.groupmember.id, member.id));
+      return { member, cycle };
+    }
+
+    it('reopens an expired cycle without losing its history and lets the learner earn the next one', async () => {
+      const course = await createCourse({ recertificationMonths: 12 });
+      await service.assignCourses(organizationId, actorId, {
+        courseIds: [course.id],
+        employeeIds: [employeeId],
+        message: '',
+        sendEmail: false
+      });
+      const { member, cycle } = await completeExpiredCycle(course.id);
+      const { reopenExpiredCompletionCycle } = await import('@cio/db/queries/course/reset-progress');
+
+      const renewedWithStaleProgress = await enrollment.recordCourseCompletion({
+        ...cycle,
+        completedAt: new Date().toISOString()
+      });
+      const toReopen = await enrollment.listEnrollmentsToReopen();
+      const reopenedCycle = await database.db.transaction((tx) =>
+        reopenExpiredCompletionCycle(tx, { courseId: course.id, groupMemberId: member.id, profileId: learnerId })
+      );
+      const reopenedTwice = await database.db.transaction((tx) =>
+        reopenExpiredCompletionCycle(tx, { courseId: course.id, groupMemberId: member.id, profileId: learnerId })
+      );
+
+      expect(renewedWithStaleProgress).toBeNull();
+      expect(toReopen.filter((row) => row.courseId === course.id)).toEqual([
+        expect.objectContaining({ kind: 'ASSIGNED', groupMemberId: member.id })
+      ]);
+      expect(reopenedCycle).toBe(1);
+      expect(reopenedTwice).toBeNull();
+
+      const history = await database.db
+        .select()
+        .from(database.courseCompletionRecord)
+        .where(database.eq(database.courseCompletionRecord.courseId, course.id));
+      const [archive] = await database.db
+        .select()
+        .from(database.courseCycleArchive)
+        .where(database.eq(database.courseCycleArchive.courseId, course.id));
+      const submissions = await database.db
+        .select()
+        .from(database.submission)
+        .where(database.eq(database.submission.submittedBy, member.id));
+      const lessonProgress = await database.db
+        .select()
+        .from(database.lessonCompletion)
+        .where(database.eq(database.lessonCompletion.profileId, learnerId));
+      const [memberAfter] = await database.db
+        .select()
+        .from(database.groupmember)
+        .where(database.eq(database.groupmember.id, member.id));
+
+      expect(history).toEqual([expect.objectContaining({ cycleNumber: 1, reopenedAt: expect.any(String) })]);
+      expect(archive).toMatchObject({ cycleNumber: 1, profileId: learnerId });
+      expect(archive.submissions).toEqual([expect.objectContaining({ total: 8, answers: [] })]);
+      expect(submissions).toEqual([]);
+      expect(lessonProgress).toEqual([]);
+      expect(memberAfter.completedAt).toBeNull();
+      expect((await enrollment.listEnrollmentsToReopen()).some((row) => row.courseId === course.id)).toBe(false);
+
+      const nextCycle = await enrollment.recordCourseCompletion({ ...cycle, completedAt: new Date().toISOString() });
+      expect(nextCycle).toMatchObject({ cycle_number: 2 });
+    });
+
+    it('also reopens expired completions of self-enrolled learners', async () => {
+      const course = await createCourse({ recertificationMonths: 12 });
+      await service.selfEnroll(organizationId, course.id, { id: learnerId, email });
+      await completeExpiredCycle(course.id);
+
+      const toReopen = await enrollment.listEnrollmentsToReopen();
+
+      expect(toReopen.filter((row) => row.courseId === course.id)).toEqual([expect.objectContaining({ kind: 'SELF' })]);
+    });
   });
 
   it('revokes access without deleting the membership and counts assignments in analytics', async () => {

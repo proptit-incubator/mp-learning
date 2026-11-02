@@ -194,6 +194,58 @@ export type DeletedStudentCourseProgress = {
 };
 
 /**
+ * Starts a new completion cycle for a learner whose latest cycle has expired. Marks that cycle reopened, archives the
+ * learner's submissions with their answers under the cycle number, then clears lesson progress, submissions and the
+ * member's completion flags. Completion history and issued certificates are kept.
+ * Returns the reopened cycle number, or null when the latest cycle is still valid or was already reopened.
+ */
+export async function reopenExpiredCompletionCycle(
+  tx: DbOrTxClient,
+  input: StudentCourseProgressInput
+): Promise<number | null> {
+  const { courseId, groupMemberId, profileId } = input;
+  const [claimed] = await tx.execute<{ cycle_number: number }>(sql`update course_completion_record
+    set reopened_at = now(), updated_at = now()
+    where id = (select id from course_completion_record
+        where course_id = ${courseId} and profile_id = ${profileId} order by cycle_number desc limit 1)
+      and reopened_at is null and valid_until is not null and valid_until <= now()
+    returning cycle_number`);
+  if (!claimed) return null;
+
+  await tx.execute(sql`insert into course_cycle_archive (course_id, profile_id, cycle_number, submissions)
+    select ${courseId}, ${profileId}, ${claimed.cycle_number}, coalesce(jsonb_agg(
+        to_jsonb(s) || jsonb_build_object('answers', coalesce(
+          (select jsonb_agg(to_jsonb(qa)) from question_answer qa where qa.submission_id = s.id), '[]'::jsonb))
+      ), '[]'::jsonb)
+    from submission s where s.submitted_by = ${groupMemberId}`);
+  await tx.delete(schema.submission).where(eq(schema.submission.submittedBy, groupMemberId));
+
+  const lessonIds = await getCourseLessonIds(tx, courseId);
+  if (lessonIds.length > 0) {
+    await tx
+      .delete(schema.lessonCompletion)
+      .where(
+        and(eq(schema.lessonCompletion.profileId, profileId), inArray(schema.lessonCompletion.lessonId, lessonIds))
+      );
+    await tx
+      .delete(schema.lessonVideoProgress)
+      .where(
+        and(
+          eq(schema.lessonVideoProgress.profileId, profileId),
+          inArray(schema.lessonVideoProgress.lessonId, lessonIds)
+        )
+      );
+  }
+
+  await tx
+    .update(schema.groupmember)
+    .set({ completedAt: null, certificateEarnedAt: null, certificationEmailSentAt: null })
+    .where(eq(schema.groupmember.id, groupMemberId));
+
+  return claimed.cycle_number;
+}
+
+/**
  * Deletes every progress row a student owns in one course using the given transaction client.
  */
 export async function deleteStudentCourseProgress(

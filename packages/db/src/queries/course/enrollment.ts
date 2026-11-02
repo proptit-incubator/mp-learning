@@ -444,8 +444,9 @@ export async function findEmployeeByProfile(organizationId: string, profileId: s
 }
 
 /**
- * Records a completion cycle for a learner. Opens a new cycle only when there is none or the latest has expired,
- * so repeated evaluations of the same completion are idempotent.
+ * Records a completion cycle for a learner. Opens a new cycle only when there is none, or when the latest has
+ * expired and was reopened (its progress cleared), so stale progress never renews an expired completion and
+ * repeated evaluations of the same completion are idempotent. Returns null when no cycle was opened.
  */
 export async function recordCourseCompletion(
   input: {
@@ -466,9 +467,10 @@ export async function recordCourseCompletion(
       ${input.completedAt}, ${input.completedAt}, ${validUntil}, ${input.score ?? null}
     where not exists (select 1 from course_completion_record latest
       where latest.course_id = ${input.courseId} and latest.profile_id = ${input.profileId}
-        and (latest.valid_until is null or latest.valid_until > now())
+        and (latest.valid_until is null or latest.valid_until > now() or latest.reopened_at is null)
         and latest.cycle_number = (select max(cycle_number) from course_completion_record
           where course_id = ${input.courseId} and profile_id = ${input.profileId}))
+    on conflict (course_id, profile_id, cycle_number) do nothing
     returning id, cycle_number`);
   return row ?? null;
 }
@@ -521,6 +523,7 @@ export async function listAssignedEnrollmentsForReminder(
 
 export type ExpiredEnrollmentRow = {
   enrollmentId: string;
+  kind: 'ASSIGNED' | 'SELF';
   courseId: string;
   courseTitle: string;
   organizationId: string;
@@ -531,10 +534,13 @@ export type ExpiredEnrollmentRow = {
   validUntil: string;
 };
 
-/** Assigned enrollments whose latest completion has expired and that have not been touched since it expired. */
-export async function listExpiredAssignedEnrollments(client: DbOrTxClient = db) {
-  const rows =
-    await client.execute<ExpiredEnrollmentRow>(sql`select ce.id "enrollmentId", ce.course_id "courseId", co.title "courseTitle",
+/**
+ * One row per learner whose latest completion cycle has expired and has not been reopened yet, across assigned
+ * and self-enrolled learners of active recertification courses. The assignment wins when a learner has both.
+ */
+export async function listEnrollmentsToReopen(client: DbOrTxClient = db) {
+  const rows = await client.execute<ExpiredEnrollmentRow>(sql`select distinct on (ce.course_id, om.profile_id)
+      ce.id "enrollmentId", ce.kind, ce.course_id "courseId", co.title "courseTitle",
       e.organization_id "organizationId", gm.id "groupMemberId", om.profile_id "profileId", e.email, e.fullname,
       latest.valid_until "validUntil"
     from course_enrollment ce
@@ -542,9 +548,10 @@ export async function listExpiredAssignedEnrollments(client: DbOrTxClient = db) 
     join organizationmember om on om.id = e.member_id and om.status = 'ACTIVE' and om.profile_id is not null
     join course co on co.id = ce.course_id and co.status = 'ACTIVE' and co.recertification_months is not null
     join groupmember gm on gm.group_id = co.group_id and gm.profile_id = om.profile_id
-    join lateral (select ccr.valid_until from course_completion_record ccr
+    join lateral (select ccr.valid_until, ccr.reopened_at from course_completion_record ccr
       where ccr.course_id = ce.course_id and ccr.profile_id = om.profile_id order by ccr.cycle_number desc limit 1) latest on true
-    where ce.kind = 'ASSIGNED' and ce.status = 'ACTIVE' and latest.valid_until is not null and latest.valid_until <= now()
-      and ce.updated_at < latest.valid_until`);
+    where ce.status = 'ACTIVE' and latest.valid_until is not null and latest.valid_until <= now()
+      and latest.reopened_at is null
+    order by ce.course_id, om.profile_id, (ce.kind = 'ASSIGNED') desc`);
   return rows.map((row) => ({ ...row, validUntil: new Date(row.validUntil).toISOString() }));
 }

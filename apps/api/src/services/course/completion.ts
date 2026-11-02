@@ -1,3 +1,4 @@
+import { db } from '@cio/db/drizzle';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { calcCourseProgressPercent, scheduleCertificationCompletionWork } from '@api/utils/course-completion';
 import { REQUIRED_COURSE_COMPLETION_PERCENT } from '@cio/utils/functions/course-progression';
@@ -129,28 +130,31 @@ export async function evaluateCourseCertification(
   const groupMemberId = progress.groupMemberId;
   const completionEventData = { profileId, memberId: groupMemberId };
 
-  if (!progress.completedAt) {
-    const completedAt = new Date().toISOString();
-    const didClaimCompletion = await claimMemberCompleted(groupMemberId, completedAt);
+  const completedAt = new Date().toISOString();
+  const newCycle = await db.transaction(async (transaction) => {
+    const cycleInput = {
+      courseId,
+      groupMemberId,
+      profileId,
+      completedAt,
+      recertificationMonths: courseRow.recertificationMonths
+    };
+    const recorded = await recordCourseCompletion(cycleInput, transaction);
+    if (recorded) await claimMemberCompleted(groupMemberId, completedAt, transaction);
 
-    if (didClaimCompletion) {
-      await recordCourseCompletion({
-        courseId,
-        groupMemberId,
-        profileId,
-        completedAt,
-        recertificationMonths: courseRow.recertificationMonths
-      });
-      await invalidateOrgStats(courseRow.orgId);
-      await emitWebhookEvent(courseRow.orgId, 'course.completed', { courseId, ...completionEventData, completedAt });
+    return recorded;
+  });
 
-      trackServerEvent({
-        eventType: SERVER_EVENTS.COURSE_COMPLETED,
-        userId: profileId,
-        courseId,
-        props: { path: 'standard', earnedAt: completedAt }
-      });
-    }
+  if (newCycle) {
+    await invalidateOrgStats(courseRow.orgId);
+    await emitWebhookEvent(courseRow.orgId, 'course.completed', { courseId, ...completionEventData, completedAt });
+
+    trackServerEvent({
+      eventType: SERVER_EVENTS.COURSE_COMPLETED,
+      userId: profileId,
+      courseId,
+      props: { path: 'standard', earnedAt: completedAt }
+    });
   }
 
   const canIssueCertificate = evaluation.eligibleForCertificate && !certificateEarnedAt;
