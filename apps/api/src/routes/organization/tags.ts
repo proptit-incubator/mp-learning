@@ -22,7 +22,7 @@ import { Hono } from '@api/utils/hono';
 import { authMiddleware } from '@api/middlewares/auth';
 import { authOrAutomationKeyMiddleware } from '@api/middlewares/auth-or-automation-key';
 import { handleError } from '@api/utils/errors';
-import { orgAdminMiddleware } from '@api/middlewares/org-admin';
+import { orgTeamMemberMiddleware } from '@api/middlewares/org-team-member';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
 import { orgAdminOrAutomationKeyMiddleware } from '@api/middlewares/org-admin-or-automation-key';
 import { assertMcpAutomationUsageAllowed, recordMcpAutomationUsage } from '@api/services/organization/automation-usage';
@@ -61,7 +61,7 @@ export const tagsRouter = new Hono()
       return handleError(c, error, 'Failed to fetch tags');
     }
   })
-  .post('/groups', authMiddleware, orgAdminMiddleware, zValidator('json', ZTagGroupCreate), async (c) => {
+  .post('/groups', authMiddleware, orgTeamMemberMiddleware, zValidator('json', ZTagGroupCreate), async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;
       const data = c.req.valid('json');
@@ -114,7 +114,7 @@ export const tagsRouter = new Hono()
   .put(
     '/groups/:groupId',
     authMiddleware,
-    orgAdminMiddleware,
+    orgTeamMemberMiddleware,
     zValidator('param', ZTagGroupParam),
     zValidator('json', ZTagGroupUpdate),
     async (c) => {
@@ -136,7 +136,7 @@ export const tagsRouter = new Hono()
       }
     }
   )
-  .post('/', authMiddleware, orgAdminMiddleware, zValidator('json', ZTagCreate), async (c) => {
+  .post('/', authMiddleware, orgTeamMemberMiddleware, zValidator('json', ZTagCreate), async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;
       const data = c.req.valid('json');
@@ -156,7 +156,7 @@ export const tagsRouter = new Hono()
   .put(
     '/:tagId',
     authMiddleware,
-    orgAdminMiddleware,
+    orgTeamMemberMiddleware,
     zValidator('param', ZTagParam),
     zValidator('json', ZTagUpdate),
     async (c) => {

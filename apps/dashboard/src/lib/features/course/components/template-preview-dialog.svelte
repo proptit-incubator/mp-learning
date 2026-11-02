@@ -10,7 +10,7 @@
   import { courseTemplateApi } from '$features/course/api';
   import { templatePreviewSettingRows } from '$features/course/utils/template-display';
   import { t } from '$lib/utils/functions/translations';
-  import { currentOrg, isOrgAdmin } from '$lib/utils/store/org';
+  import { currentOrg, isOrgTeamMember } from '$lib/utils/store/org';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
 
@@ -188,7 +188,7 @@
                     {$t('course_templates.preview.open')}
                   </Button>
                 {/if}
-                {#if $isOrgAdmin}
+                {#if $isOrgTeamMember}
                   <Button
                     size="sm"
                     type="button"

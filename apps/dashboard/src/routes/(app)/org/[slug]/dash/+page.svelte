@@ -13,7 +13,7 @@
   import { t } from '$lib/utils/functions/translations';
   import { calDateDiff, getGreeting } from '$lib/utils/functions/date';
   import { getIntlLocale } from '$lib/utils/functions/intl-locale';
-  import { currentOrgPath, isOrgAdmin } from '$lib/utils/store/org';
+  import { currentOrgPath, isOrgAdmin, isOrgTeamMember } from '$lib/utils/store/org';
 
   import { CreateCourseButton } from '$features/course/components';
   import { UserAvatar } from '@cio/ui/custom/user-avatar';
@@ -127,7 +127,7 @@
             percentage: totalStudents ?? 0,
             description: $t('dashboard.total_students_description'),
             hidePercentage: true,
-            href: $isOrgAdmin ? resolve(`${$currentOrgPath}/employees`, {}) : undefined
+            href: $isOrgTeamMember ? resolve(`${$currentOrgPath}/employees`, {}) : undefined
           }}
         />
         <ActivityCard
@@ -147,7 +147,7 @@
             percentage: totalCertificates ?? 0,
             description: $t('dashboard.certificates_earned_description'),
             hidePercentage: true,
-            href: $isOrgAdmin ? resolve(`${$currentOrgPath}/analytics`, {}) : undefined
+            href: $isOrgTeamMember ? resolve(`${$currentOrgPath}/analytics`, {}) : undefined
           }}
         />
       </div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { employeeImportRows } from './employee-utils';
+import { employeeImportRows, employeeRoleLabel } from './employee-utils';
 
 describe('employee list imports', () => {
   it('preserves employee codes with leading zeroes, UTF-8 names, dates and manager codes', () => {
@@ -14,7 +14,7 @@ describe('employee list imports', () => {
       fullname: 'Nguyễn Văn An',
       managerCode: 'MP001',
       startDate: '2026-10-27',
-      role: 'EMPLOYEE'
+      roles: []
     });
   });
 
@@ -32,7 +32,19 @@ describe('employee list imports', () => {
       ['employeeCode', 'fullname', 'email', 'role', 'courseIds'],
       ['MP001', 'Employee', 'employee@example.com', 'ADMIN', 'all']
     ]);
-    expect(rows[0].role).toBe('EMPLOYEE');
+    expect(rows[0].roles).toEqual([]);
     expect(rows[0]).not.toHaveProperty('courseIds');
+  });
+});
+
+describe('employee role labels', () => {
+  const translate = (key: string) => key.replace('employees.role.', '');
+
+  it('lists every role held in a stable order', () => {
+    expect(employeeRoleLabel(['HR', 'ADMIN', 'LND'], translate)).toBe('ADMIN, LND, HR');
+  });
+
+  it('falls back to the plain employee label when no role is held', () => {
+    expect(employeeRoleLabel([], translate)).toBe('EMPLOYEE');
   });
 });

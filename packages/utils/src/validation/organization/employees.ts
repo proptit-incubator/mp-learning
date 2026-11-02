@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const EMPLOYEE_ROLES = ['EMPLOYEE', 'MANAGER', 'HR', 'TUTOR', 'ADMIN'] as const;
+export const EMPLOYEE_ROLES = ['ADMIN', 'LND', 'HR'] as const;
 export const EMPLOYEE_STATUSES = ['DRAFT', 'INVITED', 'ACTIVE', 'SUSPENDED', 'LEFT'] as const;
 export const ZEmployeeCode = z
   .string()
@@ -19,7 +19,11 @@ export const ZEmployeeFields = z.object({
   jobTitle: z.string().trim().max(150).default(''),
   managerId: z.uuid().nullable().default(null),
   startDate: optionalDate,
-  role: z.enum(EMPLOYEE_ROLES).default('EMPLOYEE')
+  roles: z
+    .array(z.enum(EMPLOYEE_ROLES))
+    .max(EMPLOYEE_ROLES.length)
+    .default([])
+    .transform((roles) => EMPLOYEE_ROLES.filter((role) => roles.includes(role)))
 });
 export const ZCreateEmployee = ZEmployeeFields.extend({ sendActivation: z.boolean().default(false) });
 export const ZUpdateEmployee = ZEmployeeFields.omit({ email: true, employeeCode: true });

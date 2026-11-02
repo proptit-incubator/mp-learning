@@ -4,18 +4,16 @@ import { getEmployeeAccess } from '@cio/db/queries/organization';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 
 /**
- * Admins and HR see the whole organization, tutors the courses they teach, managers their reporting line.
- * Throws 403 for everyone else.
+ * Admins, L&D and HR see the whole organization, managers their reporting line and course team members the courses
+ * they run. Throws 403 for everyone else.
  */
 export async function resolveLearningAnalyticsScope(orgId: string, actorId: string): Promise<LearningAnalyticsScope> {
   const access = await getEmployeeAccess(orgId, actorId);
-  if (access?.canManage) return { kind: 'organization' };
+  if (access?.canViewOrgReports) return { kind: 'organization' };
 
-  if (access?.role === 'TUTOR') return { kind: 'courses', teamProfileId: actorId };
+  if (access?.isManager && access.employeeId) return { kind: 'reports', managerEmployeeId: access.employeeId };
 
-  if (access?.role === 'MANAGER' && access.employeeId) {
-    return { kind: 'reports', managerEmployeeId: access.employeeId };
-  }
+  if (access?.teachesCourses) return { kind: 'courses', teamProfileId: actorId };
 
   throw new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403);
 }

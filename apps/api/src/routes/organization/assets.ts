@@ -49,7 +49,7 @@ import {
 import { Hono } from '@api/utils/hono';
 import { authMiddleware } from '@api/middlewares/auth';
 import { handleError } from '@api/utils/errors';
-import { orgAdminMiddleware } from '@api/middlewares/org-admin';
+import { orgTeamMemberMiddleware } from '@api/middlewares/org-team-member';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
 import { zValidator } from '@hono/zod-validator';
 import { setCookie } from 'hono/cookie';
@@ -312,7 +312,7 @@ export const assetsRouter = new Hono()
    * GET /organization/assets/export
    * Export organization assets with usage graph
    */
-  .get('/export', authMiddleware, orgAdminMiddleware, zValidator('query', ZAssetExportQuery), async (c) => {
+  .get('/export', authMiddleware, orgTeamMemberMiddleware, zValidator('query', ZAssetExportQuery), async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;
       const query = c.req.valid('query');
@@ -427,7 +427,7 @@ export const assetsRouter = new Hono()
   .put(
     '/:assetId/transcript',
     authMiddleware,
-    orgAdminMiddleware,
+    orgTeamMemberMiddleware,
     zValidator('param', ZAssetGetParam),
     zValidator('json', ZUpdateTranscript),
     async (c) => {
@@ -532,7 +532,7 @@ export const assetsRouter = new Hono()
    * DELETE /organization/assets/:assetId
    * Delete an unused asset
    */
-  .delete('/:assetId', authMiddleware, orgAdminMiddleware, zValidator('param', ZAssetGetParam), async (c) => {
+  .delete('/:assetId', authMiddleware, orgTeamMemberMiddleware, zValidator('param', ZAssetGetParam), async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;
       const { assetId } = c.req.valid('param');

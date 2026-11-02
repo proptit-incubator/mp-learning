@@ -5,7 +5,7 @@
   import { courseTemplateApi } from '$features/course/api';
   import { templateCardSubtitle } from '$features/course/utils/template-display';
   import { t } from '$lib/utils/functions/translations';
-  import { currentOrg, currentOrgPath, isOrgAdmin } from '$lib/utils/store/org';
+  import { currentOrg, currentOrgPath, isOrgTeamMember } from '$lib/utils/store/org';
   import { onDestroy } from 'svelte';
 
   const templates = $derived.by(() => {
@@ -61,7 +61,7 @@
     </div>
 
     <div class="flex gap-3 overflow-x-auto pb-1">
-      {#if $isOrgAdmin}
+      {#if $isOrgTeamMember}
         <div class="w-44 shrink-0">
           <TemplateCard
             blank

@@ -17,6 +17,11 @@ export const internalLearning: MiddlewareHandler = async (context, next) => {
     /^\/course\/[^/]+\/invites(?:\/|$)/.test(pathname) ||
     /^\/(?:public-api\/)?v1\/courses\/[^/]+\/invites(?:\/|$)/.test(pathname) ||
     /^\/invite\/student(?:\/|$)/.test(pathname);
+  const teamInvitations =
+    /^\/organization\/(team\/invite|link-invite)\/?$/.test(pathname) ||
+    (/^\/organization\/team\/[^/]+\/?$/.test(pathname) && ['PATCH', 'DELETE'].includes(context.req.method)) ||
+    /^\/invite\/(link|r)(\/|$)/.test(pathname) ||
+    /^\/invite\/organization\/(?!pending\/?$)/.test(pathname);
 
   if (
     retiredEndpoint ||
@@ -24,7 +29,8 @@ export const internalLearning: MiddlewareHandler = async (context, next) => {
     publicSales ||
     retiredManagement ||
     organizationCreation ||
-    courseInvitations
+    courseInvitations ||
+    teamInvitations
   ) {
     return context.json({ success: false, error: 'Not found' }, 404);
   }

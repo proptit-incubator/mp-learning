@@ -25,6 +25,7 @@ import {
 
 import type { AnswerData } from '@cio/question-types';
 import type { CourseProgressionMode } from '@cio/utils/functions/course-progression';
+import type { EmployeeRole } from '@cio/utils/validation/organization';
 import { EMAIL_LOCALES } from '@cio/utils/email';
 import { LESSON_VERSION_KIND_VALUES } from '@cio/utils/constants/lesson-version';
 import {
@@ -118,7 +119,11 @@ export const employee = pgTable(
     department: text().notNull().default(''),
     jobTitle: text('job_title').notNull().default(''),
     managerId: uuid('manager_id').references((): AnyPgColumn => employee.id),
-    role: varchar({ length: 20 }).notNull().default('EMPLOYEE'),
+    roles: text()
+      .array()
+      .$type<EmployeeRole[]>()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     status: varchar({ length: 20 }).notNull().default('DRAFT'),
     startDate: date('start_date'),
     leftAt: timestamp('left_at', { withTimezone: true, mode: 'string' }),
@@ -130,7 +135,7 @@ export const employee = pgTable(
     uniqueIndex('employee_org_code_unique').on(table.organizationId, table.employeeCode),
     uniqueIndex('employee_org_email_unique').on(table.organizationId, table.email),
     index('employee_manager_idx').on(table.organizationId, table.managerId),
-    check('employee_role_check', sql`${table.role} IN ('EMPLOYEE','MANAGER','HR','TUTOR','ADMIN')`),
+    check('employee_roles_check', sql`${table.roles} <@ ARRAY['ADMIN','LND','HR']::text[]`),
     check('employee_status_check', sql`${table.status} IN ('DRAFT','INVITED','ACTIVE','SUSPENDED','LEFT')`),
     check('employee_code_normalized', sql`${table.employeeCode} = upper(${table.employeeCode})`),
     check('employee_email_normalized', sql`${table.email} = lower(${table.email})`)

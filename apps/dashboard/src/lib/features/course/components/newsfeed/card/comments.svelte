@@ -3,7 +3,7 @@
   import { SvelteSet } from 'svelte/reactivity';
 
   import { profile } from '$lib/utils/store/user';
-  import { isOrgAdmin } from '$lib/utils/store/org';
+  import { isOrgTeamMember } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { calDateDiff } from '$lib/utils/functions/date';
   import { newsfeedApi } from '$features/course/api';
@@ -226,7 +226,7 @@
                 avatarSize={current.depth === 0 ? 'ui:size-7' : 'ui:size-6'}
                 canEdit={comment.authorProfileId === $profile.id}
                 onEdit={() => handleStartEdit(current.id, comment.content ?? '')}
-                canDelete={comment.authorProfileId === $profile.id || $isOrgAdmin}
+                canDelete={comment.authorProfileId === $profile.id || $isOrgTeamMember}
                 onDelete={() => onDeleteComment(current.id)}
                 canReport={comment.authorProfileId !== $profile.id}
                 onReport={() => reportDialog.start('course_newsfeed_comment', String(comment.id))}

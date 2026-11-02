@@ -9,7 +9,7 @@
     deleteCourseModal,
     saveTemplateModal
   } from '$features/course/utils/store';
-  import { isOrgAdmin, currentOrgPath } from '$lib/utils/store/org';
+  import { currentOrgPath, isOrgTeamMember } from '$lib/utils/store/org';
   import { openCoursePreview } from '$features/course/utils/course-preview';
   import { currentOrgDomain } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
@@ -152,7 +152,7 @@
 {/if}
 
 {#if !hideOrgActions}
-  {#if isTemplate && $isOrgAdmin}
+  {#if isTemplate && $isOrgTeamMember}
     <DropdownMenu.Item onclick={handleCreateFromTemplate}>
       {$t('course_templates.menu.create_course')}
     </DropdownMenu.Item>
@@ -162,7 +162,7 @@
       {$t('courses.course_card.context_menu.clone')}
     </DropdownMenu.Item>
   {/if}
-  {#if !isTemplate && $isOrgAdmin}
+  {#if !isTemplate && $isOrgTeamMember}
     <DropdownMenu.Item onclick={handleSaveAsTemplate}>
       {$t('course_templates.menu.save')}
     </DropdownMenu.Item>
@@ -175,7 +175,7 @@
       {$t('courses.course_card.context_menu.invite')}
     </DropdownMenu.Item>
   {/if}
-  {#if !isTemplate || $isOrgAdmin}
+  {#if !isTemplate || $isOrgTeamMember}
     <DropdownMenu.Separator />
     <DropdownMenu.Item class="text-red-600" onclick={handleDeleteCourse}>
       {$t('courses.course_card.context_menu.delete')}

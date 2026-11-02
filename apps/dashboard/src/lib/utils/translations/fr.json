@@ -6350,6 +6350,7 @@
     "job": "Job title",
     "start": "Start date",
     "role_label": "Rôle",
+    "roles_hint": "A person can hold several roles. Leave all unchecked for a regular employee. Anyone with direct reports automatically sees their team's training.",
     "manager": "Direct manager",
     "none": "Aucun",
     "identity": "Account information",
@@ -6410,10 +6411,9 @@
     "contact_hr": "Accounts are provided by HR. Open your activation email or contact the training administrator.",
     "role": {
       "EMPLOYEE": "Employee",
-      "MANAGER": "Department manager",
-      "HR": "HR / Learning and Development",
-      "TUTOR": "Instructeur",
-      "ADMIN": "System administrator"
+      "ADMIN": "System administrator",
+      "LND": "L&D (training)",
+      "HR": "HR / Learning and Development"
     },
     "status": {
       "DRAFT": "Activation not sent",

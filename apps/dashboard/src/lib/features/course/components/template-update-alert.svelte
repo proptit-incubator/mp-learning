@@ -4,7 +4,7 @@
   import { courseApi, courseTemplateApi } from '$features/course/api';
   import { formatTemplateUsedDate } from '$features/course/utils/template-display';
   import { t } from '$lib/utils/functions/translations';
-  import { isOrgAdmin } from '$lib/utils/store/org';
+  import { isOrgTeamMember } from '$lib/utils/store/org';
   import { resolve } from '$app/paths';
 
   const course = $derived(courseApi.course);
@@ -14,7 +14,7 @@
   const changeCount = $derived((updates?.units.length ?? 0) + (updates?.settings.length ?? 0));
   const showAlert = $derived(
     Boolean(
-      $isOrgAdmin &&
+      $isOrgTeamMember &&
         course?.templateId &&
         !course.isTemplate &&
         updates?.template &&
@@ -25,7 +25,7 @@
 
   $effect(() => {
     const current = courseApi.course;
-    if (!current?.id || !current.templateId || current.isTemplate || !$isOrgAdmin) return;
+    if (!current?.id || !current.templateId || current.isTemplate || !$isOrgTeamMember) return;
 
     void courseTemplateApi.loadUpdates(current.id);
   });

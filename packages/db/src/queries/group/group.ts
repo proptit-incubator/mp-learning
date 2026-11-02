@@ -8,6 +8,8 @@ import { learnerAccessSql } from '../course/enrollment';
 import { ROLE } from '@cio/utils/constants';
 import { db, type DbOrTxClient } from '@db/drizzle';
 
+const ORG_COURSE_MANAGER_ROLES = [ROLE.ADMIN, ROLE.TUTOR];
+
 export async function createGroup(values: TNewGroup, dbClient: DbOrTxClient = db) {
   try {
     return dbClient.insert(schema.group).values(values).returning();
@@ -111,7 +113,7 @@ export const isUserCourseMember = async (
 };
 
 /**
- * Course-group member (any role) or org ADMIN. Both require live, `ACTIVE` org
+ * Course-group member (any role) or org ADMIN/L&D. Both require live, `ACTIVE` org
  * membership — a `groupmember` row outlives removal from the org. This join is
  * the single place course access is revoked.
  *
@@ -136,7 +138,7 @@ export const isUserCourseMemberOrOrgAdmin = async (courseId: string, profileId: 
       and(
         eq(schema.organizationmember.organizationId, schema.group.organizationId),
         eq(schema.organizationmember.profileId, profileId),
-        eq(schema.organizationmember.roleId, ROLE.ADMIN),
+        inArray(schema.organizationmember.roleId, ORG_COURSE_MANAGER_ROLES),
         eq(schema.organizationmember.status, 'ACTIVE')
       )
     )
@@ -192,7 +194,7 @@ export const getUserCourseRole = async (courseId: string, profileId: string): Pr
 /**
  * Checks if a user is either:
  * - a team member (ADMIN or TUTOR) of the course's group, OR
- * - an ADMIN of the organization that owns the course's group.
+ * - an ADMIN or L&D (org TUTOR) member of the organization that owns the course's group.
  *
  * Requires live, `ACTIVE` org membership, as `isUserCourseMemberOrOrgAdmin` does.
  *
@@ -225,7 +227,7 @@ export const isCourseTeamMemberOrOrgAdmin = async (
       and(
         eq(schema.organizationmember.organizationId, schema.group.organizationId),
         eq(schema.organizationmember.profileId, profileId),
-        eq(schema.organizationmember.roleId, ROLE.ADMIN),
+        inArray(schema.organizationmember.roleId, ORG_COURSE_MANAGER_ROLES),
         eq(schema.organizationmember.status, 'ACTIVE')
       )
     )
@@ -249,7 +251,7 @@ export const isCourseTeamMemberOrOrgAdmin = async (
   return result.length > 0;
 };
 
-/** Course group ADMIN/TUTOR or org ADMIN. Students and org-only tutors return false. */
+/** Course group ADMIN/TUTOR or org ADMIN/L&D. Students return false. */
 export const canAccessCourseSubmissions = async (courseId: string, profileId: string): Promise<boolean> =>
   isCourseTeamMemberOrOrgAdmin(courseId, profileId);
 
@@ -293,8 +295,8 @@ export async function syncCourseRolesToOrgRole(
 }
 
 /**
- * Resolves the course group an org ADMIN may act in before they have a `groupmember` row.
- * Returns null when the profile is not an admin of the course's organization.
+ * Resolves the course group an org ADMIN or L&D member may act in before they have a `groupmember` row.
+ * Returns null when the profile manages no courses in the course's organization.
  */
 export async function getCourseOrgAdminAccess(
   courseId: string,
@@ -313,7 +315,7 @@ export async function getCourseOrgAdminAccess(
         and(
           eq(schema.organizationmember.organizationId, schema.group.organizationId),
           eq(schema.organizationmember.profileId, profileId),
-          eq(schema.organizationmember.roleId, ROLE.ADMIN),
+          inArray(schema.organizationmember.roleId, ORG_COURSE_MANAGER_ROLES),
           // Feeds `ensureCourseGroupMemberId`, which can create a membership.
           eq(schema.organizationmember.status, 'ACTIVE')
         )

@@ -14,7 +14,7 @@
   import TemplatePreviewDialog from '$features/course/components/template-preview-dialog.svelte';
   import { formatTemplateUsedDate } from '$features/course/utils/template-display';
   import { t } from '$lib/utils/functions/translations';
-  import { isOrgAdmin, currentOrg, currentOrgPath } from '$lib/utils/store/org';
+  import { currentOrg, currentOrgPath, isOrgTeamMember } from '$lib/utils/store/org';
   import { isStudentExperience } from '$lib/utils/store/app';
   import { resolve } from '$app/paths';
 
@@ -42,7 +42,7 @@
     return cards.filter((template) => template.title.toLowerCase().includes(query));
   });
 
-  const showBlank = $derived($isOrgAdmin && !query);
+  const showBlank = $derived($isOrgTeamMember && !query);
   const showOrgEmpty = $derived(scope === 'org' && !query && orgTemplates.length === 0 && !courseTemplateApi.listing);
   const showNoResults = $derived(
     !courseTemplateApi.listing && visible.length === 0 && (query.length > 0 || scope === 'global')
@@ -219,7 +219,7 @@
                         <DropdownMenu.Item onclick={() => goto(resolve(`/courses/${template.id}/lessons`, {}))}>
                           {$t('course_templates.menu.open')}
                         </DropdownMenu.Item>
-                        {#if $isOrgAdmin}
+                        {#if $isOrgTeamMember}
                           <DropdownMenu.Item onclick={() => duplicate(template.id)}>
                             {$t('course_templates.menu.duplicate')}
                           </DropdownMenu.Item>

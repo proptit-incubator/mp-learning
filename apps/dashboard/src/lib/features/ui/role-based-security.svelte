@@ -1,7 +1,7 @@
 <script lang="ts">
   import { profile } from '$lib/utils/store/user';
   import { courseApi } from '$features/course/api';
-  import { isOrgAdmin } from '$lib/utils/store/org';
+  import { isOrgTeamMember } from '$lib/utils/store/org';
   import { isStudentExperience } from '$lib/utils/store/app';
   import { ROLE } from '@cio/utils/constants';
 
@@ -30,7 +30,7 @@
       return isAllowed(userRole);
     }
 
-    return isAllowed(userRole) || !!$isOrgAdmin;
+    return isAllowed(userRole) || !!$isOrgTeamMember;
   });
 
   function isAllowed(userRole: number | null) {

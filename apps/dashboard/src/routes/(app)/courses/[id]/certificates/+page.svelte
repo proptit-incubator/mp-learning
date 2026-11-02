@@ -8,7 +8,7 @@
   import { courseApi } from '$features/course/api';
   import type { Course } from '$features/course/utils/types';
   import { parseCertificateThemeId } from '$features/course/utils/certificate-utils';
-  import { isFreePlan, isOrgAdmin } from '$lib/utils/store/org';
+  import { isFreePlan, isOrgTeamMember } from '$lib/utils/store/org';
   import { profile } from '$lib/utils/store/user';
   import { RefreshPageData, UnsavedChanges } from '$features/ui';
   import { ZCourseUpdate } from '@cio/utils/validation/course/course';
@@ -40,7 +40,7 @@
     return user ? Number(user.roleId) : null;
   });
 
-  const canEditCertificates = $derived(!!$isOrgAdmin || (userRole !== null && [1, 2].includes(userRole)));
+  const canEditCertificates = $derived(!!$isOrgTeamMember || (userRole !== null && [1, 2].includes(userRole)));
 
   function getCertificateFormState(course: Course | null) {
     if (!course) {

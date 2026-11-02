@@ -25,7 +25,7 @@
   import { get } from 'svelte/store';
   import { page } from '$app/state';
   import { profile } from '$lib/utils/store/user';
-  import { isOrgAdmin } from '$lib/utils/store/org';
+  import { isOrgTeamMember } from '$lib/utils/store/org';
   import { isCourseLearnerView } from '$lib/utils/store/app';
   import { isMobileStore } from '@cio/ui/hooks/is-mobile.svelte';
   import { CourseMobileBottomNav } from '$features/course/components/mobile';
@@ -94,9 +94,9 @@
 
     if (!canCheck) return true;
 
-    if ($isOrgAdmin === null) return true;
+    if ($isOrgTeamMember === null) return true;
 
-    if ($isOrgAdmin || user) return true;
+    if ($isOrgTeamMember || user) return true;
 
     return serverAuthorizedCourse;
   });

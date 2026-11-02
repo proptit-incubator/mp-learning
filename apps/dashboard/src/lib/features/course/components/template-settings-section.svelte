@@ -6,13 +6,13 @@
   import TemplateReviewSheet from './template-review-sheet.svelte';
   import { formatTemplateUsedDate } from '$features/course/utils/template-display';
   import { t } from '$lib/utils/functions/translations';
-  import { isOrgAdmin, currentOrgPath } from '$lib/utils/store/org';
+  import { currentOrgPath, isOrgTeamMember } from '$lib/utils/store/org';
 
   const course = $derived(courseApi.course);
   const updates = $derived(
     course && courseTemplateApi.updatesCourseId === course.id ? courseTemplateApi.updates : null
   );
-  const visible = $derived(Boolean($isOrgAdmin && course?.templateId && !course.isTemplate && updates));
+  const visible = $derived(Boolean($isOrgTeamMember && course?.templateId && !course.isTemplate && updates));
   const units = $derived(updates?.units ?? []);
   const settings = $derived(updates?.settings ?? []);
   const changeCount = $derived(units.length + settings.length);
@@ -39,7 +39,7 @@
 
   $effect(() => {
     const current = courseApi.course;
-    if (!current?.id || !current.templateId || current.isTemplate || !$isOrgAdmin) return;
+    if (!current?.id || !current.templateId || current.isTemplate || !$isOrgTeamMember) return;
 
     void courseTemplateApi.loadUpdates(current.id);
   });

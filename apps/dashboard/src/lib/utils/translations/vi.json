@@ -6360,6 +6360,7 @@
     "job": "Chức danh",
     "start": "Ngày vào làm",
     "role_label": "Vai trò",
+    "roles_hint": "Một người có thể giữ nhiều vai trò. Không chọn vai trò nào nghĩa là nhân viên thông thường. Người có nhân viên báo cáo trực tiếp tự động xem được kết quả học tập của cấp dưới.",
     "manager": "Quản lý trực tiếp",
     "none": "Không có",
     "identity": "Thông tin tài khoản",
@@ -6420,10 +6421,9 @@
     "contact_hr": "HR cấp tài khoản cho bạn. Mở thư kích hoạt hoặc liên hệ quản trị đào tạo.",
     "role": {
       "EMPLOYEE": "Nhân viên",
-      "MANAGER": "Quản lý bộ phận",
-      "HR": "HR / Đào tạo và phát triển",
-      "TUTOR": "Giảng viên",
-      "ADMIN": "Quản trị hệ thống"
+      "ADMIN": "Quản trị hệ thống",
+      "LND": "L&D – Đào tạo và phát triển",
+      "HR": "HR – Nhân sự"
     },
     "status": {
       "DRAFT": "Chưa gửi kích hoạt",

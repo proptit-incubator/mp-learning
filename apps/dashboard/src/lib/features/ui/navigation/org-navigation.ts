@@ -129,7 +129,6 @@ export const baseNavConfig: NavItemConfig[] = [
     titleKey: 'org_navigation.tags',
     path: '/tags',
     icon: TagsIcon,
-    requiresAdmin: true,
     countKey: 'tags',
     matchPattern: '^/org/[^/]+/tags(/.*)?$'
   },
@@ -188,10 +187,6 @@ export const baseNavConfig: NavItemConfig[] = [
       {
         path: 'ai-tutor',
         titleKey: 'settings.tabs.ai_tutor_tab'
-      },
-      {
-        path: 'teams',
-        titleKey: 'settings.tabs.teams_tab'
       },
       {
         path: 'auth',

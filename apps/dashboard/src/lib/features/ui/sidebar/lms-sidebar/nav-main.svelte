@@ -18,7 +18,13 @@
     });
   });
 
-  const canSeeTeamLearning = $derived(employeesApi.access?.canManage || employeesApi.access?.role === 'MANAGER');
+  const access = $derived(employeesApi.access);
+  const canSeeEmployees = $derived(
+    Boolean(access && (access.canManagePeople || access.canAssignTraining || access.isManager))
+  );
+  const canSeeLearningReport = $derived(
+    Boolean(access && (access.canViewOrgReports || access.isManager || access.teachesCourses))
+  );
 
   const items = $derived(
     getLmsNavigationItems($currentOrg, $t, page.url.pathname).filter((item) => !item.hideFromSidebar)
@@ -43,7 +49,7 @@
         </Sidebar.MenuButton>
       </Sidebar.MenuItem>
     {/each}
-    {#if canSeeTeamLearning}
+    {#if canSeeEmployees}
       <Sidebar.MenuItem>
         <Sidebar.MenuButton tooltipContent={$t('employees.title')} isActive={page.url.pathname === '/lms/employees'}>
           {#snippet child({ props })}
@@ -53,6 +59,8 @@
           {/snippet}
         </Sidebar.MenuButton>
       </Sidebar.MenuItem>
+    {/if}
+    {#if canSeeLearningReport}
       <Sidebar.MenuItem>
         <Sidebar.MenuButton
           tooltipContent={$t('learning_analytics.title')}

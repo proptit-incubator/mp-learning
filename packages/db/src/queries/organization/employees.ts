@@ -2,7 +2,8 @@ import { listEmployeeEnrollments, listEmployeeFacets, materializeEnrollmentMembe
 import { and, asc, count, eq, getTableColumns, gt, ilike, inArray, isNull, or, sql } from 'drizzle-orm';
 import { db, type DbOrTxClient } from '@db/drizzle';
 import * as schema from '@db/schema';
-import type { EmployeeListQuery } from '@cio/utils/validation/organization';
+import type { EmployeeListQuery, EmployeeRole } from '@cio/utils/validation/organization';
+import { getEmployeeCapabilities } from '@cio/utils/functions/employee-access';
 import { employeeLearningMemberIds } from './audience';
 
 function employeeProfiles(client: DbOrTxClient) {
@@ -71,6 +72,18 @@ export async function canEmployeeSignIn(profileId: string, client: DbOrTxClient 
   return rows.every((row) => row.status === 'ACTIVE' && row.memberStatus === 'ACTIVE');
 }
 
+function membershipOnlyRoles(roleId: number): EmployeeRole[] {
+  if (roleId === 1) return ['ADMIN'];
+  if (roleId === 2) return ['LND'];
+
+  return [];
+}
+
+/**
+ * Roles, reporting line and course team facts for `profileId` in `orgId`, plus the capabilities they grant.
+ * Employee roles are authoritative; the membership role only stands in for accounts without an employee record.
+ * Returns null for inactive or missing members.
+ */
 export async function getEmployeeAccess(orgId: string, profileId: string, client: DbOrTxClient = db) {
   const [membership] = await client
     .select()
@@ -92,9 +105,33 @@ export async function getEmployeeAccess(orgId: string, profileId: string, client
     .limit(1);
   if (staff && staff.status !== 'ACTIVE') return null;
 
-  const delegatedRole = staff && ['HR', 'MANAGER'].includes(staff.role) ? staff.role : 'EMPLOYEE';
-  const role = membership.roleId === 1 ? 'ADMIN' : membership.roleId === 2 ? 'TUTOR' : delegatedRole;
-  return { role, employeeId: staff?.id ?? null, canManage: role === 'ADMIN' || role === 'HR' };
+  const roles = staff ? staff.roles : membershipOnlyRoles(membership.roleId);
+  const [reports] = staff
+    ? await client
+        .select({ value: count() })
+        .from(schema.employee)
+        .where(and(eq(schema.employee.managerId, staff.id), sql`${schema.employee.status} <> 'LEFT'`))
+    : [];
+  const [taught] = await client
+    .select({ value: count() })
+    .from(schema.groupmember)
+    .innerJoin(schema.course, eq(schema.course.groupId, schema.groupmember.groupId))
+    .innerJoin(schema.group, eq(schema.group.id, schema.course.groupId))
+    .where(
+      and(
+        eq(schema.groupmember.profileId, profileId),
+        eq(schema.group.organizationId, orgId),
+        inArray(schema.groupmember.roleId, [1, 2])
+      )
+    );
+
+  return {
+    roles,
+    employeeId: staff?.id ?? null,
+    isManager: (reports?.value ?? 0) > 0,
+    teachesCourses: (taught?.value ?? 0) > 0,
+    ...getEmployeeCapabilities(roles)
+  };
 }
 
 /** Subquery of every employee id below `managerEmployeeId` in the reporting line, at any depth. */
@@ -159,13 +196,7 @@ export async function employeeOptions(orgId: string, client: DbOrTxClient = db) 
   const managers = await client
     .select({ id: schema.employee.id, fullname: schema.employee.fullname, employeeCode: schema.employee.employeeCode })
     .from(schema.employee)
-    .where(
-      and(
-        eq(schema.employee.organizationId, orgId),
-        eq(schema.employee.status, 'ACTIVE'),
-        inArray(schema.employee.role, ['MANAGER', 'HR', 'ADMIN'])
-      )
-    );
+    .where(and(eq(schema.employee.organizationId, orgId), eq(schema.employee.status, 'ACTIVE')));
   const facets = await listEmployeeFacets(orgId, client);
   return { managers, ...facets };
 }

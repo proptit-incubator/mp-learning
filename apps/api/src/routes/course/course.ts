@@ -67,7 +67,6 @@ import { lessonRouter } from '@api/routes/course/lesson';
 import { markRouter } from '@api/routes/course/mark';
 import { membersRouter } from '@api/routes/course/people';
 import { newsfeedRouter } from '@api/routes/course/newsfeed';
-import { orgAdminMiddleware } from '@api/middlewares/org-admin';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
 import { orgTeamMemberMiddleware } from '@api/middlewares/org-team-member';
 import { paymentRequestRouter } from '@api/routes/course/payment-request';
@@ -145,7 +144,7 @@ export const courseRouter = new Hono()
    * Creates a new course with group, group member, and default newsfeed
    * Requires authentication and organization membership
    */
-  .post('/', authMiddleware, orgAdminMiddleware, zValidator('json', ZCourseCreate), async (c) => {
+  .post('/', authMiddleware, orgTeamMemberMiddleware, zValidator('json', ZCourseCreate), async (c) => {
     try {
       const user = c.get('user')!;
       const validatedData = c.req.valid('json');
@@ -217,7 +216,7 @@ export const courseRouter = new Hono()
   .put(
     '/:courseId/tags',
     authMiddleware,
-    orgAdminMiddleware,
+    orgTeamMemberMiddleware,
     zValidator('param', ZCourseTagParam),
     zValidator('json', ZCourseTagAssignment),
     async (c) => {
@@ -417,8 +416,10 @@ export const courseRouter = new Hono()
           const orgId = c.req.header('cio-org-id');
           const orgRoles = c.get('orgRoles') as Record<string, number> | undefined;
           const templateOrgId = await getCourseOrganizationId(courseId);
-          if (!orgId || orgRoles?.[orgId] !== ROLE.ADMIN || templateOrgId !== orgId) {
-            throw new AppError('Only admins can delete templates', ErrorCodes.ORG_TEAM_NOT_AUTHORIZED, 403);
+          const orgRole = orgId ? orgRoles?.[orgId] : undefined;
+          const managesCourses = orgRole === ROLE.ADMIN || orgRole === ROLE.TUTOR;
+          if (!orgId || !managesCourses || templateOrgId !== orgId) {
+            throw new AppError('Only admins and L&D can delete templates', ErrorCodes.ORG_TEAM_NOT_AUTHORIZED, 403);
           }
         }
 

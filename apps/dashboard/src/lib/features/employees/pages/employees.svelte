@@ -19,8 +19,10 @@
     EMPLOYEE_ROLES,
     EMPLOYEE_STATUSES,
     ZEmployeeList,
+    type EmployeeRole,
     type EmployeeStatus
   } from '@cio/utils/validation/organization';
+  import { employeeRoleLabel } from '../utils/employee-utils';
   import * as Page from '@cio/ui/base/page';
   import * as Field from '@cio/ui/base/field';
   import * as Dialog from '@cio/ui/base/dialog';
@@ -83,12 +85,21 @@
       void api.load();
     }
   });
-  const roles = $derived(
-    api.roster?.access.role === 'ADMIN'
-      ? EMPLOYEE_ROLES
-      : EMPLOYEE_ROLES.filter((role) => role === 'EMPLOYEE' || role === 'MANAGER')
-  );
-  const canManage = $derived(api.roster?.access.canManage ?? false);
+  const canGrantRoles = $derived(api.roster?.access.canGrantRoles ?? false);
+  const canManagePeople = $derived(api.roster?.access.canManagePeople ?? false);
+  const canAssign = $derived(api.roster?.access.canAssignTraining ?? false);
+
+  function canChangeEmployee(staff: { roles: readonly string[] }) {
+    return canManagePeople && (canGrantRoles || staff.roles.length === 0);
+  }
+
+  function toggleRole(role: EmployeeRole, checked: boolean) {
+    const nextRoles = new Set(api.fields.roles);
+    if (checked) nextRoles.add(role);
+    else nextRoles.delete(role);
+
+    api.fields.roles = EMPLOYEE_ROLES.filter((candidate) => nextRoles.has(candidate));
+  }
 
   $effect(() => {
     const orgId = $currentOrg.id;
@@ -135,8 +146,8 @@
     if (loadedLocation !== location) return;
 
     if (api.profileId && api.roster?.rows[0]) await api.view(api.roster.rows[0]);
-    if (parameters.get('action') === 'import' && api.roster?.access.canManage) await openImport();
-    if (parameters.get('action') === 'create' && api.roster?.access.canManage) await api.openCreate();
+    if (parameters.get('action') === 'import' && api.roster?.access.canManagePeople) await openImport();
+    if (parameters.get('action') === 'create' && api.roster?.access.canManagePeople) await api.openCreate();
   }
 
   function filterStatus(value: string) {
@@ -169,15 +180,19 @@
         <Button variant="outline" disabled={api.exporting || api.isLoading} onclick={() => api.exportEmployees()}
           ><DownloadIcon size={16} />{$t('employees.export')}</Button
         >
-        {#if canManage}
+        {#if canManagePeople}
           <Button variant="outline" onclick={openImport} disabled={api.isLoading}
             ><UploadIcon size={16} />{$t('employees.import')}</Button
           >
+        {/if}
+        {#if canAssign}
           <Button variant="outline" onclick={() => openAssign([...selectedIds])} disabled={!selectedIds.size}
             ><BookPlusIcon size={16} />{$t('enrollment.assign_button')}{selectedIds.size
               ? ` (${selectedIds.size})`
               : ''}</Button
           >
+        {/if}
+        {#if canManagePeople}
           <Button onclick={() => api.openCreate()} disabled={api.isLoading} testId="employee-create"
             ><PlusIcon size={17} />{$t('employees.add')}</Button
           >
@@ -271,7 +286,7 @@
           <Table.Root class="employee-table">
             <Table.Header
               ><Table.Row
-                >{#if canManage}<Table.Head class="w-10"
+                >{#if canAssign}<Table.Head class="w-10"
                     ><Checkbox
                       aria-label={$t('enrollment.select_all')}
                       checked={allVisibleSelected}
@@ -287,7 +302,7 @@
             <Table.Body>
               {#each api.roster.rows as staff (staff.id)}
                 <Table.Row class="employee-row">
-                  {#if canManage}<Table.Cell
+                  {#if canAssign}<Table.Cell
                       ><Checkbox
                         aria-label={staff.fullname}
                         checked={selectedIds.has(staff.id)}
@@ -319,7 +334,7 @@
                     ><div class="employee-department">{staff.department || $t('employees.unassigned')}</div>
                     <p class="employee-email">{staff.jobTitle}</p></Table.Cell
                   >
-                  <Table.Cell><span class="employee-role">{$t(`employees.role.${staff.role}`)}</span></Table.Cell>
+                  <Table.Cell><span class="employee-role">{employeeRoleLabel(staff.roles, $t)}</span></Table.Cell>
                   <Table.Cell
                     ><span class="employee-status" data-status={staff.status}
                       ><span aria-hidden="true"></span>{$t(`employees.status.${staff.status}`)}</span
@@ -344,9 +359,10 @@
                           >{/snippet}</DropdownMenu.Trigger
                       ><DropdownMenu.Content align="end" class="w-56">
                         <DropdownMenu.Item onclick={() => api.view(staff)}>{$t('employees.details')}</DropdownMenu.Item>
-                        {#if canManage}<DropdownMenu.Item onclick={() => openAssign([staff.id], staff.fullname)}
+                        {#if canAssign}<DropdownMenu.Item onclick={() => openAssign([staff.id], staff.fullname)}
                             >{$t('enrollment.assign_button')}</DropdownMenu.Item
-                          ><DropdownMenu.Item onclick={() => api.openEdit(staff)}
+                          >{/if}
+                        {#if canChangeEmployee(staff)}<DropdownMenu.Item onclick={() => api.openEdit(staff)}
                             >{$t('employees.edit')}</DropdownMenu.Item
                           >
                           {#if staff.status === 'DRAFT' || staff.status === 'INVITED'}<DropdownMenu.Item
@@ -373,12 +389,12 @@
                   </Table.Cell>
                 </Table.Row>
               {:else}<Table.Row
-                  ><Table.Cell colspan={canManage ? 8 : 7}
+                  ><Table.Cell colspan={canAssign ? 8 : 7}
                     ><div class="directory-empty">
                       <span class="empty-icon"><UsersIcon size={28} /></span>
                       <h3>{$t('employees.empty')}</h3>
                       <p>{$t('employees.empty_hint')}</p>
-                      {#if canManage}<Button variant="outline" onclick={() => api.openCreate()}
+                      {#if canManagePeople}<Button variant="outline" onclick={() => api.openCreate()}
                           ><PlusIcon size={16} />{$t('employees.add')}</Button
                         >{/if}
                     </div></Table.Cell
@@ -486,15 +502,24 @@
               bind:value={api.fields.startDate}
             /></Field.Field
           >
-          <Field.Field>
-            <Field.Label>{$t('employees.role_label')}</Field.Label>
-            <Select.Root type="single" bind:value={api.fields.role}
-              ><Select.Trigger class="w-full">{$t(`employees.role.${api.fields.role}`)}</Select.Trigger><Select.Content
-                >{#each roles as role (role)}<Select.Item value={role}>{$t(`employees.role.${role}`)}</Select.Item
-                  >{/each}</Select.Content
-              ></Select.Root
-            >
-          </Field.Field>
+          {#if canGrantRoles}
+            <Field.Set class="sm:col-span-2">
+              <Field.Legend variant="label">{$t('employees.role_label')}</Field.Legend>
+              <Field.Description>{$t('employees.roles_hint')}</Field.Description>
+              <Field.Group class="gap-2">
+                {#each EMPLOYEE_ROLES as role (role)}
+                  <Field.Field orientation="horizontal">
+                    <Checkbox
+                      id={`employee-role-${role}`}
+                      checked={api.fields.roles.includes(role)}
+                      onCheckedChange={(checked) => toggleRole(role, checked === true)}
+                    />
+                    <Field.Label for={`employee-role-${role}`}>{$t(`employees.role.${role}`)}</Field.Label>
+                  </Field.Field>
+                {/each}
+              </Field.Group>
+            </Field.Set>
+          {/if}
           <Field.Field class="sm:col-span-2">
             <Field.Label>{$t('employees.manager')}</Field.Label>
             <Select.Root
@@ -667,13 +692,13 @@
         </div>
         <div>
           <dt class="ui:text-muted-foreground mb-1 text-xs">{$t('employees.role_label')}</dt>
-          <dd>{$t(`employees.role.${staff.role}`)}</dd>
+          <dd>{employeeRoleLabel(staff.roles, $t)}</dd>
         </div>
       </dl>
     {/if}
     <div class="ui:border-border mt-6 flex items-center justify-between gap-3 border-b pb-3">
       <h3 class="text-base font-semibold">{$t('enrollment.employee_courses')}</h3>
-      {#if canManage && api.details}<Button
+      {#if canAssign && api.details}<Button
           size="sm"
           variant="outline"
           onclick={() => openAssign([api.details!.employee.id], api.details!.employee.fullname)}
@@ -704,7 +729,7 @@
           >{/each}</Table.Body
       ></Table.Root
     >
-    {#if canManage}<h3 class="ui:border-border mt-6 border-b pb-3 text-base font-semibold">
+    {#if canManagePeople}<h3 class="ui:border-border mt-6 border-b pb-3 text-base font-semibold">
         {$t('employees.history')}
       </h3>
       <ul class="space-y-2 text-sm">

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { getEmployeeCapabilities } from '@cio/utils/functions/employee-access';
   import { onDestroy, untrack } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import { page } from '$app/state';
@@ -30,7 +31,7 @@
   const availableEmployees = $derived(peopleApi.availableEmployees);
   const items = $derived(
     (availableEmployees ?? [])
-      .filter((employee) => ['ADMIN', 'TUTOR'].includes(employee.role))
+      .filter((employee) => getEmployeeCapabilities(employee.roles).canManageCourses)
       .flatMap((employee) =>
         employee.profileId
           ? [

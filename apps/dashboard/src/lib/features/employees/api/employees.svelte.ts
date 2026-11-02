@@ -4,7 +4,8 @@ import {
   createEmployeeDraft,
   employeeDetailsDraft,
   employeeErrorKey,
-  employeeImportRows
+  employeeImportRows,
+  employeeRoleLabel
 } from '../utils/employee-utils';
 import type {
   ActivateEmployeeRequest,
@@ -328,7 +329,7 @@ export class EmployeesApi extends BaseApiWithErrors {
         department: row.department,
         jobTitle: row.jobTitle,
         status: t.get(`employees.status.${row.status}`),
-        role: t.get(`employees.role.${row.role}`),
+        role: employeeRoleLabel(row.roles, (key) => t.get(key)),
         startDate: row.startDate ?? ''
       }));
       const contents = Papa.unparse(records, { escapeFormulae: true });

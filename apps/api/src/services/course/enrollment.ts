@@ -30,21 +30,21 @@ import { captureLearnersEnrolled } from '@api/services/product-events';
 import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 
-/** Course team members, org admins and HR may manage a course's enrollments. Throws 403 otherwise. */
+/** Course team members and anyone who may assign training (admin, L&D, HR) manage a course's enrollments. */
 async function requireTrainingManager(courseId: string, actorId: string) {
   const context = await getCourseEmployeeContext(courseId);
   if (!context?.organizationId || !context.groupId) throw new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403);
 
   const isCourseTeam = await isCourseTeamMemberOrOrgAdmin(courseId, actorId);
   const access = isCourseTeam ? null : await getEmployeeAccess(context.organizationId, actorId);
-  if (!isCourseTeam && !access?.canManage) throw new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403);
+  if (!isCourseTeam && !access?.canAssignTraining) throw new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403);
 
   return context as typeof context & { organizationId: string; groupId: string };
 }
 
 async function requireOrgTrainingManager(organizationId: string, actorId: string) {
   const access = await getEmployeeAccess(organizationId, actorId);
-  if (!access || !access.canManage) throw new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403);
+  if (!access || !access.canAssignTraining) throw new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403);
 
   return access;
 }

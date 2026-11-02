@@ -289,10 +289,10 @@ integration('course enrollment on isolated PostgreSQL', () => {
   });
 
   describe('training roles', () => {
-    async function createStaff(role: 'HR' | 'MANAGER', managerId: string | null = null) {
+    async function createStaff(roles: Array<'ADMIN' | 'LND' | 'HR'>) {
       const profileId = randomUUID();
       await createProfile(profileId);
-      const staff = await createEmployee(profileId, { role, managerId });
+      const staff = await createEmployee(profileId, { roles });
       return { profileId, employeeId: staff.employee.id };
     }
 
@@ -304,7 +304,7 @@ integration('course enrollment on isolated PostgreSQL', () => {
 
     it('lets HR assign courses and manage the assignment without joining the course team', async () => {
       const course = await createCourse();
-      const hr = await createStaff('HR');
+      const hr = await createStaff(['HR']);
 
       const result = await service.assignCourses(organizationId, hr.profileId, {
         courseIds: [course.id],
@@ -326,7 +326,7 @@ integration('course enrollment on isolated PostgreSQL', () => {
 
     it('keeps managers and plain employees from assigning or managing assignments', async () => {
       const course = await createCourse();
-      const manager = await createStaff('MANAGER');
+      const manager = await createStaff([]);
       await service.assignCourses(organizationId, actorId, {
         courseIds: [course.id],
         employeeIds: [employeeId],
@@ -344,7 +344,7 @@ integration('course enrollment on isolated PostgreSQL', () => {
 
     it('limits a manager report to their whole reporting line', async () => {
       const course = await createCourse();
-      const manager = await createStaff('MANAGER');
+      const manager = await createStaff([]);
       const lead = await createLearner({ managerId: manager.employeeId });
       const outsider = await createLearner();
       await database.db

@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getLearningAnalytics } from '@api/services/learning-analytics';
 import { getLearningAnalyticsActivity, getLearningAnalyticsSnapshot } from '@cio/db/queries/dash';
 import { getEmployeeAccess } from '@cio/db/queries/organization';
+import { getEmployeeCapabilities } from '@cio/utils/functions/employee-access';
+import type { EmployeeRole } from '@cio/utils/validation/organization';
 
 vi.mock('@cio/db/queries/dash', () => ({
   getLearningAnalyticsActivity: vi.fn(),
@@ -11,18 +13,20 @@ vi.mock('@cio/db/queries/organization', () => ({ getEmployeeAccess: vi.fn() }));
 
 const ORGANIZATION_SCOPE = { kind: 'organization' };
 
-function grantAccess(role: string) {
+function grantAccess(roles: EmployeeRole[], facts: { isManager?: boolean; teachesCourses?: boolean } = {}) {
   vi.mocked(getEmployeeAccess).mockResolvedValue({
-    role,
+    roles,
     employeeId: 'employee-1',
-    canManage: role === 'ADMIN' || role === 'HR'
+    isManager: facts.isManager ?? false,
+    teachesCourses: facts.teachesCourses ?? false,
+    ...getEmployeeCapabilities(roles)
   });
 }
 
 describe('training report definitions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    grantAccess('ADMIN');
+    grantAccess(['ADMIN']);
     vi.mocked(getLearningAnalyticsSnapshot).mockResolvedValue({
       employees: 5,
       enrolledEmployees: 3,
@@ -83,12 +87,14 @@ describe('training report definitions', () => {
   });
 
   it.each([
-    ['ADMIN', ORGANIZATION_SCOPE],
-    ['HR', ORGANIZATION_SCOPE],
-    ['TUTOR', { kind: 'courses', teamProfileId: 'actor-1' }],
-    ['MANAGER', { kind: 'reports', managerEmployeeId: 'employee-1' }]
-  ])('narrows the report of a %s to their scope', async (role, scope) => {
-    grantAccess(role);
+    ['an admin', ['ADMIN'], {}, ORGANIZATION_SCOPE],
+    ['L&D', ['LND'], {}, ORGANIZATION_SCOPE],
+    ['HR', ['HR'], {}, ORGANIZATION_SCOPE],
+    ['L&D who also manages a team', ['LND'], { isManager: true }, ORGANIZATION_SCOPE],
+    ['a department manager', [], { isManager: true }, { kind: 'reports', managerEmployeeId: 'employee-1' }],
+    ['a course team member', [], { teachesCourses: true }, { kind: 'courses', teamProfileId: 'actor-1' }]
+  ] as const)('narrows the report of %s to their scope', async (_label, roles, facts, scope) => {
+    grantAccess([...roles], facts);
 
     const report = await getLearningAnalytics('org-1', 'actor-1', 30);
 
@@ -98,7 +104,7 @@ describe('training report definitions', () => {
   });
 
   it('refuses employees and people outside the organization before reading data', async () => {
-    grantAccess('EMPLOYEE');
+    grantAccess([]);
     await expect(getLearningAnalytics('org-1', 'actor-1', 30)).rejects.toMatchObject({ statusCode: 403 });
 
     vi.mocked(getEmployeeAccess).mockResolvedValue(null);

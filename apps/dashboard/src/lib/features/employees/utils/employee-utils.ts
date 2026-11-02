@@ -1,4 +1,4 @@
-import type { CreateEmployee } from '@cio/utils/validation/organization';
+import { EMPLOYEE_ROLES, type CreateEmployee } from '@cio/utils/validation/organization';
 import type { EmployeeDetails, EmployeeImportRow } from './types';
 
 export function createEmployeeDraft(): CreateEmployee {
@@ -10,14 +10,21 @@ export function createEmployeeDraft(): CreateEmployee {
     jobTitle: '',
     managerId: null,
     startDate: '',
-    role: 'EMPLOYEE',
+    roles: [],
     sendActivation: false
   };
 }
 
+/** Comma-separated labels of the roles held, or the plain employee label when none are. */
+export function employeeRoleLabel(roles: readonly string[], translate: (key: string) => string): string {
+  const heldRoles = EMPLOYEE_ROLES.filter((role) => roles.includes(role));
+  if (!heldRoles.length) return translate('employees.role.EMPLOYEE');
+
+  return heldRoles.map((role) => translate(`employees.role.${role}`)).join(', ');
+}
+
 export function employeeDetailsDraft(details: EmployeeDetails): CreateEmployee {
   const staff = details.employee;
-  const role = staff.role as CreateEmployee['role'];
   return {
     employeeCode: staff.employeeCode,
     fullname: staff.fullname,
@@ -26,7 +33,7 @@ export function employeeDetailsDraft(details: EmployeeDetails): CreateEmployee {
     jobTitle: staff.jobTitle,
     managerId: staff.managerId,
     startDate: staff.startDate ?? '',
-    role,
+    roles: [...staff.roles],
     sendActivation: false
   };
 }
@@ -72,7 +79,7 @@ export function employeeImportRows(cells: unknown[][]): EmployeeImportRow[] {
         department: values.department || '',
         jobTitle: values.jobTitle || '',
         startDate: values.startDate || '',
-        role: 'EMPLOYEE',
+        roles: [],
         managerId: null,
         managerCode: values.managerCode || '',
         sendActivation: false

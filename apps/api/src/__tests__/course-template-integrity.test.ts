@@ -35,8 +35,8 @@ function appAs(orgId: string, roleId: number) {
 }
 
 describe('course template route access', () => {
-  it('rejects template mutations from a tutor', async () => {
-    const app = appAs(ORG_ID, ROLE.TUTOR);
+  it('rejects template mutations from a learner', async () => {
+    const app = appAs(ORG_ID, ROLE.STUDENT);
     const response = await app.request(`/course/${ORG_ID}/template`, {
       method: 'POST',
       headers: { 'cio-org-id': ORG_ID, 'content-type': 'application/json' },

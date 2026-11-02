@@ -41,15 +41,21 @@ import type {
   UpdateEmployee
 } from '@cio/utils/validation/organization';
 import { ZActivateEmployee, ZCreateEmployee, ZUpdateEmployee } from '@cio/utils/validation/organization';
+import { employeeMembershipRoleId } from '@cio/utils/functions/employee-access';
 
 function rejectEmployee(key: string, status = 400): never {
   throw new AppError(`employees.errors.${key}`, ErrorCodes.VALIDATION_ERROR, status);
 }
 
+function seesWholeDirectory(access: { canManagePeople: boolean; canAssignTraining: boolean }) {
+  return access.canManagePeople || access.canAssignTraining;
+}
+
+/** People managers may change employees; training assigners and department managers may only read them. */
 export async function requireEmployeeAccess(orgId: string, actorId: string, manage = false, client: DbOrTxClient = db) {
   const access = await getEmployeeAccess(orgId, actorId, client);
-  if (!access || (manage ? !access.canManage : !access.canManage && access.role !== 'MANAGER'))
-    rejectEmployee('forbidden', 403);
+  const canRead = access && (seesWholeDirectory(access) || access.isManager);
+  if (!access || (manage ? !access.canManagePeople : !canRead)) rejectEmployee('forbidden', 403);
 
   return access;
 }
@@ -62,7 +68,7 @@ async function validateEmployeeFields(
   client: DbOrTxClient = db
 ) {
   const access = await requireEmployeeAccess(orgId, actorId, true, client);
-  if (access.role !== 'ADMIN' && !['EMPLOYEE', 'MANAGER'].includes(fields.role)) rejectEmployee('forbidden', 403);
+  if (!access.canGrantRoles && fields.roles.length > 0) rejectEmployee('forbidden', 403);
 
   const options = await employeeOptions(orgId, client);
   if (fields.managerId && !options.managers.some((manager) => manager.id === fields.managerId))
@@ -82,19 +88,21 @@ async function validateEmployeeFields(
   return access;
 }
 
-function membershipRole(role: string) {
-  return role === 'ADMIN' ? 1 : role === 'TUTOR' ? 2 : 3;
+function hasSameRoles(current: readonly string[], next: readonly string[]) {
+  return current.length === next.length && current.every((role) => next.includes(role));
 }
 
 export async function getEmployees(orgId: string, actorId: string, query: EmployeeListQuery) {
   const access = await requireEmployeeAccess(orgId, actorId);
-  const managerId = access.canManage ? undefined : (access.employeeId ?? '');
+  const managerId = seesWholeDirectory(access) ? undefined : (access.employeeId ?? '');
   const roster = await listEmployees(orgId, query, managerId);
   return { ...roster, access };
 }
 
 export async function getEmployeeOptions(orgId: string, actorId: string) {
-  await requireEmployeeAccess(orgId, actorId, true);
+  const access = await requireEmployeeAccess(orgId, actorId);
+  if (!seesWholeDirectory(access)) rejectEmployee('forbidden', 403);
+
   return employeeOptions(orgId);
 }
 
@@ -104,10 +112,10 @@ export async function getEmployeeDetails(orgId: string, actorId: string, employe
   if (!staff) rejectEmployee('missing', 404);
 
   const isReport = access.employeeId ? await isInReportingLine(access.employeeId, employeeId) : false;
-  if (!access.canManage && !isReport) rejectEmployee('forbidden', 403);
+  if (!seesWholeDirectory(access) && !isReport) rejectEmployee('forbidden', 403);
 
   const enrollments = await employeeLearningReport(orgId, employeeId);
-  const audit = access.canManage ? await getEmployeeAudit(employeeId) : [];
+  const audit = access.canManagePeople ? await getEmployeeAudit(employeeId) : [];
   return { employee: staff, enrollments, audit };
 }
 
@@ -120,7 +128,8 @@ export async function createEmployee(orgId: string, actorId: string, input: Crea
     if (conflicts.employees.length) rejectEmployee('duplicate');
 
     const identity = await findEmployeeAccount(fields.email, orgId, tx);
-    if (identity.member && identity.member.roleId !== membershipRole(fields.role)) rejectEmployee('existing_role');
+    if (identity.member && identity.member.roleId !== employeeMembershipRoleId(fields.roles))
+      rejectEmployee('existing_role');
 
     const profileId = identity.member?.profileId ?? null;
     const activatedAt =
@@ -129,7 +138,7 @@ export async function createEmployee(orgId: string, actorId: string, input: Crea
         : null;
     const status = activatedAt ? 'ACTIVE' : 'DRAFT';
     const memberStatus = activatedAt ? 'ACTIVE' : 'DEACTIVATED';
-    const roleId = membershipRole(fields.role);
+    const roleId = employeeMembershipRoleId(fields.roles);
     const member =
       identity.member ??
       (await insertEmployeeMember({ organizationId: orgId, email: fields.email, roleId, status: memberStatus }, tx));
@@ -144,7 +153,7 @@ export async function createEmployee(orgId: string, actorId: string, input: Crea
       department: fields.department,
       jobTitle: fields.jobTitle,
       managerId: fields.managerId,
-      role: fields.role,
+      roles: fields.roles,
       status,
       startDate: fields.startDate || null,
       activatedAt
@@ -171,29 +180,30 @@ export async function editEmployee(orgId: string, actorId: string, employeeId: s
     const staff = await findEmployee(orgId, employeeId, tx);
     if (!staff) rejectEmployee('missing', 404);
 
-    if (access.role !== 'ADMIN' && !['EMPLOYEE', 'MANAGER'].includes(staff.role)) rejectEmployee('forbidden', 403);
+    if (!access.canGrantRoles && staff.roles.length > 0) rejectEmployee('forbidden', 403);
 
     const identity = await findEmployeeAccount(staff.email, orgId, tx);
-    if (staff.role !== fields.role && identity.member?.profileId === actorId) rejectEmployee('self');
+    const rolesChanged = !hasSameRoles(staff.roles, fields.roles);
+    if (rolesChanged && identity.member?.profileId === actorId) rejectEmployee('self');
 
-    if (identity.member?.roleId === 1 && fields.role !== 'ADMIN' && (await countEmployeeAdmins(orgId, tx)) <= 1)
-      rejectEmployee('last_admin');
+    const losesAdmin = identity.member?.roleId === 1 && !fields.roles.includes('ADMIN');
+    if (losesAdmin && (await countEmployeeAdmins(orgId, tx)) <= 1) rejectEmployee('last_admin');
 
     const values = {
       fullname: fields.fullname,
       department: fields.department,
       jobTitle: fields.jobTitle,
       managerId: fields.managerId,
-      role: fields.role,
+      roles: fields.roles,
       startDate: fields.startDate || null
     };
     const updated = await updateEmployee(employeeId, values, tx);
-    const roleId = membershipRole(fields.role);
+    const roleId = employeeMembershipRoleId(fields.roles);
     await updateEmployeeMember(staff.memberId, { roleId }, tx);
     if (identity.member?.profileId) {
       await updateEmployeeProfile(identity.member.profileId, fields.fullname, tx);
       await enrollEmployee(employeeId, tx);
-      if (staff.role !== fields.role) await revokeEmployeeSessions(identity.member.profileId, tx);
+      if (rolesChanged) await revokeEmployeeSessions(identity.member.profileId, tx);
     }
     await addEmployeeAudit(employeeId, actorId, 'UPDATED', '', tx);
     return updated;
@@ -214,7 +224,7 @@ export async function setEmployeeStatus(
     const staff = await findEmployee(orgId, employeeId, tx);
     if (!staff) rejectEmployee('missing', 404);
 
-    if (access.role !== 'ADMIN' && !['EMPLOYEE', 'MANAGER'].includes(staff.role)) rejectEmployee('forbidden', 403);
+    if (!access.canGrantRoles && staff.roles.length > 0) rejectEmployee('forbidden', 403);
 
     const identity = await findEmployeeAccount(staff.email, orgId, tx);
     if (identity.member?.profileId === actorId) rejectEmployee('self');
@@ -250,8 +260,7 @@ export async function sendEmployeeActivation(orgId: string, actorId: string, emp
     const employeeRow = await findEmployee(orgId, employeeId, tx);
     if (!employeeRow) rejectEmployee('missing', 404);
 
-    if (access.role !== 'ADMIN' && !['EMPLOYEE', 'MANAGER'].includes(employeeRow.role))
-      rejectEmployee('forbidden', 403);
+    if (!access.canGrantRoles && employeeRow.roles.length > 0) rejectEmployee('forbidden', 403);
 
     if (employeeRow.activatedAt || !['DRAFT', 'INVITED'].includes(employeeRow.status)) rejectEmployee('activation');
 
@@ -335,7 +344,7 @@ export async function activateEmployee(token: string, password?: string) {
       (await createEmployeeCredentials(employeeRow.email, employeeRow.fullname, passwordHash!, tx, language));
     await markUserAndProfileEmailVerified(profileId, tx);
     const activatedAt = new Date().toISOString();
-    const roleId = membershipRole(employeeRow.role);
+    const roleId = employeeMembershipRoleId(employeeRow.roles);
     await updateEmployeeMember(employeeRow.memberId, { profileId, verified: true, status: 'ACTIVE', roleId }, tx);
     await updateEmployee(employeeRow.id, { activatedAt, status: 'ACTIVE' }, tx);
     await enrollEmployee(employeeRow.id, tx);
@@ -387,7 +396,7 @@ export async function importEmployees(orgId: string, actorId: string, rows: unkn
 
       seenCodes.add(fields.employeeCode);
       seenEmails.add(fields.email);
-      if (access.role !== 'ADMIN' && !['EMPLOYEE', 'MANAGER'].includes(fields.role)) rejectEmployee('forbidden', 403);
+      if (!access.canGrantRoles && fields.roles.length > 0) rejectEmployee('forbidden', 403);
 
       if (fields.managerId && !options.managers.some((manager) => manager.id === fields.managerId))
         rejectEmployee('manager');
@@ -400,7 +409,8 @@ export async function importEmployees(orgId: string, actorId: string, rows: unkn
         rejectEmployee('duplicate');
 
       const existingMember = conflicts.members.find((member) => member.email === fields.email);
-      if (existingMember && existingMember.roleId !== membershipRole(fields.role)) rejectEmployee('existing_role');
+      if (existingMember && existingMember.roleId !== employeeMembershipRoleId(fields.roles))
+        rejectEmployee('existing_role');
 
       if (existingMember && existingMember.status !== 'ACTIVE') rejectEmployee('existing_account');
 

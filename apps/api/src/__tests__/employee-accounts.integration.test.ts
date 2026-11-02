@@ -102,7 +102,7 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
       jobTitle: 'Specialist',
       managerId: null,
       startDate: '',
-      role: 'EMPLOYEE',
+      roles: [],
       sendActivation: false,
       ...overrides
     });
@@ -146,13 +146,13 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
     const identity = await queries.findEmployeeAccount(created.employee.email, organizationId);
     expect(identity.account).toBeNull();
     expect(identity.member?.status).toBe('DEACTIVATED');
-    const hr = await activateDraft({ role: 'HR' });
+    const hr = await activateDraft({ roles: ['HR'] });
     await expect(
       services.createEmployee(organizationId, hr.profileId, {
         employeeCode: 'ESCALATION',
         email: 'escalation@example.com',
         fullname: 'Escalation',
-        role: 'ADMIN',
+        roles: ['ADMIN'],
         department: '',
         jobTitle: '',
         managerId: null,
@@ -247,7 +247,7 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
   });
 
   it('scopes managers to direct reports, refuses foreign assignments and rolls back duplicates', async () => {
-    const manager = await activateDraft({ role: 'MANAGER' });
+    const manager = await activateDraft();
     const report = await draft({ managerId: manager.id });
     const outsider = await draft();
     const roster = await services.getEmployees(organizationId, manager.profileId, {
@@ -364,15 +364,26 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
       .where(database.eq(database.account.userId, profileId));
     expect(account.password).toBe(originalHash);
     expect(await queries.getEmployeeAccess(organizationId, profileId)).toMatchObject({
-      role: 'EMPLOYEE',
-      canManage: false
+      roles: [],
+      canManagePeople: false
     });
-    const administrator = await activateDraft({ role: 'ADMIN' });
+    const administrator = await activateDraft({ roles: ['ADMIN'] });
+    const { fullname, department, jobTitle, managerId } = administrator;
+    const startDate = administrator.startDate ?? '';
+    await services.editEmployee(organizationId, administratorId, administrator.id, {
+      fullname,
+      department,
+      jobTitle,
+      managerId,
+      startDate,
+      roles: []
+    });
     const identity = await queries.findEmployeeAccount(administrator.email, organizationId);
-    await queries.updateEmployeeMember(identity.member!.id, { roleId: 3 });
+    expect(identity.member?.roleId).toBe(3);
     expect(await queries.getEmployeeAccess(organizationId, administrator.profileId)).toMatchObject({
-      role: 'EMPLOYEE',
-      canManage: false
+      roles: [],
+      canManagePeople: false,
+      canGrantRoles: false
     });
     expect(created.employee.employeeCode).toBeTruthy();
   });
@@ -388,7 +399,7 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
   }
 
   it('resolves profile links within the organization and the manager direct-report scope', async () => {
-    const manager = await activateDraft({ role: 'MANAGER' });
+    const manager = await activateDraft();
     const report = await activateDraft({ managerId: manager.id });
     const outsider = await activateDraft();
     const query = { search: '', department: '', page: 1, limit: 25, profileId: report.profileId };
@@ -594,7 +605,7 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
       employeeCode: `FOREIGN-${organizationId.slice(0, 6)}`,
       fullname: 'Foreign Employee',
       email: `foreign-${organizationId}@example.com`,
-      role: 'EMPLOYEE',
+      roles: [],
       department: '',
       jobTitle: '',
       managerId: null,
@@ -631,11 +642,50 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
     expect(count.total).toBe(0);
   });
 
-  it('keeps instructor assignment restricted to organization administrators', async () => {
+  it('combines the rights of every role one person holds', async () => {
+    const fixture = await courseFixture();
+    const groups = await import('@cio/db/queries/group');
+    const trainer = await activateDraft({ roles: ['LND'] });
+    const trainerAndPeople = await activateDraft({ roles: ['LND', 'HR'] });
+
+    const trainerAccess = await queries.getEmployeeAccess(organizationId, trainer.profileId);
+    const combinedAccess = await queries.getEmployeeAccess(organizationId, trainerAndPeople.profileId);
+
+    expect(trainerAccess).toMatchObject({
+      roles: ['LND'],
+      canManageCourses: true,
+      canAssignTraining: true,
+      canViewOrgReports: true,
+      canManagePeople: false
+    });
+    expect(combinedAccess).toMatchObject({
+      roles: ['LND', 'HR'],
+      canManageCourses: true,
+      canManagePeople: true,
+      canGrantRoles: false
+    });
+    expect(await groups.isCourseTeamMemberOrOrgAdmin(fixture.courseId, trainer.profileId)).toBe(true);
+    await expect(
+      services.createEmployee(organizationId, trainerAndPeople.profileId, {
+        employeeCode: `GRANT-${organizationId.slice(0, 6)}`,
+        email: `grant-${organizationId}@example.com`,
+        fullname: 'Granted Role',
+        roles: ['LND'],
+        department: '',
+        jobTitle: '',
+        managerId: null,
+        startDate: '',
+        sendActivation: false
+      })
+    ).rejects.toThrow('employees.errors.forbidden');
+  });
+
+  it('keeps course team membership to administrators and L&D', async () => {
     const courses = await import('@api/services/course/employees');
     const fixture = await courseFixture();
-    const tutor = await activateDraft({ role: 'TUTOR' });
-    const secondTutor = await activateDraft({ role: 'TUTOR' });
+    const tutor = await activateDraft({ roles: ['LND'] });
+    const secondTutor = await activateDraft({ roles: ['LND'] });
+    const humanResources = await activateDraft({ roles: ['HR'] });
     const learner = await activateDraft();
     await courses.enrollExistingCourseEmployees(
       fixture.courseId,
@@ -643,14 +693,20 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
       [{ profileId: tutor.profileId, roleId: 2 }],
       false
     );
+    await courses.enrollExistingCourseEmployees(
+      fixture.courseId,
+      tutor.profileId,
+      [{ profileId: secondTutor.profileId, roleId: 2 }],
+      false
+    );
     await expect(
       courses.enrollExistingCourseEmployees(
         fixture.courseId,
-        tutor.profileId,
-        [{ profileId: secondTutor.profileId, roleId: 2 }],
+        administratorId,
+        [{ profileId: humanResources.profileId, roleId: 2 }],
         false
       )
-    ).rejects.toThrow('Only administrators');
+    ).rejects.toThrow('instructor role');
     await expect(
       courses.enrollExistingCourseEmployees(
         fixture.courseId,

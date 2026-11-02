@@ -567,9 +567,9 @@ export const organizationRouter = new Hono()
   /**
    * POST /organization/courses/reorder
    * Persists the manual display order of organization courses (landing page + public catalog)
-   * Requires authentication and organization administrator privileges. Automation keys use PUT /public-api/v1/organization/landing-page/featured-courses
+   * Requires authentication and an organization admin or L&D member. Automation keys use PUT /public-api/v1/organization/landing-page/featured-courses
    */
-  .post('/courses/reorder', authMiddleware, orgAdminMiddleware, zValidator('json', ZCourseReorder), async (c) => {
+  .post('/courses/reorder', authMiddleware, orgTeamMemberMiddleware, zValidator('json', ZCourseReorder), async (c) => {
     try {
       const { courses } = c.req.valid('json');
       const orgId = c.req.header('cio-org-id')!;

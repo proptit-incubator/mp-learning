@@ -2,7 +2,7 @@
 
 ## Cấp tài khoản
 
-Quản trị mở **Nhân viên** trong khu vực quản trị. HR/L&D và quản lý bộ phận mở **Nhân viên** và **Phân tích đào tạo** trong khu vực học tập. HR/L&D quản lý nhân viên thông thường và quản lý bộ phận; chỉ quản trị hệ thống được cấp hoặc thay đổi quyền HR/L&D, giảng viên và quản trị.
+Quản trị và L&D mở **Nhân viên** trong khu vực quản trị. HR và quản lý bộ phận mở **Nhân viên** và **Phân tích đào tạo** trong khu vực học tập. HR quản lý nhân viên không giữ vai trò nào; chỉ quản trị hệ thống được cấp hoặc thu hồi vai trò.
 
 Chọn **Thêm nhân viên**, nhập mã nhân viên, họ tên, email, phòng ban, chức danh, ngày vào làm và quản lý trực tiếp. Chọn khóa học/chương trình nếu cần. **Lưu nháp** không gửi email. **Tạo và gửi kích hoạt** cấp hồ sơ và gửi liên kết để nhân viên tự đặt mật khẩu.
 
@@ -28,13 +28,24 @@ Chạy **Kiểm tra danh sách** trước khi xác nhận. Dòng sai định d�
 
 ## Phân quyền và vòng đời
 
-| Vai trò | Phạm vi |
-| --- | --- |
-| Quản trị hệ thống | Quản lý toàn tổ chức, cấu hình và cấp quyền cao |
-| HR/L&D | Tạo/sửa, giao đào tạo, đổi hạn/miễn/thu hồi lượt giao, xem **Phân tích đào tạo** toàn tổ chức và quản lý vòng đời nhân viên thông thường/quản lý bộ phận |
-| Quản lý bộ phận | Chỉ xem danh sách, kết quả và **Phân tích đào tạo** của nhân viên thuộc quyền quản lý, kể cả cấp dưới gián tiếp |
-| Giảng viên | Soạn nội dung, đổi hạn/miễn/thu hồi lượt giao và xem phân tích của khóa học được phân công; không giao khóa mới và không có quyền quản trị nhân viên |
-| Nhân viên | Học tập trong phạm vi được giao |
+Mỗi nhân viên giữ không, một hoặc nhiều vai trò; quyền là hợp của các vai trò đang giữ. Không giữ vai trò nào nghĩa là nhân viên thông thường.
+
+| Quyền | Quản trị hệ thống | L&D | HR | Nhân viên |
+| --- | --- | --- | --- | --- |
+| Cấu hình hệ thống, cấp và thu hồi vai trò | ✓ | | | |
+| Tài khoản nhân viên (tạo, nhập, sửa, khóa, nghỉ việc) | ✓ | | ✓ (chỉ nhân viên không giữ vai trò) | |
+| Xem danh bạ nhân viên | ✓ | ✓ | ✓ | |
+| Tạo, soạn, xuất bản mọi khóa; mẫu khóa, thẻ, thư viện tài liệu | ✓ | ✓ | | |
+| Giao khóa, đổi hạn, miễn, thu hồi | ✓ | ✓ | ✓ | |
+| Chấm bài, chứng chỉ | ✓ | ✓ | | |
+| **Phân tích đào tạo** | Toàn tổ chức | Toàn tổ chức | Toàn tổ chức | |
+
+Hai quyền không cần chọn vai trò:
+
+- **Quản lý bộ phận**: ai được chọn làm *Quản lý trực tiếp* của ít nhất một nhân viên tự động xem danh sách, kết quả và Phân tích đào tạo của cấp dưới, kể cả cấp dưới gián tiếp.
+- **Đội ngũ khóa**: quản trị hoặc L&D được thêm vào một khóa cụ thể thì soạn, chấm bài và quản lý lượt giao của khóa đó.
+
+Vai trò chỉ được cấp ở trang **Nhân viên**. Trang Cài đặt → Quản trị viên & giảng viên, lời mời nhóm và liên kết mời đã bị gỡ.
 
 Trạng thái tài khoản gồm **Chưa gửi kích hoạt**, **Chờ kích hoạt**, **Đang hoạt động**, **Tạm khóa**, **Đã nghỉ việc**. Khôi phục tài khoản chưa kích hoạt không bỏ qua việc xác nhận email. Người dùng không được tự khóa hoặc tự thay vai trò; phải duy trì ít nhất một quản trị hoạt động.
 
@@ -50,7 +61,7 @@ Chi tiết nhân viên có bảng **Khóa học được giao** với trạng th
 
 ## Nâng cấp và kiểm tra
 
-Áp dụng migration `0043_employee_accounts` theo luồng triển khai hiện hành trước khi chạy API mới. Migration bổ sung bảng, không tạo sẵn mã nhân viên hoặc sửa tài khoản đang có. Kiểm tra `when` của journal cao hơn mọi migration trên nhánh main và không đặt trong tương lai.
+Áp dụng migration `0043_employee_accounts` theo luồng triển khai hiện hành trước khi chạy API mới. Migration `0046_employee_roles` thay cột `employee.role` bằng `employee.roles`: HR giữ HR, Quản trị giữ Quản trị, Giảng viên chuyển thành L&D; Quản lý bộ phận và Nhân viên thành không vai trò (quyền quản lý tự suy ra từ cấp dưới). Migration bổ sung bảng, không tạo sẵn mã nhân viên hoặc sửa tài khoản đang có. Kiểm tra `when` của journal cao hơn mọi migration trên nhánh main và không đặt trong tương lai.
 
 Module có nội dung tiếng Việt/Anh. Các locale khác có đầy đủ khóa và tái sử dụng bản dịch sẵn có, dùng tiếng Anh dự phòng cho copy mới khi dịch vụ dịch chưa được cấu hình.
 
@@ -78,7 +89,7 @@ Triển khai cần chạy migration `0045_single_course_model.sql` bằng quy tr
 
 ## Course enrollment and employee emails
 
-Course members can only be selected from active employees of the same organization. Search supports employee code, name, and email. New accounts must be created and activated in Employees. Administrators and HR assign learners; course instructors adjust due dates, waive or revoke assignments of their courses; organization administrators assign existing employees with ADMIN or TUTOR roles as instructors.
+Course members can only be selected from active employees of the same organization. Search supports employee code, name, and email. New accounts must be created and activated in Employees. Administrators, L&D and HR assign learners; course team members adjust due dates, waive or revoke assignments of their courses; administrators and L&D add employees holding the ADMIN or LND role to a course team.
 
 Course invitation creation and old course invitation links are retired, including acceptance of previously generated course share links. Course access notifications use the editable course access template and include the due date and training batch when set.
 

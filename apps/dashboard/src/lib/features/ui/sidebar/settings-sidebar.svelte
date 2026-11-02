@@ -13,7 +13,6 @@
   import MailIcon from '@lucide/svelte/icons/mail';
   import PaletteIcon from '@lucide/svelte/icons/palette';
   import UserRoundIcon from '@lucide/svelte/icons/user-round';
-  import UsersRoundIcon from '@lucide/svelte/icons/users-round';
 
   const groups = [
     {
@@ -26,7 +25,6 @@
     {
       label: 'mp_learning.settings.system',
       items: [
-        { key: 'settings.tabs.teams_tab', path: '/settings/teams', icon: UsersRoundIcon },
         { key: 'mp_learning.settings.preferences', path: '/settings/customize-lms', icon: PaletteIcon },
         { key: 'settings.tabs.emails_tab', path: '/settings/emails', icon: MailIcon }
       ]

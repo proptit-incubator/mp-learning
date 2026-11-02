@@ -12,7 +12,7 @@ import { ROLE } from '@cio/utils/constants';
 import { Hono } from '@api/utils/hono';
 import { AppError, ErrorCodes, handleError } from '@api/utils/errors';
 import { authMiddleware } from '@api/middlewares/auth';
-import { orgAdminMiddleware } from '@api/middlewares/org-admin';
+import { orgTeamMemberMiddleware } from '@api/middlewares/org-team-member';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
 import {
   convertCourseToTemplate,
@@ -82,7 +82,7 @@ export const courseTemplateRouter = new Hono()
   .post(
     '/:templateId/course',
     authMiddleware,
-    orgAdminMiddleware,
+    orgTeamMemberMiddleware,
     zValidator('param', ZTemplatePreviewParam),
     zValidator('json', ZCreateCourseFromTemplate),
     async (c) => {
@@ -105,7 +105,7 @@ export const courseTemplateRouter = new Hono()
   .post(
     '/:templateId/duplicate',
     authMiddleware,
-    orgAdminMiddleware,
+    orgTeamMemberMiddleware,
     zValidator('param', ZTemplatePreviewParam),
     async (c) => {
       try {
@@ -124,7 +124,7 @@ export const courseTemplateActionsRouter = new Hono()
   .post(
     '/',
     authMiddleware,
-    orgAdminMiddleware,
+    orgTeamMemberMiddleware,
     zValidator('param', ZCourseTemplateParam),
     zValidator('json', ZSaveCourseTemplate),
     async (c) => {
@@ -140,7 +140,7 @@ export const courseTemplateActionsRouter = new Hono()
       }
     }
   )
-  .post('/convert', authMiddleware, orgAdminMiddleware, zValidator('param', ZCourseTemplateParam), async (c) => {
+  .post('/convert', authMiddleware, orgTeamMemberMiddleware, zValidator('param', ZCourseTemplateParam), async (c) => {
     try {
       const orgId = orgIdFromHeader(c.req.header('cio-org-id'));
       const { courseId } = c.req.valid('param');
@@ -152,7 +152,7 @@ export const courseTemplateActionsRouter = new Hono()
   });
 
 export const courseTemplateUpdatesRouter = new Hono()
-  .get('/', authMiddleware, orgAdminMiddleware, zValidator('param', ZCourseTemplateParam), async (c) => {
+  .get('/', authMiddleware, orgTeamMemberMiddleware, zValidator('param', ZCourseTemplateParam), async (c) => {
     try {
       const orgId = orgIdFromHeader(c.req.header('cio-org-id'));
       const { courseId } = c.req.valid('param');
@@ -165,7 +165,7 @@ export const courseTemplateUpdatesRouter = new Hono()
   .post(
     '/pull',
     authMiddleware,
-    orgAdminMiddleware,
+    orgTeamMemberMiddleware,
     zValidator('param', ZCourseTemplateParam),
     zValidator('json', ZPullTemplateUpdates),
     async (c) => {

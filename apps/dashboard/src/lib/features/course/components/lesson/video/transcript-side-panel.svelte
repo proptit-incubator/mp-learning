@@ -9,7 +9,7 @@
   import { Textarea } from '@cio/ui/base/textarea';
   import { Separator } from '@cio/ui/base/separator';
   import { t } from '$lib/utils/functions/translations';
-  import { isOrgAdmin } from '$lib/utils/store/org';
+  import { isOrgTeamMember } from '$lib/utils/store/org';
   import { sidePanel } from '$features/side-panel';
   import { mediaApi } from '$features/media/api';
   import { lessonVideoBus } from './lesson-video-bus.svelte';
@@ -34,7 +34,7 @@
   let saving = $state(false);
   let draft = $state<TranscriptSegment[]>([]);
 
-  const canEdit = $derived(Boolean($isOrgAdmin) && Boolean(assetId) && segments.length > 0);
+  const canEdit = $derived(Boolean($isOrgTeamMember) && Boolean(assetId) && segments.length > 0);
 
   function isActiveSegment(segment: TranscriptSegment, index: number): boolean {
     const isLast = index === segments.length - 1;

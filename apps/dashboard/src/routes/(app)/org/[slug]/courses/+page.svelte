@@ -5,7 +5,7 @@
   import LayoutTemplateIcon from '@lucide/svelte/icons/layout-template';
   import { CreateCourseButton } from '$features/course/components';
   import { isStudentExperience } from '$lib/utils/store/app';
-  import { currentOrgPath, isOrgAdmin } from '$lib/utils/store/org';
+  import { currentOrgPath, isOrgTeamMember } from '$lib/utils/store/org';
   import CourseFilterPopover from '$features/course/components/course-filter-popover.svelte';
   import { courseMetaDeta } from '$features/course/utils/store';
   import {
@@ -255,7 +255,7 @@
             : $t('course_templates.empty.description')}
         >
           {#snippet emptyAction()}
-            {#if !$isStudentExperience && listIsUnfiltered && $isOrgAdmin}
+            {#if !$isStudentExperience && listIsUnfiltered && $isOrgTeamMember}
               <Button onclick={() => goto(`${$currentOrgPath}/courses/templates`)}>
                 {$t('course_templates.empty.browse')}
               </Button>

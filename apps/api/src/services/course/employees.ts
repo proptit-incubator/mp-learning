@@ -11,6 +11,7 @@ import { getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
 import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
 import { emitCourseMemberAddedWebhookEvent, buildMemberSource } from '@cio/core/services/webhook/emit';
 import { ROLE } from '@cio/utils/constants';
+import { getEmployeeCapabilities } from '@cio/utils/functions/employee-access';
 import type { TWebhookMemberSource } from '@cio/core/services/webhook/emit';
 import type { TEventSource } from '@cio/core/services/posthog';
 import { captureLearnersEnrolled } from '@api/services/product-events';
@@ -54,8 +55,8 @@ export async function enrollExistingCourseEmployees(
       throw new AppError('Course unavailable', ErrorCodes.FORBIDDEN, 403);
     }
 
-    if (members.some((member) => member.roleId !== ROLE.STUDENT) && access.role !== 'ADMIN') {
-      throw new AppError('Only administrators can assign instructors', ErrorCodes.UNAUTHORIZED, 403);
+    if (members.some((member) => member.roleId !== ROLE.STUDENT) && !access.canManageCourses) {
+      throw new AppError('Only administrators and L&D can add course team members', ErrorCodes.UNAUTHORIZED, 403);
     }
 
     const profileIds = members.flatMap((member) => (member.profileId ? [member.profileId] : []));
@@ -76,7 +77,8 @@ export async function enrollExistingCourseEmployees(
     if (
       members.some(
         (member) =>
-          member.roleId !== ROLE.STUDENT && !['ADMIN', 'TUTOR'].includes(employeeByProfile.get(member.profileId!)!.role)
+          member.roleId !== ROLE.STUDENT &&
+          !getEmployeeCapabilities(employeeByProfile.get(member.profileId!)!.roles).canManageCourses
       )
     ) {
       throw new AppError('Select an employee with an instructor role', ErrorCodes.VALIDATION_ERROR, 400);

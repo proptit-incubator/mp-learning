@@ -35,7 +35,7 @@ export async function findCourseEmployees(
       employeeCode: schema.employee.employeeCode,
       name: schema.employee.fullname,
       email: schema.employee.email,
-      role: schema.employee.role
+      roles: schema.employee.roles
     })
     .from(schema.employee)
     .innerJoin(schema.organizationmember, eq(schema.employee.memberId, schema.organizationmember.id))
