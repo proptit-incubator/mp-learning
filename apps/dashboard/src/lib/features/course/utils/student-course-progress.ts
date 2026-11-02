@@ -19,11 +19,10 @@ export function getStudentCourseProgressPercent(course: StudentEnrolledCourse) {
   return getCourseContentProgress(course);
 }
 
-/** A course counts as complete when its enrollment state says so, or when every content item is done. */
+/** Uses the enrollment state when there is one, so tabs and status badges always agree. */
 export function isStudentCourseComplete(course: StudentEnrolledCourse) {
   const state = course.enrollment?.state;
-  if (state === 'completed' || state === 'waived') return true;
-  if (state === 'expired') return false;
+  if (state) return state === 'completed' || state === 'waived';
 
   return getCourseContentProgress(course) >= 100;
 }

@@ -167,3 +167,12 @@ DROP TYPE IF EXISTS "PROGRAM_STATUS";
 DELETE FROM content_report WHERE target_type IN ('cohort_newsfeed_post', 'cohort_newsfeed_comment');
 --> statement-breakpoint
 UPDATE organization_api_key SET scopes = (scopes - 'cohort:read') - 'cohort:write' WHERE scopes ?| array['cohort:read', 'cohort:write'];
+--> statement-breakpoint
+INSERT INTO course_completion_record (course_id, group_member_id, profile_id, cycle_number, started_at, completed_at, valid_until)
+SELECT co.id, gm.id, gm.profile_id, 1, gm.completed_at, gm.completed_at,
+  CASE WHEN co.recertification_months IS NOT NULL
+    THEN gm.completed_at + make_interval(months => co.recertification_months) END
+FROM groupmember gm
+JOIN course co ON co.group_id = gm.group_id
+WHERE gm.role_id = 3 AND gm.profile_id IS NOT NULL AND gm.completed_at IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM course_completion_record r WHERE r.course_id = co.id AND r.profile_id = gm.profile_id);
