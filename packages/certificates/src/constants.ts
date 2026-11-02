@@ -17,13 +17,18 @@ export const CERTIFICATE_PDF_PAGE_OPTIONS = {
   margin: { top: '0px', right: '0px', bottom: '0px', left: '0px' }
 } as const;
 
-export const ACCENT_COLORS = ['#7a1f1f', '#1e3a8a', '#ff4500', '#d4af37', '#0a0a0a', '#065f46'] as const;
+export const ACCENT_COLORS = ['#1559c6', '#0e2259', '#0ea5e0', '#7a1f1f', '#d4af37', '#065f46'] as const;
 
 export type AccentColor = (typeof ACCENT_COLORS)[number];
 
 export const DEFAULT_ACCENT_COLOR: string = ACCENT_COLORS[0];
 
 export const CERTIFICATE_TEMPLATES: CertificateTemplateMeta[] = [
+  {
+    id: 'mp',
+    label: 'MP Transformation',
+    description: 'Brand layout with the MP facets, navy type and a verification code.'
+  },
   {
     id: 'classique',
     label: 'Classique',
@@ -65,15 +70,33 @@ export const LEGACY_THEME_MAP: Record<string, CertificateTemplateId> = {
 };
 
 export const DEFAULT_CERTIFICATE_DESIGN: CertificateDesign = {
-  templateId: 'classique',
+  templateId: 'mp',
   accentColor: DEFAULT_ACCENT_COLOR,
-  subtitle: 'Awarded with Highest Distinction',
+  subtitle: 'Hoàn thành khóa đào tạo',
   signatories: [
-    { name: 'Course Facilitator', role: 'Facilitator', enabled: true },
-    { name: 'Organization Lead', role: 'Director', enabled: true }
+    { name: 'Trưởng phòng Đào tạo', role: 'Đào tạo & Phát triển', enabled: true },
+    { name: 'Tổng Giám đốc', role: 'MP Transformation', enabled: true }
   ],
-  idFormat: 'N° {seq}'
+  idFormat: '{seq}'
 };
+
+/** Fixed wording printed on every certificate template. */
+export const CERTIFICATE_LABELS = {
+  title: 'Giấy chứng nhận',
+  certifyThat: 'chứng nhận',
+  presentedTo: 'trao tặng',
+  awardedTo: 'Trao cho',
+  hasCompleted: 'vì đã hoàn thành khóa học',
+  issued: 'Ngày cấp',
+  validUntil: 'Hiệu lực đến',
+  reference: 'Mã chứng nhận',
+  date: 'Ngày',
+  award: 'Khóa học',
+  distinction: 'Hạng mục',
+  verified: 'Đã xác thực',
+  employeeCode: 'Mã nhân viên',
+  verifyAt: 'Tra cứu tại'
+} as const;
 
 export const FONTS_READY_CLASS = 'fonts-ready';
 export const FONTS_READY_SELECTOR = `.${FONTS_READY_CLASS}`;

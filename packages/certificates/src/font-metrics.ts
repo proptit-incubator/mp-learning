@@ -1,19 +1,19 @@
 export const CERTIFICATE_FONTS = {
-  bodoniModa: 'Bodoni Moda',
+  notoSerifDisplay: 'Noto Serif Display',
   playfairDisplay: 'Playfair Display',
-  archivoBlack: 'Archivo Black',
-  cinzel: 'Cinzel',
+  archivo: 'Archivo',
+  cormorantSc: 'Cormorant SC',
   cormorantGaramond: 'Cormorant Garamond',
   jetbrainsMono: 'JetBrains Mono',
   spaceGrotesk: 'Space Grotesk',
-  dmMono: 'DM Mono'
+  beVietnamPro: 'Be Vietnam Pro'
 } as const;
 
 export type CertificateFontFamily = (typeof CERTIFICATE_FONTS)[keyof typeof CERTIFICATE_FONTS];
 
 /**
  * Average character advance-width ratios (width / fontSize) by character class.
- * Calibrated against Google Web Fonts metrics for these 8 certificate families.
+ * Calibrated against Google Web Fonts metrics for these certificate families, all of which ship Vietnamese glyphs.
  */
 interface FontAdvanceProfile {
   isMonospace?: boolean;
@@ -41,24 +41,14 @@ const FONT_PROFILES: Record<CertificateFontFamily, FontAdvanceProfile> = {
     lowerStandard: 0.6,
     digitStandard: 0.6
   },
-  'DM Mono': {
-    isMonospace: true,
+  'Noto Serif Display': {
     defaultRatio: 0.6,
-    space: 0.6,
-    narrow: 0.6,
-    wide: 0.6,
-    capsStandard: 0.6,
-    lowerStandard: 0.6,
-    digitStandard: 0.6
-  },
-  'Bodoni Moda': {
-    defaultRatio: 0.52,
-    space: 0.25,
-    narrow: 0.28,
-    wide: 0.88,
-    capsStandard: 0.72,
-    lowerStandard: 0.48,
-    digitStandard: 0.5
+    space: 0.26,
+    narrow: 0.31,
+    wide: 0.98,
+    capsStandard: 0.8,
+    lowerStandard: 0.55,
+    digitStandard: 0.56
   },
   'Playfair Display': {
     defaultRatio: 0.54,
@@ -69,7 +59,7 @@ const FONT_PROFILES: Record<CertificateFontFamily, FontAdvanceProfile> = {
     lowerStandard: 0.5,
     digitStandard: 0.52
   },
-  'Archivo Black': {
+  Archivo: {
     defaultRatio: 0.7,
     space: 0.3,
     narrow: 0.38,
@@ -78,14 +68,14 @@ const FONT_PROFILES: Record<CertificateFontFamily, FontAdvanceProfile> = {
     lowerStandard: 0.65,
     digitStandard: 0.68
   },
-  Cinzel: {
-    defaultRatio: 0.7,
-    space: 0.28,
-    narrow: 0.35,
-    wide: 1.02,
-    capsStandard: 0.78,
-    lowerStandard: 0.78, // Cinzel is small-caps / capitals
-    digitStandard: 0.56
+  'Cormorant SC': {
+    defaultRatio: 0.62,
+    space: 0.24,
+    narrow: 0.3,
+    wide: 0.92,
+    capsStandard: 0.72,
+    lowerStandard: 0.6,
+    digitStandard: 0.5
   },
   'Cormorant Garamond': {
     defaultRatio: 0.48,
@@ -104,6 +94,15 @@ const FONT_PROFILES: Record<CertificateFontFamily, FontAdvanceProfile> = {
     capsStandard: 0.68,
     lowerStandard: 0.52,
     digitStandard: 0.55
+  },
+  'Be Vietnam Pro': {
+    defaultRatio: 0.6,
+    space: 0.26,
+    narrow: 0.3,
+    wide: 0.95,
+    capsStandard: 0.72,
+    lowerStandard: 0.57,
+    digitStandard: 0.6
   }
 };
 
@@ -132,9 +131,11 @@ function splitGraphemes(text: string): string[] {
   return Array.from(text);
 }
 
-function getCharAdvanceRatio(char: string, profile: FontAdvanceProfile): number {
+function getCharAdvanceRatio(grapheme: string, profile: FontAdvanceProfile): number {
+  const baseLetter = grapheme.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const char = baseLetter === 'đ' ? 'd' : baseLetter === 'Đ' ? 'D' : baseLetter;
   const codePoint = char.codePointAt(0) ?? 0;
-  if (codePoint > 127) {
+  if (codePoint > 127 || char.length !== 1) {
     // Non-ASCII characters (e.g. CJK ideographs, fullwidth symbols, emojis) are rendered via fallback
     // fonts where characters typically occupy ~1.0em (square em-box).
     return Math.max(profile.defaultRatio, 1.0);

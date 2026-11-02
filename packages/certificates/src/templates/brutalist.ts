@@ -1,9 +1,9 @@
-import { CERTIFICATE_WIDTH } from '../constants';
+import { CERTIFICATE_WIDTH, CERTIFICATE_LABELS } from '../constants';
 import { CERTIFICATE_FONTS } from '../font-metrics';
 import { escapeHtml, prepareCertificateRenderContext, renderSignatoryBlock, type TemplateRenderer } from './shared';
 
 const FONTS = {
-  display: CERTIFICATE_FONTS.archivoBlack,
+  display: CERTIFICATE_FONTS.archivo,
   mono: CERTIFICATE_FONTS.jetbrainsMono
 } as const;
 
@@ -129,24 +129,24 @@ export const renderBrutalist: TemplateRenderer = ({ design, data }) => {
       </div>
       <div class="meta-row">
         <div>
-          <div class="k">Date</div>
+          <div class="k">${CERTIFICATE_LABELS.date}</div>
           <div class="v">${escapeHtml(data.date)}</div>
         </div>
         <div>
-          <div class="k">Award</div>
+          <div class="k">${CERTIFICATE_LABELS.award}</div>
           <div class="v">${escapeHtml(data.courseName)}</div>
         </div>
         <div>
-          <div class="k">Class</div>
+          <div class="k">${CERTIFICATE_LABELS.distinction}</div>
           <div class="v">${escapeHtml(subtitle)}</div>
         </div>
       </div>
       <div class="recipient-block">
-        <div class="lbl">Awarded To</div>
+        <div class="lbl">${CERTIFICATE_LABELS.awardedTo}</div>
         <div class="recipient" style="font-size: ${fontSizes.recipient}px;">${escapeHtml(data.recipientName)}</div>
         ${description ? `<div class="description" style="font-size: ${fontSizes.description}px;">${escapeHtml(description)}</div>` : ''}
       </div>
-      <div class="stamp">Verified</div>
+      <div class="stamp">${CERTIFICATE_LABELS.verified}</div>
       <div class="footer">
         ${renderSignatoryBlock(signatoryOne, { nameClass: 'name', roleClass: 'lbl', roleFirst: true })}
         ${renderSignatoryBlock(signatoryTwo, { nameClass: 'name', roleClass: 'lbl', roleFirst: true })}
@@ -159,6 +159,7 @@ export const renderBrutalist: TemplateRenderer = ({ design, data }) => {
       background: #f0ede4;
       color: #000;
       font-family: '${FONTS.display}', sans-serif;
+      font-weight: 900;
       padding: 0;
       display: flex;
       flex-direction: column;
@@ -347,6 +348,7 @@ export const renderBrutalist: TemplateRenderer = ({ design, data }) => {
       color: ${accent};
       padding: 10px 20px;
       font-family: '${FONTS.display}', sans-serif;
+      font-weight: 900;
       font-size: 18px;
       text-transform: uppercase;
       letter-spacing: 0.1em;

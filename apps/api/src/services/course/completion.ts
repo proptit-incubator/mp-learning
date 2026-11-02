@@ -16,7 +16,7 @@ import { emitWebhookEvent } from '@cio/core/services/webhook/emit';
 import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
 import { trackServerEvent, SERVER_EVENTS } from '@cio/analytics';
 import { assertCertificatesEnabled, orgHasCertificatesEnabled } from '@api/services/course/certificate-plan';
-import { formatCertificateId } from '@api/services/course/certificate';
+import { formatCertificateId, issueCourseCertificate } from '@api/services/course/certificate';
 import { resolveCertificateDesign } from '@api/utils/certificate';
 import type { TWebhookEventInput } from '@cio/utils/validation/webhook';
 
@@ -78,26 +78,25 @@ async function buildCertificationEvaluation(
 }
 
 /**
- * Builds the `certificate` of a `course.certificate.issued` event. Standard courses store no certificate
- * row, so they have no `id`, and the printed id is the one the PDF shows.
+ * Builds the `certificate` of a `course.certificate.issued` event. The printed id is the one the PDF shows, built
+ * from the stored verification code.
  */
 export function buildCertificateWebhookInput(params: {
   courseRow: TCourseCertificationRow;
-  profileId: string;
   issuedAt: string;
-  stored?: { id: string | null; cycleNumber: number; expiresAt: string; status: string } | null;
+  stored: { id: string; code: string; cycleNumber: number; expiresAt: string | null; status: string };
 }): TWebhookEventInput<'course.certificate.issued'>['certificate'] {
-  const { courseRow, profileId, issuedAt, stored } = params;
+  const { courseRow, issuedAt, stored } = params;
   const design = resolveCertificateDesign(courseRow.certificate);
-  const displayId = formatCertificateId(design.idFormat, profileId, new Date(issuedAt));
+  const displayId = formatCertificateId(design.idFormat, stored.code, new Date(issuedAt));
 
   return {
-    id: stored?.id ?? null,
+    id: stored.id,
     displayId,
     issuedAt,
-    expiresAt: stored?.expiresAt ?? null,
-    cycleNumber: stored?.cycleNumber ?? null,
-    status: stored?.status ?? 'valid'
+    expiresAt: stored.expiresAt,
+    cycleNumber: stored.cycleNumber,
+    status: stored.status
   };
 }
 
@@ -183,14 +182,16 @@ export async function evaluateCourseCertification(
       properties: { course_id: courseId }
     });
 
-    const certificate = buildCertificateWebhookInput({ courseRow, profileId, issuedAt: earnedAt });
-
-    await emitWebhookEvent(courseRow.orgId, 'course.certificate.issued', {
-      courseId,
-      ...completionEventData,
-      completedAt: earnedAt,
-      certificate
-    });
+    const issued = await issueCourseCertificate(courseId, profileId, earnedAt);
+    if (issued) {
+      const certificate = buildCertificateWebhookInput({ courseRow, issuedAt: issued.issuedAt, stored: issued });
+      await emitWebhookEvent(courseRow.orgId, 'course.certificate.issued', {
+        courseId,
+        ...completionEventData,
+        completedAt: earnedAt,
+        certificate
+      });
+    }
 
     scheduleCertificationCompletionWork({
       courseId,

@@ -1,4 +1,4 @@
-import { resolveTemplateId } from '@cio/certificates';
+import { resolveTemplateId, type CertificateRenderData } from '@cio/certificates';
 import { DEFAULT_CERTIFICATE_THEME_ID, type CertificateThemeId } from './constants';
 import { t } from '$lib/utils/functions/translations';
 
@@ -35,12 +35,35 @@ export function formatBlockerMessage(blocker: BlockerData): string {
   }
 }
 
-/** Normalizes DB/API timestamps to an ISO-8601 UTC string accepted by Zod `.datetime()`. */
-export function normalizeCertificateIssuedAt(value: string | null | undefined): string {
-  if (!value) return new Date().toISOString();
+const PREVIEW_CERTIFICATE_CODE = 'MAU0000000';
+const BRAND_LOGO_PATH = '/brand/mp-transformation.png';
 
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return new Date().toISOString();
+/** Sample render data for certificate previews, matching what the server prints on an issued certificate. */
+export function buildCertificatePreviewData(input: {
+  recipientName: string;
+  courseName: string;
+  courseDescription: string;
+  orgName: string;
+  idFormat: string | undefined;
+  hasRecertification: boolean;
+  origin: string;
+}): CertificateRenderData {
+  const today = new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'Asia/Ho_Chi_Minh'
+  }).format(new Date());
 
-  return parsed.toISOString();
+  return {
+    recipientName: input.recipientName,
+    courseName: input.courseName,
+    courseDescription: input.courseDescription,
+    orgName: input.orgName,
+    orgLogoUrl: `${input.origin}${BRAND_LOGO_PATH}`,
+    date: today,
+    validUntil: input.hasRecertification ? today : undefined,
+    certificateId: (input.idFormat || '{seq}').replace('{seq}', PREVIEW_CERTIFICATE_CODE),
+    verifyUrl: `${input.origin}/verify/${PREVIEW_CERTIFICATE_CODE}`
+  };
 }

@@ -56,7 +56,7 @@ export type { CertificateTemplateId } from '@cio/certificates';
  */
 export type CertificateThemeId = CertificateTemplateId;
 
-export const DEFAULT_CERTIFICATE_THEME_ID: CertificateThemeId = 'classique';
+export const DEFAULT_CERTIFICATE_THEME_ID: CertificateThemeId = 'mp';
 
 const COURSE_SORT_ORDER_VALUES = new Set<string>(Object.values(CourseSortOrder));
 

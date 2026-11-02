@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { ZPublicApiCourseParam } from './course';
 import { ZPublicApiPaginationQuery } from './pagination';
 
-export const ZPublicApiCertificateTemplateId = z.enum(['classique', 'brutalist', 'noir', 'poster', 'minimal']);
+export const ZPublicApiCertificateTemplateId = z.enum(['mp', 'classique', 'brutalist', 'noir', 'poster', 'minimal']);
 
 export const ZPublicApiCertificateSignatory = z.object({
   name: z.string().max(80).default(''),

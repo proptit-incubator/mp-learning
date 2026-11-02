@@ -7,7 +7,7 @@ import {
   type CertificateRenderData
 } from '@cio/certificates';
 
-import { getCloudflarePdfBuffer, getCloudflarePngBuffer } from '@api/utils/cloudflare';
+import { renderHtmlToPdf, renderHtmlToPng } from '@api/utils/browser-render';
 
 export { resolveCertificateDesign };
 
@@ -19,18 +19,20 @@ export interface CertificateRenderInput {
 export async function generateCertificatePdf(input: CertificateRenderInput) {
   const { html, styles } = renderCertificate(input.design, input.data);
 
-  return getCloudflarePdfBuffer(html, styles, CERTIFICATE_VIEWPORT, CERTIFICATE_PDF_PAGE_OPTIONS);
+  return renderHtmlToPdf(html, styles, CERTIFICATE_VIEWPORT, CERTIFICATE_PDF_PAGE_OPTIONS);
 }
 
 export async function generateCertificatePng(input: CertificateRenderInput) {
   const { html, styles } = renderCertificate(input.design, input.data);
 
-  return getCloudflarePngBuffer(html, styles, { ...CERTIFICATE_VIEWPORT, deviceScaleFactor: 2 });
+  return renderHtmlToPng(html, styles, { ...CERTIFICATE_VIEWPORT, deviceScaleFactor: 2 });
 }
 
 export function slugifyForFilename(value: string): string {
   return (
     value
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D')
       .normalize('NFKD')
       .replace(/[^a-zA-Z0-9 ]/g, '')
       .trim()

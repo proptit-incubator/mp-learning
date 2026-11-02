@@ -1,4 +1,4 @@
-export const CERTIFICATE_TEMPLATE_IDS = ['classique', 'brutalist', 'noir', 'poster', 'minimal'] as const;
+export const CERTIFICATE_TEMPLATE_IDS = ['mp', 'classique', 'brutalist', 'noir', 'poster', 'minimal'] as const;
 export type CertificateTemplateId = (typeof CERTIFICATE_TEMPLATE_IDS)[number];
 
 export interface CertificateSignatory {
@@ -48,12 +48,15 @@ export interface StoredCertificateRecord {
 
 export interface CertificateRenderData {
   recipientName: string;
+  employeeCode?: string;
   courseName: string;
   courseDescription: string;
   orgName: string;
   orgLogoUrl?: string;
   date: string;
+  validUntil?: string;
   certificateId: string;
+  verifyUrl?: string;
 }
 
 export interface CertificateRenderResult {

@@ -447,11 +447,7 @@ describe('services/v1/courses/certificates', () => {
 
       expect(assertCertificatesEnabled).toHaveBeenCalledWith(ORG_ID);
       expect(getCourseMember).toHaveBeenCalledWith(COURSE_ID, MEMBER_ID);
-      expect(assembleCertificateRender).toHaveBeenCalledWith(COURSE_ID, {
-        studentName: 'Ada Lovelace',
-        studentId: 'profile-1',
-        issuedAt: '2026-03-04T05:06:07.000Z'
-      });
+      expect(assembleCertificateRender).toHaveBeenCalledWith(COURSE_ID, 'profile-1');
       expect(generateCertificatePng).not.toHaveBeenCalled();
       expect(result).toEqual({ file: Buffer.from('pdf'), format: 'pdf', courseName: 'Intro Course' });
     });
@@ -477,15 +473,13 @@ describe('services/v1/courses/certificates', () => {
       expect(result.file).toEqual(Buffer.from('png'));
     });
 
-    it('falls back to a generic recipient name like the student download', async () => {
-      vi.mocked(getCourseMember).mockResolvedValue({ ...earnedMember, profile: null } as unknown as TMemberResult);
+    it('returns 404 for a member without an account', async () => {
+      vi.mocked(getCourseMember).mockResolvedValue({ ...earnedMember, profileId: null } as unknown as TMemberResult);
 
-      await downloadPublicApiCourseCertificateService(ORG_ID, ACTOR_ID, memberParams, pdfQuery);
-
-      expect(assembleCertificateRender).toHaveBeenCalledWith(
-        COURSE_ID,
-        expect.objectContaining({ studentName: 'Recipient' })
-      );
+      await expect(
+        downloadPublicApiCourseCertificateService(ORG_ID, ACTOR_ID, memberParams, pdfQuery)
+      ).rejects.toMatchObject({ statusCode: 404 });
+      expect(assembleCertificateRender).not.toHaveBeenCalled();
     });
 
     it.each([

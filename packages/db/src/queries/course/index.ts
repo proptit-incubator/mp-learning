@@ -9,6 +9,7 @@ export * from './enrollment';
 export * from './exercise-results';
 export * from './content';
 export * from './content-scope';
+export * from './certificate-issue';
 export * from './progression';
 export * from './content-batch';
 export * from './people';

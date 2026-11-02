@@ -25,6 +25,17 @@ vi.mock('@cio/db/queries/course/people', () => ({
   claimMemberCompleted: mocks.claimMemberCompleted
 }));
 
+vi.mock('@cio/db/queries/course/certificate-issue', () => ({
+  ensureLatestCycleCertificate: vi.fn().mockResolvedValue({
+    id: 'issue-1',
+    code: 'ABCDEFGHJK',
+    cycleNumber: 1,
+    issuedAt: '2026-11-03T00:00:00.000Z',
+    expiresAt: null,
+    status: 'valid'
+  }),
+  findCertificateByCode: vi.fn()
+}));
 vi.mock('@cio/db/drizzle', () => ({
   db: { transaction: (run: (transaction: object) => Promise<unknown>) => run({}) }
 }));

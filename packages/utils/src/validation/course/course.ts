@@ -70,7 +70,7 @@ export const ZCertificateSignatory = z.object({
 });
 export type TCertificateSignatory = z.infer<typeof ZCertificateSignatory>;
 
-export const ZCertificateTemplateId = z.enum(['classique', 'brutalist', 'noir', 'poster', 'minimal']);
+export const ZCertificateTemplateId = z.enum(['mp', 'classique', 'brutalist', 'noir', 'poster', 'minimal']);
 export type TCertificateTemplateId = z.infer<typeof ZCertificateTemplateId>;
 
 export const ZCertificateDesign = z.object({
@@ -85,24 +85,24 @@ export type TCertificateDesign = z.infer<typeof ZCertificateDesign>;
 
 /**
  * Body for `POST /:courseId/download/certificate(/png)`.
- * The server reads design + course + org from the DB; the client only sends
- * the per-recipient fields it cannot infer.
+ * Learner certificates are built entirely from stored data; only a course team preview may name its sample recipient.
  */
 export const ZCertificateDownloadRequest = z.object({
-  studentName: z.string().min(1).max(120),
-  studentId: z.string().min(1).max(64).optional(),
-  issuedAt: z.preprocess((value) => {
-    if (typeof value !== 'string' || value.trim() === '') return undefined;
-
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return undefined;
-
-    return parsed.toISOString();
-  }, z.string().datetime().optional()),
-  /** When true, skips the eligibility check (course owner previewing their own design). */
+  studentName: z.string().max(120).optional(),
+  /** When true, renders a sample for a course team member instead of issuing a certificate. */
   previewMode: z.boolean().optional()
 });
 export type TCertificateDownloadRequest = z.infer<typeof ZCertificateDownloadRequest>;
+
+export const ZCertificateVerifyParam = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(6)
+    .max(20)
+    .regex(/^[A-Za-z0-9]+$/)
+});
+export type TCertificateVerifyParam = z.infer<typeof ZCertificateVerifyParam>;
 
 export const ZCourseDownloadContent = z.object({
   courseTitle: z.string().min(1),

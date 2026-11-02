@@ -6592,5 +6592,25 @@
     "no_courses": "No published courses found",
     "no_employees": "No active employees match your search",
     "people_count": "{count} people"
+  },
+  "certificate_verify": {
+    "title": "Certificate verification",
+    "subtitle": "Check that a certificate was issued by MP Learning and is still valid.",
+    "loading": "Checking the certificate",
+    "not_found_title": "Certificate not found",
+    "not_found_description": "No certificate matches the code {code}. Check the code printed on the certificate.",
+    "state": {
+      "valid": "Valid",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "recipient": "Awarded to",
+    "employee_code": "Employee code",
+    "course": "Course",
+    "organization": "Issued by",
+    "issued": "Issued on",
+    "valid_until": "Valid until",
+    "no_expiry": "No expiry",
+    "code": "Certificate code"
   }
 }

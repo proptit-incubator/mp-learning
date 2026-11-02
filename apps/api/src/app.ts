@@ -25,6 +25,7 @@ import { dashAnalyticsRouter } from '@api/routes/dash';
 import { domainRouter } from '@api/routes/domain/domain';
 import { internalRouter } from '@api/routes/internal';
 import { inviteRouter } from '@api/routes/invite';
+import { certificateRouter } from '@api/routes/certificate';
 import { jobsRouter } from '@api/routes/jobs';
 import { licenseRouter } from '@api/routes/license';
 import { logger } from 'hono/logger';
@@ -242,6 +243,7 @@ export const app = new Hono()
   .route('/account', accountRouter)
   .route('/employees', employeesRouter)
   .route('/course', courseRouter)
+  .route('/certificate', certificateRouter)
   .route('/domain', domainRouter)
   .route('/hls', hlsRouter)
   .route('/transcripts', transcriptsRouter)

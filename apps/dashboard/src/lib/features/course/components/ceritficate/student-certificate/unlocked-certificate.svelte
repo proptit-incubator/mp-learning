@@ -3,7 +3,6 @@
   import DownloadIcon from '@lucide/svelte/icons/download';
   import ImageIcon from '@lucide/svelte/icons/image';
 
-  import { profile } from '$lib/utils/store/user';
   import { isFreePlan } from '$lib/utils/store/org';
   import { Button } from '@cio/ui/base/button';
   import { Empty } from '@cio/ui/custom/empty';
@@ -13,7 +12,7 @@
   import { snackbar } from '$features/ui/snackbar/store';
   import { classroomio } from '$lib/utils/services/api';
   import type { CertificationEvaluationData } from '$features/course/utils/types';
-  import { normalizeCertificateIssuedAt, formatBlockerMessage } from '$features/course/utils/certificate-utils';
+  import { formatBlockerMessage } from '$features/course/utils/certificate-utils';
   import { updateCourseCompletionModal } from '$features/course/store/course-completion-modal';
 
   let isLoading = $state(false);
@@ -23,14 +22,6 @@
 
   let courseId = $derived(courseApi.course?.id ?? '');
   let canDownload = $derived(isCourseComplete && !$isFreePlan);
-
-  function buildBody() {
-    return {
-      studentName: $profile.fullname || t.get('course.certificate_reports.recipient'),
-      studentId: $profile.id || undefined,
-      issuedAt: normalizeCertificateIssuedAt(evaluation?.certificateEarnedAt)
-    } as const;
-  }
 
   async function triggerSave(blob: Blob, filename: string) {
     const url = URL.createObjectURL(blob);
@@ -50,7 +41,7 @@
     try {
       const response = await classroomio.course[':courseId']['download']['certificate']['$post']({
         param: { courseId },
-        json: buildBody()
+        json: {}
       });
       const blobResponse = await response.blob();
       await triggerSave(
@@ -72,7 +63,7 @@
     try {
       const response = await classroomio.course[':courseId']['download']['certificate']['png']['$post']({
         param: { courseId },
-        json: buildBody()
+        json: {}
       });
       const blobResponse = await response.blob();
       await triggerSave(

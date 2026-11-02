@@ -6602,5 +6602,25 @@
     "no_courses": "Không tìm thấy khoá học đã xuất bản",
     "no_employees": "Không có nhân viên đang hoạt động phù hợp",
     "people_count": "{count} người"
+  },
+  "certificate_verify": {
+    "title": "Tra cứu chứng chỉ",
+    "subtitle": "Kiểm tra chứng chỉ do MP Learning cấp và còn hiệu lực hay không.",
+    "loading": "Đang kiểm tra chứng chỉ",
+    "not_found_title": "Không tìm thấy chứng chỉ",
+    "not_found_description": "Không có chứng chỉ nào khớp mã {code}. Hãy kiểm tra lại mã in trên chứng chỉ.",
+    "state": {
+      "valid": "Còn hiệu lực",
+      "expired": "Hết hiệu lực",
+      "revoked": "Đã thu hồi"
+    },
+    "recipient": "Trao cho",
+    "employee_code": "Mã nhân viên",
+    "course": "Khóa học",
+    "organization": "Đơn vị cấp",
+    "issued": "Ngày cấp",
+    "valid_until": "Hiệu lực đến",
+    "no_expiry": "Không thời hạn",
+    "code": "Mã chứng chỉ"
   }
 }

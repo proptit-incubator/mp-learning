@@ -12,9 +12,11 @@ import { renderClassique } from './templates/classique';
 import { renderMinimal } from './templates/minimal';
 import { renderNoir } from './templates/noir';
 import { renderPoster } from './templates/poster';
+import { renderMp } from './templates/mp';
 import { BASE_STYLES, FONTS_LINK_HREF, type TemplateRenderer } from './templates/shared';
 
 const RENDERERS: Record<CertificateTemplateId, TemplateRenderer> = {
+  mp: renderMp,
   classique: renderClassique,
   brutalist: renderBrutalist,
   noir: renderNoir,
@@ -23,7 +25,7 @@ const RENDERERS: Record<CertificateTemplateId, TemplateRenderer> = {
 };
 
 export function resolveTemplateId(value: string | undefined | null): CertificateTemplateId {
-  if (!value) return 'classique';
+  if (!value) return 'mp';
   if (CERTIFICATE_TEMPLATE_IDS.includes(value as CertificateTemplateId)) {
     return value as CertificateTemplateId;
   }
@@ -31,7 +33,7 @@ export function resolveTemplateId(value: string | undefined | null): Certificate
     return LEGACY_THEME_MAP[value]!;
   }
 
-  return 'classique';
+  return 'mp';
 }
 
 /**
@@ -81,7 +83,7 @@ export function renderCertificate(design: CertificateDesign, data: CertificateRe
   const { body, styles } = renderer({ design: { ...design, templateId }, data });
 
   const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=${CERTIFICATE_WIDTH},initial-scale=1.0">

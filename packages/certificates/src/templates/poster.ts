@@ -1,3 +1,4 @@
+import { CERTIFICATE_LABELS } from '../constants';
 import { CERTIFICATE_FONTS } from '../font-metrics';
 import {
   escapeHtml,
@@ -120,11 +121,11 @@ export const renderPoster: TemplateRenderer = ({ design, data }) => {
             <span class="cert-meta" style="font-size: ${fontSizes.certMeta}px;">${escapeHtml(certMeta)}</span>
           </div>
           <div class="title-area">
-            <div class="title" style="font-size: ${fontSizes.title}px;">${escapeHtml(firstTitleWord || 'Award')}${titleEmphasis ? ` <em>${escapeHtml(titleEmphasis)}</em>` : ''}</div>
+            <div class="title" style="font-size: ${fontSizes.title}px;">${escapeHtml(firstTitleWord || CERTIFICATE_LABELS.award)}${titleEmphasis ? ` <em>${escapeHtml(titleEmphasis)}</em>` : ''}</div>
             ${subtitle ? `<div class="subtitle" style="font-size: ${fontSizes.subtitle}px;">${escapeHtml(subtitle)}</div>` : ''}
           </div>
           <div class="recipient-box">
-            <div class="lbl">Awarded To</div>
+            <div class="lbl">${CERTIFICATE_LABELS.awardedTo}</div>
             <div class="recipient" style="font-size: ${fontSizes.recipient}px;">${escapeHtml(data.recipientName)}</div>
           </div>
           ${description ? `<div class="description" style="font-size: ${fontSizes.description}px;">${escapeHtml(description)}</div>` : ''}
@@ -134,7 +135,7 @@ export const renderPoster: TemplateRenderer = ({ design, data }) => {
           <div class="bottom-grid">
             ${renderSignatoryBlock(signatoryOne, { nameClass: 'v', roleClass: 'k', roleFirst: true })}
             ${renderSignatoryBlock(signatoryTwo, { nameClass: 'v', roleClass: 'k', roleFirst: true })}
-            ${renderFooterMetaBlock('Issued', data.date, { labelClass: 'k', valueClass: 'v' })}
+            ${renderFooterMetaBlock(CERTIFICATE_LABELS.issued, data.date, { labelClass: 'k', valueClass: 'v' })}
           </div>
           <div class="corner-num">${escapeHtml(year)}</div>
         </div>

@@ -1,4 +1,4 @@
-import { CERTIFICATE_WIDTH } from '../constants';
+import { CERTIFICATE_WIDTH, CERTIFICATE_LABELS } from '../constants';
 import { CERTIFICATE_FONTS } from '../font-metrics';
 import {
   escapeHtml,
@@ -9,9 +9,9 @@ import {
 } from './shared';
 
 const FONTS = {
-  display: CERTIFICATE_FONTS.bodoniModa,
+  display: CERTIFICATE_FONTS.notoSerifDisplay,
   serif: CERTIFICATE_FONTS.cormorantGaramond,
-  heading: CERTIFICATE_FONTS.cinzel
+  heading: CERTIFICATE_FONTS.cormorantSc
 } as const;
 
 const certPadding = 55;
@@ -115,7 +115,7 @@ export const renderClassique: TemplateRenderer = ({ design, data }) => {
       </div>
 
       <div class="body-area">
-        <div class="presented">&mdash; this is to certify that &mdash;</div>
+        <div class="presented">&mdash; ${CERTIFICATE_LABELS.certifyThat} &mdash;</div>
         <div class="recipient" style="font-size: ${fontSizes.recipient}px;">${escapeHtml(data.recipientName)}</div>
         ${description ? `<div class="description" style="font-size: ${fontSizes.description}px;">${escapeHtml(description)}</div>` : ''}
       </div>

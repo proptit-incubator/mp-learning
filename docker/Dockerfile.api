@@ -23,6 +23,14 @@ RUN find . -name node_modules -type d -prune -exec rm -rf {} +
 
 FROM base
 
+# Certificates and course PDFs are rendered by a local Chromium with fonts that ship Vietnamese glyphs.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends chromium fontconfig fonts-noto-core \
+    && rm -rf /var/lib/apt/lists/*
+COPY docker/fonts /usr/local/share/fonts/certificates
+RUN fc-cache -f
+ENV CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
+
 COPY --from=build /app /app
 
 # entrypoint.sh runs `pnpm --filter @cio/db db:setup`, which needs tsx from @cio/db's

@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { getIntlLocale } from '$lib/utils/functions/intl-locale';
+  import { page } from '$app/state';
+  import { buildCertificatePreviewData } from '$features/course/utils/certificate-utils';
   import { CERTIFICATE_TEMPLATES, type CertificateTemplateId } from '@cio/certificates';
   import { Certificate } from '@cio/ui';
   import { IconButton } from '@cio/ui/custom/icon-button';
@@ -38,18 +39,20 @@
 
   const previewDesign = $derived(store.toDesign());
 
-  const sampleRenderData = $derived({
-    recipientName: $profile.fullname || $t('course.navItem.certificates.editor.sample_recipient'),
-    courseName: courseTitle || $t('course.navItem.certificates.editor.sample_course'),
-    courseDescription:
-      store.draft.descriptionOverride ||
-      courseApi.course?.description ||
-      $t('course.navItem.certificates.editor.sample_description'),
-    orgName: $currentOrg.name || $t('course.navItem.certificates.editor.sample_org'),
-    orgLogoUrl: $currentOrg.avatarUrl || undefined,
-    date: new Date().toLocaleDateString(getIntlLocale(), { year: 'numeric', month: 'long', day: '2-digit' }),
-    certificateId: (store.draft.idFormat || 'N° {seq}').replace('{seq}', '0247')
-  });
+  const sampleRenderData = $derived(
+    buildCertificatePreviewData({
+      recipientName: $profile.fullname || $t('course.navItem.certificates.editor.sample_recipient'),
+      courseName: courseTitle || $t('course.navItem.certificates.editor.sample_course'),
+      courseDescription:
+        store.draft.descriptionOverride ||
+        courseApi.course?.description ||
+        $t('course.navItem.certificates.editor.sample_description'),
+      orgName: $currentOrg.name || $t('course.navItem.certificates.editor.sample_org'),
+      idFormat: store.draft.idFormat,
+      hasRecertification: Boolean(courseApi.course?.recertificationMonths),
+      origin: page.url.origin
+    })
+  );
 
   function navVariant(panel: CertificateEditorPanel) {
     return store.activePanel === panel ? ('default' as const) : ('ghost' as const);

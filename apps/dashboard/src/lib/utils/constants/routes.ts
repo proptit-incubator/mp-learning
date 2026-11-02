@@ -23,6 +23,7 @@ export const ROUTE = {
 
 export const PUBLIC_ROUTES = [
   '^/activate/?$',
+  '^/verify/[A-Za-z0-9]+/?$',
   `^${ROUTE.HOME}$`,
   ROUTE.LOGIN,
   ROUTE.LOGOUT,
@@ -45,6 +46,7 @@ export const PUBLIC_API_ROUTES = ['/api/polar/webhook', '/api/polar/lock-in', '/
 
 export const ROUTES_TO_HIDE_NAV = [
   '^/activate/?$',
+  '^/verify/[A-Za-z0-9]+/?$',
   `^${ROUTE.LOGIN}$`,
   `^${ROUTE.SIGN_UP}$`,
   ROUTE.LMS_HOME,

@@ -858,7 +858,7 @@ export const course = pgTable(
       theme?: string;
       /** Atelier-era certificate design. Source of truth for new courses. */
       design?: {
-        templateId: 'classique' | 'brutalist' | 'noir' | 'poster' | 'minimal';
+        templateId: 'mp' | 'classique' | 'brutalist' | 'noir' | 'poster' | 'minimal';
         accentColor: string;
         subtitle?: string;
         descriptionOverride?: string;
@@ -986,8 +986,9 @@ export const courseCertificateIssue = pgTable(
     courseCompletionRecordId: uuid('course_completion_record_id').notNull(),
     cycleNumber: integer('cycle_number').notNull(),
     issuedAt: timestamp('issued_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'string' }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'string' }),
     status: varchar().default('valid').notNull(),
+    code: varchar({ length: 20 }).notNull(),
     fileUrl: text('file_url')
   },
   (table) => [
@@ -1007,6 +1008,7 @@ export const courseCertificateIssue = pgTable(
       name: 'course_certificate_issue_record_id_fkey'
     }).onDelete('cascade'),
     unique('course_certificate_issue_record_id_key').on(table.courseCompletionRecordId),
+    unique('course_certificate_issue_code_key').on(table.code),
     index('idx_course_certificate_issue_course_id').on(table.courseId),
     index('idx_course_certificate_issue_profile_id').on(table.profileId),
     index('idx_course_certificate_issue_status').on(table.status)

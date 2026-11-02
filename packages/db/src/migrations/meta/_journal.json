@@ -316,6 +316,13 @@
       "when": 1793637568359,
       "tag": "0047_recertification_cycles",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1793638402914,
+      "tag": "0048_certificate_codes",
+      "breakpoints": true
     }
   ]
 }

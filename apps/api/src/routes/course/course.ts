@@ -96,7 +96,7 @@ async function loadCertificateInput(
 
   await assertCertificateDownloadAllowed(courseId, userId);
 
-  return assembleCertificateRender(courseId, body);
+  return assembleCertificateRender(courseId, userId);
 }
 
 const enrollRateLimit = createRateLimiter({

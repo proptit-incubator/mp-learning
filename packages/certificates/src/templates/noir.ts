@@ -1,4 +1,4 @@
-import { CERTIFICATE_WIDTH } from '../constants';
+import { CERTIFICATE_WIDTH, CERTIFICATE_LABELS } from '../constants';
 import { CERTIFICATE_FONTS } from '../font-metrics';
 import {
   escapeHtml,
@@ -10,9 +10,9 @@ import {
 } from './shared';
 
 const FONTS = {
-  display: CERTIFICATE_FONTS.bodoniModa,
+  display: CERTIFICATE_FONTS.notoSerifDisplay,
   serif: CERTIFICATE_FONTS.cormorantGaramond,
-  heading: CERTIFICATE_FONTS.cinzel
+  heading: CERTIFICATE_FONTS.cormorantSc
 } as const;
 
 const subtitleDecorationLineWidth = 50;
@@ -143,14 +143,14 @@ export const renderNoir: TemplateRenderer = ({ design, data }) => {
         </div>
 
         <div class="body-group">
-          <div class="presented">presented to</div>
+          <div class="presented">${CERTIFICATE_LABELS.presentedTo}</div>
           <div class="recipient" style="font-size: ${fontSizes.recipient}px;">${escapeHtml(data.recipientName)}</div>
           ${description ? `<div class="description" style="font-size: ${fontSizes.description}px;">${escapeHtml(description)}</div>` : ''}
         </div>
 
         <div class="footer">
           ${renderSignatoryBlock(signatoryOne, { wrapperClass: 'sig', nameClass: 'name', roleClass: 'label' })}
-          ${renderSealBlock({ wrapperClass: 'medal', year, label: '★ AWARD ★' })}
+          ${renderSealBlock({ wrapperClass: 'medal', year, label: `★ ${CERTIFICATE_LABELS.verified.toUpperCase()} ★` })}
           ${renderSignatoryBlock(signatoryTwo, { wrapperClass: 'sig', nameClass: 'name', roleClass: 'label' })}
         </div>
       </div>

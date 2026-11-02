@@ -8,7 +8,8 @@ const envSchema = z.object({
   CLOUDFLARE_ACCESS_KEY: z.string().optional(),
   CLOUDFLARE_ACCOUNT_ID: z.string().optional(),
   CLOUDFLARE_BUCKET_DOMAIN: z.string().optional(),
-  CLOUDFLARE_RENDERING_API_KEY: z.string().optional(),
+  /** Chromium binary used to render certificates and course PDFs; defaults to /usr/bin/chromium. */
+  CHROMIUM_EXECUTABLE_PATH: z.string().optional(),
   CLOUDFLARE_SECRET_ACCESS_KEY: z.string().optional(),
   CLOUDFLARE_IMAGE_BUCKET_DOMAIN: z.string().optional(),
   APPROXIMATED_API_KEY: z.string().optional(),

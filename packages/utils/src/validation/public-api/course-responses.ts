@@ -74,7 +74,7 @@ const ZCourseCertificate = z
     theme: z.string().optional().describe('Deprecated; use design.templateId'),
     design: z
       .object({
-        templateId: z.enum(['classique', 'brutalist', 'noir', 'poster', 'minimal']),
+        templateId: z.enum(['mp', 'classique', 'brutalist', 'noir', 'poster', 'minimal']),
         accentColor: z.string(),
         subtitle: z.string().optional(),
         descriptionOverride: z.string().optional(),

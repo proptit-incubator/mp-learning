@@ -37,6 +37,12 @@ docker compose logs --tail 100 api dashboard jobs
 
 API tự chạy migration và seed dữ liệu tham chiếu khi khởi động. Không chạy seed demo trên production. Không đổi tên database/volume của hệ thống đang có dữ liệu.
 
+## Chứng chỉ và file PDF
+
+Chứng chỉ (PDF/PNG) và file PDF khóa học được dựng bằng Chromium cài sẵn trong image API, không gọi dịch vụ bên ngoài. Image cài `chromium`, `fonts-noto-core` và bộ font tự host trong `docker/fonts` (Be Vietnam Pro, Noto Serif Display, Cormorant, Archivo, Playfair Display, Space Grotesk, JetBrains Mono — đều có bộ ký tự tiếng Việt, giấy phép OFL). Khi chạy API ngoài Docker, đặt `CHROMIUM_EXECUTABLE_PATH` trỏ tới Chrome/Chromium trên máy.
+
+Mỗi chu kỳ hoàn thành có một chứng chỉ với mã tra cứu 10 ký tự. Tên, mã nhân viên, ngày cấp và hiệu lực lấy từ dữ liệu đã lưu. Ai có mã đều kiểm tra được tại `/verify/{mã}` mà không cần đăng nhập; trang chỉ hiện tên, mã nhân viên, khóa học, ngày cấp, hiệu lực và trạng thái.
+
 ## HTTPS và mạng
 
 Các cổng PostgreSQL, Redis, API, dashboard và storage được bind localhost. Đặt reverse proxy HTTPS trên host: LMS trỏ tới `127.0.0.1:3082`, storage trỏ tới `127.0.0.1:9000`. Chuyển tiếp host/protocol đúng; cấu hình giới hạn request đủ cho video. Không expose cổng 5432/6379/3081 ra Internet. Nếu reverse proxy chạy trong Docker, nối nó vào cùng network và dùng tên service thay vì localhost.

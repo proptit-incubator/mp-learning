@@ -48,6 +48,17 @@ export async function employeeImportConflicts(
   return { employees, members };
 }
 
+/** Name and code of the employee record behind `profileId` in `orgId`, or null without one. */
+export async function findEmployeeProfile(orgId: string, profileId: string, client: DbOrTxClient = db) {
+  const [row] = await client
+    .select({ fullname: schema.employee.fullname, employeeCode: schema.employee.employeeCode })
+    .from(schema.employee)
+    .innerJoin(schema.organizationmember, eq(schema.employee.memberId, schema.organizationmember.id))
+    .where(and(eq(schema.employee.organizationId, orgId), eq(schema.organizationmember.profileId, profileId)))
+    .limit(1);
+  return row ?? null;
+}
+
 export async function getEmployeeByIdentity(identity: string, client: DbOrTxClient = db) {
   const rows = await client
     .select({ employee: schema.employee, member: schema.organizationmember })

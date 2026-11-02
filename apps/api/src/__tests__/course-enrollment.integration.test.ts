@@ -356,6 +356,38 @@ integration('course enrollment on isolated PostgreSQL', () => {
       expect(nextCycle).toMatchObject({ cycle_number: 2 });
     });
 
+    it('issues one verifiable certificate per completion cycle', async () => {
+      const certificates = await import('@api/services/course/certificate');
+      const course = await createCourse({ recertificationMonths: 12 });
+      await service.assignCourses(organizationId, actorId, {
+        courseIds: [course.id],
+        employeeIds: [employeeId],
+        message: '',
+        sendEmail: false
+      });
+      const { member, cycle } = await completeExpiredCycle(course.id);
+
+      const expiredIssue = await certificates.issueCourseCertificate(course.id, learnerId, cycle.completedAt);
+      const repeatedIssue = await certificates.issueCourseCertificate(course.id, learnerId, new Date().toISOString());
+      const expiredCheck = await certificates.verifyCertificate(expiredIssue!.code.toLowerCase());
+
+      const { reopenExpiredCompletionCycle } = await import('@cio/db/queries/course/reset-progress');
+      await database.db.transaction((tx) =>
+        reopenExpiredCompletionCycle(tx, { courseId: course.id, groupMemberId: member.id, profileId: learnerId })
+      );
+      await enrollment.recordCourseCompletion({ ...cycle, completedAt: new Date().toISOString() });
+      const renewedIssue = await certificates.issueCourseCertificate(course.id, learnerId, new Date().toISOString());
+      const renewedCheck = await certificates.verifyCertificate(renewedIssue!.code);
+      const stillStored = await certificates.verifyCertificate(expiredIssue!.code);
+
+      expect(repeatedIssue?.code).toBe(expiredIssue?.code);
+      expect(expiredCheck).toMatchObject({ state: 'expired', recipientName: 'Learner', courseTitle: course.title });
+      expect(renewedIssue).toMatchObject({ cycleNumber: 2 });
+      expect(renewedIssue?.code).not.toBe(expiredIssue?.code);
+      expect(renewedCheck.state).toBe('valid');
+      expect(stillStored.state).toBe('expired');
+    });
+
     it('also reopens expired completions of self-enrolled learners', async () => {
       const course = await createCourse({ recertificationMonths: 12 });
       await service.selfEnroll(organizationId, course.id, { id: learnerId, email });

@@ -1,4 +1,4 @@
-import { CERTIFICATE_WIDTH } from '../constants';
+import { CERTIFICATE_WIDTH, CERTIFICATE_LABELS } from '../constants';
 import { CERTIFICATE_FONTS } from '../font-metrics';
 import {
   escapeHtml,
@@ -136,8 +136,8 @@ export const renderMinimal: TemplateRenderer = ({ design, data }) => {
       <div class="footer">
         ${renderSignatoryBlock(signatoryOne, { nameClass: 'v', roleClass: 'k', roleFirst: true })}
         ${renderSignatoryBlock(signatoryTwo, { nameClass: 'v', roleClass: 'k', roleFirst: true })}
-        ${renderFooterMetaBlock('Issued', data.date, { labelClass: 'k', valueClass: 'v' })}
-        ${renderFooterMetaBlock('Reference', data.certificateId, { wrapperClass: 'ref', labelClass: 'k', valueClass: 'v' })}
+        ${renderFooterMetaBlock(CERTIFICATE_LABELS.issued, data.date, { labelClass: 'k', valueClass: 'v' })}
+        ${renderFooterMetaBlock(CERTIFICATE_LABELS.reference, data.certificateId, { wrapperClass: 'ref', labelClass: 'k', valueClass: 'v' })}
       </div>
     </div>
   `;
