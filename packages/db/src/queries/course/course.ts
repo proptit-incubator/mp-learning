@@ -1,9 +1,9 @@
 import {
-  getLearningContexts,
-  summarizeLearningContexts,
   courseLearnerCountSql,
-  learningMembershipSql
-} from './learning-access';
+  getLearnerEnrollmentSummaries,
+  learnerAccessSql,
+  type LearnerEnrollmentSummary
+} from './enrollment';
 import * as schema from '@db/schema';
 
 import {
@@ -20,7 +20,6 @@ import {
 import { and, asc, count, desc, eq, gt, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 
 import { ROLE } from '@cio/utils/constants';
-import type { TCourseType } from '@cio/utils/constants/course-type';
 import { db, type DbOrTxClient } from '@db/drizzle';
 import { contentWriteBumpsTimestamp } from './content-timestamp';
 import { courseLearningMembershipSql } from './library';
@@ -62,18 +61,11 @@ export interface TAdminCourse extends TBaseCourse {
  * progressRate = lessons completed, exercisesCompleted = exercises submitted
  */
 export interface TStudentCourse extends TBaseCourse {
-  learningSources?: Awaited<ReturnType<typeof getLearningContexts>>;
-  isAssigned?: boolean;
-  isSelfEnrolled?: boolean;
-  isRequired?: boolean;
-  learningDueDate?: string | null;
+  enrollment: LearnerEnrollmentSummary | null;
+  hasLiveSession: boolean;
   progressRate: number;
   exercisesCompleted: number;
   certificateEarnedAt: string | null;
-  complianceStatus: string | null;
-  complianceCycleNumber: number | null;
-  complianceDueDate: string | null;
-  complianceValidUntil: string | null;
   upcomingSession: CourseUpcomingSession | null;
 }
 
@@ -85,9 +77,9 @@ export interface TStudentCourse extends TBaseCourse {
 export const getPublishedCoursesBySiteName = async (
   siteName: string,
   courseIds?: string[],
-  courseTypes?: string[],
+  _courseTypes?: string[],
   search?: string,
-  pricing?: 'free' | 'paid',
+  _pricing?: 'free' | 'paid',
   limit?: number,
   offset?: number
 ): Promise<TBaseCourse[]> => {
@@ -107,19 +99,9 @@ export const getPublishedCoursesBySiteName = async (
       conditions.push(inArray(schema.course.id, courseIds));
     }
 
-    if (courseTypes && courseTypes.length > 0) {
-      conditions.push(inArray(schema.course.type, courseTypes as (typeof schema.courseType.enumValues)[number][]));
-    }
-
     if (search) {
       const pattern = `%${search}%`;
       conditions.push(or(ilike(schema.course.title, pattern), ilike(schema.course.description, pattern))!);
-    }
-
-    if (pricing === 'free') {
-      conditions.push(eq(schema.course.cost, 0));
-    } else if (pricing === 'paid') {
-      conditions.push(gt(schema.course.cost, 0));
     }
 
     const exerciseCountSql = sql<number>`(
@@ -195,19 +177,9 @@ export const countPublishedCoursesBySiteName = async (
       conditions.push(inArray(schema.course.id, courseIds));
     }
 
-    if (courseTypes && courseTypes.length > 0) {
-      conditions.push(inArray(schema.course.type, courseTypes as (typeof schema.courseType.enumValues)[number][]));
-    }
-
     if (search) {
       const pattern = `%${search}%`;
       conditions.push(or(ilike(schema.course.title, pattern), ilike(schema.course.description, pattern))!);
-    }
-
-    if (pricing === 'free') {
-      conditions.push(eq(schema.course.cost, 0));
-    } else if (pricing === 'paid') {
-      conditions.push(gt(schema.course.cost, 0));
     }
 
     const [result] = await db
@@ -527,7 +499,7 @@ export async function getCourseWithRelations(
               eq(schema.group.id, schema.groupmember.groupId),
               or(
                 sql`${schema.groupmember.roleId} <> ${ROLE.STUDENT}`,
-                learningMembershipSql(finalCourseId, course.groupId, sql`${schema.groupmember.profileId}`)
+                learnerAccessSql(finalCourseId, sql`${schema.groupmember.profileId}`)
               )
             )
           )
@@ -775,11 +747,10 @@ export type TCourseCertificationRow = {
   certificate: {
     isDownloadable?: boolean;
     theme?: string;
-    deadline?: string | null;
     emailMessage?: string | null;
   } | null;
   title: string;
-  type: TCourseType | null;
+  recertificationMonths: number | null;
   orgId: string;
   orgSiteName: string | null;
   orgCustomDomain: string | null;
@@ -795,7 +766,7 @@ export async function getCourseCertificationRow(courseId: string): Promise<TCour
       .select({
         certificate: schema.course.certificate,
         title: schema.course.title,
-        type: schema.course.type,
+        recertificationMonths: schema.course.recertificationMonths,
         orgId: schema.organization.id,
         orgSiteName: schema.organization.siteName,
         orgCustomDomain: schema.organization.customDomain,
@@ -832,7 +803,6 @@ interface GetOrgCoursesOptions {
   courseIds?: string[];
   /** Optional search query against the course title */
   search?: string;
-  type?: TCourseType;
   publishedStatus?: OrgCoursePublishedStatus;
   sortKey?: OrgCourseSortKey;
   order?: OrgCourseSortOrder;
@@ -854,9 +824,8 @@ function orgCourseListConditions({
   orgId,
   courseIds,
   search,
-  type,
   publishedStatus
-}: Pick<GetOrgCoursesOptions, 'orgId' | 'courseIds' | 'search' | 'type' | 'publishedStatus'>) {
+}: Pick<GetOrgCoursesOptions, 'orgId' | 'courseIds' | 'search' | 'publishedStatus'>) {
   const conditions = [
     eq(schema.group.organizationId, orgId),
     eq(schema.course.status, 'ACTIVE'),
@@ -869,10 +838,6 @@ function orgCourseListConditions({
 
   if (search?.trim()) {
     conditions.push(ilike(schema.course.title, `%${search.trim()}%`));
-  }
-
-  if (type) {
-    conditions.push(eq(schema.course.type, type));
   }
 
   if (publishedStatus === 'published') {
@@ -909,18 +874,14 @@ export async function countOrgCourses({
   profileId,
   courseIds,
   search,
-  type,
   publishedStatus
-}: Pick<
-  GetOrgCoursesOptions,
-  'orgId' | 'profileId' | 'courseIds' | 'search' | 'type' | 'publishedStatus'
->): Promise<number> {
+}: Pick<GetOrgCoursesOptions, 'orgId' | 'profileId' | 'courseIds' | 'search' | 'publishedStatus'>): Promise<number> {
   try {
     if (courseIds && courseIds.length === 0) {
       return 0;
     }
 
-    const conditions = orgCourseListConditions({ orgId, courseIds, search, type, publishedStatus });
+    const conditions = orgCourseListConditions({ orgId, courseIds, search, publishedStatus });
 
     const totalQuery = profileId
       ? db
@@ -958,7 +919,6 @@ export const getOrgCourses = async ({
   profileId,
   courseIds,
   search,
-  type,
   publishedStatus,
   sortKey,
   order,
@@ -976,16 +936,14 @@ export const getOrgCourses = async ({
       };
     }
 
-    const conditions = orgCourseListConditions({ orgId, courseIds, search, type, publishedStatus });
-    const total = await countOrgCourses({ orgId, profileId, courseIds, search, type, publishedStatus });
+    const conditions = orgCourseListConditions({ orgId, courseIds, search, publishedStatus });
+    const total = await countOrgCourses({ orgId, profileId, courseIds, search, publishedStatus });
 
     const baseQuery = db
       .select({
         course: schema.course,
         lessonCount: sql<number>`COUNT(DISTINCT ${schema.lesson.id})`.as('lesson_count'),
-        studentCount: courseLearnerCountSql(sql`${schema.course.id}`, sql`${schema.course.groupId}`).as(
-          'total_students'
-        ),
+        studentCount: courseLearnerCountSql(sql`${schema.course.id}`).as('total_students'),
         exerciseCount: sql<number>`(
           SELECT COUNT(*)::bigint
           FROM ${schema.exercise} as ex
@@ -1091,25 +1049,12 @@ export async function searchLmsCourses(
         schema.groupmember,
         and(eq(schema.group.id, schema.groupmember.groupId), eq(schema.groupmember.profileId, profileId))
       )
-      .leftJoin(schema.programCourse, eq(schema.course.id, schema.programCourse.courseId))
-      .leftJoin(
-        schema.program,
-        and(
-          eq(schema.programCourse.programId, schema.program.id),
-          eq(schema.program.organizationId, orgId),
-          eq(schema.program.status, 'ACTIVE')
-        )
-      )
-      .leftJoin(
-        schema.programMember,
-        and(eq(schema.program.id, schema.programMember.programId), eq(schema.programMember.profileId, profileId))
-      )
       .where(
         and(
           eq(schema.group.organizationId, orgId),
           eq(schema.course.status, 'ACTIVE'),
           eq(schema.course.isPublished, true),
-          or(isNotNull(schema.groupmember.id), isNotNull(schema.programMember.id)),
+          or(isNotNull(schema.groupmember.id), learnerAccessSql(sql`${schema.course.id}`, profileId)),
           or(ilike(schema.course.title, searchValue), ilike(schema.course.description, searchValue))
         )
       )
@@ -1143,26 +1088,6 @@ export const getEnrolledCourses = async ({
   profileId
 }: GetEnrolledCoursesOptions): Promise<TStudentCourse[]> => {
   try {
-    const latestComplianceCycles = db
-      .select({
-        courseId: schema.courseCompletionRecord.courseId,
-        profileId: schema.courseCompletionRecord.profileId,
-        latestCycleNumber: sql<number>`MAX(${schema.courseCompletionRecord.cycleNumber})`.as('latest_cycle_number')
-      })
-      .from(schema.courseCompletionRecord)
-      .where(eq(schema.courseCompletionRecord.profileId, profileId))
-      .groupBy(schema.courseCompletionRecord.courseId, schema.courseCompletionRecord.profileId)
-      .as('latest_enrolled_course_compliance_cycles');
-
-    // Single query covering both access paths:
-    //   1. Direct enrollment: student has a groupmember row for the course's group
-    //   2. Program membership: student is a program_member of a program that contains the course
-    //
-    // Profile filters are pushed into each LEFT JOIN's ON clause so the database
-    // can filter early. The WHERE then requires at least one path to have matched.
-    // GROUP BY course.id deduplicates courses accessible via both paths simultaneously.
-    // exercisesCompleted uses a profileId-based subquery so it doesn't depend on
-    // the outer groupmember join (which may be NULL for program-only access).
     const result = await db
       .select({
         course: schema.course,
@@ -1191,41 +1116,17 @@ export const getEnrolledCourses = async ({
           )}
         )`.as('exercises_completed'),
         certificateEarnedAt: schema.groupmember.certificateEarnedAt,
-        complianceStatus: schema.courseCompletionRecord.status,
-        complianceCycleNumber: schema.courseCompletionRecord.cycleNumber,
-        complianceDueDate: schema.courseCompletionRecord.dueDate,
-        complianceValidUntil: schema.courseCompletionRecord.validUntil
+        hasLiveSession: sql<boolean>`EXISTS (
+          SELECT 1 FROM ${schema.lesson} as live_lesson
+          WHERE live_lesson.course_id = ${schema.course.id}
+          AND live_lesson.call_url IS NOT NULL AND live_lesson.lesson_at IS NOT NULL
+        )`.as('has_live_session')
       })
       .from(schema.course)
       .innerJoin(schema.group, eq(schema.course.groupId, schema.group.id))
       .leftJoin(
         schema.groupmember,
         and(eq(schema.group.id, schema.groupmember.groupId), eq(schema.groupmember.profileId, profileId))
-      )
-      .leftJoin(
-        latestComplianceCycles,
-        and(eq(latestComplianceCycles.courseId, schema.course.id), eq(latestComplianceCycles.profileId, profileId))
-      )
-      .leftJoin(
-        schema.courseCompletionRecord,
-        and(
-          eq(schema.courseCompletionRecord.courseId, schema.course.id),
-          eq(schema.courseCompletionRecord.profileId, profileId),
-          eq(schema.courseCompletionRecord.cycleNumber, latestComplianceCycles.latestCycleNumber)
-        )
-      )
-      .leftJoin(schema.programCourse, eq(schema.course.id, schema.programCourse.courseId))
-      .leftJoin(
-        schema.program,
-        and(
-          eq(schema.programCourse.programId, schema.program.id),
-          eq(schema.program.organizationId, orgId),
-          eq(schema.program.status, 'ACTIVE')
-        )
-      )
-      .leftJoin(
-        schema.programMember,
-        and(eq(schema.program.id, schema.programMember.programId), eq(schema.programMember.profileId, profileId))
       )
       .leftJoin(schema.lesson, eq(schema.course.id, schema.lesson.courseId))
       .where(
@@ -1237,42 +1138,26 @@ export const getEnrolledCourses = async ({
           courseLearningMembershipSql(profileId)
         )
       )
-      .groupBy(schema.course.id, schema.groupmember.id, schema.courseCompletionRecord.id)
+      .groupBy(schema.course.id, schema.groupmember.id)
       .orderBy(desc(schema.course.createdAt));
 
-    const liveCourseIds = result.filter((row) => row.course.type === 'LIVE_CLASS').map((row) => row.course.id);
+    const liveCourseIds = result.filter((row) => row.hasLiveSession).map((row) => row.course.id);
     const upcomingByCourse = await getUpcomingSessionsForCourseIds(liveCourseIds, { includeRunning: true });
-
-    const contexts = await getLearningContexts(orgId, {
-      profileIds: [profileId],
-      courseIds: result.map((row) => row.course.id)
-    });
-    return result.map((row) => {
-      const summary = summarizeLearningContexts(contexts.filter((context) => context.courseId === row.course.id));
-      const complianceRequired =
-        row.course.type === 'COMPLIANCE' && row.complianceCycleNumber !== null && row.complianceStatus !== 'waived';
-      const isRequired = row.complianceStatus === 'waived' ? false : summary.isRequired || complianceRequired;
-      const deadlines = [summary.learningDueDate, complianceRequired ? row.complianceDueDate : null].filter(
-        (date): date is string => Boolean(date)
-      );
-      deadlines.sort((left, right) => new Date(left).getTime() - new Date(right).getTime());
-      return {
-        ...summary,
-        isRequired,
-        learningDueDate: deadlines[0] ?? null,
-        ...withResolvedCourseBannerImage(row.course),
-        lessonCount: Number(row.lessonCount),
-        progressRate: Number(row.progressRate),
-        exerciseCount: Number(row.exerciseCount),
-        exercisesCompleted: Number(row.exercisesCompleted),
-        certificateEarnedAt: row.certificateEarnedAt ?? null,
-        complianceStatus: row.complianceStatus ?? null,
-        complianceCycleNumber: row.complianceCycleNumber ?? null,
-        complianceDueDate: row.complianceDueDate ?? null,
-        complianceValidUntil: row.complianceValidUntil ?? null,
-        upcomingSession: upcomingByCourse.get(row.course.id) ?? null
-      };
-    });
+    const summaries = await getLearnerEnrollmentSummaries(
+      profileId,
+      result.map((row) => row.course.id)
+    );
+    return result.map((row) => ({
+      ...withResolvedCourseBannerImage(row.course),
+      enrollment: summaries.get(row.course.id) ?? null,
+      hasLiveSession: Boolean(row.hasLiveSession),
+      lessonCount: Number(row.lessonCount),
+      progressRate: Number(row.progressRate),
+      exerciseCount: Number(row.exerciseCount),
+      exercisesCompleted: Number(row.exercisesCompleted),
+      certificateEarnedAt: row.certificateEarnedAt ?? null,
+      upcomingSession: upcomingByCourse.get(row.course.id) ?? null
+    }));
   } catch (error) {
     console.error('getEnrolledCourses error:', error);
     throw new Error(`Failed to get enrolled courses: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -1536,7 +1421,6 @@ export async function getCoursesByGroupIds(groupIds: string[], dbClient: DbOrTxC
     .select({
       courseId: schema.course.id,
       groupId: schema.course.groupId,
-      cost: schema.course.cost,
       organizationId: schema.group.organizationId
     })
     .from(schema.course)
@@ -1659,22 +1543,6 @@ export async function getCourseByOrgSlug(orgId: string, slug: string, dbClient: 
   } catch (error) {
     console.error('getCourseByOrgSlug error:', error);
     throw new Error(`Failed to get course by org slug: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
-
-/** Course `type` only; `undefined` when the course does not exist. */
-export async function getCourseTypeById(courseId: string): Promise<string | undefined> {
-  try {
-    const [row] = await db
-      .select({ type: schema.course.type })
-      .from(schema.course)
-      .where(eq(schema.course.id, courseId))
-      .limit(1);
-
-    return row?.type ?? undefined;
-  } catch (error) {
-    console.error('getCourseTypeById error:', error);
-    throw new Error(`Failed to get course type: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

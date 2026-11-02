@@ -424,7 +424,6 @@
           "recent": "Son",
           "suggested": "Önerilen",
           "courses": "Kurslar",
-          "cohorts": "Gruplar",
           "widgets": "Widget'lar",
           "tags": "Etiketler",
           "students": "Öğrenciler",
@@ -480,58 +479,9 @@
       "description": "The page you are looking for does not exist or has been moved.",
       "home": "Back to home"
     },
-    "back": "Geri"
-  },
-  "compliance": {
-    "title": "Compliance",
-    "subtitle": "Kuruluşunuzdaki her uyumluluk kursunda sertifika durumunu takip edin.",
-    "summary": {
-      "heading": "Öğrenci durumu",
-      "description": "Tüm uyumluluk kurslarındaki öğrenciler arasında sayılır."
-    },
-    "tabs": {
-      "courses": "Kursa göre",
-      "learners": "Students"
-    },
-    "status": {
-      "compliant": "Uyumlu",
-      "expiring_soon": "Yakında sona erecek",
-      "in_grace_period": "Yetkisiz kullanım süresinde",
-      "non_compliant": "Uyumlu değil",
-      "in_progress": "Devam ediyor",
-      "not_started": "Başlatılmadı",
-      "waived": "Feragat edildi",
-      "no_record": "Kayıt yok"
-    },
-    "filter": {
-      "all": "Tüm",
-      "compliant": "Uyumlu",
-      "expiring_soon": "Yakında sona erecek",
-      "in_grace_period": "Gerekli olarak",
-      "non_compliant": "Uyumlu değil",
-      "in_progress": "Devam ediyor",
-      "not_started": "Başlatılmadı",
-      "waived": "Feragat edildi",
-      "no_record": "Kayıt yok"
-    },
-    "courses": {
-      "heading": "Kurslar",
-      "description": "Öğrenci statüsü sayılarına sahip uyum kursları",
-      "empty": "Henüz uyum kursu yok",
-      "course": "Kurs",
-      "learners": "Öğrenciler",
-      "completion": "Completion"
-    },
-    "learners": {
-      "heading": "Students",
-      "subtitle": "{count, number} eşleşen",
-      "empty": "Bu filtreyle eşleşen öğrenci yok",
-      "learner": "Student",
-      "course": "Course",
-      "status": "Status",
-      "due_date": "Due",
-      "expires": "Expires"
-    }
+    "back": "Geri",
+    "user_avatar_alt": "User avatar",
+    "course_count": "{count, plural, one {# course} other {# courses}}"
   },
   "login": {
     "welcome": "Tekrar hoş geldiniz",
@@ -670,10 +620,6 @@
         "course": {
           "heading": "Kurs",
           "description": "Kurslarınızdaki kayıtlar, gönderimler, dersler, duyurular ve tamamlamalar."
-        },
-        "cohort": {
-          "heading": "Cohort",
-          "description": "Grup öğrenme hedefleri ve son tarihleri hakkında hatırlatmalar."
         },
         "enrollment": {
           "heading": "Kayıt",
@@ -1341,30 +1287,30 @@
         "studentCourseWelcome": "Course access granted",
         "studentCourseCompletion": "Kurs tamamlama",
         "studentOrgInvite": "Organizasyon davetiyesi",
-        "studentCohortWelcome": "Kohorta hoş geldiniz",
         "studentProvePayment": "Ödeme kanıtı talebi",
-        "cohortGoalReminder": "Kohort hedefi hatırlatıcısı",
         "quizAssigned": "Test atandı",
         "sessionReminder": "Canlı oturum hatırlatıcısı",
         "sessionUpdated": "Canlı oturum güncellendi",
         "submissionGraded": "Gönderime not verildi",
         "newsfeedPost": "Kurs haber akışı gönderisi",
-        "employeeActivation": "Employee account activation"
+        "employeeActivation": "Employee account activation",
+        "assignmentDueReminder": "Assignment due reminder",
+        "recertificationReopened": "Recertification reopened"
       },
       "descriptions": {
         "studentCourseInvite": "Birini kursa davet ettiğinizde gönderilir.",
         "studentOrgInvite": "Birini kuruluşunuza davet ettiğinizde gönderilir.",
         "studentCourseWelcome": "Sent when an existing employee is added to a course with email notifications enabled.",
-        "studentCohortWelcome": "Bir öğrenci bir gruba erişim aldığında gönderilir.",
         "quizAssigned": "Bir öğrenciye test atandığında gönderilir.",
         "submissionGraded": "Bir öğrencinin alıştırma gönderimi incelendiğinde gönderilir.",
-        "cohortGoalReminder": "Bir grup hedefinin vadesi geldiğinde veya geciktiğinde gönderilir.",
         "studentCourseCompletion": "Öğrenci bir kursu tamamladığında gönderilir.",
         "sessionReminder": "Planlanmış bir canlı oturumdan önce gönderildi.",
         "sessionUpdated": "Canlı oturum ayrıntıları değiştiğinde gönderilir.",
         "newsfeedPost": "Yeni bir kurs gönderisi yayınlandığında gönderilir.",
         "studentProvePayment": "Bir öğrencinin ödeme kanıtı sunması gerektiğinde gönderilir.",
-        "employeeActivation": "Sent when an activation link is issued or resent from Employees. Links are single use and expire after 48 hours."
+        "employeeActivation": "Sent when an activation link is issued or resent from Employees. Links are single use and expire after 48 hours.",
+        "assignmentDueReminder": "Sent when an assigned course is approaching or past its due date.",
+        "recertificationReopened": "Sent when a course reopens because its certification has expired."
       },
       "groups": {
         "enrollment": "Accounts and enrollment",
@@ -1376,7 +1322,6 @@
         "organization": "Organizasyon",
         "expires_at": "Son kullanma tarihi",
         "course_name": "Kurs adı",
-        "cohort_name": "Kohort adı",
         "student_name": "Öğrenci adı",
         "course_message": "Eğitmen mesajı",
         "course_names": "Kurslar",
@@ -1669,7 +1614,6 @@
     "dashboard": "Dashboard",
     "stats": "Stats",
     "analytics": "Analytics",
-    "compliance": "Uyumluluk",
     "courses": "Kurslar",
     "tags": "Tags",
     "community": "Topluluk",
@@ -1690,9 +1634,7 @@
     "upgrade_count": "{studentCount}/{studentLimit}",
     "upgrade_students": "{studentCount} {studentLimit} öğrenciden",
     "upgrade_left": "{count} kaldı",
-    "cohorts": "Eğitim programları",
     "exit_course": "Bu kurstan çık",
-    "exit_cohort": "Bu gruptan çık",
     "ai_studio": "AI course studio",
     "reports": "Reports",
     "system": "System"
@@ -2239,10 +2181,6 @@
       "title": "Admin shortcuts",
       "add_learners": "Add employees",
       "add_learners_description": "Import a list or invite by email",
-      "create_cohort": "Open a training class",
-      "create_cohort_description": "Group courses and learners by programme",
-      "mandatory_training": "Track mandatory training",
-      "mandatory_training_description": "See who is overdue or not started",
       "upload_documents": "Upload documents",
       "upload_documents_description": "Videos, slides and files for lessons"
     }
@@ -4606,17 +4544,12 @@
       "all_courses": "Tüm kurslar",
       "select_courses": "Belirli kursları seçin",
       "select_courses_placeholder": "Kursları seçin...",
-      "select_cohorts_placeholder": "Grupları seçin...",
       "send_email": "İçe aktarılan kullanıcılara davetiye e-postası gönder",
       "back": "Geri",
       "start_over": "Farklı bir dosya seçin",
       "snackbar_success": "{imported} yeni davetler, {assigned} mevcut öğrencilere erişim verildi, {pendingInvitesRenewed} bekleyen davetler yenilendi ({emailsSent} e-posta gönderildi)",
       "snackbar_no_emails": "Lütfen en az bir e-posta adresi girin",
       "snackbar_failed": "Kullanıcılar içe aktarılamadı",
-      "cohort_access": "Cohort Erişim",
-      "no_cohorts": "Grup ataması yok",
-      "all_cohorts": "Tüm gruplar",
-      "select_cohorts": "Belirli grupları seçin",
       "drop_csv": "Buraya bir CSV bırakın veya birini seçmek için tıklayın",
       "csv_hint": "UTF-8 E-posta sütunlu CSV. En fazla {rows} satır, 5 MB.",
       "download_template": "Şablonu indirin",
@@ -4879,20 +4812,6 @@
       "country": "Ülke",
       "visitors": "Ziyaretçiler",
       "enrollments_short": "kaydedilen"
-    },
-    "popularTypes": {
-      "heading": "Popüler kurs türleri",
-      "description": "Kurs türüne göre gruplandırılmış kayıtlar",
-      "subtitle": "{total} tüm türlerdeki kayıtlar",
-      "empty": "Henüz kayıt verisi yok",
-      "course_count": "{sayı, çoğul, bir {# course} diğer {# courses}}",
-      "views_short": "görüntülemeler",
-      "types": {
-        "SELF_PACED": "Self-paced",
-        "LIVE_CLASS": "Live class",
-        "COMPLIANCE": "Compliance",
-        "PUBLIC": "Public"
-      }
     },
     "topCourses": {
       "heading": "Görüntülemelere göre en iyi kurslar",
@@ -5176,7 +5095,6 @@
     "explore": "Keşfet",
     "help": "Help",
     "settings": "Ayarlar",
-    "cohorts": "Kohortlar",
     "group_learning": "Learning"
   },
   "lms": {
@@ -5191,7 +5109,14 @@
     "any_progress": "Başladığınız herhangi bir kurs burada görüntülenecektir",
     "not_completed": "Tamamlanan Kurs Yok",
     "any_course": "Tamamladığınız herhangi bir kurs burada görüntülenecektir",
-    "find_courses": "Bul kurslar"
+    "find_courses": "Bul kurslar",
+    "tabs": {
+      "todo": "To complete",
+      "self": "Self-paced",
+      "completed": "Completed"
+    },
+    "todo_empty": "Nothing assigned to you right now",
+    "self_empty": "No self-enrolled courses in progress"
   },
   "certificates": {
     "heading": "Sertifikalar",
@@ -5517,32 +5442,6 @@
     "generic": {
       "success_delete": "Başarıyla silindi",
       "try_again": "Hata - Lütfen daha sonra tekrar deneyin"
-    },
-    "cohort": {
-      "success": {
-        "comment_deleted": "Yorum silindi",
-        "comment_added": "Yorum eklendi",
-        "feed_delete_success": "Yayın başarıyla silindi",
-        "post_created": "Gönderi başarıyla oluşturuldu",
-        "post_updated": "Gönderi başarıyla güncellendi"
-      },
-      "error": {
-        "reaction_error": "Gönderiye tepki verirken bir hata oluştu",
-        "news_feed_fail": "Grup haber akışı getirilemedi",
-        "post_create_failed": "Gönderi oluşturulamadı",
-        "post_update_failed": "Gönderi güncellenemedi",
-        "code": {
-          "cohort_forbidden": "Bu işlemi gerçekleştirmek için bu grubun üyesi olmalısınız.",
-          "cohort_member_check_failed": "Grubunuzu doğrulayamadık üyelik. Tekrar deneyin.",
-          "cohort_not_found": "Bu kohort bulunamadı.",
-          "cohort_create_failed": "Grup oluşturulamadı.",
-          "cohort_update_failed": "Grup güncellenemedi.",
-          "cohort_delete_failed": "Grup silinemedi.",
-          "cohort_member_not_found": "Bu kohort üyesi bulunamadı.",
-          "cohort_newsfeed_not_found": "Bu gönderi bulunamadı.",
-          "cohort_newsfeed_comment_not_found": "Bu yorum bulunamadı. bulundu."
-        }
-      }
     },
     "webhooks": {
       "created": "Webhook oluşturuldu. İmza sırrını şimdi kopyalayın, çünkü yalnızca bir kez gösterilir.",
@@ -5954,223 +5853,6 @@
       "transcript": "Transkript"
     }
   },
-  "cohorts": {
-    "heading": "Kohortlar",
-    "description": "Bir grup kişiye sınıf gibi birden fazla kursa erişim izni verin",
-    "page_title": "Kohortlar",
-    "search_placeholder": "Arama grupları",
-    "create": "Yeni Grup",
-    "create_success": "Grup oluşturuldu",
-    "update_success": "Kohort güncellendi",
-    "delete_success": "Grup silindi",
-    "members_added": "Üye eklendi",
-    "member_removed": "Üye kaldırıldı",
-    "invite_sent": "Gönderilen davetler",
-    "course_added": "Eklenen kurs",
-    "multiple_added": "Eklenen kurslar",
-    "course_removed": "Kurs kaldırıldı",
-    "empty_title": "Henüz grup yok",
-    "empty_description": "İlk sertifika veya uyumluluk grubunuzu oluşturun.",
-    "no_matching_cohorts": "Filtrelerinizle eşleşen grup yok.",
-    "status": {
-      "active": "Active",
-      "inactive": "Inactive",
-      "archived": "Archived"
-    },
-    "filters": {
-      "filter": "Filter",
-      "clear_all": "Tümünü temizle",
-      "popover_title": "Filters",
-      "sort": "Sort",
-      "order": "Order",
-      "status": "Status",
-      "ascending": "Asc",
-      "descending": "Desc",
-      "sort_name": "Name",
-      "sort_courses": "Courses",
-      "sort_students": "Students",
-      "sort_status": "Status"
-    },
-    "table": {
-      "name": "Name",
-      "courses": "Courses",
-      "students": "Students",
-      "status": "Durum",
-      "description": "Açıklama"
-    },
-    "sidebar": {
-      "newsfeed": "Haber Kaynağı",
-      "courses": "Kurslar",
-      "people": "Kişiler",
-      "settings": "Ayarlar"
-    },
-    "create_modal": {
-      "title": "Grup Oluştur",
-      "description": "Yeni bir sertifika veya uyumluluk ekle kohort.",
-      "name_label": "Name",
-      "name_placeholder": "e.g. OSHA Güvenlik Sertifikası",
-      "description_label": "Açıklama",
-      "description_placeholder": "Bu grup ne hakkındadır?",
-      "submit": "Oluşturma"
-    },
-    "card": {
-      "courses": "Kurslar",
-      "students": "Öğrenciler"
-    },
-    "newsfeed": {
-      "heading": "Haber Kaynağı",
-      "post": "Yeni Gönderi",
-      "post_placeholder": "Aklınızda ne var?",
-      "make_a_post": "Gönderi Oluştur",
-      "edit_post": "Gönderiyi Düzenle",
-      "editor_placeholder": "Grubunuzla bir güncelleme paylaşın",
-      "cancel": "İptal",
-      "post_submit": "Gönderi",
-      "pinned": "Pinned",
-      "delete_feed_title": "Sil post",
-      "delete_feed_description": "Bu gönderiyi silmek istediğinizden emin misiniz?",
-      "confirm_delete": "Delete",
-      "user_avatar_alt": "Kullanıcı avatarı",
-      "card": {
-        "pin": "Pin",
-        "unpin": "Unpin",
-        "edit": "Edit",
-        "delete": "Delete"
-      },
-      "comments": {
-        "comment": "yorum",
-        "showing_of": "{shown}/{total}",
-        "hide": "Yorumları gizle",
-        "placeholder": "Grup yorumu ekle",
-        "submit_aria": "Yorumu gönder",
-        "delete": "Sil"
-      },
-      "empty_title": "Henüz gönderi yok",
-      "empty_description": "İlk yazan siz olun bir şeyler yayınlayın."
-    },
-    "courses": {
-      "add": "Kurs Ekle",
-      "add_modal_title": "Grup'a Kurs Ekle",
-      "select_course": "Bir kurs seçin",
-      "select_courses": "Kurs seçin",
-      "select_placeholder": "Bir kurs seçin…",
-      "search_placeholder": "Kurslarda ara",
-      "no_available_courses": "Eklenecek kullanılabilir kurs yok.",
-      "no_matching_courses": "Aramanızla eşleşen kurs yok.",
-      "no_matching_cohort_courses": "Aramanızla eşleşen kohort kursu yok.",
-      "pagination_status": "Page {page} / {totalPages}",
-      "empty_title": "Henüz kurs yok",
-      "empty_description": "Bu gruba kurs ekleyin.",
-      "empty_student_description": "Bu grupta henüz yayınlanmış kurs yok.",
-      "published_access_callout_title": "Öğrenci erişimi",
-      "published_access_callout_description": "Öğrenciler yalnızca yayınlanan kurslara erişebilir. Kurslar, yayınlanmamış durumdayken ekibiniz için bu grupta yer alabilir, ancak siz onları yayınlayana kadar öğrencilerden gizli kalır."
-    },
-    "people": {
-      "invite": "Invite",
-      "invite_modal_title": "Üyeleri Davet Et",
-      "invite_modal_description": "Bu gruba e-postayla kişi ekleyin.",
-      "email_label": "E-posta",
-      "role_label": "Role",
-      "add_another": "Başka bir tane ekleyin",
-      "invite_submit": "Davet Gönder",
-      "empty_title": "Henüz üye yok",
-      "empty_description": "Kişileri bu gruba katılmaya davet edin.",
-      "name": "Ad",
-      "joined": "Katıldı",
-      "filter_title": "Kişileri filtrele",
-      "views": {
-        "all": "Tüm kişiler",
-        "tutors": "Eğitmenler",
-        "students": "Öğrenciler",
-        "pending_invites": "Bekleyen davetler",
-        "never_logged_in": "Hiç giriş yapmadı"
-      }
-    },
-    "lms": {
-      "empty_title": "Henüz grup yok",
-      "empty_description": "Herhangi bir gruba kaydolmadınız."
-    },
-    "settings": {
-      "general": "Genel",
-      "name_label": "Name",
-      "description_label": "Description",
-      "status_label": "Status",
-      "save": "Değişiklikleri Kaydet",
-      "danger_zone": "Danger Zone",
-      "delete": "Grubu Sil",
-      "delete_description": "Silindiğinde, bu kohort ve tüm verileri kurtarılamaz.",
-      "confirm_delete": "Bu grubu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
-    },
-    "goals": {
-      "heading": "LÖğrenim Hedefleri",
-      "description": "Bu gruptaki herkes için birden fazla kursu kapsayan ölçülebilir hedefler belirleyin.",
-      "add": "Yeni Hedef",
-      "empty_title": "Henüz hedef yok",
-      "empty_description": "Birden fazla kursta ekibin ilerlemesini takip etmek için bir hedef oluşturun.",
-      "created": "Hedef oluşturuldu",
-      "updated": "Hedef güncellendi",
-      "deleted": "Hedef silindi",
-      "delete_confirm": "Bu hedef silinsin mi? Öğrenci başına durum geçmişi kaldırılacak.",
-      "modal": {
-        "create_title": "Yeni hedef",
-        "edit_title": "Hedefi düzenle",
-        "title_label": "Başlık",
-        "title_placeholder": "e.g. İlk katılım rampası",
-        "description_label": "Açıklama",
-        "description_placeholder": "Ekip için isteğe bağlı bağlam",
-        "type_label": "Type",
-        "courses_label": "Courses",
-        "required_count_label": "Gerekli ders sayısı",
-        "score_threshold_label": "Öğrenci başına geçme puanı (%)",
-        "team_pass_rate_label": "Takım geçme oranı (%)",
-        "deadline_label": "Son tarih",
-        "deadline_date_label": "Son tarih",
-        "relative_days_label": "Öğrencinin katıldığı tarihten sonraki günler",
-        "recurring_months_label": "Her (ayda bir)",
-        "reminders_label": "Hatırlatmalar (vadesinden önceki gün)",
-        "reminders_helper": "Virgülle ayrılmış. Örnek: 7, 3, 1",
-        "save": "Kaydet",
-        "cancel": "İptal"
-      },
-      "type": {
-        "complete_all": "Seçilen tüm kursları tamamla",
-        "n_of_m": "Seçilen M sayıda kursu tamamla",
-        "score": "Her kursta eşiğin üzerinde puan",
-        "pass_rate": "Takım geçiş hızı eşiği",
-        "readiness": "Hazırlık (son tarih yok)"
-      },
-      "deadline_kind": {
-        "absolute": "Mutlak tarih",
-        "relative_to_join": "Katılan öğrenciyle ilgili",
-        "recurring": "Yinelenen",
-        "none": "Son tarih yok"
-      },
-      "status": {
-        "completed": "Tamamlandı",
-        "in_progress": "Devam ediyor",
-        "at_risk": "Risk altında",
-        "overdue": "Gecikmiş",
-        "not_started": "Başlamadı",
-        "waived": "Feragat edildi"
-      },
-      "tile": {
-        "on_track": "yolda",
-        "completed_short": "tamamlandı",
-        "overdue_short": "gecikmiş",
-        "at_risk_short": "risk altında"
-      },
-      "lms": {
-        "heading": "Hedefleriniz",
-        "empty_title": "Hedef yok atanan",
-        "empty_description": "Eğitmenleriniz hedefler belirlediğinde burada görünecekler.",
-        "due_in_days": "{days} gün içinde teslim edilecek",
-        "due_tomorrow": "Yarın teslim edilecek",
-        "due_today": "Bugün teslim edilecek",
-        "overdue": "Gecikmiş",
-        "no_deadline": "Son tarih yok"
-      }
-    }
-  },
   "invite_link": {
     "tab_label": "Davet et bağlantı",
     "title": "Bağlantıyı davet et",
@@ -6308,8 +5990,6 @@
       "lesson_download": "LÖğrenciler dersleri indirebilir",
       "self_enrollment": "LÖğrenciler kendilerine katılabilir",
       "ai_tutor": "AI öğretmeni açık",
-      "compliance_retake": "Her {ayda bir tekrar alın, plural, bir {# month} diğer {# months}}",
-      "compliance_mandatory": "Zorunlu",
       "counts": "{sections} bölümler · {lessons} dersler · {exercises} egzersizler",
       "questions": "{say, çoğul, bir {# question} diğer {# questions}}"
     },
@@ -6511,7 +6191,6 @@
     "customize_lms": "Customize LMS",
     "courses": "Courses",
     "home": "Home",
-    "cohort": "Cohort",
     "course": "Course",
     "quiz": "Quiz",
     "join_platform": "Join MP Learning",
@@ -6544,7 +6223,6 @@
   "lms_pages": {
     "my_learning_subtitle": "Courses assigned to you or that you enrolled in.",
     "explore_subtitle": "Internal courses open to MP Transformation employees.",
-    "cohorts_subtitle": "Training classes and programmes you belong to.",
     "exercises_subtitle": "Track submissions and grades across your courses.",
     "exercises_column_empty": "Nothing here yet"
   },
@@ -6626,6 +6304,14 @@
       "all": "All courses",
       "assigned": "Assigned",
       "overdue": "Overdue"
+    },
+    "assigned_section": {
+      "title": "Assigned training",
+      "note": "Every assigned course per employee, with its computed status.",
+      "all_courses": "All courses",
+      "all_batches": "All batches",
+      "empty": "No assignments match",
+      "truncated": "Showing the first 200 of {count} rows. Export to see all."
     }
   },
   "employees": {
@@ -6766,13 +6452,13 @@
     "clear_filters": "Clear filters",
     "unassigned": "Not assigned",
     "empty_hint": "Add your first employee or adjust the filters to find the people you need.",
-    "page_label": "Page {page} of {pages}"
+    "page_label": "Page {page} of {pages}",
+    "job_title": "Job title"
   },
   "training_library": {
     "enrolled": "Kayıtlı",
     "available_to_you": "Erişiminiz var",
     "self_enrollment": "Kendi kendine kayıt",
-    "assigned_only": "Atanan eğitim",
     "goals": "Öğrenme hedefleri",
     "exercise_count": "{count} alıştırma",
     "start_continue": "Başla / devam et",
@@ -6782,41 +6468,71 @@
     "enrollment_error": "Kayıt yapılamadı. Sayfayı yenileyip tekrar deneyin.",
     "back": "Eğitim kataloğuna dön",
     "settings_self_enrollment": "Çalışanların kendi kendine kaydolmasına izin ver",
-    "compliance_hint": "Uyumluluk eğitimi atanır. Kendi kendine kayıt kullanılamaz.",
     "settings_self_enrollment_hint": "Bu seçenek açıkken yayımlanan kurslar katalogda görünür. Kapatılması mevcut kayıtları korur.",
     "enrolled_success": "Başarıyla kaydoldunuz."
   },
   "training_assignment": {
-    "title": "Eğitim ata",
-    "required": "Zorunlu",
-    "recommended": "Önerilen",
-    "deadline": "Tamamlama tarihi",
-    "message": "Katılımcılara mesaj",
-    "saved": "Eğitim atandı",
-    "cancelled": "İptal edildi",
-    "cancel_failed": "Bu katılım kaynağı iptal edilemiyor",
-    "cancel": "Atamayı iptal et",
-    "sources": "Katılım kaynakları",
     "learners": "Katılımcılar",
-    "staff": "Eğitmen ekibi",
-    "assigned": "Bana atanan",
-    "self_selected": "Kendi seçimim",
-    "access_only": "Bireysel tamamlama zorunluluğu olmadan erişim",
-    "revoke_access": "Bu erişim kaynağını kaldır",
-    "history": "Katılım geçmişi",
-    "no_sources": "Etkin katılım kaynağı yok",
-    "description": "Çalışanları ve tamamlama gereksinimini seçin. Mevcut ilerleme korunur.",
-    "existing_hint": "Mevcut tarihler korunur. Gereksinimi değiştirmek için iptal edip yeniden atayın.",
-    "cancel_hint": "Yalnızca bu kaynak iptal edilir. İlerleme, geçmiş ve diğer erişim kaynakları korunur.",
-    "compliance_controls": "Uyumluluk kursları için mevcut muafiyet ve tarih kontrollerini kullanın.",
-    "source": {
-      "SELF": "Kendi kendine kayıt",
-      "DIRECT": "Doğrudan atama",
-      "LEGACY": "Eski veri: kaynak doğrulanmadı",
-      "PROGRAM": "Program",
-      "COHORT": "Eğitim grubu",
-      "COMPLIANCE": "Uyumluluk dönemi"
+    "staff": "Eğitmen ekibi"
+  },
+  "enrollment": {
+    "assign_title": "Assign courses",
+    "assign_description": "Choose courses and employees. Assigned courses must be completed; existing progress is kept.",
+    "assign_button": "Assign courses",
+    "courses": "Courses",
+    "employees": "Employees",
+    "pick_courses": "Search published courses",
+    "pick_employees": "Search employees",
+    "all_employees": "All active employees",
+    "filter_department": "By department",
+    "filter_job_title": "By job title",
+    "selected_count": "{count} selected",
+    "due_date": "Due date",
+    "due": "Due",
+    "batch_label": "Training batch",
+    "batch_placeholder": "e.g. Onboarding 11/2026",
+    "batch": "Batch",
+    "message": "Message to learners",
+    "notify": "Email the learners",
+    "submit": "Assign",
+    "assigned_result": "Assigned {assigned}, already assigned {existing}",
+    "failed": "Could not save the assignment. Please try again.",
+    "saved": "Assignment updated",
+    "revoked": "Assignment revoked",
+    "how_joined": "How they joined",
+    "assigned_by": "assigned by {name}",
+    "valid_until": "Valid until",
+    "no_enrollment": "No active enrollment",
+    "employee_courses": "Assigned courses",
+    "progress": "Progress",
+    "state_label": "Status",
+    "select_all": "Select all on this page",
+    "waive_reason": "Reason for exemption",
+    "waive_expires": "Exemption ends (optional)",
+    "kind": {
+      "ASSIGNED": "Assigned",
+      "SELF": "Self-enrolled"
     },
-    "created_at": "Katılım tarihi"
+    "state": {
+      "not_started": "Not started",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "overdue": "Overdue",
+      "expired": "Expired",
+      "waived": "Exempt"
+    },
+    "actions": {
+      "change_due": "Change due date",
+      "waive": "Exempt",
+      "revoke": "Revoke",
+      "revoke_confirm": "Revoke this course for {name}? Their progress and history are kept."
+    },
+    "recertification": {
+      "title": "Retake periodically",
+      "description": "A completion stays valid for a set number of months. When it expires, assigned learners must complete the course again.",
+      "months_label": "Valid for (months)",
+      "months_helper": "Learners are reminded 30 days before it expires and get 30 days to retake.",
+      "every": "Retake every {months} months"
+    }
   }
 }

@@ -43,7 +43,9 @@
       "description": "The page you are looking for does not exist or has been moved.",
       "home": "Back to home"
     },
-    "back": "वापस"
+    "back": "वापस",
+    "user_avatar_alt": "User avatar",
+    "course_count": "{count, plural, one {# course} other {# courses}}"
   },
   "validations": {
     "generic": {
@@ -492,32 +494,6 @@
       "generate_1080_failed": "1080p प्रस्तुतिकरण उत्पन्न नहीं हो सका"
     },
     "social_auth_not_enabled": "यह प्रमाणीकरण प्रदाता सक्षम नहीं है.",
-    "cohort": {
-      "error": {
-        "reaction_error": "पोस्ट पर प्रतिक्रिया करते समय एक त्रुटि उत्पन्न हुई",
-        "news_feed_fail": "कोहोर्ट न्यूज़फ़ीड लाने में विफल",
-        "post_create_failed": "पोस्ट बनाने में विफल",
-        "post_update_failed": "पोस्ट अपडेट करने में विफल",
-        "code": {
-          "cohort_forbidden": "इस क्रिया को करने के लिए आपको इस कोहोर्ट का सदस्य होना चाहिए।",
-          "cohort_member_check_failed": "हम आपके कोहोर्ट की सदस्यता सत्यापित नहीं कर सके. पुनः प्रयास करें।",
-          "cohort_not_found": "यह कोहोर्ट नहीं मिल सका.",
-          "cohort_create_failed": "कोहोर्ट नहीं बनाया जा सका.",
-          "cohort_update_failed": "कोहोर्ट अद्यतन नहीं किया जा सका.",
-          "cohort_delete_failed": "कोहोर्ट को हटाया नहीं जा सका.",
-          "cohort_member_not_found": "वह कोहोर्ट सदस्य नहीं मिल सका.",
-          "cohort_newsfeed_not_found": "वह पोस्ट नहीं मिल सकी.",
-          "cohort_newsfeed_comment_not_found": "वह टिप्पणी नहीं मिल सकी."
-        }
-      },
-      "success": {
-        "comment_deleted": "टिप्पणी हटा दी गई",
-        "comment_added": "टिप्पणी जोड़ी गई",
-        "feed_delete_success": "पोस्ट सफलतापूर्वक हटा दी गई",
-        "post_created": "पोस्ट सफलतापूर्वक बनाई गई",
-        "post_updated": "पोस्ट सफलतापूर्वक अपडेट की गई"
-      }
-    },
     "report": {
       "success": "धन्यवाद। हम इस रिपोर्ट की समीक्षा करेंगे।",
       "error": "रिपोर्ट जमा नहीं हो सकी। कृपया फिर से प्रयास करें।",
@@ -557,7 +533,14 @@
     "any_progress": "आपके द्वारा शुरू किया गया कोई भी कोर्स यहां प्रदर्शित किया जाएगा",
     "not_completed": "कोई कोर्स पूरा नहीं हुआ",
     "any_course": "आपके द्वारा पूरा किया गया कोई भी पाठ्यक्रम यहां प्रदर्शित किया जाएगा",
-    "find_courses": "पाठ्यक्रम खोजें"
+    "find_courses": "पाठ्यक्रम खोजें",
+    "tabs": {
+      "todo": "To complete",
+      "self": "Self-paced",
+      "completed": "Completed"
+    },
+    "todo_empty": "Nothing assigned to you right now",
+    "self_empty": "No self-enrolled courses in progress"
   },
   "certificates": {
     "heading": "प्रमाणपत्र",
@@ -580,7 +563,6 @@
     "explore": "अन्वेषण करें",
     "help": "मदद",
     "settings": "सेटिंग्स",
-    "cohorts": "कोहोर्ट",
     "group_learning": "Learning"
   },
   "upgrade": {
@@ -657,20 +639,6 @@
     "no_data_default_description": "इस समय प्रदर्शित करने के लिए कोई डेटा नहीं है.",
     "subtitle": "समझें कि विज़िटर आपके पाठ्यक्रमों को कैसे खोजते हैं और छात्रों में परिवर्तित होते हैं।",
     "refresh": "ताज़ा करें",
-    "popularTypes": {
-      "heading": "लोकप्रिय पाठ्यक्रम प्रकार",
-      "description": "नामांकन पाठ्यक्रम प्रकार के आधार पर समूहीकृत किए गए",
-      "subtitle": "सभी प्रकार के लिए {total} नामांकन",
-      "empty": "अभी तक कोई नामांकन डेटा नहीं है",
-      "course_count": "{count, plural, one {# पाठ्यक्रम} other {# पाठ्यक्रम}}",
-      "views_short": "विचार",
-      "types": {
-        "SELF_PACED": "स्वयं गतिमान",
-        "LIVE_CLASS": "लाइव क्लास",
-        "COMPLIANCE": "अनुपालन",
-        "PUBLIC": "सार्वजनिक"
-      }
-    },
     "topCourses": {
       "heading": "पेज व्यू के अनुसार शीर्ष पाठ्यक्रम",
       "description": "पेज व्यू के आधार पर रैंक किए गए पाठ्यक्रम",
@@ -796,11 +764,6 @@
       "snackbar_no_emails": "कृपया कम से कम एक ईमेल पता दर्ज करें",
       "snackbar_failed": "उपयोगकर्ताओं को आयात करने में विफल",
       "page_subtitle": "एक साथ कई लोगों को ईमेल से जोड़ें, फिर चाहें तो उन्हें पाठ्यक्रम या कोहोर्ट असाइन करें।",
-      "cohort_access": "कोहोर्ट एक्सेस",
-      "no_cohorts": "कोई कोहोर्ट असाइनमेंट नहीं",
-      "all_cohorts": "सभी कोहोर्ट",
-      "select_cohorts": "विशिष्ट कोहोर्ट चुनें",
-      "select_cohorts_placeholder": "कोहोर्ट चुनें...",
       "drop_csv": "यहां एक CSV फ़ाइल डालें, या चुनने के लिए क्लिक करें",
       "csv_hint": "ईमेल कॉलम वाली UTF-8 CSV फ़ाइल। अधिकतम {rows} पंक्तियाँ, 5 MB।",
       "download_template": "टेम्प्लेट डाउनलोड करें",
@@ -3333,10 +3296,6 @@
       "title": "Admin shortcuts",
       "add_learners": "Add employees",
       "add_learners_description": "Import a list or invite by email",
-      "create_cohort": "Open a training class",
-      "create_cohort_description": "Group courses and learners by programme",
-      "mandatory_training": "Track mandatory training",
-      "mandatory_training_description": "See who is overdue or not started",
       "upload_documents": "Upload documents",
       "upload_documents_description": "Videos, slides and files for lessons"
     }
@@ -3585,10 +3544,7 @@
     "widgets": "विजेट्स",
     "stats": "आँकड़े",
     "analytics": "विश्लेषिकी",
-    "compliance": "अनुपालन",
-    "cohorts": "प्रशिक्षण कार्यक्रम",
     "exit_course": "इस पाठ्यक्रम से बाहर निकलें",
-    "exit_cohort": "इस कोहोर्ट से बाहर निकलें",
     "upgrade_now": "अभी अपग्रेड करें",
     "upgrade_label": "अपग्रेड",
     "upgrade_count": "{studentCount}/{studentLimit}",
@@ -4462,10 +4418,6 @@
           "heading": "नामांकन",
           "description": "स्वागत ईमेल जब स्टाफ सदस्यों को पाठ्यक्रमों या समूहों में जोड़ता है।"
         },
-        "cohort": {
-          "heading": "समूह",
-          "description": "समूह सीखने के लक्ष्यों और समय सीमा के बारे में अनुस्मारक।"
-        },
         "course": {
           "heading": "पाठ्यक्रम",
           "description": "आपके पाठ्यक्रमों में नामांकन, सबमिशन, पाठ, घोषणाएँ और पूर्णता।"
@@ -4512,30 +4464,30 @@
         "studentCourseWelcome": "Course access granted",
         "studentCourseCompletion": "कोर्स पूरा करना",
         "studentOrgInvite": "संगठन आमंत्रण",
-        "studentCohortWelcome": "दल का स्वागत है",
         "studentProvePayment": "भुगतान प्रमाण अनुरोध",
-        "cohortGoalReminder": "समूह लक्ष्य अनुस्मारक",
         "quizAssigned": "प्रश्नोत्तरी सौंपी गई",
         "sessionReminder": "लाइव सत्र अनुस्मारक",
         "sessionUpdated": "लाइव सत्र अपडेट किया गया",
         "submissionGraded": "सबमिशन को श्रेणीबद्ध किया गया",
         "newsfeedPost": "कोर्स न्यूज़फ़ीड पोस्ट",
-        "employeeActivation": "Employee account activation"
+        "employeeActivation": "Employee account activation",
+        "assignmentDueReminder": "Assignment due reminder",
+        "recertificationReopened": "Recertification reopened"
       },
       "descriptions": {
         "studentCourseInvite": "जब आप किसी को पाठ्यक्रम के लिए आमंत्रित करते हैं तो भेजा जाता है।",
         "studentOrgInvite": "जब आप किसी को अपने संगठन में आमंत्रित करते हैं तो भेजा जाता है।",
         "studentCourseWelcome": "Sent when an existing employee is added to a course with email notifications enabled.",
-        "studentCohortWelcome": "तब भेजा जाता है जब किसी छात्र को समूह तक पहुंच प्राप्त होती है।",
         "quizAssigned": "जब किसी छात्र को प्रश्नोत्तरी सौंपी जाती है तो भेजा जाता है।",
         "submissionGraded": "तब भेजा जाता है जब किसी छात्र के अभ्यास सबमिशन की समीक्षा की जाती है।",
-        "cohortGoalReminder": "किसी समूह का लक्ष्य देय या अतिदेय होने पर भेजा जाता है।",
         "studentCourseCompletion": "जब कोई छात्र पाठ्यक्रम पूरा कर लेता है तो भेजा जाता है।",
         "sessionReminder": "निर्धारित लाइव सत्र से पहले भेजा गया।",
         "sessionUpdated": "लाइव सत्र विवरण बदलने पर भेजा जाता है।",
         "newsfeedPost": "नया पाठ्यक्रम पोस्ट प्रकाशित होने पर भेजा जाता है।",
         "studentProvePayment": "तब भेजा जाता है जब किसी छात्र को भुगतान प्रमाण प्रदान करने की आवश्यकता होती है।",
-        "employeeActivation": "Sent when an activation link is issued or resent from Employees. Links are single use and expire after 48 hours."
+        "employeeActivation": "Sent when an activation link is issued or resent from Employees. Links are single use and expire after 48 hours.",
+        "assignmentDueReminder": "Sent when an assigned course is approaching or past its due date.",
+        "recertificationReopened": "Sent when a course reopens because its certification has expired."
       },
       "groups": {
         "enrollment": "Accounts and enrollment",
@@ -4547,7 +4499,6 @@
         "organization": "संगठन",
         "expires_at": "समाप्ति तिथि",
         "course_name": "कोर्स का नाम",
-        "cohort_name": "समूह का नाम",
         "student_name": "विद्यार्थी का नाम",
         "course_message": "प्रशिक्षक संदेश",
         "course_names": "पाठ्यक्रम",
@@ -4654,8 +4605,7 @@
           "widgets": "विजेट्स",
           "tags": "टैग",
           "students": "छात्र",
-          "settings": "सेटिंग्स",
-          "cohorts": "कोहोर्ट"
+          "settings": "सेटिंग्स"
         }
       }
     },
@@ -5694,57 +5644,6 @@
       "transcript": "ट्रांसक्रिप्ट"
     }
   },
-  "compliance": {
-    "title": "अनुपालन",
-    "subtitle": "अपने संगठन में प्रत्येक अनुपालन पाठ्यक्रम में प्रमाणन स्थिति को ट्रैक करें।",
-    "learners": {
-      "heading": "छात्र",
-      "subtitle": "{count, number} मिलान",
-      "empty": "कोई भी छात्र इस फ़िल्टर से मेल नहीं खाता",
-      "learner": "छात्र",
-      "course": "पाठ्यक्रम",
-      "status": "स्थिति",
-      "due_date": "देय",
-      "expires": "समाप्त हो रहा है"
-    },
-    "courses": {
-      "heading": "पाठ्यक्रम",
-      "description": "छात्र स्थिति गणना के साथ अनुपालन पाठ्यक्रम",
-      "empty": "अभी तक कोई अनुपालन पाठ्यक्रम नहीं",
-      "course": "पाठ्यक्रम",
-      "learners": "छात्र",
-      "completion": "समापन"
-    },
-    "filter": {
-      "all": "सब",
-      "compliant": "आज्ञाकारी",
-      "expiring_soon": "जल्द ही समाप्त हो रहा है",
-      "in_grace_period": "अनुग्रह में",
-      "non_compliant": "अनुपालन न करने वाला",
-      "in_progress": "प्रगति पर है",
-      "not_started": "शुरू नहीं हुआ",
-      "waived": "माफ़ कर दिया गया",
-      "no_record": "कोई रिकॉर्ड नहीं"
-    },
-    "status": {
-      "compliant": "आज्ञाकारी",
-      "expiring_soon": "जल्द ही समाप्त हो रहा है",
-      "in_grace_period": "अनुग्रह अवधि में",
-      "non_compliant": "अनुपालन न करने वाला",
-      "in_progress": "प्रगति पर है",
-      "not_started": "शुरू नहीं हुआ",
-      "waived": "माफ़ कर दिया गया",
-      "no_record": "कोई रिकॉर्ड नहीं"
-    },
-    "tabs": {
-      "courses": "बेशक",
-      "learners": "छात्र"
-    },
-    "summary": {
-      "heading": "छात्र स्थिति",
-      "description": "सभी अनुपालन पाठ्यक्रमों में छात्रों की गिनती होती है।"
-    }
-  },
   "public_course": {
     "exercise": {
       "submit": "मेरे उत्तर जांचें",
@@ -5956,223 +5855,6 @@
       "failed": "अपलोड विफल रहा"
     }
   },
-  "cohorts": {
-    "heading": "कोहोर्ट",
-    "page_title": "कोहोर्ट",
-    "create": "नया कोहोर्ट",
-    "create_success": "कोहोर्ट बनाया गया",
-    "update_success": "कोहोर्ट अद्यतन किया गया",
-    "delete_success": "कोहोर्ट हटा दिया गया",
-    "members_added": "सदस्य जोड़े गए",
-    "member_removed": "सदस्य हटा दिया गया",
-    "course_added": "पाठ्यक्रम जोड़ा गया",
-    "course_removed": "पाठ्यक्रम हटा दिया गया",
-    "empty_title": "अभी तक कोई कोहोर्ट नहीं",
-    "empty_description": "अपना पहला प्रमाणन या अनुपालन कोहोर्ट बनाएं।",
-    "settings": {
-      "general": "सामान्य",
-      "name_label": "नाम",
-      "description_label": "विवरण",
-      "status_label": "स्थिति",
-      "save": "परिवर्तन सहेजें",
-      "danger_zone": "ख़तरे का क्षेत्र",
-      "delete": "कोहोर्ट हटाएँ",
-      "delete_description": "एक बार डिलीट होने के बाद, यह कोहोर्ट और इसका सारा डेटा पुनर्प्राप्त नहीं किया जा सकता है।",
-      "confirm_delete": "क्या आप वाकई इस कोहोर्ट को हटाना चाहते हैं? इसे असंपादित नहीं किया जा सकता है।"
-    },
-    "lms": {
-      "empty_title": "अभी तक कोई कोहोर्ट नहीं",
-      "empty_description": "आपको किसी भी कोहोर्ट में नामांकित नहीं किया गया है."
-    },
-    "people": {
-      "invite": "आमंत्रित करें",
-      "invite_modal_title": "सदस्यों को आमंत्रित करें",
-      "invite_modal_description": "लोगों को ईमेल द्वारा इस कोहोर्ट में जोड़ें.",
-      "email_label": "ईमेल",
-      "role_label": "भूमिका",
-      "add_another": "दूसरा जोड़ें",
-      "invite_submit": "निमंत्रण भेजें",
-      "empty_title": "अभी तक कोई सदस्य नहीं",
-      "empty_description": "लोगों को इस कोहोर्ट में शामिल होने के लिए आमंत्रित करें.",
-      "name": "नाम",
-      "joined": "सम्मिलित हुए",
-      "filter_title": "लोगों को फ़िल्टर करें",
-      "views": {
-        "all": "सभी लोग",
-        "tutors": "शिक्षक",
-        "students": "छात्र",
-        "pending_invites": "लंबित आमंत्रण",
-        "never_logged_in": "कभी लॉग इन नहीं किया"
-      }
-    },
-    "courses": {
-      "add": "पाठ्यक्रम जोड़ें",
-      "add_modal_title": "कोहोर्ट में पाठ्यक्रम जोड़ें",
-      "select_course": "एक पाठ्यक्रम चुनें",
-      "select_placeholder": "एक कोर्स चुनें...",
-      "empty_title": "अभी तक कोई पाठ्यक्रम नहीं",
-      "empty_description": "इस कोहोर्ट में पाठ्यक्रम जोड़ें.",
-      "select_courses": "पाठ्यक्रम चुनें",
-      "search_placeholder": "पाठ्यक्रम खोजें",
-      "no_available_courses": "जोड़ने के लिए कोई पाठ्यक्रम उपलब्ध नहीं है.",
-      "no_matching_courses": "कोई भी पाठ्यक्रम आपकी खोज से मेल नहीं खाता.",
-      "no_matching_cohort_courses": "कोई भी कोहोर्ट पाठ्यक्रम आपकी खोज से मेल नहीं खाता।",
-      "pagination_status": "{page} का पेज {totalPages}",
-      "published_access_callout_title": "छात्र प्रवेश",
-      "published_access_callout_description": "छात्रों को केवल प्रकाशित पाठ्यक्रमों तक ही पहुंच है। पाठ्यक्रम अप्रकाशित रहते हुए भी आपकी टीम के लिए इस समूह में हो सकते हैं, लेकिन जब तक आप उन्हें प्रकाशित नहीं करते तब तक वे छात्रों से छिपे रहते हैं।",
-      "empty_student_description": "इस समूह में अभी तक कोई प्रकाशित पाठ्यक्रम नहीं है।"
-    },
-    "newsfeed": {
-      "post": "नई पोस्ट",
-      "post_placeholder": "आपके मन में क्या है?",
-      "post_submit": "पोस्ट",
-      "empty_title": "अभी तक कोई पोस्ट नहीं",
-      "empty_description": "कुछ पोस्ट करने वाले पहले व्यक्ति बनें.",
-      "heading": "न्यूज़फीड",
-      "make_a_post": "एक पोस्ट बनाएं",
-      "edit_post": "पोस्ट संपादित करें",
-      "editor_placeholder": "अपने कोहोर्ट के साथ एक अपडेट साझा करें",
-      "cancel": "रद्द करें",
-      "pinned": "पिन किया गया",
-      "delete_feed_title": "पोस्ट हटाएं",
-      "delete_feed_description": "क्या आप वाकई इस पोस्ट को हटाना चाहते हैं?",
-      "confirm_delete": "हटाएँ",
-      "user_avatar_alt": "उपयोगकर्ता अवतार",
-      "comments": {
-        "comment": "टिप्पणी",
-        "showing_of": "{shown} में से {total}",
-        "hide": "टिप्पणियाँ छिपाएँ",
-        "placeholder": "कोहोर्ट टिप्पणी जोड़ें",
-        "submit_aria": "टिप्पणी सबमिट करें",
-        "delete": "हटाएँ"
-      },
-      "card": {
-        "pin": "पिन",
-        "unpin": "अनपिन करें",
-        "edit": "संपादित करें",
-        "delete": "हटाएँ"
-      }
-    },
-    "create_modal": {
-      "title": "कोहोर्ट बनाएं",
-      "description": "एक नया प्रमाणन या अनुपालन कोहोर्ट जोड़ें.",
-      "name_label": "नाम",
-      "name_placeholder": "जैसे OSHA सुरक्षा प्रमाणन",
-      "description_label": "विवरण",
-      "description_placeholder": "यह कोहोर्ट किस बारे में है?",
-      "submit": "बनाएँ"
-    },
-    "sidebar": {
-      "newsfeed": "न्यूज़फीड",
-      "courses": "पाठ्यक्रम",
-      "people": "लोग",
-      "settings": "सेटिंग्स"
-    },
-    "status": {
-      "active": "सक्रिय",
-      "inactive": "निष्क्रिय",
-      "archived": "संग्रहीत"
-    },
-    "description": "लोगों के एक समूह को एक कक्षा जैसे कई पाठ्यक्रमों तक पहुंच प्रदान करें",
-    "search_placeholder": "कोहोर्ट खोजें",
-    "multiple_added": "पाठ्यक्रम जोड़े गए",
-    "no_matching_cohorts": "कोई भी कोहोर्ट आपके फ़िल्टर से मेल नहीं खाता.",
-    "card": {
-      "courses": "पाठ्यक्रम",
-      "students": "छात्र"
-    },
-    "table": {
-      "name": "नाम",
-      "courses": "पाठ्यक्रम",
-      "students": "छात्र",
-      "status": "स्थिति",
-      "description": "विवरण"
-    },
-    "filters": {
-      "filter": "फ़िल्टर करें",
-      "clear_all": "सब साफ़ करें",
-      "popover_title": "फिल्टर",
-      "sort": "क्रमबद्ध करें",
-      "order": "आदेश",
-      "status": "स्थिति",
-      "ascending": "ए.एस.सी",
-      "descending": "वर्णन",
-      "sort_name": "नाम",
-      "sort_courses": "पाठ्यक्रम",
-      "sort_students": "छात्र",
-      "sort_status": "स्थिति"
-    },
-    "invite_sent": "निमंत्रण भेजा गया",
-    "goals": {
-      "heading": "सीखने के लक्ष्य",
-      "description": "मापने योग्य लक्ष्य निर्धारित करें जो इस कोहोर्ट में सभी के लिए कई पाठ्यक्रमों तक फैले हों।",
-      "add": "नया लक्ष्य",
-      "empty_title": "अभी तक कोई लक्ष्य नहीं",
-      "empty_description": "अनेक पाठ्यक्रमों में टीम की प्रगति को ट्रैक करने के लिए एक लक्ष्य बनाएं।",
-      "created": "लक्ष्य बनाया गया",
-      "updated": "लक्ष्य अद्यतन किया गया",
-      "deleted": "लक्ष्य हटा दिया गया",
-      "delete_confirm": "यह लक्ष्य हटाएं? प्रति-छात्र स्थिति इतिहास हटा दिया जाएगा.",
-      "lms": {
-        "heading": "आपके लक्ष्य",
-        "empty_title": "कोई लक्ष्य नहीं सौंपा गया",
-        "empty_description": "जब आपके प्रशिक्षक लक्ष्य निर्धारित करेंगे, तो वे यहां दिखाई देंगे।",
-        "due_in_days": "{days} दिनों में देय",
-        "due_tomorrow": "कल देय",
-        "due_today": "आज देय",
-        "overdue": "अतिदेय",
-        "no_deadline": "कोई समयसीमा नहीं"
-      },
-      "tile": {
-        "on_track": "ट्रैक पर",
-        "completed_short": "पूरा हुआ",
-        "overdue_short": "अतिदेय",
-        "at_risk_short": "ख़तरे में"
-      },
-      "status": {
-        "completed": "पूरा हुआ",
-        "in_progress": "प्रगति पर है",
-        "at_risk": "ख़तरे में",
-        "overdue": "अतिदेय",
-        "not_started": "शुरू नहीं हुआ",
-        "waived": "माफ़ कर दिया गया"
-      },
-      "deadline_kind": {
-        "absolute": "पूर्ण तिथि",
-        "relative_to_join": "विद्यार्थियों के शामिल होने के संबंध में",
-        "recurring": "आवर्ती",
-        "none": "कोई समयसीमा नहीं"
-      },
-      "type": {
-        "complete_all": "सभी चयनित पाठ्यक्रम पूर्ण करें",
-        "n_of_m": "एम चयनित पाठ्यक्रमों का एन पूरा करें",
-        "score": "प्रत्येक पाठ्यक्रम पर सीमा से अधिक अंक प्राप्त करें",
-        "pass_rate": "टीम पास-रेट सीमा",
-        "readiness": "तैयारी (कोई समय सीमा नहीं)"
-      },
-      "modal": {
-        "create_title": "नया लक्ष्य",
-        "edit_title": "लक्ष्य संपादित करें",
-        "title_label": "शीर्षक",
-        "title_placeholder": "जैसे ऑनबोर्डिंग रैंप",
-        "description_label": "विवरण",
-        "description_placeholder": "टीम के लिए वैकल्पिक संदर्भ",
-        "type_label": "प्रकार",
-        "courses_label": "पाठ्यक्रम",
-        "required_count_label": "आवश्यक पाठ्यक्रमों की संख्या",
-        "score_threshold_label": "प्रति छात्र उत्तीर्णांक (%)",
-        "team_pass_rate_label": "टीम पास दर (%)",
-        "deadline_label": "समयसीमा",
-        "deadline_date_label": "अंतिम तिथि",
-        "relative_days_label": "छात्र के शामिल होने के दिन से दिन",
-        "recurring_months_label": "प्रत्येक (महीने) दोहराएँ",
-        "reminders_label": "अनुस्मारक (नियत तिथि से कुछ दिन पहले)",
-        "reminders_helper": "अल्पविराम से अलग किया गया. उदाहरण: 7, 3, 1",
-        "save": "सहेजें",
-        "cancel": "रद्द करें"
-      }
-    }
-  },
   "invite_link": {
     "tab_label": "आमंत्रण लिंक",
     "title": "आमंत्रण लिंक",
@@ -6329,9 +6011,7 @@
       "comments_off": "पाठ टिप्पणियाँ बंद हैं",
       "lesson_download": "शिक्षार्थी पाठ डाउनलोड कर सकते हैं",
       "self_enrollment": "शिक्षार्थी स्वयं शामिल हो सकते हैं",
-      "ai_tutor": "एआई ट्यूटर चालू है",
-      "compliance_retake": "हर {months, plural, one {# महीने} other {# महीने}} दोबारा लें",
-      "compliance_mandatory": "अनिवार्य"
+      "ai_tutor": "एआई ट्यूटर चालू है"
     },
     "menu": {
       "open": "खुला",
@@ -6531,7 +6211,6 @@
     "customize_lms": "Customize LMS",
     "courses": "Courses",
     "home": "Home",
-    "cohort": "Cohort",
     "course": "Course",
     "quiz": "Quiz",
     "join_platform": "Join MP Learning",
@@ -6564,7 +6243,6 @@
   "lms_pages": {
     "my_learning_subtitle": "Courses assigned to you or that you enrolled in.",
     "explore_subtitle": "Internal courses open to MP Transformation employees.",
-    "cohorts_subtitle": "Training classes and programmes you belong to.",
     "exercises_subtitle": "Track submissions and grades across your courses.",
     "exercises_column_empty": "Nothing here yet"
   },
@@ -6646,6 +6324,14 @@
       "all": "All courses",
       "assigned": "Assigned",
       "overdue": "Overdue"
+    },
+    "assigned_section": {
+      "title": "Assigned training",
+      "note": "Every assigned course per employee, with its computed status.",
+      "all_courses": "All courses",
+      "all_batches": "All batches",
+      "empty": "No assignments match",
+      "truncated": "Showing the first 200 of {count} rows. Export to see all."
     }
   },
   "employees": {
@@ -6786,13 +6472,13 @@
     "clear_filters": "Clear filters",
     "unassigned": "Not assigned",
     "empty_hint": "Add your first employee or adjust the filters to find the people you need.",
-    "page_label": "Page {page} of {pages}"
+    "page_label": "Page {page} of {pages}",
+    "job_title": "Job title"
   },
   "training_library": {
     "enrolled": "नामांकित",
     "available_to_you": "आपके लिए उपलब्ध",
     "self_enrollment": "स्वयं नामांकन",
-    "assigned_only": "निर्दिष्ट प्रशिक्षण",
     "goals": "सीखने के लक्ष्य",
     "exercise_count": "{count} अभ्यास",
     "start_continue": "शुरू करें / जारी रखें",
@@ -6802,41 +6488,71 @@
     "enrollment_error": "नामांकन नहीं हो सका। पृष्ठ दोबारा लोड करके फिर प्रयास करें।",
     "back": "प्रशिक्षण सूची पर वापस जाएँ",
     "settings_self_enrollment": "कर्मचारियों को स्वयं नामांकन की अनुमति दें",
-    "compliance_hint": "अनुपालन प्रशिक्षण सौंपा जाता है। स्वयं नामांकन उपलब्ध नहीं है।",
     "settings_self_enrollment_hint": "यह विकल्प चालू होने पर प्रकाशित पाठ्यक्रम सूची में दिखेंगे। बंद करने पर मौजूदा नामांकन बने रहेंगे।",
     "enrolled_success": "आपका नामांकन सफल हुआ।"
   },
   "training_assignment": {
-    "title": "प्रशिक्षण सौंपें",
-    "required": "अनिवार्य",
-    "recommended": "अनुशंसित",
-    "deadline": "पूरा करने की समय सीमा",
-    "message": "शिक्षार्थियों के लिए संदेश",
-    "saved": "प्रशिक्षण सौंपा गया",
-    "cancelled": "रद्द किया गया",
-    "cancel_failed": "इस भागीदारी स्रोत को रद्द नहीं किया जा सका",
-    "cancel": "प्रशिक्षण का आवंटन रद्द करें",
-    "sources": "भागीदारी के स्रोत",
     "learners": "शिक्षार्थी",
-    "staff": "शिक्षण टीम",
-    "assigned": "मुझे सौंपा गया",
-    "self_selected": "स्वयं चुना गया",
-    "access_only": "व्यक्तिगत पूर्णता की बाध्यता के बिना पहुँच",
-    "revoke_access": "इस पहुँच स्रोत को निरस्त करें",
-    "history": "भागीदारी का इतिहास",
-    "no_sources": "कोई सक्रिय भागीदारी स्रोत नहीं",
-    "description": "कर्मचारियों और पूरा करने की आवश्यकता का चयन करें। मौजूदा प्रगति सुरक्षित रहेगी।",
-    "existing_hint": "मौजूदा समय सीमाएँ बनी रहती हैं। आवश्यकता बदलने के लिए रद्द करके दोबारा सौंपें।",
-    "cancel_hint": "केवल यह स्रोत रद्द होगा। प्रगति, इतिहास और अन्य स्रोतों से पहुँच बनी रहेगी।",
-    "compliance_controls": "अनुपालन पाठ्यक्रम के मौजूदा छूट और समय सीमा नियंत्रणों का उपयोग करें।",
-    "source": {
-      "SELF": "स्वयं नामांकन",
-      "DIRECT": "सीधा आवंटन",
-      "LEGACY": "पुराना डेटा: स्रोत अप्रमाणित",
-      "PROGRAM": "कार्यक्रम",
-      "COHORT": "प्रशिक्षण समूह",
-      "COMPLIANCE": "अनुपालन चक्र"
+    "staff": "शिक्षण टीम"
+  },
+  "enrollment": {
+    "assign_title": "Assign courses",
+    "assign_description": "Choose courses and employees. Assigned courses must be completed; existing progress is kept.",
+    "assign_button": "Assign courses",
+    "courses": "Courses",
+    "employees": "Employees",
+    "pick_courses": "Search published courses",
+    "pick_employees": "Search employees",
+    "all_employees": "All active employees",
+    "filter_department": "By department",
+    "filter_job_title": "By job title",
+    "selected_count": "{count} selected",
+    "due_date": "Due date",
+    "due": "Due",
+    "batch_label": "Training batch",
+    "batch_placeholder": "e.g. Onboarding 11/2026",
+    "batch": "Batch",
+    "message": "Message to learners",
+    "notify": "Email the learners",
+    "submit": "Assign",
+    "assigned_result": "Assigned {assigned}, already assigned {existing}",
+    "failed": "Could not save the assignment. Please try again.",
+    "saved": "Assignment updated",
+    "revoked": "Assignment revoked",
+    "how_joined": "How they joined",
+    "assigned_by": "assigned by {name}",
+    "valid_until": "Valid until",
+    "no_enrollment": "No active enrollment",
+    "employee_courses": "Assigned courses",
+    "progress": "Progress",
+    "state_label": "Status",
+    "select_all": "Select all on this page",
+    "waive_reason": "Reason for exemption",
+    "waive_expires": "Exemption ends (optional)",
+    "kind": {
+      "ASSIGNED": "Assigned",
+      "SELF": "Self-enrolled"
     },
-    "created_at": "भागीदारी की तिथि"
+    "state": {
+      "not_started": "Not started",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "overdue": "Overdue",
+      "expired": "Expired",
+      "waived": "Exempt"
+    },
+    "actions": {
+      "change_due": "Change due date",
+      "waive": "Exempt",
+      "revoke": "Revoke",
+      "revoke_confirm": "Revoke this course for {name}? Their progress and history are kept."
+    },
+    "recertification": {
+      "title": "Retake periodically",
+      "description": "A completion stays valid for a set number of months. When it expires, assigned learners must complete the course again.",
+      "months_label": "Valid for (months)",
+      "months_helper": "Learners are reminded 30 days before it expires and get 30 days to retake.",
+      "every": "Retake every {months} months"
+    }
   }
 }

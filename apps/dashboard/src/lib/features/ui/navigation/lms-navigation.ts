@@ -5,7 +5,6 @@ import HouseIcon from '@lucide/svelte/icons/house';
 import LibraryBigIcon from '@lucide/svelte/icons/library-big';
 import MessagesSquareIcon from '@lucide/svelte/icons/messages-square';
 import SettingsIcon from '@lucide/svelte/icons/settings';
-import UsersRoundIcon from '@lucide/svelte/icons/users-round';
 
 import type { AccountOrg } from '$features/app/types';
 import type { Component } from 'svelte';
@@ -63,12 +62,6 @@ export const baseNavConfig: NavItemConfig[] = [
     supportsDynamicSegment: true,
     icon: LibraryBigIcon,
     matchPattern: '^/lms/explore(/.*)?$'
-  },
-  {
-    titleKey: 'lms_navigation.cohorts',
-    path: '/cohorts',
-    icon: UsersRoundIcon,
-    matchPattern: '^/lms/cohorts(/.*)?$'
   },
   {
     titleKey: 'lms_navigation.exercise',

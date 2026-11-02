@@ -357,8 +357,6 @@ export const updateCourseLandingPageParam = ZCourseLandingPageUpdate.extend({
     data.title !== undefined ||
     data.description !== undefined ||
     data.overview !== undefined ||
-    data.cost !== undefined ||
-    data.currency !== undefined ||
     data.imageUrl !== undefined ||
     data.generateImage !== undefined ||
     data.imageQuery !== undefined ||

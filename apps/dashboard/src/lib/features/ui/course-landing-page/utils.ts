@@ -235,10 +235,6 @@ export function buildCourseLandingPageProps(
 
   const hasCertificate = Boolean(metadata?.certificate?.templateUrl || course.certificate?.design?.templateId);
 
-  const courseTypeLabel = course.type
-    ? t.get(`analytics.popularTypes.types.${course.type}`)
-    : t.get('course.navItem.settings.self_paced');
-
   const includeRequirement = isVisible(NAV_ITEM_KEY.REQUIREMENT) && Boolean(metadata?.requirements);
   const includeDescription = isVisible(NAV_ITEM_KEY.DESCRIPTION) && Boolean(metadata?.description);
   const includeGoals = isVisible(NAV_ITEM_KEY.GOALS) && Boolean(metadata?.goals);
@@ -298,7 +294,6 @@ export function buildCourseLandingPageProps(
     socialProof: {
       rating: averageRating,
       lessons: totalLessons > 0 ? totalLessons : undefined,
-      type: courseTypeLabel,
       hasCertificate
     },
     info: {
@@ -353,7 +348,7 @@ export function buildCourseLandingPageProps(
     },
     pricing: {
       cost: calcCourseCost(course),
-      currency: course.currency ?? 'USD',
+      currency: 'VND',
       discount: metadata?.discount,
       showDiscount: metadata?.showDiscount,
       ctaLabel: pricingCtaLabel,

@@ -31,12 +31,11 @@ import { getCourseWithOrgData, getOrgIdByCourseId } from '@cio/db/queries/course
 import { getProfileById } from '@cio/db/queries/auth';
 import { buildEmailFromName, buildEmailBranding } from '@cio/email';
 import { enqueueTransactionalEmail } from '@api/services/jobs';
-import { ensureComplianceEnrollmentRecordsForProfiles } from './compliance';
 import { getCourseMemberProgressSummaries } from './member-progress';
 import { getWelcomeSessionIcs } from './session-invite';
 import type { TEventSource } from '@cio/core/services/posthog';
 import { captureLearnersEnrolled } from '@api/services/product-events';
-import { getLearningContexts, materializeCourseLearners } from '@cio/db/queries/course/learning-access';
+import { listCourseEnrollments } from '@cio/db/queries/course/enrollment';
 
 /**
  * Attaches only `stage` to a page of members.
@@ -56,16 +55,10 @@ async function addMemberStages(courseId: string, members: PaginatedCourseMember[
   );
 
   return members.map((member) => {
-    if (!member.profileId || member.roleId !== ROLE.STUDENT) {
-      return member;
-    }
+    const progress =
+      member.profileId && member.roleId === ROLE.STUDENT ? progressSummaries.get(member.profileId) : undefined;
 
-    const progress = progressSummaries.get(member.profileId);
-    if (!progress) {
-      return member;
-    }
-
-    return { ...member, stage: progress.stage };
+    return { ...member, stage: progress?.stage ?? null };
   });
 }
 
@@ -77,18 +70,13 @@ async function addMemberStages(courseId: string, members: PaginatedCourseMember[
  */
 export async function listPaginatedCourseMembers(courseId: string, query: PaginatedCourseMembersOptions) {
   try {
-    await materializeCourseLearners(courseId);
     const result = await getPaginatedCourseMembers(courseId, query);
     const items = await addMemberStages(courseId, result.items);
-    const organizationId = await getOrgIdByCourseId(courseId);
-    const profileIds = items.flatMap((item) => (item.profileId ? [item.profileId] : []));
-    const contexts = organizationId
-      ? await getLearningContexts(organizationId, { courseIds: [courseId], profileIds })
-      : [];
+    const enrollments = await listCourseEnrollments(courseId);
     const learners = items.map((item) => ({
       ...item,
-      learningSources:
-        item.roleId === ROLE.STUDENT ? contexts.filter((context) => context.profileId === item.profileId) : []
+      enrollments:
+        item.roleId === ROLE.STUDENT ? enrollments.filter((enrollment) => enrollment.profileId === item.profileId) : []
     }));
 
     return {
@@ -147,274 +135,6 @@ async function readProgressAtRemoval(courseId: string, memberId: string) {
  * @param data Member data (profileId, roleId, email, name)
  * @returns Created member
  */
-export async function addMember(
-  courseId: string,
-  data: { profileId?: string; roleId: number; email?: string; name?: string },
-  context: TMemberWebhookContext = {}
-) {
-  try {
-    if (!data.profileId && !data.email) {
-      throw new AppError('Either profileId or email must be provided', ErrorCodes.VALIDATION_ERROR, 400);
-    }
-
-    const addedMember = await addCourseMember(courseId, data);
-    await emitCourseMemberAddedWebhookEvent(courseId, addedMember, {
-      source: context.source ?? buildMemberSource('admin'),
-      actorProfileId: context.actorProfileId
-    });
-
-    if (data.roleId === ROLE.STUDENT) {
-      const statsOrgId = await getOrgIdByCourseId(courseId);
-      await invalidateOrgStats(statsOrgId);
-    }
-
-    if (data.roleId === ROLE.STUDENT && data.profileId) {
-      await ensureComplianceEnrollmentRecordsForProfiles([courseId], [data.profileId]);
-    }
-
-    // Send emails when a student joins
-    if (data.roleId === ROLE.STUDENT) {
-      try {
-        // Get course and organization data
-        const courseOrgData = await getCourseWithOrgData(courseId);
-
-        if (courseOrgData) {
-          const courseName = courseOrgData.courseTitle || '';
-          const orgName = courseOrgData.orgName || 'ClassroomIO';
-          const branding = buildEmailBranding({
-            name: courseOrgData.orgName,
-            avatarUrl: courseOrgData.orgAvatarUrl,
-            theme: courseOrgData.orgTheme
-          });
-          const loginUrl = getDashboardBaseUrl({
-            siteName: courseOrgData.orgSiteName,
-            customDomain: courseOrgData.orgCustomDomain,
-            isCustomDomainVerified: courseOrgData.orgIsCustomDomainVerified
-          });
-
-          // Get student profile data
-          let studentEmail: string | null = null;
-          let studentName: string | null = null;
-
-          if (data.profileId) {
-            const studentProfile = await getProfileById(data.profileId);
-
-            if (studentProfile) {
-              studentEmail = studentProfile.email;
-              studentName = studentProfile.fullname;
-            }
-          } else if (data.email) {
-            studentEmail = data.email;
-            studentName = data.name || null;
-          }
-
-          if (studentEmail) {
-            try {
-              await enqueueTransactionalEmail('studentCourseWelcome', {
-                to: studentEmail,
-                fields: {
-                  orgName,
-                  courseName,
-                  loginUrl,
-                  customMessage: courseOrgData.welcomeEmailMessage ?? undefined,
-                  branding
-                },
-                from: buildEmailFromName(`${orgName} (via ClassroomIO.com)`),
-                idempotencyKey: `course-people-student-welcome:${courseId}:${studentEmail}`,
-                ics: await getWelcomeSessionIcs(courseId),
-                preference: { organizationId: courseOrgData.orgId, recipientProfileId: data.profileId }
-              });
-            } catch (emailError) {
-              console.error('Failed to enqueue student welcome email:', emailError);
-            }
-          }
-
-          const teachersResult = await getCourseTeachers({ courseId });
-
-          if (teachersResult.length > 0 && studentEmail && studentName) {
-            const teacherEmails = teachersResult.map((t) => t.email).filter((email): email is string => email !== null);
-
-            if (teacherEmails.length > 0) {
-              try {
-                await enqueueTransactionalEmail('teacherStudentJoined', {
-                  to: teacherEmails,
-                  fields: {
-                    courseName,
-                    studentName,
-                    studentEmail,
-                    branding
-                  },
-                  from: buildEmailFromName('ClassroomIO'),
-                  idempotencyKey: `course-people-teacher-joined:${courseId}:${studentEmail}`,
-                  preference: { organizationId: courseOrgData.orgId }
-                });
-              } catch (emailError) {
-                console.error('Failed to enqueue teacher notification email:', emailError);
-              }
-            }
-          }
-        }
-      } catch (emailError) {
-        // Log but don't fail the request if email fails
-        console.error('Failed to send student join emails:', emailError);
-      }
-    }
-
-    return addedMember;
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-    if (isUniqueConstraintViolation(error)) {
-      throw new AppError('Already a member of this course', ErrorCodes.CONFLICT, 409);
-    }
-    throw new AppError(
-      error instanceof Error ? error.message : 'Failed to add course member',
-      ErrorCodes.INTERNAL_ERROR,
-      500
-    );
-  }
-}
-
-/**
- * Adds multiple course members to a course and optionally sends welcome emails
- * @param courseId Course ID
- * @param members Array of member data
- * @returns Array of created members
- */
-export async function addMembers(
-  courseId: string,
-  members: TAddCourseMembers,
-  source: TEventSource = 'dashboard',
-  context: TMemberWebhookContext = {}
-) {
-  try {
-    if (members.length === 0) {
-      throw new AppError('At least one member must be provided', ErrorCodes.VALIDATION_ERROR, 400);
-    }
-
-    // Validate all members
-    for (const member of members) {
-      if (!member.profileId && !member.email) {
-        throw new AppError(
-          'Either profileId or email must be provided for each member',
-          ErrorCodes.VALIDATION_ERROR,
-          400
-        );
-      }
-    }
-
-    // Get course title and organization data for emails (simple query, no expensive joins)
-    const courseOrgData = await getCourseWithOrgData(courseId);
-
-    if (!courseOrgData) {
-      throw new AppError('Course not found', ErrorCodes.NOT_FOUND, 404);
-    }
-
-    const courseName = courseOrgData.courseTitle || '';
-    const orgName = courseOrgData.orgName || 'ClassroomIO';
-    const orgSiteName = courseOrgData.orgSiteName || '';
-    const branding = buildEmailBranding({
-      name: courseOrgData.orgName,
-      avatarUrl: courseOrgData.orgAvatarUrl,
-      theme: courseOrgData.orgTheme
-    });
-
-    // Add members sequentially so partial failures still invalidate stats for successful inserts.
-    const addedMembers = [];
-    let addedStudentMember = false;
-
-    try {
-      for (const member of members) {
-        const addedMember = await addCourseMember(courseId, member);
-        addedMembers.push(addedMember);
-        await emitCourseMemberAddedWebhookEvent(courseId, addedMember, {
-          source: context.source ?? buildMemberSource('admin'),
-          actorProfileId: context.actorProfileId
-        });
-
-        if (member.roleId === ROLE.STUDENT) {
-          addedStudentMember = true;
-        }
-      }
-    } finally {
-      if (addedStudentMember) {
-        await invalidateOrgStats(courseOrgData.orgId);
-      }
-
-      captureLearnersEnrolled(addedMembers, 'admin', source);
-    }
-
-    const studentProfileIds = members
-      .filter((member) => member.roleId === ROLE.STUDENT && member.profileId)
-      .map((member) => member.profileId!);
-
-    if (studentProfileIds.length > 0) {
-      await ensureComplianceEnrollmentRecordsForProfiles([courseId], studentProfileIds);
-    }
-
-    // Send welcome emails for teachers (TUTOR role = 2, ADMIN role = 1)
-    const baseUrl = getDashboardBaseUrl({
-      siteName: orgSiteName,
-      customDomain: courseOrgData.orgCustomDomain,
-      isCustomDomainVerified: courseOrgData.orgIsCustomDomainVerified
-    });
-    const inviteLink = `${baseUrl}/org/${orgSiteName}/courses`;
-
-    const teacherEmailPromises: Promise<unknown>[] = [];
-
-    addedMembers.forEach((member, index) => {
-      const memberData = members[index];
-      const roleId = memberData.roleId;
-      const email = memberData.email;
-      const name = memberData.name;
-
-      if ((roleId === ROLE.ADMIN || roleId === ROLE.TUTOR) && email && name) {
-        teacherEmailPromises.push(
-          enqueueTransactionalEmail('teacherCourseWelcome', {
-            to: email,
-            fields: {
-              name,
-              orgName,
-              courseName,
-              inviteLink,
-              branding
-            },
-            from: buildEmailFromName(`${orgName} (via ClassroomIO.com)`),
-            idempotencyKey: `teacher-course-welcome:${courseId}:${email}`,
-            preference: { organizationId: courseOrgData.orgId }
-          }).catch((emailError) => {
-            console.error(`Failed to enqueue welcome email to ${email}:`, emailError);
-            return [];
-          })
-        );
-      }
-    });
-
-    if (teacherEmailPromises.length > 0) {
-      try {
-        await Promise.all(teacherEmailPromises);
-      } catch (emailError) {
-        console.error('Failed to enqueue welcome emails:', emailError);
-      }
-    }
-
-    return addedMembers;
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-    if (isUniqueConstraintViolation(error)) {
-      throw new AppError('Already a member of this course', ErrorCodes.CONFLICT, 409);
-    }
-    throw new AppError(
-      error instanceof Error ? error.message : 'Failed to add course members',
-      ErrorCodes.INTERNAL_ERROR,
-      500
-    );
-  }
-}
-
 /**
  * Updates a course member
  * @param courseId Course ID

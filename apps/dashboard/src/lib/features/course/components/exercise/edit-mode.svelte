@@ -2,7 +2,6 @@
   import TrashIcon from '@lucide/svelte/icons/trash';
   import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
   import InfoIcon from '@lucide/svelte/icons/info';
-  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { dndzone } from 'svelte-dnd-action';
   import { flip } from 'svelte/animate';
   import { tick } from 'svelte';
@@ -36,8 +35,7 @@
   import { TextareaField } from '@cio/ui/custom/textarea-field';
   import DeleteConfirmationModal from './delete-confirmation.svelte';
   import { QuestionContainer } from '$features/course/components';
-  import { publicConversionFlow } from '$features/course/store/public-conversion.svelte';
-  import { isQuestionAutoGradable } from '$features/course/utils/public-conversion-utils';
+  import { getQuestionTypeId } from './question-type-utils';
   import { AttentionHighlight } from '$features/ui';
   import { uploadImage } from '$lib/utils/services/upload';
   import {
@@ -47,7 +45,12 @@
     questionTypeSupportsOptions,
     toExerciseQuestionModel
   } from './question-type-utils';
-  import { QUESTION_TYPE_KEY, resolveTrueFalseCorrectValue, syncTrueFalseOptions } from '@cio/question-types';
+  import {
+    QUESTION_TYPE_KEY,
+    isAutoGradableQuestionTypeId,
+    resolveTrueFalseCorrectValue,
+    syncTrueFalseOptions
+  } from '@cio/question-types';
   import { getExerciseQuestionLabels } from './question-labels';
   import SectionEditor from './section-editor.svelte';
   import type { Question } from '$features/course/types';
@@ -65,8 +68,6 @@
     goBack?: () => void;
     /** All auto-gradable question types (any course): enforce points &gt; 0 for scoring */
     requiresPositivePointsForAutoGrade?: boolean;
-    /** Public course restricts picker to auto-gradable question types only. */
-    isPublicCourse?: boolean;
     reorderQuestions?: boolean;
   }
 
@@ -75,13 +76,10 @@
     exerciseId: _exerciseId,
     goBack: _goBack = () => {},
     requiresPositivePointsForAutoGrade = false,
-    isPublicCourse = false,
     reorderQuestions = false
   }: Props = $props();
 
-  const availableQuestionTypes = $derived(
-    isPublicCourse ? QUESTION_TYPES.filter((type) => type.autoGradable) : QUESTION_TYPES
-  );
+  const availableQuestionTypes = QUESTION_TYPES;
 
   let questionIdToDelete = $state(null);
   let sectionIdToDelete = $state<string | null>(null);
@@ -400,7 +398,7 @@
 <OrderModal />
 
 {#snippet gradingBadge(question)}
-  {@const autoGradable = isQuestionAutoGradable(question)}
+  {@const autoGradable = isAutoGradableQuestionTypeId(getQuestionTypeId(question))}
   <Tooltip.Provider>
     <Tooltip.Root>
       <Tooltip.Trigger>
@@ -428,15 +426,14 @@
 
 {#snippet questionEditor(question, index)}
   {@const questionStoreIndex = $questionnaire.questions.findIndex((item) => item.id === question.id)}
-  {@const isNonAutoGradableInConversion = !isQuestionAutoGradable(question) && publicConversionFlow.isActive}
   <AttentionHighlight id={getQuestionElementId(question.id, index)} scrollBlock="start" class="mb-6 scroll-mt-36">
     <QuestionContainer
       key={String(question.id ?? `new-${index}`)}
       onClose={onInitDeleteClicked(question.id)}
       bind:points={$questionnaire.questions[questionStoreIndex].points}
-      hasError={!!errors[question.id] || isNonAutoGradableInConversion}
+      hasError={!!errors[question.id]}
       errorMsg={getQuestionErrorMsg(errors, question, 'points')}
-      pointsHint={isQuestionAutoGradable(question) && requiresPositivePointsForAutoGrade
+      pointsHint={isAutoGradableQuestionTypeId(getQuestionTypeId(question)) && requiresPositivePointsForAutoGrade
         ? $t('course.navItem.lessons.exercises.all_exercises.points_required_auto_grade')
         : null}
       onPointsChange={() => {
@@ -457,22 +454,6 @@
       {/if}
 
       {@render gradingBadge(question)}
-
-      {#if isNonAutoGradableInConversion}
-        <div
-          class="ui:border-border ui:text-foreground dark:ui:bg-muted/30 mt-2 mb-3 flex items-start gap-2.5 rounded-md border p-2.5 text-xs"
-        >
-          <TriangleAlertIcon class="ui:text-muted-foreground mt-0.5 size-4 shrink-0" />
-          <div class="min-w-0 flex-1">
-            <p class="font-medium">
-              {$t('course.navItem.settings.public_conversion.blocks_public_conversion_title')}
-            </p>
-            <p class="ui:text-muted-foreground mt-0.5 text-[11px] leading-relaxed">
-              {$t('course.navItem.settings.public_conversion.blocks_public_conversion_desc')}
-            </p>
-          </div>
-        </div>
-      {/if}
 
       <div class="mt-2 flex flex-col">
         <ExerciseQuestion.QuestionRenderer

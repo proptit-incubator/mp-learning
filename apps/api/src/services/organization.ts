@@ -42,7 +42,6 @@ import {
   getPublishedCoursesBySiteName,
   reorderOrgCourses as reorderOrgCoursesQuery
 } from '@cio/db/queries/course';
-import { countCohortsByOrgForProfile } from '@cio/db/queries/cohort';
 import { countAssetsByOrg } from '@cio/db/queries/assets';
 import { countTagsByOrg, getCourseIdsByTagSlugs, getCourseTagsByCourseIdsForOrganization } from '@cio/db/queries/tag';
 import { getAccountPrimary } from '@cio/db/queries/account';
@@ -302,9 +301,7 @@ export async function removeAudienceMember(orgId: string, memberId: number, remo
 export async function getPublicCourses(
   siteName: string,
   tagSlugs?: string[],
-  courseTypes?: string[],
   search?: string,
-  pricing?: 'free' | 'paid',
   pagination?: { page?: number; limit?: number }
 ) {
   try {
@@ -335,19 +332,13 @@ export async function getPublicCourses(
       }
     }
 
-    const totalCourses = await countPublishedCoursesBySiteName(
-      siteName,
-      filteredCourseIds,
-      courseTypes,
-      search,
-      pricing
-    );
+    const totalCourses = await countPublishedCoursesBySiteName(siteName, filteredCourseIds, undefined, search);
     const courses = await getPublishedCoursesBySiteName(
       siteName,
       filteredCourseIds,
-      courseTypes,
+      undefined,
       search,
-      pricing,
+      undefined,
       limit,
       offset
     );
@@ -418,13 +409,12 @@ export async function getOrganizationCourses(
       throw new AppError('Invalid permissions', ErrorCodes.UNAUTHORIZED, 403);
     }
 
-    const { page, limit, search, type, status, sort, order } = query;
+    const { page, limit, search, status, sort, order } = query;
     const listQuery = {
       page,
       limit,
       search,
       tags: query.tags,
-      type,
       status,
       sort,
       order
@@ -459,7 +449,6 @@ export async function getOrganizationCourses(
           page,
           limit,
           search,
-          type,
           publishedStatus: status,
           sortKey: sort,
           order
@@ -491,7 +480,6 @@ export async function getOrganizationCourses(
           page,
           limit,
           search,
-          type,
           publishedStatus: status,
           sortKey: sort,
           order
@@ -531,14 +519,13 @@ export async function getOrganizationCourses(
 export async function getOrganizationNavCounts(orgId: string, userId: string, userRole: number) {
   try {
     const courseProfileId = userRole === ROLE.ADMIN ? undefined : userId;
-    const [courses, cohorts, media, tags] = await Promise.all([
+    const [courses, media, tags] = await Promise.all([
       countOrgCourses({ orgId, profileId: courseProfileId }),
-      countCohortsByOrgForProfile(orgId, userId),
       countAssetsByOrg(orgId),
       countTagsByOrg(orgId)
     ]);
 
-    return { courses, cohorts, media, tags };
+    return { courses, media, tags };
   } catch (error) {
     if (error instanceof AppError) throw error;
     throw new AppError(

@@ -360,7 +360,6 @@ export type TCourseInviteTokenData = {
     metadata: Record<string, unknown> | null;
     groupId: string;
     slug: string | null;
-    cost: number;
   };
   organization: {
     id: string;
@@ -383,8 +382,7 @@ export async function getCourseInviteByTokenHash(tokenHash: string): Promise<TCo
           isPublished: schema.course.isPublished,
           metadata: schema.course.metadata,
           groupId: schema.group.id,
-          slug: schema.course.slug,
-          cost: schema.course.cost
+          slug: schema.course.slug
         },
         organization: {
           id: schema.organization.id,
@@ -408,8 +406,7 @@ export async function getCourseInviteByTokenHash(tokenHash: string): Promise<TCo
       ...result,
       course: {
         ...result.course,
-        isPublished: !!result.course.isPublished,
-        cost: Number(result.course.cost ?? 0)
+        isPublished: !!result.course.isPublished
       },
       organization: {
         ...result.organization,

@@ -12,7 +12,6 @@ import {
   ZPublicApiCreateCourseResponse,
   ZPublicApiPaginationQuery,
   ZPublicApiUpdateCourse,
-  ZPublicApiUpdateCourseEnvelope,
   ZPublicApiUpdateCourseStructure,
   ZPublicApiUpdateCourseStructureResponse
 } from '@cio/utils/validation/public-api';
@@ -324,10 +323,7 @@ export const v1CourseRouter = new Hono()
       description: `Update a course; ${ANY_KEY_RULE}.`,
       tags: ['Courses'],
       responses: {
-        200: jsonResponse(
-          'Course updated successfully',
-          itemResponse(ZPublicApiCourseResponse, ZPublicApiUpdateCourseEnvelope)
-        ),
+        200: jsonResponse('Course updated successfully', itemResponse(ZPublicApiCourseResponse)),
         400: { description: 'Invalid request body' },
         401: { description: 'Unauthorized' },
         403: { description: 'Forbidden' },
@@ -341,12 +337,7 @@ export const v1CourseRouter = new Hono()
         const orgId = c.get('orgId')!;
         const params = c.req.valid('param');
         const payload = c.req.valid('json');
-        const { course, conversionOffenders, publishedNow } = await updatePublicApiCourseService(
-          orgId,
-          params,
-          payload,
-          c.get('actorId')
-        );
+        const { course, publishedNow } = await updatePublicApiCourseService(orgId, params, payload, c.get('actorId'));
 
         if (publishedNow) {
           captureCoursePublished(course, c.get('actorId'), getEventSource(c));
@@ -355,8 +346,7 @@ export const v1CourseRouter = new Hono()
         return c.json(
           {
             success: true,
-            data: course,
-            ...(conversionOffenders && conversionOffenders.length > 0 ? { conversionBlocked: conversionOffenders } : {})
+            data: course
           },
           200
         );

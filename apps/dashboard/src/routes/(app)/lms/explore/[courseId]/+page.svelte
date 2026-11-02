@@ -52,13 +52,16 @@
                 ? 'training_library.enrolled'
                 : data.course.hasAccess
                   ? 'training_library.available_to_you'
-                  : data.course.canSelfEnroll
-                    ? 'training_library.self_enrollment'
-                    : 'training_library.assigned_only'
+                  : 'training_library.self_enrollment'
             )}</Badge
           >
           <p class="text-sm">{$t('lms_home.lesson_count', { count: data.course.lessonCount })}</p>
           <p class="text-sm">{$t('training_library.exercise_count', { count: data.course.exerciseCount })}</p>
+          {#if data.course.recertificationMonths}
+            <p class="text-sm">
+              {$t('enrollment.recertification.every', { months: data.course.recertificationMonths })}
+            </p>
+          {/if}
           {#if data.course.hasAccess}
             <Button class="w-full" href={getStudentCourseContinuePath(data.course.id)}
               >{$t('training_library.start_continue')}</Button

@@ -55,28 +55,11 @@ exports[`public API course template contract > ZPublicApiCourseTemplateListItemR
     "title": {
       "type": "string",
     },
-    "type": {
-      "anyOf": [
-        {
-          "enum": [
-            "SELF_PACED",
-            "LIVE_CLASS",
-            "COMPLIANCE",
-            "PUBLIC",
-          ],
-          "type": "string",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
   },
   "required": [
     "id",
     "title",
     "description",
-    "type",
     "bannerImage",
     "source",
     "createdAt",
@@ -267,39 +250,6 @@ exports[`public API course template contract > ZPublicApiCourseTemplateResponse 
         "commentsOff": {
           "type": "boolean",
         },
-        "compliance": {
-          "anyOf": [
-            {
-              "additionalProperties": false,
-              "properties": {
-                "mandatory": {
-                  "type": "boolean",
-                },
-                "months": {
-                  "type": "number",
-                },
-              },
-              "required": [
-                "months",
-                "mandatory",
-              ],
-              "type": "object",
-            },
-            {
-              "type": "null",
-            },
-          ],
-        },
-        "deadline": {
-          "anyOf": [
-            {
-              "type": "string",
-            },
-            {
-              "type": "null",
-            },
-          ],
-        },
         "grading": {
           "type": "boolean",
         },
@@ -315,14 +265,12 @@ exports[`public API course template contract > ZPublicApiCourseTemplateResponse 
       },
       "required": [
         "certificate",
-        "deadline",
         "sequential",
         "grading",
         "commentsOff",
         "lessonDownload",
         "selfEnrollment",
         "aiTutor",
-        "compliance",
       ],
       "type": "object",
     },
@@ -337,28 +285,11 @@ exports[`public API course template contract > ZPublicApiCourseTemplateResponse 
     "title": {
       "type": "string",
     },
-    "type": {
-      "anyOf": [
-        {
-          "enum": [
-            "SELF_PACED",
-            "LIVE_CLASS",
-            "COMPLIANCE",
-            "PUBLIC",
-          ],
-          "type": "string",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
   },
   "required": [
     "id",
     "title",
     "description",
-    "type",
     "bannerImage",
     "source",
     "curated",

@@ -113,7 +113,6 @@ describe('services/v1/audience', () => {
           recipientCsv: 'new@example.com',
           courseIds: undefined,
           allCourses: false,
-          allCohorts: false,
           sendEmail: true
         },
         ACTOR_ID,
@@ -134,7 +133,6 @@ describe('services/v1/audience', () => {
           recipients: [{ email: 'a@example.com' }, { email: 'not-an-email' }, { email: 'a@example.com' }],
           courseIds: ['course-1'],
           allCourses: false,
-          allCohorts: false,
           sendEmail: false
         },
         ACTOR_ID,

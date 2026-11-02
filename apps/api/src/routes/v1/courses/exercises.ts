@@ -191,7 +191,7 @@ export const v1CourseExercisesRouter = new Hono()
           'Notification job queued; poll GET /courses/{courseId}/exercises/{exerciseId}/notify/{jobId} with the jobId. Students without an email or who turned these emails off are skipped, and each call sends the emails again.',
           itemResponse(ZPublicApiCourseExerciseNotifyResponse)
         ),
-        400: { description: 'Invalid path, or a PUBLIC course/exercise has no slug to link to' },
+        400: { description: 'Invalid path' },
         401: errorResponses.unauthorized,
         403: exerciseForbiddenResponses.write,
         404: { description: 'Course or exercise not found' },

@@ -15,7 +15,7 @@ const en: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: 'You have access to {{course_name}}',
-      body: '<p>Hi there,</p><p>You now have access to <strong>{{course_name}}</strong> in <strong>{{org_name}}</strong>.</p><p>If you run into any issues, reach out to your instructor.</p><p>Cheers,<br>{{org_name}}</p>',
+      body: '<p>Hi there,</p><p>You now have access to <strong>{{course_name}}</strong> in <strong>{{org_name}}</strong>.</p><p>If you run into any issues, reach out to your instructor.</p><p>Due date: <strong>{{due_date}}</strong></p><p>Training batch: {{batch_label}}</p><p>Cheers,<br>{{org_name}}</p>',
       cta: 'Open course'
     },
     studentCourseCompletion: {
@@ -28,19 +28,19 @@ const en: StudentEmailLocaleCopy = {
       body: '<p>Hi there,</p><p>You have been invited to join <strong>{{org_name}}</strong> as a student.</p>{{course_names}}<p>This invitation expires at <strong>{{expires_at}}</strong>.</p>',
       cta: 'Accept invitation'
     },
-    studentCohortWelcome: {
-      subject: 'You have access to a cohort',
-      body: '<p>Hi there,</p><p>You now have access to <strong>{{cohort_name}}</strong> in <strong>{{org_name}}</strong>.</p><p>If you run into any issues, reach out to your instructor.</p><p>Cheers,<br>{{org_name}}</p>',
-      cta: 'Open cohort'
-    },
     studentProvePayment: {
       subject: 'One more step left',
       body: '<p>Hi {{student_name}},</p><p>You are one step closer to joining <strong>{{course_name}}</strong>.</p><p>Please send your proof of payment to <strong>{{teacher_email}}</strong> to join the course.</p><p>Talk to you soon and see you in class.</p><p>{{org_name}}</p>'
     },
-    cohortGoalReminder: {
-      subject: 'Reminder: a cohort goal is due soon',
-      body: '<p>Hi there,</p><p>The goal <strong>{{goal_title}}</strong> in <strong>{{cohort_name}}</strong> at {{org_name}} needs your attention.</p><p>{{due_status}}</p><p>Your progress: <strong>{{completed_count}} of {{required_count}} courses completed</strong>.</p><p>Cheers,<br>{{org_name}}</p>',
-      cta: 'Open the LMS'
+    assignmentDueReminder: {
+      subject: 'Completion deadline reminder: {{course_name}}',
+      body: '<p>Hi there,</p><p>The course <strong>{{course_name}}</strong> at {{org_name}} is due on <strong>{{due_date}}</strong>.</p><p>{{due_status}}</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Start learning'
+    },
+    recertificationReopened: {
+      subject: 'Time to recertify: {{course_name}}',
+      body: '<p>Hi there,</p><p>Your result for <strong>{{course_name}}</strong> at {{org_name}} expired on <strong>{{valid_until}}</strong>. Please complete the course again before <strong>{{due_date}}</strong>.</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Retake course'
     },
     quizAssigned: {
       subject: 'You have a quiz to complete',
@@ -91,7 +91,7 @@ const fr: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: 'Vous avez accès à {{course_name}}',
-      body: '<p>Bonjour,</p><p>Vous avez maintenant accès à <strong>{{course_name}}</strong> dans <strong>{{org_name}}</strong>.</p><p>En cas de problème, contactez votre formateur.</p><p>À bientôt,<br>{{org_name}}</p>',
+      body: '<p>Bonjour,</p><p>Vous avez maintenant accès à <strong>{{course_name}}</strong> dans <strong>{{org_name}}</strong>.</p><p>En cas de problème, contactez votre formateur.</p><p>Due date: <strong>{{due_date}}</strong></p><p>Training batch: {{batch_label}}</p><p>À bientôt,<br>{{org_name}}</p>',
       cta: 'Ouvrir le cours'
     },
     studentCourseCompletion: {
@@ -104,19 +104,19 @@ const fr: StudentEmailLocaleCopy = {
       body: '<p>Bonjour,</p><p>Vous êtes invité à rejoindre <strong>{{org_name}}</strong> en tant qu’apprenant.</p>{{course_names}}<p>Cette invitation expire le <strong>{{expires_at}}</strong>.</p>',
       cta: 'Accepter l’invitation'
     },
-    studentCohortWelcome: {
-      subject: 'Vous avez accès à une cohorte',
-      body: '<p>Bonjour,</p><p>Vous avez maintenant accès à <strong>{{cohort_name}}</strong> dans <strong>{{org_name}}</strong>.</p><p>En cas de problème, contactez votre formateur.</p><p>À bientôt,<br>{{org_name}}</p>',
-      cta: 'Ouvrir la cohorte'
-    },
     studentProvePayment: {
       subject: 'Encore une étape',
       body: '<p>Bonjour {{student_name}},</p><p>Vous êtes tout près de rejoindre <strong>{{course_name}}</strong>.</p><p>Envoyez votre preuve de paiement à <strong>{{teacher_email}}</strong> pour rejoindre le cours.</p><p>À très bientôt en classe.</p><p>{{org_name}}</p>'
     },
-    cohortGoalReminder: {
-      subject: 'Rappel : un objectif de cohorte arrive à échéance',
-      body: '<p>Bonjour,</p><p>L’objectif <strong>{{goal_title}}</strong> dans <strong>{{cohort_name}}</strong> chez {{org_name}} requiert votre attention.</p><p>{{due_status}}</p><p>Votre progression : <strong>{{completed_count}} cours terminés sur {{required_count}}</strong>.</p><p>À bientôt,<br>{{org_name}}</p>',
-      cta: 'Ouvrir le LMS'
+    assignmentDueReminder: {
+      subject: 'Completion deadline reminder: {{course_name}}',
+      body: '<p>Hi there,</p><p>The course <strong>{{course_name}}</strong> at {{org_name}} is due on <strong>{{due_date}}</strong>.</p><p>{{due_status}}</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Start learning'
+    },
+    recertificationReopened: {
+      subject: 'Time to recertify: {{course_name}}',
+      body: '<p>Hi there,</p><p>Your result for <strong>{{course_name}}</strong> at {{org_name}} expired on <strong>{{valid_until}}</strong>. Please complete the course again before <strong>{{due_date}}</strong>.</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Retake course'
     },
     quizAssigned: {
       subject: 'Vous avez un quiz à terminer',
@@ -167,7 +167,7 @@ const de: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: 'Sie haben Zugriff auf {{course_name}}',
-      body: '<p>Hallo,</p><p>Sie haben jetzt Zugriff auf <strong>{{course_name}}</strong> bei <strong>{{org_name}}</strong>.</p><p>Bei Problemen wenden Sie sich an Ihre Lehrkraft.</p><p>Viele Grüße,<br>{{org_name}}</p>',
+      body: '<p>Hallo,</p><p>Sie haben jetzt Zugriff auf <strong>{{course_name}}</strong> bei <strong>{{org_name}}</strong>.</p><p>Bei Problemen wenden Sie sich an Ihre Lehrkraft.</p><p>Due date: <strong>{{due_date}}</strong></p><p>Training batch: {{batch_label}}</p><p>Viele Grüße,<br>{{org_name}}</p>',
       cta: 'Kurs öffnen'
     },
     studentCourseCompletion: {
@@ -180,19 +180,19 @@ const de: StudentEmailLocaleCopy = {
       body: '<p>Hallo,</p><p>Sie wurden eingeladen, <strong>{{org_name}}</strong> als Lernende:r beizutreten.</p>{{course_names}}<p>Diese Einladung läuft am <strong>{{expires_at}}</strong> ab.</p>',
       cta: 'Einladung annehmen'
     },
-    studentCohortWelcome: {
-      subject: 'Sie haben Zugriff auf eine Kohorte',
-      body: '<p>Hallo,</p><p>Sie haben jetzt Zugriff auf <strong>{{cohort_name}}</strong> bei <strong>{{org_name}}</strong>.</p><p>Bei Problemen wenden Sie sich an Ihre Lehrkraft.</p><p>Viele Grüße,<br>{{org_name}}</p>',
-      cta: 'Kohorte öffnen'
-    },
     studentProvePayment: {
       subject: 'Nur noch ein Schritt',
       body: '<p>Hallo {{student_name}},</p><p>Sie sind dem Beitritt zu <strong>{{course_name}}</strong> einen Schritt näher.</p><p>Senden Sie Ihren Zahlungsnachweis an <strong>{{teacher_email}}</strong>, um dem Kurs beizutreten.</p><p>Bis bald im Kurs.</p><p>{{org_name}}</p>'
     },
-    cohortGoalReminder: {
-      subject: 'Erinnerung: Ein Kohortenziel ist bald fällig',
-      body: '<p>Hallo,</p><p>Das Ziel <strong>{{goal_title}}</strong> in <strong>{{cohort_name}}</strong> bei {{org_name}} benötigt Ihre Aufmerksamkeit.</p><p>{{due_status}}</p><p>Fortschritt: <strong>{{completed_count}} von {{required_count}} Kursen abgeschlossen</strong>.</p><p>Viele Grüße,<br>{{org_name}}</p>',
-      cta: 'LMS öffnen'
+    assignmentDueReminder: {
+      subject: 'Completion deadline reminder: {{course_name}}',
+      body: '<p>Hi there,</p><p>The course <strong>{{course_name}}</strong> at {{org_name}} is due on <strong>{{due_date}}</strong>.</p><p>{{due_status}}</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Start learning'
+    },
+    recertificationReopened: {
+      subject: 'Time to recertify: {{course_name}}',
+      body: '<p>Hi there,</p><p>Your result for <strong>{{course_name}}</strong> at {{org_name}} expired on <strong>{{valid_until}}</strong>. Please complete the course again before <strong>{{due_date}}</strong>.</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Retake course'
     },
     quizAssigned: {
       subject: 'Sie haben ein Quiz zu erledigen',
@@ -243,7 +243,7 @@ const es: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: 'Tienes acceso a {{course_name}}',
-      body: '<p>Hola,</p><p>Ya tienes acceso a <strong>{{course_name}}</strong> en <strong>{{org_name}}</strong>.</p><p>Si tienes algún problema, contacta con tu instructor.</p><p>Saludos,<br>{{org_name}}</p>',
+      body: '<p>Hola,</p><p>Ya tienes acceso a <strong>{{course_name}}</strong> en <strong>{{org_name}}</strong>.</p><p>Si tienes algún problema, contacta con tu instructor.</p><p>Due date: <strong>{{due_date}}</strong></p><p>Training batch: {{batch_label}}</p><p>Saludos,<br>{{org_name}}</p>',
       cta: 'Abrir curso'
     },
     studentCourseCompletion: {
@@ -256,19 +256,19 @@ const es: StudentEmailLocaleCopy = {
       body: '<p>Hola,</p><p>Te han invitado a unirte a <strong>{{org_name}}</strong> como estudiante.</p>{{course_names}}<p>Esta invitación vence el <strong>{{expires_at}}</strong>.</p>',
       cta: 'Aceptar invitación'
     },
-    studentCohortWelcome: {
-      subject: 'Tienes acceso a una cohorte',
-      body: '<p>Hola,</p><p>Ya tienes acceso a <strong>{{cohort_name}}</strong> en <strong>{{org_name}}</strong>.</p><p>Si tienes algún problema, contacta con tu instructor.</p><p>Saludos,<br>{{org_name}}</p>',
-      cta: 'Abrir cohorte'
-    },
     studentProvePayment: {
       subject: 'Solo falta un paso',
       body: '<p>Hola {{student_name}},</p><p>Estás más cerca de unirte a <strong>{{course_name}}</strong>.</p><p>Envía el comprobante de pago a <strong>{{teacher_email}}</strong> para unirte al curso.</p><p>Nos vemos pronto en clase.</p><p>{{org_name}}</p>'
     },
-    cohortGoalReminder: {
-      subject: 'Recordatorio: se acerca la fecha de un objetivo',
-      body: '<p>Hola,</p><p>El objetivo <strong>{{goal_title}}</strong> de <strong>{{cohort_name}}</strong> en {{org_name}} necesita tu atención.</p><p>{{due_status}}</p><p>Tu progreso: <strong>{{completed_count}} de {{required_count}} cursos completados</strong>.</p><p>Saludos,<br>{{org_name}}</p>',
-      cta: 'Abrir el LMS'
+    assignmentDueReminder: {
+      subject: 'Completion deadline reminder: {{course_name}}',
+      body: '<p>Hi there,</p><p>The course <strong>{{course_name}}</strong> at {{org_name}} is due on <strong>{{due_date}}</strong>.</p><p>{{due_status}}</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Start learning'
+    },
+    recertificationReopened: {
+      subject: 'Time to recertify: {{course_name}}',
+      body: '<p>Hi there,</p><p>Your result for <strong>{{course_name}}</strong> at {{org_name}} expired on <strong>{{valid_until}}</strong>. Please complete the course again before <strong>{{due_date}}</strong>.</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Retake course'
     },
     quizAssigned: {
       subject: 'Tienes un cuestionario pendiente',
@@ -314,7 +314,7 @@ const pt: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: 'Você tem acesso a {{course_name}}',
-      body: '<p>Olá,</p><p>Agora você tem acesso a <strong>{{course_name}}</strong> na <strong>{{org_name}}</strong>.</p><p>Se tiver algum problema, fale com seu instrutor.</p><p>Até breve,<br>{{org_name}}</p>',
+      body: '<p>Olá,</p><p>Agora você tem acesso a <strong>{{course_name}}</strong> na <strong>{{org_name}}</strong>.</p><p>Se tiver algum problema, fale com seu instrutor.</p><p>Due date: <strong>{{due_date}}</strong></p><p>Training batch: {{batch_label}}</p><p>Até breve,<br>{{org_name}}</p>',
       cta: 'Abrir curso'
     },
     studentCourseCompletion: {
@@ -327,19 +327,19 @@ const pt: StudentEmailLocaleCopy = {
       body: '<p>Olá,</p><p>Você foi convidado para participar da <strong>{{org_name}}</strong> como aluno.</p>{{course_names}}<p>Este convite expira em <strong>{{expires_at}}</strong>.</p>',
       cta: 'Aceitar convite'
     },
-    studentCohortWelcome: {
-      subject: 'Você tem acesso a uma turma',
-      body: '<p>Olá,</p><p>Agora você tem acesso a <strong>{{cohort_name}}</strong> na <strong>{{org_name}}</strong>.</p><p>Se tiver algum problema, fale com seu instrutor.</p><p>Até breve,<br>{{org_name}}</p>',
-      cta: 'Abrir turma'
-    },
     studentProvePayment: {
       subject: 'Falta só mais um passo',
       body: '<p>Olá, {{student_name}},</p><p>Você está mais perto de participar de <strong>{{course_name}}</strong>.</p><p>Envie o comprovante de pagamento para <strong>{{teacher_email}}</strong> para entrar no curso.</p><p>Nos vemos em breve na aula.</p><p>{{org_name}}</p>'
     },
-    cohortGoalReminder: {
-      subject: 'Lembrete: uma meta da turma vence em breve',
-      body: '<p>Olá,</p><p>A meta <strong>{{goal_title}}</strong> em <strong>{{cohort_name}}</strong> na {{org_name}} precisa da sua atenção.</p><p>{{due_status}}</p><p>Seu progresso: <strong>{{completed_count}} de {{required_count}} cursos concluídos</strong>.</p><p>Até breve,<br>{{org_name}}</p>',
-      cta: 'Abrir o LMS'
+    assignmentDueReminder: {
+      subject: 'Completion deadline reminder: {{course_name}}',
+      body: '<p>Hi there,</p><p>The course <strong>{{course_name}}</strong> at {{org_name}} is due on <strong>{{due_date}}</strong>.</p><p>{{due_status}}</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Start learning'
+    },
+    recertificationReopened: {
+      subject: 'Time to recertify: {{course_name}}',
+      body: '<p>Hi there,</p><p>Your result for <strong>{{course_name}}</strong> at {{org_name}} expired on <strong>{{valid_until}}</strong>. Please complete the course again before <strong>{{due_date}}</strong>.</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Retake course'
     },
     quizAssigned: {
       subject: 'Você tem um questionário para concluir',
@@ -385,7 +385,7 @@ const hi: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: 'आपको {{course_name}} की पहुँच मिल गई है',
-      body: '<p>नमस्ते,</p><p>अब आपको <strong>{{org_name}}</strong> में <strong>{{course_name}}</strong> की पहुँच है।</p><p>किसी समस्या पर अपने प्रशिक्षक से संपर्क करें।</p><p>शुभकामनाएँ,<br>{{org_name}}</p>',
+      body: '<p>नमस्ते,</p><p>अब आपको <strong>{{org_name}}</strong> में <strong>{{course_name}}</strong> की पहुँच है।</p><p>किसी समस्या पर अपने प्रशिक्षक से संपर्क करें।</p><p>Due date: <strong>{{due_date}}</strong></p><p>Training batch: {{batch_label}}</p><p>शुभकामनाएँ,<br>{{org_name}}</p>',
       cta: 'कोर्स खोलें'
     },
     studentCourseCompletion: {
@@ -398,19 +398,19 @@ const hi: StudentEmailLocaleCopy = {
       body: '<p>नमस्ते,</p><p>आपको विद्यार्थी के रूप में <strong>{{org_name}}</strong> में शामिल होने के लिए आमंत्रित किया गया है।</p>{{course_names}}<p>यह आमंत्रण <strong>{{expires_at}}</strong> को समाप्त होगा।</p>',
       cta: 'आमंत्रण स्वीकार करें'
     },
-    studentCohortWelcome: {
-      subject: 'आपको एक समूह की पहुँच मिल गई है',
-      body: '<p>नमस्ते,</p><p>अब आपको <strong>{{org_name}}</strong> में <strong>{{cohort_name}}</strong> की पहुँच है।</p><p>किसी समस्या पर अपने प्रशिक्षक से संपर्क करें।</p><p>शुभकामनाएँ,<br>{{org_name}}</p>',
-      cta: 'समूह खोलें'
-    },
     studentProvePayment: {
       subject: 'बस एक कदम और',
       body: '<p>नमस्ते {{student_name}},</p><p>आप <strong>{{course_name}}</strong> में शामिल होने के एक कदम और करीब हैं।</p><p>कोर्स में शामिल होने के लिए भुगतान प्रमाण <strong>{{teacher_email}}</strong> पर भेजें।</p><p>कक्षा में जल्द मिलेंगे।</p><p>{{org_name}}</p>'
     },
-    cohortGoalReminder: {
-      subject: 'रिमाइंडर: समूह का लक्ष्य जल्द पूरा करना है',
-      body: '<p>नमस्ते,</p><p>{{org_name}} के <strong>{{cohort_name}}</strong> में लक्ष्य <strong>{{goal_title}}</strong> पर ध्यान देने की आवश्यकता है।</p><p>{{due_status}}</p><p>आपकी प्रगति: <strong>{{required_count}} में से {{completed_count}} कोर्स पूरे</strong>।</p><p>शुभकामनाएँ,<br>{{org_name}}</p>',
-      cta: 'LMS खोलें'
+    assignmentDueReminder: {
+      subject: 'Completion deadline reminder: {{course_name}}',
+      body: '<p>Hi there,</p><p>The course <strong>{{course_name}}</strong> at {{org_name}} is due on <strong>{{due_date}}</strong>.</p><p>{{due_status}}</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Start learning'
+    },
+    recertificationReopened: {
+      subject: 'Time to recertify: {{course_name}}',
+      body: '<p>Hi there,</p><p>Your result for <strong>{{course_name}}</strong> at {{org_name}} expired on <strong>{{valid_until}}</strong>. Please complete the course again before <strong>{{due_date}}</strong>.</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Retake course'
     },
     quizAssigned: {
       subject: 'आपको एक क्विज़ पूरा करना है',
@@ -461,7 +461,7 @@ const vi: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: 'Bạn đã có quyền truy cập {{course_name}}',
-      body: '<p>Xin chào,</p><p>Bạn đã có quyền truy cập <strong>{{course_name}}</strong> tại <strong>{{org_name}}</strong>.</p><p>Nếu gặp vấn đề, hãy liên hệ với giảng viên.</p><p>Thân mến,<br>{{org_name}}</p>',
+      body: '<p>Xin chào,</p><p>Bạn đã có quyền truy cập <strong>{{course_name}}</strong> tại <strong>{{org_name}}</strong>.</p><p>Nếu gặp vấn đề, hãy liên hệ với giảng viên.</p><p>Hạn hoàn thành: <strong>{{due_date}}</strong></p><p>Đợt đào tạo: {{batch_label}}</p><p>Thân mến,<br>{{org_name}}</p>',
       cta: 'Mở khóa học'
     },
     studentCourseCompletion: {
@@ -474,19 +474,19 @@ const vi: StudentEmailLocaleCopy = {
       body: '<p>Xin chào,</p><p>Bạn được mời tham gia <strong>{{org_name}}</strong> với tư cách học viên.</p>{{course_names}}<p>Lời mời này hết hạn vào <strong>{{expires_at}}</strong>.</p>',
       cta: 'Chấp nhận lời mời'
     },
-    studentCohortWelcome: {
-      subject: 'Bạn đã có quyền truy cập một nhóm học',
-      body: '<p>Xin chào,</p><p>Bạn đã có quyền truy cập <strong>{{cohort_name}}</strong> tại <strong>{{org_name}}</strong>.</p><p>Nếu gặp vấn đề, hãy liên hệ với giảng viên.</p><p>Thân mến,<br>{{org_name}}</p>',
-      cta: 'Mở nhóm học'
-    },
     studentProvePayment: {
       subject: 'Chỉ còn một bước nữa',
       body: '<p>Xin chào {{student_name}},</p><p>Bạn đã tiến gần hơn đến việc tham gia <strong>{{course_name}}</strong>.</p><p>Hãy gửi bằng chứng thanh toán đến <strong>{{teacher_email}}</strong> để tham gia khóa học.</p><p>Hẹn gặp bạn trong lớp.</p><p>{{org_name}}</p>'
     },
-    cohortGoalReminder: {
-      subject: 'Nhắc nhở: mục tiêu nhóm học sắp đến hạn',
-      body: '<p>Xin chào,</p><p>Mục tiêu <strong>{{goal_title}}</strong> trong <strong>{{cohort_name}}</strong> tại {{org_name}} cần bạn chú ý.</p><p>{{due_status}}</p><p>Tiến độ: <strong>đã hoàn thành {{completed_count}}/{{required_count}} khóa học</strong>.</p><p>Thân mến,<br>{{org_name}}</p>',
-      cta: 'Mở LMS'
+    assignmentDueReminder: {
+      subject: 'Nhắc hạn hoàn thành: {{course_name}}',
+      body: '<p>Chào bạn,</p><p>Khóa học <strong>{{course_name}}</strong> tại {{org_name}} có hạn hoàn thành vào <strong>{{due_date}}</strong>.</p><p>{{due_status}}</p><p>Trân trọng,<br>{{org_name}}</p>',
+      cta: 'Vào học'
+    },
+    recertificationReopened: {
+      subject: 'Đến kỳ học lại: {{course_name}}',
+      body: '<p>Chào bạn,</p><p>Kết quả khóa <strong>{{course_name}}</strong> tại {{org_name}} đã hết hiệu lực từ <strong>{{valid_until}}</strong>. Vui lòng hoàn thành lại trước <strong>{{due_date}}</strong>.</p><p>Trân trọng,<br>{{org_name}}</p>',
+      cta: 'Học lại'
     },
     quizAssigned: {
       subject: 'Bạn có một bài kiểm tra cần hoàn thành',
@@ -532,7 +532,7 @@ const ru: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: 'Вам доступен курс {{course_name}}',
-      body: '<p>Здравствуйте!</p><p>Теперь вам доступен курс <strong>{{course_name}}</strong> в <strong>{{org_name}}</strong>.</p><p>Если возникнут проблемы, обратитесь к преподавателю.</p><p>С уважением,<br>{{org_name}}</p>',
+      body: '<p>Здравствуйте!</p><p>Теперь вам доступен курс <strong>{{course_name}}</strong> в <strong>{{org_name}}</strong>.</p><p>Если возникнут проблемы, обратитесь к преподавателю.</p><p>Due date: <strong>{{due_date}}</strong></p><p>Training batch: {{batch_label}}</p><p>С уважением,<br>{{org_name}}</p>',
       cta: 'Открыть курс'
     },
     studentCourseCompletion: {
@@ -545,19 +545,19 @@ const ru: StudentEmailLocaleCopy = {
       body: '<p>Здравствуйте!</p><p>Вас пригласили присоединиться к <strong>{{org_name}}</strong> как учащегося.</p>{{course_names}}<p>Приглашение действительно до <strong>{{expires_at}}</strong>.</p>',
       cta: 'Принять приглашение'
     },
-    studentCohortWelcome: {
-      subject: 'Вам доступна учебная группа',
-      body: '<p>Здравствуйте!</p><p>Теперь вам доступна группа <strong>{{cohort_name}}</strong> в <strong>{{org_name}}</strong>.</p><p>Если возникнут проблемы, обратитесь к преподавателю.</p><p>С уважением,<br>{{org_name}}</p>',
-      cta: 'Открыть группу'
-    },
     studentProvePayment: {
       subject: 'Остался ещё один шаг',
       body: '<p>Здравствуйте, {{student_name}}!</p><p>Вы стали ближе к участию в <strong>{{course_name}}</strong>.</p><p>Отправьте подтверждение оплаты на <strong>{{teacher_email}}</strong>, чтобы присоединиться к курсу.</p><p>До встречи на занятии.</p><p>{{org_name}}</p>'
     },
-    cohortGoalReminder: {
-      subject: 'Напоминание: срок цели группы скоро истекает',
-      body: '<p>Здравствуйте!</p><p>Цель <strong>{{goal_title}}</strong> в <strong>{{cohort_name}}</strong> от {{org_name}} требует вашего внимания.</p><p>{{due_status}}</p><p>Прогресс: <strong>завершено {{completed_count}} из {{required_count}} курсов</strong>.</p><p>С уважением,<br>{{org_name}}</p>',
-      cta: 'Открыть LMS'
+    assignmentDueReminder: {
+      subject: 'Completion deadline reminder: {{course_name}}',
+      body: '<p>Hi there,</p><p>The course <strong>{{course_name}}</strong> at {{org_name}} is due on <strong>{{due_date}}</strong>.</p><p>{{due_status}}</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Start learning'
+    },
+    recertificationReopened: {
+      subject: 'Time to recertify: {{course_name}}',
+      body: '<p>Hi there,</p><p>Your result for <strong>{{course_name}}</strong> at {{org_name}} expired on <strong>{{valid_until}}</strong>. Please complete the course again before <strong>{{due_date}}</strong>.</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Retake course'
     },
     quizAssigned: {
       subject: 'Вам назначен тест',
@@ -603,7 +603,7 @@ const pl: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: 'Masz dostęp do {{course_name}}',
-      body: '<p>Cześć,</p><p>Masz teraz dostęp do <strong>{{course_name}}</strong> w <strong>{{org_name}}</strong>.</p><p>W razie problemów skontaktuj się z prowadzącym.</p><p>Pozdrawiamy,<br>{{org_name}}</p>',
+      body: '<p>Cześć,</p><p>Masz teraz dostęp do <strong>{{course_name}}</strong> w <strong>{{org_name}}</strong>.</p><p>W razie problemów skontaktuj się z prowadzącym.</p><p>Due date: <strong>{{due_date}}</strong></p><p>Training batch: {{batch_label}}</p><p>Pozdrawiamy,<br>{{org_name}}</p>',
       cta: 'Otwórz kurs'
     },
     studentCourseCompletion: {
@@ -616,19 +616,19 @@ const pl: StudentEmailLocaleCopy = {
       body: '<p>Cześć,</p><p>Zaproszono Cię do <strong>{{org_name}}</strong> jako osobę uczącą się.</p>{{course_names}}<p>Zaproszenie wygasa <strong>{{expires_at}}</strong>.</p>',
       cta: 'Przyjmij zaproszenie'
     },
-    studentCohortWelcome: {
-      subject: 'Masz dostęp do grupy',
-      body: '<p>Cześć,</p><p>Masz teraz dostęp do <strong>{{cohort_name}}</strong> w <strong>{{org_name}}</strong>.</p><p>W razie problemów skontaktuj się z prowadzącym.</p><p>Pozdrawiamy,<br>{{org_name}}</p>',
-      cta: 'Otwórz grupę'
-    },
     studentProvePayment: {
       subject: 'Jeszcze tylko jeden krok',
       body: '<p>Cześć {{student_name}},</p><p>Jesteś o krok bliżej dołączenia do <strong>{{course_name}}</strong>.</p><p>Wyślij potwierdzenie płatności na <strong>{{teacher_email}}</strong>, aby dołączyć do kursu.</p><p>Do zobaczenia na zajęciach.</p><p>{{org_name}}</p>'
     },
-    cohortGoalReminder: {
-      subject: 'Przypomnienie: zbliża się termin celu grupy',
-      body: '<p>Cześć,</p><p>Cel <strong>{{goal_title}}</strong> w <strong>{{cohort_name}}</strong> w {{org_name}} wymaga Twojej uwagi.</p><p>{{due_status}}</p><p>Postęp: <strong>ukończono {{completed_count}} z {{required_count}} kursów</strong>.</p><p>Pozdrawiamy,<br>{{org_name}}</p>',
-      cta: 'Otwórz LMS'
+    assignmentDueReminder: {
+      subject: 'Completion deadline reminder: {{course_name}}',
+      body: '<p>Hi there,</p><p>The course <strong>{{course_name}}</strong> at {{org_name}} is due on <strong>{{due_date}}</strong>.</p><p>{{due_status}}</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Start learning'
+    },
+    recertificationReopened: {
+      subject: 'Time to recertify: {{course_name}}',
+      body: '<p>Hi there,</p><p>Your result for <strong>{{course_name}}</strong> at {{org_name}} expired on <strong>{{valid_until}}</strong>. Please complete the course again before <strong>{{due_date}}</strong>.</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Retake course'
     },
     quizAssigned: {
       subject: 'Masz quiz do ukończenia',
@@ -679,7 +679,7 @@ const da: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: 'Du har adgang til {{course_name}}',
-      body: '<p>Hej,</p><p>Du har nu adgang til <strong>{{course_name}}</strong> hos <strong>{{org_name}}</strong>.</p><p>Kontakt din underviser, hvis du oplever problemer.</p><p>Venlig hilsen,<br>{{org_name}}</p>',
+      body: '<p>Hej,</p><p>Du har nu adgang til <strong>{{course_name}}</strong> hos <strong>{{org_name}}</strong>.</p><p>Kontakt din underviser, hvis du oplever problemer.</p><p>Due date: <strong>{{due_date}}</strong></p><p>Training batch: {{batch_label}}</p><p>Venlig hilsen,<br>{{org_name}}</p>',
       cta: 'Åbn kursus'
     },
     studentCourseCompletion: {
@@ -692,19 +692,19 @@ const da: StudentEmailLocaleCopy = {
       body: '<p>Hej,</p><p>Du er inviteret til <strong>{{org_name}}</strong> som kursist.</p>{{course_names}}<p>Invitationen udløber <strong>{{expires_at}}</strong>.</p>',
       cta: 'Accepter invitation'
     },
-    studentCohortWelcome: {
-      subject: 'Du har adgang til et hold',
-      body: '<p>Hej,</p><p>Du har nu adgang til <strong>{{cohort_name}}</strong> hos <strong>{{org_name}}</strong>.</p><p>Kontakt din underviser, hvis du oplever problemer.</p><p>Venlig hilsen,<br>{{org_name}}</p>',
-      cta: 'Åbn hold'
-    },
     studentProvePayment: {
       subject: 'Kun ét trin tilbage',
       body: '<p>Hej {{student_name}},</p><p>Du er et skridt nærmere <strong>{{course_name}}</strong>.</p><p>Send betalingsbevis til <strong>{{teacher_email}}</strong> for at deltage i kurset.</p><p>Vi ses snart i undervisningen.</p><p>{{org_name}}</p>'
     },
-    cohortGoalReminder: {
-      subject: 'Påmindelse: et holdmål nærmer sig fristen',
-      body: '<p>Hej,</p><p>Målet <strong>{{goal_title}}</strong> i <strong>{{cohort_name}}</strong> hos {{org_name}} kræver din opmærksomhed.</p><p>{{due_status}}</p><p>Din fremgang: <strong>{{completed_count}} af {{required_count}} kurser gennemført</strong>.</p><p>Venlig hilsen,<br>{{org_name}}</p>',
-      cta: 'Åbn LMS'
+    assignmentDueReminder: {
+      subject: 'Completion deadline reminder: {{course_name}}',
+      body: '<p>Hi there,</p><p>The course <strong>{{course_name}}</strong> at {{org_name}} is due on <strong>{{due_date}}</strong>.</p><p>{{due_status}}</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Start learning'
+    },
+    recertificationReopened: {
+      subject: 'Time to recertify: {{course_name}}',
+      body: '<p>Hi there,</p><p>Your result for <strong>{{course_name}}</strong> at {{org_name}} expired on <strong>{{valid_until}}</strong>. Please complete the course again before <strong>{{due_date}}</strong>.</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Retake course'
     },
     quizAssigned: {
       subject: 'Du har en quiz, der skal gennemføres',
@@ -750,7 +750,7 @@ const it: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: 'Hai accesso a {{course_name}}',
-      body: '<p>Ciao,</p><p>Ora hai accesso a <strong>{{course_name}}</strong> in <strong>{{org_name}}</strong>.</p><p>Se hai problemi, contatta il tuo istruttore.</p><p>A presto,<br>{{org_name}}</p>',
+      body: '<p>Ciao,</p><p>Ora hai accesso a <strong>{{course_name}}</strong> in <strong>{{org_name}}</strong>.</p><p>Se hai problemi, contatta il tuo istruttore.</p><p>Due date: <strong>{{due_date}}</strong></p><p>Training batch: {{batch_label}}</p><p>A presto,<br>{{org_name}}</p>',
       cta: 'Apri il corso'
     },
     studentCourseCompletion: {
@@ -763,19 +763,19 @@ const it: StudentEmailLocaleCopy = {
       body: '<p>Ciao,</p><p>Sei stato invitato a unirti a <strong>{{org_name}}</strong> come studente.</p>{{course_names}}<p>Questo invito scade il <strong>{{expires_at}}</strong>.</p>',
       cta: "Accetta l'invito"
     },
-    studentCohortWelcome: {
-      subject: 'Hai accesso a un gruppo',
-      body: '<p>Ciao,</p><p>Ora hai accesso a <strong>{{cohort_name}}</strong> in <strong>{{org_name}}</strong>.</p><p>Se hai problemi, contatta il tuo istruttore.</p><p>A presto,<br>{{org_name}}</p>',
-      cta: 'Apri il gruppo'
-    },
     studentProvePayment: {
       subject: 'Manca solo un passaggio',
       body: "<p>Ciao {{student_name}},</p><p>Sei a un passo dall'iscriverti a <strong>{{course_name}}</strong>.</p><p>Invia la prova di pagamento a <strong>{{teacher_email}}</strong> per iscriverti al corso.</p><p>A presto in classe.</p><p>{{org_name}}</p>"
     },
-    cohortGoalReminder: {
-      subject: 'Promemoria: un obiettivo del gruppo è in scadenza',
-      body: "<p>Ciao,</p><p>L'obiettivo <strong>{{goal_title}}</strong> in <strong>{{cohort_name}}</strong> su {{org_name}} richiede la tua attenzione.</p><p>{{due_status}}</p><p>I tuoi progressi: <strong>{{completed_count}} di {{required_count}} corsi completati</strong>.</p><p>A presto,<br>{{org_name}}</p>",
-      cta: "Apri l'LMS"
+    assignmentDueReminder: {
+      subject: 'Completion deadline reminder: {{course_name}}',
+      body: '<p>Hi there,</p><p>The course <strong>{{course_name}}</strong> at {{org_name}} is due on <strong>{{due_date}}</strong>.</p><p>{{due_status}}</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Start learning'
+    },
+    recertificationReopened: {
+      subject: 'Time to recertify: {{course_name}}',
+      body: '<p>Hi there,</p><p>Your result for <strong>{{course_name}}</strong> at {{org_name}} expired on <strong>{{valid_until}}</strong>. Please complete the course again before <strong>{{due_date}}</strong>.</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Retake course'
     },
     quizAssigned: {
       subject: 'Hai un quiz da completare',
@@ -821,7 +821,7 @@ const tr: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: '{{course_name}} kursuna erişiminiz var',
-      body: '<p>Merhaba,</p><p><strong>{{org_name}}</strong> bünyesindeki <strong>{{course_name}}</strong> kursuna artık erişebilirsiniz.</p><p>Bir sorun yaşarsanız eğitmeninizle iletişime geçin.</p><p>Sevgiler,<br>{{org_name}}</p>',
+      body: '<p>Merhaba,</p><p><strong>{{org_name}}</strong> bünyesindeki <strong>{{course_name}}</strong> kursuna artık erişebilirsiniz.</p><p>Bir sorun yaşarsanız eğitmeninizle iletişime geçin.</p><p>Due date: <strong>{{due_date}}</strong></p><p>Training batch: {{batch_label}}</p><p>Sevgiler,<br>{{org_name}}</p>',
       cta: 'Kursu aç'
     },
     studentCourseCompletion: {
@@ -834,19 +834,19 @@ const tr: StudentEmailLocaleCopy = {
       body: '<p>Merhaba,</p><p><strong>{{org_name}}</strong> kuruluşuna öğrenci olarak davet edildiniz.</p>{{course_names}}<p>Bu davet <strong>{{expires_at}}</strong> tarihinde sona erer.</p>',
       cta: 'Daveti kabul et'
     },
-    studentCohortWelcome: {
-      subject: 'Bir gruba erişiminiz var',
-      body: '<p>Merhaba,</p><p><strong>{{org_name}}</strong> bünyesindeki <strong>{{cohort_name}}</strong> grubuna artık erişebilirsiniz.</p><p>Bir sorun yaşarsanız eğitmeninizle iletişime geçin.</p><p>Sevgiler,<br>{{org_name}}</p>',
-      cta: 'Grubu aç'
-    },
     studentProvePayment: {
       subject: 'Son bir adım kaldı',
       body: '<p>Merhaba {{student_name}},</p><p><strong>{{course_name}}</strong> kursuna katılmaya bir adım daha yaklaştınız.</p><p>Kursa katılmak için ödeme belgenizi <strong>{{teacher_email}}</strong> adresine gönderin.</p><p>Derste görüşmek üzere.</p><p>{{org_name}}</p>'
     },
-    cohortGoalReminder: {
-      subject: 'Hatırlatma: grup hedefinin süresi yaklaşıyor',
-      body: '<p>Merhaba,</p><p>{{org_name}} bünyesindeki <strong>{{cohort_name}}</strong> grubunda yer alan <strong>{{goal_title}}</strong> hedefi ilginizi bekliyor.</p><p>{{due_status}}</p><p>İlerlemeniz: <strong>{{required_count}} kurstan {{completed_count}} tanesi tamamlandı</strong>.</p><p>Sevgiler,<br>{{org_name}}</p>',
-      cta: 'LMS’yi aç'
+    assignmentDueReminder: {
+      subject: 'Completion deadline reminder: {{course_name}}',
+      body: '<p>Hi there,</p><p>The course <strong>{{course_name}}</strong> at {{org_name}} is due on <strong>{{due_date}}</strong>.</p><p>{{due_status}}</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Start learning'
+    },
+    recertificationReopened: {
+      subject: 'Time to recertify: {{course_name}}',
+      body: '<p>Hi there,</p><p>Your result for <strong>{{course_name}}</strong> at {{org_name}} expired on <strong>{{valid_until}}</strong>. Please complete the course again before <strong>{{due_date}}</strong>.</p><p>Cheers,<br>{{org_name}}</p>',
+      cta: 'Retake course'
     },
     quizAssigned: {
       subject: 'Tamamlamanız gereken bir sınav var',

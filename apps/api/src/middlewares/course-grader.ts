@@ -3,12 +3,10 @@ import type { TOrganizationApiKeyScope } from '@cio/utils/validation/organizatio
 
 import { ErrorCodes } from '@api/utils/errors';
 import { canAccessCourseSubmissions, isUserCourseMemberOrOrgAdmin } from '@cio/db/queries/group';
-import { ensureProgramCourseAccess } from '@cio/core/services/course/course';
 import { courseMemberOrAutomationKeyMiddleware } from './course-member-or-automation-key';
 
 /**
- * Course group admin/tutor, org admin, or an active org tutor mentoring a cohort
- * that includes the course. Requires authMiddleware first.
+ * Course group admin/tutor or org admin. Requires authMiddleware first.
  */
 export const courseGraderMiddleware = async (c: Context, next: Next) => {
   try {
@@ -63,8 +61,7 @@ export const courseGraderMiddleware = async (c: Context, next: Next) => {
 };
 
 /**
- * Course members, program backfill, or submission graders. Students still pass
- * as members; cohort mentors without a course group row pass as graders.
+ * Course members or submission graders.
  */
 export const courseMemberOrGraderMiddleware = async (c: Context, next: Next) => {
   try {
@@ -99,11 +96,6 @@ export const courseMemberOrGraderMiddleware = async (c: Context, next: Next) => 
 
     const canGrade = await canAccessCourseSubmissions(courseId, user.id);
     if (canGrade) {
-      return next();
-    }
-
-    const backfilledFromProgram = await ensureProgramCourseAccess(courseId, user.id);
-    if (backfilledFromProgram) {
       return next();
     }
 

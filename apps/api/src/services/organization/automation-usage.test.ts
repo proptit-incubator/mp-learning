@@ -34,11 +34,11 @@ describe('recordMcpAutomationUsage', () => {
   });
 
   it('records the credit cost defined for the tool', async () => {
-    await recordMcpAutomationUsage(automationKey, 'create_cohort_goal', { cohortId: 'cohort-id' });
+    await recordMcpAutomationUsage(automationKey, 'create_course_section', { courseId: 'course-id' });
 
     expect(mocks.createOrganizationAutomationUsage).toHaveBeenCalledWith(
       expect.objectContaining({
-        action: 'create_cohort_goal',
+        action: 'create_course_section',
         category: 'write',
         creditsConsumed: 1
       })
@@ -46,11 +46,11 @@ describe('recordMcpAutomationUsage', () => {
   });
 
   it('records zero credits for a read tool', async () => {
-    await recordMcpAutomationUsage(automationKey, 'list_cohort_goals');
+    await recordMcpAutomationUsage(automationKey, 'list_course_sections');
 
     expect(mocks.createOrganizationAutomationUsage).toHaveBeenCalledWith(
       expect.objectContaining({
-        action: 'list_cohort_goals',
+        action: 'list_course_sections',
         category: 'read',
         creditsConsumed: 0
       })

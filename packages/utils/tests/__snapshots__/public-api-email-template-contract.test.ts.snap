@@ -7,13 +7,14 @@ exports[`public API organization email template contract > ZPublicApiEmailTempla
     "emailId": {
       "description": "Which student email, as listed by GET /organization/email-templates",
       "enum": [
+        "employeeActivation",
         "studentCourseInvite",
         "studentCourseWelcome",
         "studentCourseCompletion",
         "studentOrgInvite",
-        "studentCohortWelcome",
         "studentProvePayment",
-        "cohortGoalReminder",
+        "assignmentDueReminder",
+        "recertificationReopened",
         "quizAssigned",
         "sessionReminder",
         "sessionUpdated",
@@ -102,13 +103,14 @@ exports[`public API organization email template contract > ZPublicApiEmailTempla
     },
     "emailId": {
       "enum": [
+        "employeeActivation",
         "studentCourseInvite",
         "studentCourseWelcome",
         "studentCourseCompletion",
         "studentOrgInvite",
-        "studentCohortWelcome",
         "studentProvePayment",
-        "cohortGoalReminder",
+        "assignmentDueReminder",
+        "recertificationReopened",
         "quizAssigned",
         "sessionReminder",
         "sessionUpdated",
@@ -186,13 +188,14 @@ exports[`public API organization email template contract > ZPublicApiEmailTempla
   "properties": {
     "emailId": {
       "enum": [
+        "employeeActivation",
         "studentCourseInvite",
         "studentCourseWelcome",
         "studentCourseCompletion",
         "studentOrgInvite",
-        "studentCohortWelcome",
         "studentProvePayment",
-        "cohortGoalReminder",
+        "assignmentDueReminder",
+        "recertificationReopened",
         "quizAssigned",
         "sessionReminder",
         "sessionUpdated",

@@ -232,7 +232,6 @@ export async function cloneCourse(
       orgId: created.organizationId,
       properties: {
         course_id: created.course.id,
-        course_type: created.course.type,
         is_published: !!created.course.isPublished,
         source: options.templateId ? 'template' : 'clone'
       }
@@ -313,15 +312,11 @@ async function cloneCourseWithClient(
       templateId: options.templateId ?? null,
       slug: options.slug ?? null,
       metadata: metadataWithoutReviews(courseCopy.metadata),
-      cost: courseCopy.cost,
-      currency: courseCopy.currency,
       bannerImage: courseCopy.bannerImage,
       isPublished: options.isPublished ?? courseCopy.isPublished,
       certificate: courseCopy.certificate,
-      compliance: courseCopy.compliance,
-      callout: courseCopy.callout,
       status: courseCopy.status,
-      type: courseCopy.type
+      recertificationMonths: courseCopy.recertificationMonths
     },
     tx
   );

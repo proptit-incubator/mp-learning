@@ -29,14 +29,13 @@
 
   let { data } = $props();
 
-  let pendingFilters = $state<{ tags: string[]; types: string[]; pricing: 'free' | 'paid' | null } | null>(null);
+  let pendingFilters = $state<{ tags: string[]; pricing: 'free' | 'paid' | null } | null>(null);
 
   function toPricingFilter(value: unknown): 'free' | 'paid' | null {
     return value === 'free' || value === 'paid' ? value : null;
   }
 
   let selectedTags = $derived<string[]>(pendingFilters?.tags ?? data.activeTags ?? []);
-  let selectedTypes = $derived<string[]>(pendingFilters?.types ?? data.activeTypes ?? []);
   let activeSearch = $derived(data.activeSearch || '');
   let activePricing = $derived<'free' | 'paid' | undefined>(
     pendingFilters ? (pendingFilters.pricing ?? undefined) : (toPricingFilter(data.activePricing) ?? undefined)
@@ -46,14 +45,9 @@
     if (!pendingFilters) return;
 
     const serverTags = [...(data.activeTags ?? [])].sort();
-    const serverTypes = [...(data.activeTypes ?? [])].sort();
     const serverPricing = toPricingFilter(data.activePricing);
     const pending = pendingFilters;
-    if (
-      JSON.stringify([...pending.tags].sort()) === JSON.stringify(serverTags) &&
-      JSON.stringify([...pending.types].sort()) === JSON.stringify(serverTypes) &&
-      pending.pricing === serverPricing
-    ) {
+    if (JSON.stringify([...pending.tags].sort()) === JSON.stringify(serverTags) && pending.pricing === serverPricing) {
       pendingFilters = null;
     }
   });
@@ -71,16 +65,8 @@
     search.destroy();
   });
   let filterSheetOpen = $state(false);
-  type FilterSection = 'types' | 'pricing' | 'tags';
-  // let openFilterSection = $state<FilterSection | null>('types');
-  let openFilterSection = $state<FilterSection | string[] | undefined>('types');
-
-  const COURSE_TYPES = [
-    { value: 'SELF_PACED', label: t.get('analytics.popularTypes.types.SELF_PACED') },
-    { value: 'LIVE_CLASS', label: t.get('analytics.popularTypes.types.LIVE_CLASS') },
-    { value: 'COMPLIANCE', label: t.get('analytics.popularTypes.types.COMPLIANCE') },
-    { value: 'PUBLIC', label: t.get('analytics.popularTypes.types.PUBLIC') }
-  ] as const;
+  type FilterSection = 'pricing' | 'tags';
+  let openFilterSection = $state<FilterSection | string[] | undefined>('pricing');
 
   const landingSettings = $derived(normalizeLandingPageSettings(data.org.landingpage));
 
@@ -116,22 +102,15 @@
     image: ''
   });
 
-  const activeFilterCount = $derived(selectedTags.length + selectedTypes.length + (activePricing ? 1 : 0));
+  const activeFilterCount = $derived(selectedTags.length + (activePricing ? 1 : 0));
 
-  async function applyFilters(next: {
-    tags?: string[];
-    types?: string[];
-    search?: string;
-    pricing?: 'free' | 'paid' | null;
-  }) {
+  async function applyFilters(next: { tags?: string[]; search?: string; pricing?: 'free' | 'paid' | null }) {
     const params = new SvelteURLSearchParams(page.url.searchParams);
     const nextTags = next.tags ?? selectedTags;
-    const nextTypes = next.types ?? selectedTypes;
     const nextSearch = next.search !== undefined ? next.search : activeSearch;
     const nextPricing = 'pricing' in next ? next.pricing : activePricing;
 
     nextTags.length ? params.set('tags', nextTags.join(',')) : params.delete('tags');
-    nextTypes.length ? params.set('types', nextTypes.join(',')) : params.delete('types');
     nextSearch ? params.set('search', nextSearch) : params.delete('search');
     nextPricing ? params.set('pricing', nextPricing) : params.delete('pricing');
     params.delete('page');
@@ -159,14 +138,14 @@
       isDesktop = matches;
 
       if (matches) {
-        openFilterSection = ['types', 'pricing', 'tags'];
+        openFilterSection = ['pricing', 'tags'];
 
         if (filterSheetOpen) {
           restoreSheetOnMobile = true;
           filterSheetOpen = false;
         }
       } else {
-        openFilterSection = 'types';
+        openFilterSection = 'pricing';
 
         if (restoreSheetOnMobile) {
           filterSheetOpen = true;
@@ -215,35 +194,23 @@
       next.delete(tagSlug);
     }
 
-    pendingFilters = { tags: Array.from(next), types: selectedTypes, pricing: currentPendingPricing() };
+    pendingFilters = { tags: Array.from(next), pricing: currentPendingPricing() };
     applyFilters({ tags: Array.from(next), search: search.takePending() });
   }
 
-  function toggleType(typeValue: string, checked: boolean) {
-    const next = new SvelteSet(selectedTypes);
-    if (checked) {
-      next.add(typeValue);
-    } else {
-      next.delete(typeValue);
-    }
-
-    pendingFilters = { tags: selectedTags, types: Array.from(next), pricing: currentPendingPricing() };
-    applyFilters({ types: Array.from(next), search: search.takePending() });
-  }
-
   function togglePricing(nextPricing: 'free' | 'paid' | null) {
-    pendingFilters = { tags: selectedTags, types: selectedTypes, pricing: nextPricing };
+    pendingFilters = { tags: selectedTags, pricing: nextPricing };
     applyFilters({ pricing: nextPricing, search: search.takePending() });
   }
 
   function clearFilters() {
-    if (selectedTags.length === 0 && selectedTypes.length === 0 && !activeSearch && !activePricing) {
+    if (selectedTags.length === 0 && !activeSearch && !activePricing) {
       return;
     }
 
     search.reset();
-    pendingFilters = { tags: [], types: [], pricing: null };
-    applyFilters({ tags: [], types: [], search: '', pricing: null });
+    pendingFilters = { tags: [], pricing: null };
+    applyFilters({ tags: [], search: '', pricing: null });
   }
 
   function onSearchInput(value: string) {
@@ -282,9 +249,7 @@
     }));
   });
 
-  const hasActiveFilters = $derived(
-    selectedTags.length > 0 || selectedTypes.length > 0 || !!activeSearch || !!activePricing
-  );
+  const hasActiveFilters = $derived(selectedTags.length > 0 || !!activeSearch || !!activePricing);
 </script>
 
 {#snippet searchField()}
@@ -322,28 +287,6 @@
   <div class="px-2 pb-2">
     {#key isDesktop}
       <Accordion.Root type={isDesktop ? 'multiple' : 'single'} bind:value={openFilterSection as never} class="w-full">
-        <!-- TYPES -->
-        <Accordion.Item value="types" class="ui:border-border">
-          <Accordion.Trigger class="px-2 text-sm font-semibold tracking-wide uppercase">
-            {$t('public_courses.filters.types_title')}
-          </Accordion.Trigger>
-          <Accordion.Content>
-            <div class="space-y-2 px-1 pb-2">
-              {#each COURSE_TYPES as courseType (courseType.value)}
-                <label
-                  class="ui:border-border ui:hover:bg-muted/50 flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2"
-                >
-                  <Checkbox
-                    checked={selectedTypes.includes(courseType.value)}
-                    onCheckedChange={(checked) => toggleType(courseType.value, Boolean(checked))}
-                  />
-                  <span class="text-sm">{courseType.label}</span>
-                </label>
-              {/each}
-            </div>
-          </Accordion.Content>
-        </Accordion.Item>
-
         <!-- PRICING -->
         <Accordion.Item value="pricing" class="ui:border-border">
           <Accordion.Trigger class="px-2 text-sm font-semibold tracking-wide uppercase">

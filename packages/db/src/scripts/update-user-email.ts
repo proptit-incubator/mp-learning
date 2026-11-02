@@ -1,6 +1,6 @@
 /**
  * Updates a user's email address everywhere it is stored:
- * "user" (auth), profile, organizationmember, groupmember and cohort_member.
+ * "user" (auth), profile, organizationmember and groupmember.
  *
  * Membership tables are matched by profile_id OR the old email so rows that
  * only carry the denormalized email (pre-signup invites) are updated too.
@@ -79,11 +79,10 @@ async function main() {
 
     const userId = targetUser.id;
 
-    const [profileRows, orgMemberRows, groupMemberRows, cohortMemberRows, pendingInvites] = await Promise.all([
+    const [profileRows, orgMemberRows, groupMemberRows, pendingInvites] = await Promise.all([
       sql`SELECT id FROM profile WHERE id = ${userId}`,
       sql`SELECT id FROM organizationmember WHERE profile_id = ${userId} OR lower(email) = ${oldEmail}`,
       sql`SELECT id FROM groupmember WHERE profile_id = ${userId} OR lower(email) = ${oldEmail}`,
-      sql`SELECT id FROM cohort_member WHERE profile_id = ${userId} OR lower(email) = ${oldEmail}`,
       sql`SELECT id FROM organization_invite WHERE lower(email) = ${oldEmail}`
     ]);
 
@@ -93,7 +92,6 @@ async function main() {
     console.log(`  profile:            ${profileRows.length}`);
     console.log(`  organizationmember: ${orgMemberRows.length}`);
     console.log(`  groupmember:        ${groupMemberRows.length}`);
-    console.log(`  cohort_member:      ${cohortMemberRows.length}`);
 
     if (pendingInvites.length > 0) {
       console.log('');
@@ -121,10 +119,6 @@ async function main() {
       `;
       await tx`
         UPDATE groupmember SET email = ${newEmail}
-        WHERE profile_id = ${userId} OR lower(email) = ${oldEmail}
-      `;
-      await tx`
-        UPDATE cohort_member SET email = ${newEmail}
         WHERE profile_id = ${userId} OR lower(email) = ${oldEmail}
       `;
     });

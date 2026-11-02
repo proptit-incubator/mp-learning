@@ -2,7 +2,6 @@ import { Hono } from '@api/utils/hono';
 import { learningAnalyticsRouter } from './learning-analytics';
 import {
   ZDashAnalyticsRange,
-  ZDashComplianceOverview,
   ZDashCourseFunnel,
   ZDashStats,
   ZIngestBatch,
@@ -10,7 +9,6 @@ import {
 } from '@cio/utils/validation/dash';
 import { authMiddleware } from '@api/middlewares/auth';
 import { getCurrentUserLoginStreak, getOrganisationAnalytics, getStudentLoginActivity } from '@api/services/dash';
-import { getOrgComplianceOverview } from '@api/services/course/compliance';
 import { handleError } from '@api/utils/errors';
 import { orgAdminMiddleware } from '@api/middlewares/org-admin';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
@@ -19,7 +17,6 @@ import {
   getCountryBreakdown,
   getCourseFunnel,
   getLandingStats,
-  getPopularTypes,
   getTopCoursesByViews,
   ingestEventBatch
 } from '@api/services/analytics';
@@ -118,18 +115,6 @@ export const dashAnalyticsRouter = new Hono()
       return handleError(c, error, 'Failed to load course funnel');
     }
   })
-  .get('/popular-types', authMiddleware, orgMemberMiddleware, zValidator('query', ZDashAnalyticsRange), async (c) => {
-    try {
-      const { days } = c.req.valid('query');
-      const orgId = c.get('orgId')!;
-      const bust = c.req.query('bust') === '1';
-      const result = await getPopularTypes(orgId, days, bust);
-
-      return c.json({ success: true, data: result }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to load popular course types');
-    }
-  })
   .get('/top-courses', authMiddleware, orgMemberMiddleware, zValidator('query', ZDashAnalyticsRange), async (c) => {
     try {
       const { days } = c.req.valid('query');
@@ -142,20 +127,4 @@ export const dashAnalyticsRouter = new Hono()
     } catch (error) {
       return handleError(c, error, 'Failed to load top courses');
     }
-  })
-  .get(
-    '/compliance-overview',
-    authMiddleware,
-    orgAdminMiddleware,
-    zValidator('query', ZDashComplianceOverview),
-    async (c) => {
-      try {
-        const orgId = c.req.header('cio-org-id')!;
-        const result = await getOrgComplianceOverview(orgId);
-
-        return c.json({ success: true, data: result }, 200);
-      } catch (error) {
-        return handleError(c, error, 'Failed to load compliance overview');
-      }
-    }
-  );
+  });

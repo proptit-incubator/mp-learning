@@ -12,7 +12,7 @@
   import { DeleteModal } from '$features/ui';
   import { courseTemplateApi } from '$features/course/api';
   import TemplatePreviewDialog from '$features/course/components/template-preview-dialog.svelte';
-  import { formatTemplateUsedDate, templateTypeBadge } from '$features/course/utils/template-display';
+  import { formatTemplateUsedDate } from '$features/course/utils/template-display';
   import { t } from '$lib/utils/functions/translations';
   import { isOrgAdmin, currentOrg, currentOrgPath } from '$lib/utils/store/org';
   import { isStudentExperience } from '$lib/utils/store/app';
@@ -193,7 +193,6 @@
                 subtitle={subtitle(template, template.owned)}
                 imageUrl={template.bannerImage || template.logo || DEFAULT_COURSE_BANNER_IMAGE}
                 imageAlt={template.title}
-                typeBadge={templateTypeBadge(template.type, $t)}
                 onclick={() => setPreview(template.id)}
               >
                 {#snippet overlay()}

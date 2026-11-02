@@ -45,7 +45,6 @@ export function getActiveCourseNavKey(pathname: string, courseId: string): strin
   if (segment === 'attendance') return 'course.navItems.nav_attendance';
   if (segment === 'submissions') return 'course.navItems.nav_submissions';
   if (segment === 'marks') return 'course.navItems.nav_marks';
-  if (segment === 'compliance') return 'course.navItems.nav_compliance';
   if (segment === 'certificates') return 'course.navItems.nav_certificates';
   if (segment === 'landingpage') return 'course.navItems.nav_landing_page';
   if (segment === 'people') return 'course.navItems.nav_people';

@@ -1,7 +1,6 @@
 import 'dotenv/config';
 
 import { seedAccount } from '@db/utils/seed/account';
-import { seedCompliance } from '@db/utils/seed/compliance';
 import { MVC_SECTION_ID, PANDAS_SECTION_ID, REACT_SECTION_ID, seedCourseSections } from '@db/utils/seed/courseSection';
 import { seedCourseraDummyCourses } from '@db/utils/seed/courseraDummyCourses';
 import { seedCourses } from '@db/utils/seed/course';
@@ -11,7 +10,6 @@ import { seedGroup } from '@db/utils/seed/group';
 import { seedGroupmembers } from '@db/utils/seed/groupmember';
 import { seedLearnerLifecycle } from '@db/utils/seed/learnerLifecycle';
 import { type LessonTemplate, seedLessons } from '@db/utils/seed/lesson';
-import { seedNewsfeedThreads } from '@db/utils/seed/newsfeedThreads';
 import { seedOrganization } from '@db/utils/seed/organization';
 import { seedOrganizationMember } from '@db/utils/seed/organizationmember';
 import { seedEarlyAdopterOrganizationPlan, seedEnterpriseOrganizationPlan } from '@db/utils/seed/organizationPlan';
@@ -62,10 +60,8 @@ const orderedSeeds = [
   'questions',
   'templates',
   'coursera-dummy-courses',
-  'compliance',
   'react-people-progress',
   'learner-lifecycle',
-  'newsfeed-threads',
   'launch-templates'
 ] as const;
 
@@ -112,14 +108,7 @@ const DEMO_ORGANIZATION_SEEDS: Record<DemoOrganizationSlug, DemoOrganizationSeed
     organizationId: ENTERPRISE_ORG_ID,
     userIds: [ENTERPRISE_ADMIN_USER_ID, ENTERPRISE_STUDENT_USER_ID],
     groupIds: [],
-    seedNames: [
-      ...COMMON_ORGANIZATION_SEEDS,
-      'organization-plan',
-      'coursera-dummy-courses',
-      'compliance',
-      'newsfeed-threads',
-      'launch-templates'
-    ]
+    seedNames: [...COMMON_ORGANIZATION_SEEDS, 'organization-plan', 'coursera-dummy-courses', 'launch-templates']
   },
   'skillshare-test': {
     organizationId: EARLY_ADOPTER_ORG_ID,
@@ -210,8 +199,6 @@ Flags:
   --questions                Seed questions
   --templates                Seed exercise templates
   --coursera-dummy-courses   Seed 40 dummy courses on coursera-test
-  --compliance               Seed compliance demo data (coursera-test org)
-  --newsfeed-threads         Seed nested newsfeed comment threads (coursera-test org)
   --launch-templates         Seed ClassroomIO launch templates into coursera-test
   --reset                    With --launch-templates, retire the previously seeded templates first
   --react-people-progress    Seed React course students with varied progress (udemy-test)
@@ -372,10 +359,6 @@ const seedFunctions = {
       enterpriseStudentUserId: ENTERPRISE_STUDENT_USER_ID
     });
   },
-  compliance: async () => {
-    console.log('📝 Seeding compliance demo data (coursera-test)...');
-    await seedCompliance({ enterpriseOrgId: ENTERPRISE_ORG_ID });
-  },
   'learner-lifecycle': async () => {
     console.log('📝 Seeding learner lifecycle roster (udemy-test)...');
     await seedLearnerLifecycle({
@@ -383,10 +366,6 @@ const seedFunctions = {
       reactGroupId: REACT_GROUP_ID,
       reactCourseId: REACT_COURSE_ID
     });
-  },
-  'newsfeed-threads': async () => {
-    console.log('📝 Seeding nested newsfeed threads (coursera-test)...');
-    await seedNewsfeedThreads({ enterpriseOrgId: ENTERPRISE_ORG_ID });
   },
   'launch-templates': async () => {
     if (cliOptions.flags.has('reset')) {

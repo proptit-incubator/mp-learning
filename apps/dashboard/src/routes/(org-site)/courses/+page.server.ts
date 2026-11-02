@@ -33,9 +33,6 @@ export const load = async ({ parent, url }) => {
   const normalizedTags = normalizeTagsParam(url.searchParams.get('tags'));
   const normalizedTagsQuery = normalizedTags.length > 0 ? normalizedTags.join(',') : undefined;
 
-  const normalizedTypes = normalizeTagsParam(url.searchParams.get('types'));
-  const normalizedTypesQuery = normalizedTypes.length > 0 ? normalizedTypes.join(',') : undefined;
-
   const activeSearch = url.searchParams.get('search')?.trim() ?? '';
 
   const rawPricing = url.searchParams.get('pricing');
@@ -51,7 +48,6 @@ export const load = async ({ parent, url }) => {
           siteName,
           page: String(currentPage),
           ...(normalizedTagsQuery ? { tags: normalizedTagsQuery } : {}),
-          ...(normalizedTypesQuery ? { types: normalizedTypesQuery } : {}),
           ...(activeSearch ? { search: activeSearch } : {}),
           ...(activePricing ? { pricing: activePricing } : {})
         }
@@ -89,7 +85,6 @@ export const load = async ({ parent, url }) => {
     courses: mapPublicCoursesToLandingPageCourses(courseData.courses),
     tagGroups: tagsResult.ok ? tagsResult.body.data : [],
     activeTags: normalizedTags,
-    activeTypes: normalizedTypes,
     activeSearch,
     activePricing,
     pagination: {

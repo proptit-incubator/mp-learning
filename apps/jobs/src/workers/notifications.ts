@@ -9,8 +9,10 @@ import { errorMessage } from '../utils/cancel';
 import { env } from '../config/env';
 import { log } from '../utils/logger';
 import {
+  processAssignmentDueReminderScan,
   processNotifyCourseExercise,
   processNotifyCourseSessionUpdate,
+  processRecertificationExpiryScan,
   processSessionReminderScan
 } from '../processors/notifications';
 
@@ -31,6 +33,10 @@ const worker = new Worker(
         return processNotifyCourseExercise(job.data, String(job.id));
       case JOB_NAMES.notifications.sessionReminderScan:
         return processSessionReminderScan();
+      case JOB_NAMES.notifications.assignmentDueReminderScan:
+        return processAssignmentDueReminderScan();
+      case JOB_NAMES.notifications.recertificationExpiryScan:
+        return processRecertificationExpiryScan();
       case JOB_NAMES.notifications.notifyCourseSessionUpdate:
         return processNotifyCourseSessionUpdate(job.data);
       default:
@@ -53,6 +59,17 @@ async function registerSchedulers(): Promise<void> {
       { name: JOB_NAMES.notifications.sessionReminderScan, data: {} }
     );
     log.info('session-reminder-scan-scheduler-registered', { everyMs: SESSION_REMINDER_SCAN_INTERVAL_MS });
+    await notificationsQueue.upsertJobScheduler(
+      'recertification-expiry-scan-scheduler',
+      { pattern: '30 0 * * *', tz: 'Asia/Ho_Chi_Minh' },
+      { name: JOB_NAMES.notifications.recertificationExpiryScan, data: {} }
+    );
+    await notificationsQueue.upsertJobScheduler(
+      'assignment-due-reminder-scan-scheduler',
+      { pattern: '0 8 * * *', tz: 'Asia/Ho_Chi_Minh' },
+      { name: JOB_NAMES.notifications.assignmentDueReminderScan, data: {} }
+    );
+    log.info('learning-reminder-schedulers-registered');
   } catch (err) {
     log.error('session-reminder-scan-scheduler-register-failed', { error: errorMessage(err) });
   }

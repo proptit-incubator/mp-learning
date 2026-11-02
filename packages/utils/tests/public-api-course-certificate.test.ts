@@ -30,7 +30,6 @@ const fullPayload = {
   isDownloadable: true,
   theme: 'noir',
   design: fullDesign,
-  deadline: '2026-12-31T23:59:59Z',
   emailMessage: 'Well done'
 };
 
@@ -52,22 +51,12 @@ describe('ZPublicApiUpdateCourseCertificate', () => {
     expect(ZPublicApiUpdateCourseCertificate.safeParse({ design: { templateId: 'unknown' } }).success).toBe(false);
   });
 
-  it.each(['tomorrow', 'not-a-date', '2026-12-31', '2026-12-31T23:59:59', '2026-13-01T00:00:00Z', '', '31/12/2026'])(
-    'rejects the deadline %j',
-    (deadline) => {
-      expect(ZPublicApiUpdateCourseCertificate.safeParse({ deadline }).success).toBe(false);
-    }
-  );
-
-  it.each(['2026-12-31T23:59:59Z', '2026-12-31T23:59:59.000Z', '2026-12-31T23:59:59+01:00'])(
-    'accepts the ISO 8601 deadline %j',
-    (deadline) => {
-      expect(ZPublicApiUpdateCourseCertificate.parse({ deadline })).toEqual({ deadline });
-    }
-  );
+  it('drops the retired completion deadline field', () => {
+    expect(ZPublicApiUpdateCourseCertificate.safeParse({ deadline: '2026-12-31T23:59:59Z' }).success).toBe(false);
+  });
 
   it('accepts null to clear each nullable field', () => {
-    const cleared = { deadline: null, emailMessage: null };
+    const cleared = { emailMessage: null };
 
     expect(ZPublicApiUpdateCourseCertificate.parse(cleared)).toEqual(cleared);
   });
@@ -82,7 +71,7 @@ describe('ZPublicApiUpdateCourseCertificate', () => {
 describe('public certificate contract', () => {
   it('exposes exactly the documented settings fields', () => {
     expect([...PUBLIC_API_CERTIFICATE_FIELDS].sort()).toEqual(
-      ['deadline', 'design', 'emailMessage', 'isDownloadable', 'theme'].sort()
+      ['design', 'emailMessage', 'isDownloadable', 'theme'].sort()
     );
   });
 

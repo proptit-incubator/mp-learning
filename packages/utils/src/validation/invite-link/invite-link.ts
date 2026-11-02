@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-export const ZInviteLinkResourceType = z.enum(['COURSE', 'COHORT']);
+export const ZInviteLinkResourceType = z.enum(['COURSE']);
 export type TInviteLinkResourceType = z.infer<typeof ZInviteLinkResourceType>;
 
 export const ZInviteLinkTokenParam = z.object({

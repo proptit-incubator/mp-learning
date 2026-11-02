@@ -52,7 +52,7 @@
       <div class="flex items-center text-black">
         <UserAvatar
           src={comment.author?.avatarUrl}
-          alt={comment.author?.fullname ?? $t('cohorts.newsfeed.user_avatar_alt')}
+          alt={comment.author?.fullname ?? $t('common.user_avatar_alt')}
           class="size-7"
         />
 

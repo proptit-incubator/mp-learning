@@ -9,8 +9,6 @@
   import { t } from '$lib/utils/functions/translations';
   import { isFreePlan } from '$lib/utils/store/org';
 
-  const DEADLINE_DATE_TOKEN = '__CLASSROOMIO_DEADLINE_DATE__';
-
   const summary = $derived(getCompletionRulesSummary(courseApi.course));
   const courseId = $derived(courseApi.course?.id);
   const progressionLabel = $derived(
@@ -18,21 +16,6 @@
       ? $t('course.navItem.settings.progression_mode_sequential')
       : $t('course.navItem.settings.progression_mode_free')
   );
-  const deadlineLabel = $derived(formatDeadline(summary.deadline));
-  const deadlineSummary = $derived.by(() => {
-    if (!deadlineLabel) return null;
-
-    const deadlineCopy = $t('course.certification.completion_rules_deadline', {
-      date: DEADLINE_DATE_TOKEN
-    });
-    const [before, after = ''] = deadlineCopy.split(DEADLINE_DATE_TOKEN);
-
-    return {
-      label: deadlineLabel,
-      before,
-      after
-    };
-  });
   const editRulesHref = $derived(courseId ? getEditRulesHref(courseId) : undefined);
   const isEditRulesLocked = $derived($isFreePlan);
 
@@ -41,15 +24,6 @@
       id,
       [NAVIGATION_SOURCE_PARAM]: NAVIGATION_SOURCE.CERTIFICATE_SETTINGS
     });
-  }
-
-  function formatDeadline(iso: string | null) {
-    if (!iso) return null;
-
-    const deadlineDate = new Date(iso);
-    if (Number.isNaN(deadlineDate.getTime())) return null;
-
-    return deadlineDate.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
   }
 </script>
 
@@ -64,13 +38,6 @@
     <li>
       {$t('course.navItem.settings.progression_mode_title')}:
       <strong>{progressionLabel}</strong>
-    </li>
-    <li>
-      {#if deadlineSummary}
-        {deadlineSummary.before}<strong>{deadlineSummary.label}</strong>{deadlineSummary.after}
-      {:else}
-        {$t('course.certification.completion_rules_no_deadline')}
-      {/if}
     </li>
   </ul>
 

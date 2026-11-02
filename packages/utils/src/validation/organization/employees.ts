@@ -19,9 +19,7 @@ export const ZEmployeeFields = z.object({
   jobTitle: z.string().trim().max(150).default(''),
   managerId: z.uuid().nullable().default(null),
   startDate: optionalDate,
-  role: z.enum(EMPLOYEE_ROLES).default('EMPLOYEE'),
-  courseIds: z.array(z.uuid()).max(100).default([]),
-  cohortIds: z.array(z.uuid()).max(100).default([])
+  role: z.enum(EMPLOYEE_ROLES).default('EMPLOYEE')
 });
 export const ZCreateEmployee = ZEmployeeFields.extend({ sendActivation: z.boolean().default(false) });
 export const ZUpdateEmployee = ZEmployeeFields.omit({ email: true, employeeCode: true });
@@ -46,6 +44,7 @@ export const ZEmployeeList = z.object({
   certificate: z.enum(['earned', 'not_earned']).optional(),
   search: z.string().trim().max(150).default(''),
   department: z.string().max(150).default(''),
+  jobTitle: z.string().optional(),
   status: z.enum(EMPLOYEE_STATUSES).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(25)

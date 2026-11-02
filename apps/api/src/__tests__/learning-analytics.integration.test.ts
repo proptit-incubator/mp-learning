@@ -1,4 +1,4 @@
-import { createEnrollmentSource, createTrainingAssignment } from '@cio/db/queries/course/learning-access';
+import { createEnrollments, recordCourseCompletion } from '@cio/db/queries/course/enrollment';
 import { describe, expect, it } from 'vitest';
 import { randomUUID } from 'node:crypto';
 import { db } from '@cio/db/drizzle';
@@ -30,17 +30,35 @@ async function createPopulation(transaction: TestTransaction) {
     .insert(schema.organization)
     .values({ name: 'Analytics integration', siteName })
     .returning();
-  await transaction
-    .insert(schema.organizationmember)
-    .values(profiles.map((profile) => ({ organizationId: organization.id, profileId: profile.id, roleId: 3 })));
-  return { organizationId: organization.id, profileId: profiles[0].id };
+  const employeeIds: string[] = [];
+  for (const profile of profiles) {
+    const email = `${randomUUID()}@example.com`;
+    const [member] = await transaction
+      .insert(schema.organizationmember)
+      .values({ organizationId: organization.id, profileId: profile.id, email, roleId: 3 })
+      .returning();
+    const [employee] = await transaction
+      .insert(schema.employee)
+      .values({
+        organizationId: organization.id,
+        memberId: member.id,
+        employeeCode: randomUUID().slice(0, 12).toUpperCase(),
+        fullname: 'Learner',
+        email,
+        status: 'ACTIVE',
+        activatedAt: new Date().toISOString()
+      })
+      .returning();
+    employeeIds.push(employee.id);
+  }
+  return { organizationId: organization.id, profileId: profiles[0].id, employeeId: employeeIds[0] };
 }
 
 async function createCourse(
   transaction: TestTransaction,
   organizationId: string,
-  profileId: string,
-  type: 'SELF_PACED' | 'COMPLIANCE' = 'SELF_PACED'
+  employeeId: string,
+  options: { dueDate?: string | null; batchLabel?: string | null; recertificationMonths?: number | null } = {}
 ) {
   const [group] = await transaction
     .insert(schema.group)
@@ -48,109 +66,108 @@ async function createCourse(
     .returning();
   const [course] = await transaction
     .insert(schema.course)
-    .values({ title: 'Analytics test course', description: '', groupId: group.id, type, isPublished: true })
+    .values({
+      title: 'Analytics test course',
+      description: '',
+      groupId: group.id,
+      isPublished: true,
+      recertificationMonths: options.recertificationMonths ?? null
+    })
     .returning();
-  const [member] = await transaction
-    .insert(schema.groupmember)
-    .values({ groupId: group.id, profileId, roleId: 3 })
-    .returning();
-  const enrollment = await createEnrollmentSource(course.id, profileId, 'DIRECT', transaction);
-  await createTrainingAssignment(
-    enrollment.source.id,
-    { assignedBy: null, required: true, dueDate: null, message: '' },
+  const [enrollment] = await createEnrollments(
+    {
+      courseIds: [course.id],
+      employeeIds: [employeeId],
+      kind: 'ASSIGNED',
+      dueDate: options.dueDate ?? null,
+      batchLabel: options.batchLabel ?? null
+    },
     transaction
   );
-  return { courseId: course.id, memberId: member.id };
+  const [member] = await transaction.select().from(schema.groupmember).where(eq(schema.groupmember.groupId, group.id));
+  return { courseId: course.id, memberId: member.id, enrollmentId: enrollment.id };
 }
 
 describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning analytics database', () => {
-  it('isolates organizations and returns no fabricated completion percentage for an empty population', async () => {
+  it('isolates organizations and returns an empty report for an empty population', async () => {
     const snapshot = await getLearningAnalyticsSnapshot(randomUUID());
     expect(snapshot.employees).toBe(0);
     expect(snapshot.assignments).toBe(0);
     expect(snapshot.courses).toEqual([]);
     expect(snapshot.attention).toEqual([]);
+    expect(snapshot.rows).toEqual([]);
   });
 
-  it('honors exercise pass requirements, counts attempts once for progress, and does not complete empty courses', async () => {
+  it('reports progress from content and completion from recorded completion cycles', async () => {
     await withRollback(async (transaction) => {
-      const { organizationId, profileId } = await createPopulation(transaction);
-      const { courseId, memberId } = await createCourse(transaction, organizationId, profileId);
-      const [lesson] = await transaction
+      const { organizationId, profileId, employeeId } = await createPopulation(transaction);
+      const { courseId, memberId } = await createCourse(transaction, organizationId, employeeId, { batchLabel: 'Q4' });
+      const lessons = await transaction
         .insert(schema.lesson)
-        .values({ title: 'Lesson', slug: 'lesson', courseId, order: 0 })
-        .returning();
-      const [exercise] = await transaction
-        .insert(schema.exercise)
-        .values({
-          title: 'Assessment',
-          courseId,
-          order: 1,
-          slug: 'assessment',
-          completionPolicy: 'passed',
-          passThreshold: 100
-        })
-        .returning();
-      const [questionType] = await transaction
-        .insert(schema.questionType)
-        .values({ label: 'Analytics test' })
+        .values([
+          { title: 'Lesson 1', slug: 'lesson-1', courseId, order: 0 },
+          { title: 'Lesson 2', slug: 'lesson-2', courseId, order: 1 }
+        ])
         .returning();
       await transaction
-        .insert(schema.question)
-        .values({ exerciseId: exercise.id, questionTypeId: questionType.id, title: 'Question', points: 10 });
-      await transaction.insert(schema.lessonCompletion).values({ lessonId: lesson.id, profileId, isComplete: true });
-      await transaction
-        .insert(schema.submission)
-        .values({ exerciseId: exercise.id, submittedBy: memberId, gradingState: 'completed', total: 5 });
+        .insert(schema.lessonCompletion)
+        .values({ lessonId: lessons[0].id, profileId, isComplete: true });
       const pending = await getLearningAnalyticsSnapshot(organizationId, transaction);
-      expect(pending.assignments).toBe(1);
-      expect(pending.completed).toBe(0);
-      expect(pending.inProgress).toBe(1);
+      expect(pending).toMatchObject({
+        employees: 2,
+        enrolledEmployees: 1,
+        assignments: 1,
+        in_progress: 1,
+        completed: 0
+      });
       expect(pending.courses[0].progress).toBe(50);
-      await transaction
-        .insert(schema.submission)
-        .values({ exerciseId: exercise.id, submittedBy: memberId, gradingState: 'completed', total: 10 });
-      const emptyCourse = await createCourse(transaction, organizationId, profileId);
+      expect(pending.batches).toEqual([expect.objectContaining({ batchLabel: 'Q4', assigned: 1, in_progress: 1 })]);
+      expect(pending.attention.some((employee) => employee.assigned === 0)).toBe(true);
+
+      await recordCourseCompletion(
+        {
+          courseId,
+          groupMemberId: memberId,
+          profileId,
+          completedAt: new Date().toISOString(),
+          recertificationMonths: null
+        },
+        transaction
+      );
       const completed = await getLearningAnalyticsSnapshot(organizationId, transaction);
-      expect(completed.employees).toBe(2);
-      expect(completed.enrolledEmployees).toBe(1);
-      expect(completed.assignments).toBe(2);
       expect(completed.completed).toBe(1);
-      expect(completed.notStarted).toBe(1);
-      expect(completed.courses.find((course) => course.id === courseId)?.progress).toBe(100);
-      expect(completed.courses.find((course) => course.id === emptyCourse.courseId)?.completed).toBe(0);
-      expect(completed.attention.some((employee) => employee.assigned === 0)).toBe(true);
-      await transaction
-        .update(schema.course)
-        .set({ isTemplate: true })
-        .where(eq(schema.course.id, emptyCourse.courseId));
-      const withoutTemplate = await getLearningAnalyticsSnapshot(organizationId, transaction);
-      expect(withoutTemplate.courses).toHaveLength(1);
+      expect(completed.rows[0]).toMatchObject({ state: 'completed', progress: 100 });
     });
   });
 
-  it('uses the latest compliance cycle and excludes inactive employees', async () => {
+  it('distinguishes overdue, expired and waived assignments and excludes inactive employees', async () => {
     await withRollback(async (transaction) => {
-      const { organizationId, profileId } = await createPopulation(transaction);
-      const { courseId, memberId } = await createCourse(transaction, organizationId, profileId, 'COMPLIANCE');
-      const dueDate = new Date(Date.now() - 86400000).toISOString();
-      await transaction.insert(schema.courseCompletionRecord).values([
-        { courseId, profileId, groupMemberId: memberId, cycleNumber: 1, status: 'compliant', dueDate },
-        { courseId, profileId, groupMemberId: memberId, cycleNumber: 2, status: 'non_compliant', dueDate }
-      ]);
-      const overdue = await getLearningAnalyticsSnapshot(organizationId, transaction);
-      expect(overdue.overdue).toBe(1);
-      expect(overdue.completed).toBe(0);
+      const { organizationId, profileId, employeeId } = await createPopulation(transaction);
+      const pastDue = new Date(Date.now() - 86400000).toISOString();
+      const overdue = await createCourse(transaction, organizationId, employeeId, { dueDate: pastDue });
+      const recurring = await createCourse(transaction, organizationId, employeeId, { recertificationMonths: 12 });
+      await transaction.insert(schema.courseCompletionRecord).values({
+        courseId: recurring.courseId,
+        profileId,
+        groupMemberId: recurring.memberId,
+        cycleNumber: 1,
+        completedAt: '2024-01-01T00:00:00.000Z',
+        validUntil: '2025-01-01T00:00:00.000Z'
+      });
+      const report = await getLearningAnalyticsSnapshot(organizationId, transaction);
+      expect(report).toMatchObject({ overdue: 1, expired: 1, completed: 0 });
+
       await transaction
-        .insert(schema.courseCompletionRecord)
-        .values({ courseId, profileId, groupMemberId: memberId, cycleNumber: 3, status: 'waived', dueDate });
+        .update(schema.courseEnrollment)
+        .set({ status: 'WAIVED', waiverReason: 'Certified elsewhere' })
+        .where(eq(schema.courseEnrollment.id, overdue.enrollmentId));
       const waived = await getLearningAnalyticsSnapshot(organizationId, transaction);
-      expect(waived.overdue).toBe(0);
-      expect(waived.completed).toBe(1);
+      expect(waived).toMatchObject({ overdue: 0, waived: 1 });
+
       await transaction
-        .update(schema.organizationmember)
-        .set({ status: 'DEACTIVATED' })
-        .where(eq(schema.organizationmember.organizationId, organizationId));
+        .update(schema.employee)
+        .set({ status: 'SUSPENDED' })
+        .where(eq(schema.employee.organizationId, organizationId));
       const inactive = await getLearningAnalyticsSnapshot(organizationId, transaction);
       expect(inactive.employees).toBe(0);
       expect(inactive.assignments).toBe(0);
@@ -159,8 +176,8 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
 
   it('buckets learning in Vietnam time, counts submission attempts, and excludes future/out-of-period events', async () => {
     await withRollback(async (transaction) => {
-      const { organizationId, profileId } = await createPopulation(transaction);
-      const { courseId, memberId } = await createCourse(transaction, organizationId, profileId);
+      const { organizationId, profileId, employeeId } = await createPopulation(transaction);
+      const { courseId, memberId } = await createCourse(transaction, organizationId, employeeId);
       const today = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'Asia/Ho_Chi_Minh',
         year: 'numeric',

@@ -120,22 +120,15 @@ describe('v1 course certificate routes', () => {
     it('passes null through so clients can clear nullable fields', async () => {
       vi.mocked(updatePublicApiCourseCertificateService).mockResolvedValue({} as never);
 
-      const response = await buildApp().request(CERTIFICATE_PATH, jsonRequest('PATCH', { deadline: null }));
+      const response = await buildApp().request(CERTIFICATE_PATH, jsonRequest('PATCH', { emailMessage: null }));
 
       expect(response.status).toBe(200);
       expect(updatePublicApiCourseCertificateService).toHaveBeenCalledWith(
         'org-1',
         'actor-1',
         { courseId: COURSE_ID },
-        { deadline: null }
+        { emailMessage: null }
       );
-    });
-
-    it.each(['tomorrow', 'not-a-date', '2026-12-31'])('rejects the deadline %j with 400', async (deadline) => {
-      const response = await buildApp().request(CERTIFICATE_PATH, jsonRequest('PATCH', { deadline }));
-
-      expect(response.status).toBe(400);
-      expect(updatePublicApiCourseCertificateService).not.toHaveBeenCalled();
     });
 
     it('rejects an empty update body with 400', async () => {

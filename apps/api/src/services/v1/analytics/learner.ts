@@ -9,7 +9,6 @@ async function loadLearnerAnalytics(orgId: string, profileId: string) {
   const courses = analytics.courses.map((course) => ({
     id: course.id,
     title: course.title,
-    type: course.type ?? null,
     lessonsCount: course.lessons_count,
     lessonsCompleted: course.lessons_completed,
     exercisesCount: course.exercises_count,
@@ -18,7 +17,6 @@ async function loadLearnerAnalytics(orgId: string, profileId: string) {
     progressFailed: course.progress_failed,
     averageGrade: course.average_grade,
     certificateEarnedAt: course.certificateEarnedAt,
-    complianceStatus: course.complianceStatus,
     exercises:
       course.exercises?.map((exercise) => ({
         id: exercise.id,

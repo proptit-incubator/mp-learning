@@ -4,11 +4,9 @@
   import AwardIcon from '@lucide/svelte/icons/award';
   import BookOpenIcon from '@lucide/svelte/icons/book-open';
   import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
-  import ShieldCheckIcon from '@lucide/svelte/icons/shield-check';
   import UploadIcon from '@lucide/svelte/icons/upload';
   import UserPlusIcon from '@lucide/svelte/icons/user-plus';
   import UsersIcon from '@lucide/svelte/icons/users';
-  import UsersRoundIcon from '@lucide/svelte/icons/users-round';
   import ArrowUpRightIcon from '@lucide/svelte/icons/arrow-up-right';
   import { Skeleton } from '@cio/ui/base/skeleton';
 
@@ -53,20 +51,6 @@
         titleKey: 'dashboard.quick_actions.add_learners',
         descriptionKey: 'dashboard.quick_actions.add_learners_description',
         href: `${$currentOrgPath}/employees?action=create`,
-        adminOnly: true
-      },
-      {
-        icon: UsersRoundIcon,
-        titleKey: 'dashboard.quick_actions.create_cohort',
-        descriptionKey: 'dashboard.quick_actions.create_cohort_description',
-        href: `${$currentOrgPath}/cohorts`,
-        adminOnly: false
-      },
-      {
-        icon: ShieldCheckIcon,
-        titleKey: 'dashboard.quick_actions.mandatory_training',
-        descriptionKey: 'dashboard.quick_actions.mandatory_training_description',
-        href: `${$currentOrgPath}/compliance`,
         adminOnly: true
       },
       {
@@ -123,12 +107,10 @@
           <Button
             variant="secondary"
             size="sm"
-            href={`${$currentOrgPath}/${$isOrgAdmin ? 'compliance' : 'courses'}`}
+            href={`${$currentOrgPath}/courses`}
             class="ui:bg-white ui:text-brand-navy ui:hover:bg-white/90 shrink-0"
           >
-            <ShieldCheckIcon class="size-4" />{$t(
-              $isOrgAdmin ? 'mp_workspace.review_training' : 'dashboard.view_courses'
-            )}<ArrowUpRightIcon class="size-4" />
+            <BookOpenIcon class="size-4" />{$t('dashboard.view_courses')}<ArrowUpRightIcon class="size-4" />
           </Button>
         </div>
       </section>
@@ -291,7 +273,7 @@
                   <li class="flex items-start gap-3">
                     <UserAvatar
                       src={certification.avatarUrl}
-                      alt={certification.name ?? $t('cohorts.newsfeed.user_avatar_alt')}
+                      alt={certification.name ?? $t('common.user_avatar_alt')}
                       class="size-8"
                     />
                     <div class="min-w-0 flex-1">

@@ -50,7 +50,6 @@ export const ZPublicApiCreateAudienceResponse = z.object({
   ),
   assigned: z.number(),
   alreadyEnrolledInCourses: z.number(),
-  alreadyEnrolledInCohorts: z.number(),
   pendingInvitesRenewed: z.number(),
   truncated: z.number().describe('Rows beyond the import limit, which were not processed')
 });

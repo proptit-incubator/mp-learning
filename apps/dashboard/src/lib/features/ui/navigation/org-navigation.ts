@@ -6,10 +6,8 @@ import LayoutDashboardIcon from '@lucide/svelte/icons/layout-dashboard';
 import MessagesSquareIcon from '@lucide/svelte/icons/messages-square';
 import PlugIcon from '@lucide/svelte/icons/plug';
 import SettingsIcon from '@lucide/svelte/icons/settings';
-import ShieldCheckIcon from '@lucide/svelte/icons/shield-check';
 import SparklesIcon from '@lucide/svelte/icons/sparkles';
 import TagsIcon from '@lucide/svelte/icons/tags';
-import UsersRoundIcon from '@lucide/svelte/icons/users-round';
 
 import type { AccountOrg } from '$features/app/types';
 import type { Component } from 'svelte';
@@ -120,14 +118,6 @@ export const baseNavConfig: NavItemConfig[] = [
   },
   {
     group: 'content',
-    titleKey: 'org_navigation.cohorts',
-    path: '/cohorts',
-    icon: UsersRoundIcon,
-    countKey: 'cohorts',
-    matchPattern: '^/org/[^/]+/cohorts(/.*)?$'
-  },
-  {
-    group: 'content',
     titleKey: 'org_navigation.media',
     path: '/media',
     icon: FolderOpenIcon,
@@ -170,14 +160,6 @@ export const baseNavConfig: NavItemConfig[] = [
     path: '/analytics',
     icon: ChartColumnIcon,
     matchPattern: '^/org/[^/]+/analytics(/.*)?$'
-  },
-  {
-    group: 'reports',
-    titleKey: 'org_navigation.compliance',
-    path: '/compliance',
-    icon: ShieldCheckIcon,
-    requiresAdmin: true,
-    matchPattern: '^/org/[^/]+/compliance(/.*)?$'
   },
   {
     group: 'system',

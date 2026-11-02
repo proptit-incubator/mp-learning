@@ -81,7 +81,6 @@ export async function listOrgTemplateCards(orgId: string) {
         id: schema.course.id,
         title: schema.course.title,
         description: schema.course.description,
-        type: schema.course.type,
         bannerImage: schema.course.bannerImage,
         createdAt: schema.course.createdAt,
         lastUsedAt
@@ -115,7 +114,6 @@ export async function listGlobalTemplateCards(platformOrgId: string) {
         id: schema.course.id,
         title: schema.course.title,
         description: schema.course.description,
-        type: schema.course.type,
         bannerImage: schema.course.bannerImage,
         createdAt: schema.course.createdAt,
         lastUsedAt: sql<string | null>`NULL`.as('last_used_at')

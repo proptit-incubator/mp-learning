@@ -73,12 +73,12 @@
   <div {...triggerProps} class="flex items-center gap-2">
     {#if memberDetailHref}
       <a href={memberDetailHref} class="ui:text-primary inline-flex items-center gap-2 hover:underline">
-        <UserAvatar src={row.avatarUrl} alt={row.name ?? $t('cohorts.newsfeed.user_avatar_alt')} class="h-5 w-5" />
+        <UserAvatar src={row.avatarUrl} alt={row.name ?? $t('common.user_avatar_alt')} class="h-5 w-5" />
         {row.name}
       </a>
     {:else}
       <span class="inline-flex items-center gap-2">
-        <UserAvatar src={row.avatarUrl} alt={row.name ?? $t('cohorts.newsfeed.user_avatar_alt')} class="h-5 w-5" />
+        <UserAvatar src={row.avatarUrl} alt={row.name ?? $t('common.user_avatar_alt')} class="h-5 w-5" />
         {row.name}
       </span>
     {/if}

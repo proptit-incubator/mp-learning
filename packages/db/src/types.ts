@@ -66,8 +66,8 @@ export type TCourseTemplateSettingSync = typeof schema.courseTemplateSettingSync
 export type TNewCourseTemplateSettingSync = typeof schema.courseTemplateSettingSync.$inferInsert;
 export type TCourseCompletionRecord = typeof schema.courseCompletionRecord.$inferSelect;
 export type TNewCourseCompletionRecord = typeof schema.courseCompletionRecord.$inferInsert;
-export type TCourseCompletionNotificationEvent = typeof schema.courseCompletionNotificationEvent.$inferSelect;
-export type TNewCourseCompletionNotificationEvent = typeof schema.courseCompletionNotificationEvent.$inferInsert;
+export type TCourseEnrollment = typeof schema.courseEnrollment.$inferSelect;
+export type TNewCourseEnrollment = typeof schema.courseEnrollment.$inferInsert;
 export type TCourseCertificateIssue = typeof schema.courseCertificateIssue.$inferSelect;
 export type TNewCourseCertificateIssue = typeof schema.courseCertificateIssue.$inferInsert;
 
@@ -208,8 +208,6 @@ export type TNewOrganizationAutomationUsage = typeof schema.organizationAutomati
 
 export type TCourseImportDraft = typeof schema.courseImportDraft.$inferSelect;
 export type TNewCourseImportDraft = typeof schema.courseImportDraft.$inferInsert;
-
-export type TCourseType = (typeof schema.courseType.enumValues)[number];
 
 export type TLocale = (typeof schema.locale.enumValues)[number];
 

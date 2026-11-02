@@ -22,11 +22,6 @@ export const ZPublicApiCertificateDesign = z.object({
 });
 export type TPublicApiCertificateDesign = z.infer<typeof ZPublicApiCertificateDesign>;
 
-export const ZPublicApiCertificateDeadline = z.iso.datetime({
-  offset: true,
-  message: 'deadline must be an ISO 8601 datetime with a timezone, e.g. 2026-12-31T23:59:59Z'
-});
-
 const ZPublicApiCertificateSettingsFields = z.object({
   isDownloadable: z
     .boolean()
@@ -36,9 +31,6 @@ const ZPublicApiCertificateSettingsFields = z.object({
   design: ZPublicApiCertificateDesign.optional().describe(
     'Replaces the whole stored design instead of merging, so read it first and send the full object. Sent without theme, it sets theme to design.templateId, as the dashboard editor does.'
   ),
-  deadline: ZPublicApiCertificateDeadline.nullable()
-    .optional()
-    .describe('ISO 8601 datetime with a timezone, for example 2026-12-31T23:59:59Z. Send null to clear it.'),
   emailMessage: z.string().max(5000).nullable().optional().describe('Send null to clear it.')
 });
 

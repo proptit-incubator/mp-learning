@@ -14,7 +14,6 @@ const SEARCH_DEBOUNCE_MS = 200;
 function emptyResults(): GroupedSearchResults {
   return {
     course: [],
-    cohort: [],
     widget: [],
     tag: [],
     audience: [],
@@ -137,16 +136,6 @@ function mapSearchResults(data: SearchOrgData, currentOrgPath: string): GroupedS
     })
   );
 
-  results.cohort = data.cohorts.map(
-    (cohort): SearchResultItem => ({
-      kind: 'cohort',
-      id: cohort.id,
-      title: cohort.name,
-      subtitle: summarize(cohort.description),
-      url: `/cohorts/${cohort.id}/courses`
-    })
-  );
-
   results.widget = data.widgets.map(
     (widget): SearchResultItem => ({
       kind: 'widget',
@@ -190,16 +179,6 @@ function mapLmsSearchResults(data: SearchLmsData): GroupedSearchResults {
       title: course.title,
       subtitle: summarize(course.description),
       url: `/courses/${course.id}`
-    })
-  );
-
-  results.cohort = data.cohorts.map(
-    (cohort): SearchResultItem => ({
-      kind: 'cohort',
-      id: cohort.id,
-      title: cohort.name,
-      subtitle: summarize(cohort.description),
-      url: `/cohorts/${cohort.id}/courses`
     })
   );
 

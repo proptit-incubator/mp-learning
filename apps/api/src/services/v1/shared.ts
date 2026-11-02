@@ -3,18 +3,10 @@ import { getCourseSectionById } from '@cio/db/queries/course';
 import { getLessonById, type LessonById } from '@cio/db/queries/lesson';
 import type { TCourseSection } from '@cio/db/types';
 import {
-  getCohortMemberByProfileId,
-  getCohortMemberRole,
-  getCohortOrganizationId,
-  isCohortMember,
-  isOrgAdminByCohortId
-} from '@cio/db/queries/cohort';
-import {
   getGroupMemberIdByCourseAndProfile,
   isCourseTeamMemberOrOrgAdmin,
   isUserCourseMemberOrOrgAdmin
 } from '@cio/db/queries/group';
-import { ensureProgramCourseAccess } from '@cio/core/services/course/course';
 import {
   getOrganizationMemberIdByOrgAndProfile,
   getOrganizationMemberRoleId,
@@ -56,13 +48,6 @@ export function assertMemberHasJoined(profileId: string | null | undefined): ass
       400,
       'name'
     );
-  }
-}
-
-export async function assertCohortBelongsToOrganization(orgId: string, cohortId: string): Promise<void> {
-  const cohortOrganizationId = await getCohortOrganizationId(cohortId);
-  if (!cohortOrganizationId || cohortOrganizationId !== orgId) {
-    throw new AppError('Cohort not found', ErrorCodes.COHORT_NOT_FOUND, 404);
   }
 }
 
@@ -131,90 +116,13 @@ export async function assertOrgAdmin(orgId: string, actorId: string | null): Pro
 }
 
 /**
- * Mirrors `cohortMemberMiddleware` for the key's creator: the actor must be a member of the cohort or an org admin.
- * Throws 401 without an actor and 403 otherwise.
- */
-export async function assertCohortMemberOrOrgAdmin(cohortId: string, actorId: string | null): Promise<void> {
-  assertAutomationActor(actorId);
-
-  const [isMember, isOrgAdmin] = await Promise.all([
-    isCohortMember(cohortId, actorId),
-    isOrgAdminByCohortId(cohortId, actorId)
-  ]);
-
-  if (isMember || isOrgAdmin) {
-    return;
-  }
-
-  throw new AppError(
-    'Automation actor must be a cohort member or an organization admin',
-    ErrorCodes.COHORT_FORBIDDEN,
-    403
-  );
-}
-
-/**
- * Mirrors `cohortTeamMemberMiddleware` for the key's creator: the actor must be a cohort tutor/admin or an org admin.
- * Throws 401 without an actor and 403 otherwise.
- */
-export async function assertCohortTeamMemberOrOrgAdmin(cohortId: string, actorId: string | null): Promise<void> {
-  assertAutomationActor(actorId);
-
-  const [roleId, isOrgAdmin] = await Promise.all([
-    getCohortMemberRole(cohortId, actorId),
-    isOrgAdminByCohortId(cohortId, actorId)
-  ]);
-
-  if (roleId === ROLE.TUTOR || roleId === ROLE.ADMIN || isOrgAdmin) {
-    return;
-  }
-
-  throw new AppError(
-    'Automation actor must be a cohort tutor/admin or an organization admin',
-    ErrorCodes.COHORT_FORBIDDEN,
-    403
-  );
-}
-
-/**
- * Mirrors `cohortNewsfeedCommentAuthorOrTeamMiddleware` for the key's creator: the actor must be the comment's
- * author, a cohort tutor/admin, or an org admin. Throws 401 without an actor and 403 otherwise.
- */
-export async function assertCohortNewsfeedCommentAuthorOrTeam(
-  cohortId: string,
-  actorId: string | null,
-  commentAuthorMemberId: string | null
-): Promise<void> {
-  assertAutomationActor(actorId);
-
-  const [actorMember, roleId, isOrgAdmin] = await Promise.all([
-    getCohortMemberByProfileId(cohortId, actorId),
-    getCohortMemberRole(cohortId, actorId),
-    isOrgAdminByCohortId(cohortId, actorId)
-  ]);
-
-  const isAuthor = Boolean(actorMember && commentAuthorMemberId && actorMember.id === commentAuthorMemberId);
-  if (isAuthor || roleId === ROLE.TUTOR || roleId === ROLE.ADMIN || isOrgAdmin) {
-    return;
-  }
-
-  throw new AppError('Only the comment author or a cohort team member can do this', ErrorCodes.COHORT_FORBIDDEN, 403);
-}
-
-/**
- * Mirrors `courseMemberMiddleware` for the key's creator: the actor must be a course member (including program
- * access) or an org admin. Throws 401 without an actor and 403 otherwise.
+ * Mirrors `courseMemberMiddleware` for the key's creator: the actor must be a course member or an org admin. Throws 401 without an actor and 403 otherwise.
  */
 export async function assertCourseMemberOrOrgAdmin(courseId: string, actorId: string | null): Promise<void> {
   assertAutomationActor(actorId);
 
   const isAllowed = await isUserCourseMemberOrOrgAdmin(courseId, actorId);
   if (isAllowed) {
-    return;
-  }
-
-  const hasProgramAccess = await ensureProgramCourseAccess(courseId, actorId);
-  if (hasProgramAccess) {
     return;
   }
 

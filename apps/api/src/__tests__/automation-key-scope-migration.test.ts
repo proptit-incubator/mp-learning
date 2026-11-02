@@ -40,10 +40,19 @@ const SCOPE_BACKFILLS = [
   }
 ];
 
+const SCOPE_REMOVALS = [
+  {
+    tag: '0045_single_course_model',
+    removed: ['cohort:read', 'cohort:write']
+  }
+];
+
+const removedLater = SCOPE_REMOVALS.flatMap((removal) => removal.removed);
+
 describe.each(SCOPE_BACKFILLS.map((backfill, index) => ({ ...backfill, index })))('$tag', ({ tag, added, index }) => {
   const sql = readMigration(tag);
   const addedLater = SCOPE_BACKFILLS.slice(index + 1).flatMap((backfill) => backfill.added);
-  const defaultAfter = DEFAULT_SCOPES.mcp.filter((scope: string) => !addedLater.includes(scope));
+  const defaultAfter = [...DEFAULT_SCOPES.mcp, ...removedLater].filter((scope: string) => !addedLater.includes(scope));
 
   it('requires exactly the MCP default set as it stood before the new scopes', () => {
     const required = scopesInFirstJsonbArray(sql, 'AND "scopes" @>');
@@ -66,5 +75,21 @@ describe.each(SCOPE_BACKFILLS.map((backfill, index) => ({ ...backfill, index }))
 
   it('skips keys already holding every new scope, so re-running is a no-op', () => {
     expect(sql).toContain(`AND NOT "scopes" @> '${JSON.stringify(added).replace(/","/g, '", "')}'::jsonb`);
+  });
+});
+
+describe.each(SCOPE_REMOVALS)('$tag', ({ tag, removed }) => {
+  const sql = readMigration(tag);
+
+  it('drops the removed scopes from stored keys', () => {
+    const statement = removed.reduce((expression, scope) => `(${expression} - '${scope}')`, 'scopes');
+
+    expect(sql).toContain(`SET scopes = ${statement.slice(1, -1)}`);
+  });
+
+  it('no longer grants the removed scopes to new keys', () => {
+    for (const scope of removed) {
+      expect(DEFAULT_SCOPES.mcp).not.toContain(scope);
+    }
   });
 });

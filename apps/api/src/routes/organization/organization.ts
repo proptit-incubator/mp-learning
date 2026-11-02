@@ -540,21 +540,16 @@ export const organizationRouter = new Hono()
    */
   .get('/courses/public', zValidator('query', ZGetCoursesBySiteName), async (c) => {
     try {
-      const { siteName, tags, types, search, pricing, page, limit } = c.req.valid('query');
-      const splitParam = (param: string | undefined) =>
-        param
-          ?.split(',')
-          .map((v) => v.trim())
-          .filter(Boolean);
-      const tagSlugs = splitParam(tags);
-      const courseTypes = splitParam(types);
+      const { siteName, tags, search, page, limit } = c.req.valid('query');
+      const tagSlugs = tags
+        ?.split(',')
+        .map((v) => v.trim())
+        .filter(Boolean);
       const pagination = page !== undefined || limit !== undefined ? { page, limit } : undefined;
       const courses = await getPublicCourses(
         siteName,
         tagSlugs?.length ? tagSlugs : undefined,
-        courseTypes?.length ? courseTypes : undefined,
         search || undefined,
-        pricing || undefined,
         pagination
       );
 
@@ -683,7 +678,7 @@ export const organizationRouter = new Hono()
   )
   /**
    * GET /organization/nav-counts
-   * Lightweight unfiltered totals for org sidebar items (courses, cohorts, media, tags)
+   * Lightweight unfiltered totals for org sidebar items (courses, media, tags)
    */
   .get('/nav-counts', authMiddleware, orgMemberMiddleware, async (c) => {
     try {

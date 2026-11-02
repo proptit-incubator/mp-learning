@@ -5,10 +5,8 @@ export const PUBLIC_API_ORG_ANALYTICS_SECTIONS = [
   'traffic',
   'countries',
   'funnel',
-  'courseTypes',
   'topCourses',
-  'loginActivity',
-  'compliance'
+  'loginActivity'
 ] as const;
 export type TPublicApiOrgAnalyticsSection = (typeof PUBLIC_API_ORG_ANALYTICS_SECTIONS)[number];
 
@@ -37,10 +35,8 @@ const ORG_SECTION_DETAILS = [
   'traffic: landing and course page views, unique visitors, enrollments and completions, with a per-day series.',
   'countries: views and enrollments by visitor country.',
   'funnel: landing view → course page view → enrollment → completion; for one course, use GET /courses/{courseId}/analytics?include=funnel.',
-  'courseTypes: views, enrollments and completions by course type.',
   'topCourses: the most viewed course pages.',
-  'loginActivity: student logins by day of week (org admin only).',
-  'compliance: compliance status counts, overall and per course (org admin only); list the learners with GET /analytics/compliance/learners.'
+  'loginActivity: student logins by day of week (org admin only).'
 ].join(' ');
 
 const COURSE_SECTION_DETAILS = [
@@ -83,6 +79,6 @@ export const ZPublicApiCourseAnalyticsStudentsQuery = z.object({
 export type TPublicApiCourseAnalyticsStudentsQuery = z.infer<typeof ZPublicApiCourseAnalyticsStudentsQuery>;
 
 export const ZPublicApiLearnerAnalyticsParam = z.object({
-  profileId: z.string().uuid().describe('The profileId returned by the compliance and course student lists.')
+  profileId: z.string().uuid().describe('The profileId returned by the course student lists.')
 });
 export type TPublicApiLearnerAnalyticsParam = z.infer<typeof ZPublicApiLearnerAnalyticsParam>;

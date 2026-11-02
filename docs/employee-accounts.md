@@ -44,9 +44,9 @@ Khóa tài khoản giữ lại bài nộp, kết quả học, chứng chỉ và 
 
 ## Giao đào tạo và báo cáo
 
-Khóa học và cohort được lưu bằng quan hệ tới dữ liệu gốc. Việc kích hoạt liên kết hồ sơ, ghi danh và chuẩn bị bản ghi đào tạo bắt buộc cùng một transaction. Nếu ghi danh thất bại, không để lại tài khoản tạo dở hay làm mất liên kết kích hoạt. Có thể giao trước khóa chưa xuất bản; màn hình giao đào tạo đánh dấu **Chưa xuất bản**. Học viên chỉ thấy và mở được khóa đã xuất bản sau khi tài khoản được kích hoạt. Khi xuất bản, khóa đã giao tự xuất hiện mà không cần ghi danh hoặc gửi kích hoạt lại. Gỡ xuất bản ẩn khóa khỏi danh sách học viên và giữ nguyên ghi danh. Bỏ chọn không thu hồi ghi danh đã có hoặc xóa lịch sử; việc thu hồi quyền khóa học dùng chức năng quản lý khóa học hiện hành.
+Nhân viên tham gia khóa học theo đúng hai cách: **Được giao** (HR/L&D/giảng viên giao, luôn phải hoàn thành, có thể có hạn và nhãn đợt đào tạo) hoặc **Tự đăng ký** từ Thư viện đào tạo. Mỗi lượt tham gia là một dòng `course_enrollment` gắn với nhân viên, nên có thể giao cho nhân viên chưa kích hoạt; khi họ kích hoạt, tư cách học viên của khóa được tạo trong cùng transaction. Có thể giao trước khóa chưa xuất bản. Học viên chỉ thấy khóa đã xuất bản.
 
-Chi tiết nhân viên hiển thị trạng thái học và thời điểm hoàn thành. Khóa thường tính theo tiến độ hiện có; khóa đào tạo bắt buộc dùng chu kỳ mới nhất. Xuất danh sách áp dụng bộ lọc và phạm vi quyền đang có, bao gồm phạm vi nhân viên trực tiếp của quản lý.
+Chi tiết nhân viên có bảng **Khóa học được giao** với trạng thái tính toán: Chưa bắt đầu, Đang học, Hoàn thành, Quá hạn, Hết hiệu lực, Miễn. Xuất danh sách áp dụng bộ lọc và phạm vi quyền đang có.
 
 ## Nâng cấp và kiểm tra
 
@@ -65,25 +65,23 @@ Trước khi vận hành với dữ liệu thật, kiểm tra nhận thư qua SM
 
 ## Học tự chọn và giao đào tạo
 
-**Thư viện đào tạo** chỉ giới thiệu khóa đã xuất bản và đang cho phép nhân viên tự đăng ký. Khóa đã đăng ký vẫn ở thư viện khi còn mở. Đóng tự đăng ký đưa khóa ra khỏi thư viện nhưng giữ quyền và tiến độ người đã tham gia. Xuất bản không tự mở thư viện hoặc tự giao đào tạo.
+**Thư viện đào tạo** chỉ giới thiệu khóa đã xuất bản và đang cho phép tự đăng ký. Đóng tự đăng ký đưa khóa ra khỏi thư viện nhưng giữ quyền và tiến độ người đã tham gia.
 
-**Khóa học của tôi** có các bộ lọc Được giao, Tự đăng ký, Bắt buộc và Đã hoàn thành. Một khóa chỉ có một thẻ, kể cả khi có nhiều nguồn tham gia. Nguồn, yêu cầu hoàn thành và hạn học được hiển thị riêng. Khóa thông thường cũng có thể được giao bắt buộc; COMPLIANCE là loại khóa tuân thủ có chu kỳ và hiệu lực, không đồng nghĩa với mọi phân công bắt buộc.
+**Khóa học của tôi** có ba tab: **Cần hoàn thành** (khóa được giao, xếp theo hạn), **Tự học** và **Đã hoàn thành**.
 
-Trong tab **Người học**, chọn **Giao đào tạo**, nhân viên, yêu cầu bắt buộc/khuyến nghị, hạn và lời nhắn. Có thể giao cho người đã tự học mà không đặt lại tiến độ. Gửi lặp giữ nguyên phân công và hạn hiện có. Muốn thay đổi yêu cầu của phân công trực tiếp, hủy rồi giao lại để giữ lịch sử.
+Giao khóa học bằng màn hình **Giao khóa học** dùng chung, mở từ tab Học viên của khóa (nút Thêm) hoặc từ trang Nhân viên (chọn nhiều người, hoặc lọc theo phòng ban/chức danh/tất cả). Chọn hạn, đợt đào tạo, lời nhắn và có gửi email hay không. Gửi lặp không tạo bản trùng và không đổi hạn đã có; dùng **Đổi hạn** trên từng lượt giao. **Miễn** ghi lý do và ngày hết miễn. **Thu hồi** chỉ chấm dứt quyền học, không xóa tiến độ, bài làm hoặc chứng chỉ.
 
-Hủy nguồn tham gia chỉ thu hồi quyền từ nguồn đó, không xóa tiến độ, bài làm hoặc chứng chỉ. Quyền từ chương trình/cohort còn hiệu lực vẫn được giữ. Với COMPLIANCE, dùng chức năng miễn trừ/điều chỉnh hạn hiện có; không dùng hủy nguồn để bỏ qua nghĩa vụ tuân thủ. Tab Đội ngũ giảng dạy tách khỏi thống kê người học; tab Lịch sử tham gia giữ các định danh và nguồn đã hủy.
+Khóa bật **Học lại định kỳ** (Cài đặt → Quy tắc hoàn thành) ghi mỗi lần hoàn thành thành một chu kỳ có ngày hết hiệu lực. Mỗi ngày job `recertification-expiry-scan` mở lại các lượt giao đã hết hiệu lực: đặt lại tiến độ, đặt hạn mới (hết hiệu lực + 30 ngày) và gửi email. Job `assignment-due-reminder-scan` (08:00 giờ Việt Nam) nhắc 7 ngày trước hạn, đúng ngày hạn và mỗi thứ Hai khi quá hạn. Cả hai có thể kích hoạt thủ công qua `POST /internal/reminders/send-assignment-reminders` và `POST /internal/reminders/reopen-expired-recertifications`.
 
-Hồ sơ nhân viên phân biệt lựa chọn phân công trực tiếp với khóa tự đăng ký. Khóa tự chọn vẫn hiển thị trong báo cáo học tập, nhưng không đi vào mẫu số đào tạo bắt buộc. Mục tiêu N trong M khóa vẫn được theo dõi ở chương trình/cohort.
-
-Dữ liệu cũ không đủ bằng chứng được gắn nhãn chưa xác định nguồn; không tự chuyển thành phân công bắt buộc. Triển khai cần chạy migration `0044_learning_sources_and_assignments.sql` bằng quy trình migration hiện có trước khi chạy mã mới. Migration giữ nguyên tiến độ và hồ sơ tuân thủ.
+Triển khai cần chạy migration `0045_single_course_model.sql` bằng quy trình migration hiện có trước khi chạy mã mới. Migration chuyển phân công trực tiếp thành Được giao, tự đăng ký và dữ liệu không rõ nguồn thành Tự đăng ký, khóa Tuân thủ cũ thành khóa học lại định kỳ; đồng thời xóa Lớp đào tạo, Chương trình và loại khóa học.
 
 
 ## Course enrollment and employee emails
 
 Course members can only be selected from active employees of the same organization. Search supports employee code, name, and email. New accounts must be created and activated in Employees. Instructors can assign learners; organization administrators assign existing employees with ADMIN or TUTOR roles as instructors.
 
-Course invitation creation and old course invitation links are retired, including acceptance of previously generated course share links. Course access notifications use the editable course access template. Enrollment and removal also synchronize the employee’s course assignments.
+Course invitation creation and old course invitation links are retired, including acceptance of previously generated course share links. Course access notifications use the editable course access template and include the due date and training batch when set.
 
-Email settings show employee activation, course/cohort access, and learning notifications. Obsolete course invitations, organization invitations, and payment proof templates remain in the internal registry for compatibility but are not editable or listed. Activation sends use the saved organization template, enforced language, branding, and a protected single-use 48-hour action link. Saved organization course access messages take priority over legacy course welcome text.
+Email settings show employee activation, course access, assignment due reminders, recertification notices, and learning notifications. Obsolete course invitations, organization invitations, and payment proof templates remain in the internal registry for compatibility but are not editable or listed. Activation sends use the saved organization template, enforced language, branding, and a protected single-use 48-hour action link. Saved organization course access messages take priority over legacy course welcome text.
 
 The translation command currently receives HTTP 401 from the configured RapidAPI provider. English and Vietnamese UI copy is maintained manually; the changed keys in other dashboard locales use English fallback copy. Activation email defaults are localized for every supported email language.

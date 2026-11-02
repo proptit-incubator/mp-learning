@@ -7,7 +7,6 @@ export const SYNCABLE_SETTING_KEYS = [
   'description',
   'bannerImage',
   'welcomeEmail',
-  'completionDeadline',
   'lessonTabsOrder',
   'contentGrouping',
   'progression',
@@ -97,7 +96,6 @@ export type SettingMetadata = {
 };
 
 export type SettingCertificate = {
-  deadline?: string | null;
   theme?: string;
   design?: unknown;
   isDownloadable?: boolean;
@@ -107,8 +105,6 @@ export type SettingCertificate = {
 export type SettingCarrier = {
   description: string;
   bannerImage: string | null;
-  cost: number | null;
-  currency: string;
   updatedAt: string | null;
   metadata: SettingMetadata | null;
   certificate: SettingCertificate | null;
@@ -379,8 +375,6 @@ function pricingValue(course: SettingCarrier) {
   const fields = metadata(course);
 
   return {
-    cost: course.cost,
-    currency: course.currency,
     showDiscount: fields.showDiscount ?? false,
     discount: fields.discount ?? 0,
     paymentEnabled: fields.paymentEnabled ?? false,
@@ -399,8 +393,6 @@ export function readSettingValue(course: SettingCarrier, key: SyncableSettingKey
       return course.bannerImage;
     case 'welcomeEmail':
       return fields.welcomeEmailMessage ?? null;
-    case 'completionDeadline':
-      return rules.deadline ?? null;
     case 'lessonTabsOrder':
       return fields.lessonTabsOrder ?? null;
     case 'contentGrouping':
@@ -488,10 +480,6 @@ export function applySettingChanges(
         nextMetadata.welcomeEmailMessage = templateMetadata.welcomeEmailMessage ?? null;
         metadataChanged = true;
         break;
-      case 'completionDeadline':
-        nextCertificate.deadline = templateCertificate.deadline ?? null;
-        certificateChanged = true;
-        break;
       case 'lessonTabsOrder':
         nextMetadata.lessonTabsOrder = templateMetadata.lessonTabsOrder;
         metadataChanged = true;
@@ -545,8 +533,6 @@ export function applySettingChanges(
         metadataChanged = true;
         break;
       case 'pricing':
-        patch.cost = template.cost;
-        patch.currency = template.currency;
         nextMetadata.showDiscount = templateMetadata.showDiscount ?? false;
         nextMetadata.discount = templateMetadata.discount ?? 0;
         nextMetadata.paymentEnabled = templateMetadata.paymentEnabled ?? false;

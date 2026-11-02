@@ -29,10 +29,6 @@ vi.mock('@api/services/organization/automation-usage', () => ({
   releaseMcpAutomationUsage: vi.fn()
 }));
 
-vi.mock('@api/services/v1/cohorts/cohort', () => ({
-  listCohortsService: vi.fn().mockResolvedValue({ items: [], pagination: {} })
-}));
-
 vi.mock('@api/services/v1/courses/certificates', () => ({
   getPublicApiCourseCertificateService: vi.fn().mockResolvedValue({})
 }));
@@ -79,8 +75,6 @@ const MCP_DEFAULT_SCOPES = [
   'course:tag:write',
   'course:exercise:read',
   'course:exercise:write',
-  'cohort:read',
-  'cohort:write',
   'course:member:read',
   'course:member:write',
   'course:certificate:read',
@@ -100,7 +94,7 @@ const app = new Hono().route('/public-api/v1', v1Router);
 const request = (path: string) =>
   app.request(`/public-api/v1${path}`, { headers: { Authorization: 'Bearer cio_mcp_test' } });
 
-describe('default MCP key across the cohort, course member, certificate, exercise, submission, audience, team, and organization APIs', () => {
+describe('default MCP key across the course member, certificate, exercise, submission, audience, team, and organization APIs', () => {
   beforeEach(() => {
     mocks.complete.mockReset().mockResolvedValue(undefined);
     mocks.authenticate.mockResolvedValue({
@@ -113,7 +107,6 @@ describe('default MCP key across the cohort, course member, certificate, exercis
   });
 
   it.each([
-    ['/cohorts', 'list_org_cohorts'],
     [`/courses/${COURSE_ID}/members`, 'list_course_members'],
     [`/courses/${COURSE_ID}/certificate`, 'get_course_certificate'],
     [`/courses/${COURSE_ID}/sections`, 'list_course_sections'],

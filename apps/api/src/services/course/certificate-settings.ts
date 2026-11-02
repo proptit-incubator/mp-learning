@@ -14,7 +14,6 @@ export function toEffectiveCertificateSettings(course: TCertificateCourse) {
     isDownloadable: stored.isDownloadable ?? false,
     theme: stored.theme ?? design.templateId,
     design,
-    deadline: stored.deadline ?? null,
     emailMessage: stored.emailMessage ?? null
   };
 }

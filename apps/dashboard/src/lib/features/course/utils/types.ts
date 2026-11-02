@@ -1,11 +1,13 @@
 import { classroomio, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
-export type AssignTrainingRequest =
-  (typeof classroomio.course)[':courseId']['members']['training-assignments']['$post'];
-export type AssignTrainingPayload = InferRequestType<AssignTrainingRequest>['json'];
-export type RevokeLearningSourceRequest =
-  (typeof classroomio.course)[':courseId']['members']['learning-sources'][':sourceId']['$delete'];
-export type LearningSourcesRequest = (typeof classroomio.course)[':courseId']['members']['learning-sources']['$get'];
-export type CourseLearningSources = Extract<InferResponseType<LearningSourcesRequest>, { success: true }>['data'];
+export type CourseEnrollmentsRequest = (typeof classroomio.course)[':courseId']['members']['enrollments']['$get'];
+export type CourseEnrollments = Extract<InferResponseType<CourseEnrollmentsRequest>, { success: true }>['data'];
+export type CourseEnrollment = CourseEnrollments[number];
+export type UpdateEnrollmentDueDateRequest =
+  (typeof classroomio.course)[':courseId']['members']['enrollments'][':enrollmentId']['$patch'];
+export type WaiveEnrollmentRequest =
+  (typeof classroomio.course)[':courseId']['members']['enrollments'][':enrollmentId']['waive']['$post'];
+export type RevokeEnrollmentRequest =
+  (typeof classroomio.course)[':courseId']['members']['enrollments'][':enrollmentId']['$delete'];
 export type AvailableCourseEmployeesRequest = (typeof classroomio.course)[':courseId']['members']['available']['$get'];
 export type AvailableCourseEmployeesSuccess = Extract<
   InferResponseType<AvailableCourseEmployeesRequest>,
@@ -14,7 +16,6 @@ export type AvailableCourseEmployeesSuccess = Extract<
 export type AvailableCourseEmployees = AvailableCourseEmployeesSuccess['data'];
 import type { TCourseInvitePreset } from '@cio/utils/validation/course/invite';
 import type { TLocale } from '@cio/db/types';
-import type { NonAutoGradableQuestionOffender } from '@cio/utils/validation/course';
 import type {
   TCoursePeopleActivityWindow,
   TCoursePeopleEnrolledWindow,
@@ -539,31 +540,6 @@ export type GetCourseAnalyticsResponse = InferResponseType<GetCourseAnalyticsReq
 export type GetCourseAnalyticsSuccess = Extract<GetCourseAnalyticsResponse, { success: true }>;
 export type CourseAnalytics = GetCourseAnalyticsSuccess['data'];
 
-export type GetCourseComplianceOverviewRequest = (typeof classroomio.course)[':courseId']['compliance']['$get'];
-export type GetCourseComplianceOverviewResponse = InferResponseType<GetCourseComplianceOverviewRequest>;
-export type GetCourseComplianceOverviewSuccess = Extract<GetCourseComplianceOverviewResponse, { success: true }>;
-export type CourseComplianceOverview = GetCourseComplianceOverviewSuccess['data'];
-export type CourseComplianceLearner = CourseComplianceOverview['learners'][number];
-
-export type GetLearnerComplianceHistoryRequest =
-  (typeof classroomio.course)[':courseId']['compliance']['learners'][':profileId']['$get'];
-export type GetLearnerComplianceHistoryResponse = InferResponseType<GetLearnerComplianceHistoryRequest>;
-export type GetLearnerComplianceHistorySuccess = Extract<GetLearnerComplianceHistoryResponse, { success: true }>;
-export type LearnerComplianceHistory = GetLearnerComplianceHistorySuccess['data'];
-export type LearnerComplianceRecord = LearnerComplianceHistory['history'][number];
-
-export type ResetCourseComplianceRequest = (typeof classroomio.course)[':courseId']['compliance']['reset']['$post'];
-export type ResetCourseComplianceResponse = InferResponseType<ResetCourseComplianceRequest>;
-export type ResetCourseComplianceSuccess = Extract<ResetCourseComplianceResponse, { success: true }>;
-
-export type ExtendCourseComplianceRequest = (typeof classroomio.course)[':courseId']['compliance']['extend']['$post'];
-export type ExtendCourseComplianceResponse = InferResponseType<ExtendCourseComplianceRequest>;
-export type ExtendCourseComplianceSuccess = Extract<ExtendCourseComplianceResponse, { success: true }>;
-
-export type WaiveCourseComplianceRequest = (typeof classroomio.course)[':courseId']['compliance']['waive']['$post'];
-export type WaiveCourseComplianceResponse = InferResponseType<WaiveCourseComplianceRequest>;
-export type WaiveCourseComplianceSuccess = Extract<WaiveCourseComplianceResponse, { success: true }>;
-
 // Derived types from Lesson
 export type LessonVideoType = NonNullable<Lesson['videos']>[number]['type'];
 export type LessonDocument = NonNullable<Lesson['documents']>[number];
@@ -624,25 +600,6 @@ export interface ExerciseConversionGroup {
     questionTitle: string;
     typeId: number;
   }>;
-}
-
-export interface PublicConversionCountdown {
-  totalExercises: number;
-  resolvedExercises: number;
-  remainingExercises: number;
-  totalQuestions: number;
-  resolvedQuestions: number;
-  remainingQuestions: number;
-  percentComplete: number;
-  isFullyResolved: boolean;
-}
-
-export interface PublicConversionPersistedState {
-  isActive: boolean;
-  courseId: string | null;
-  initialOffenders: NonAutoGradableQuestionOffender[];
-  offenders: NonAutoGradableQuestionOffender[];
-  resolvedExerciseIds: string[];
 }
 
 export type ListCourseTemplatesRequest = (typeof classroomio.course)['template']['$get'];

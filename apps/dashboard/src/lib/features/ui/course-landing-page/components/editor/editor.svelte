@@ -14,7 +14,6 @@
     LessonIcon,
     ExerciseIcon,
     CertificateIcon,
-    MoneyIcon,
     ReviewIcon,
     PersonIcon,
     ContentIcon,
@@ -22,7 +21,6 @@
     PreviewIcon
   } from '@cio/ui/custom/moving-icons';
   import type { TCourseUpdate } from '@cio/utils/validation/course';
-  import { ZPaymentLink } from '@cio/utils/validation/course';
   import type { LandingSectionKey } from '@cio/ui/custom/org-landing-page';
 
   import { IconButton } from '@cio/ui/custom/icon-button';
@@ -30,7 +28,6 @@
   import HeaderForm from './header-form.svelte';
   import RequirementForm from './requirement-form.svelte';
   import DescriptionForm from './description-form.svelte';
-  import PricingForm from './pricing-form.svelte';
   import GoalsForm from './goals-form.svelte';
   import ReviewsForm from './reviews-form.svelte';
   import CertificateForm from './certificate-form.svelte';
@@ -46,7 +43,6 @@
   import type { Course } from '$features/course/utils/types';
   import { isEmptyReview, normalizeReview, validateReview } from '../../utils';
   import { t } from '$lib/utils/functions/translations';
-  import { isCoursePaid } from '$lib/utils/functions/course';
   import { snackbar } from '$features/ui/snackbar/store';
 
   interface Props {
@@ -67,7 +63,6 @@
 
   const sidebar = useSidebar();
   let loading = $state(false);
-  let showPaymentError = $state(false);
   // eslint-disable-next-line svelte/prefer-writable-derived -- must be writable: bound to UnsavedChanges
   let hasUnsavedChanges = $state(false);
   let editRevision = $state(0);
@@ -93,14 +88,6 @@
 
     course = JSON.parse(courseSnapshot);
   }
-
-  const paymentLink = $derived((course.metadata?.paymentLink ?? '').trim());
-  const courseIsPaid = $derived(isCoursePaid(course));
-
-  const isPaymentLinkEmpty = $derived(courseIsPaid && !paymentLink);
-  const isPaymentLinkInvalid = $derived(
-    courseIsPaid && !isPaymentLinkEmpty && !ZPaymentLink.safeParse(paymentLink).success
-  );
 
   interface Section {
     key: LandingSectionKey;
@@ -157,12 +144,6 @@
       title: $t('course.navItem.landing_page.editor.title.instructor'),
       icon: PersonIcon,
       domId: 'instructor'
-    },
-    {
-      key: 'pricing',
-      title: $t('course.navItem.landing_page.editor.title.pricing'),
-      icon: MoneyIcon,
-      domId: 'pricing'
     }
   ]);
 
@@ -176,21 +157,6 @@
       return;
     }
 
-    if (selectedSectionKey === 'pricing') {
-      if (isPaymentLinkEmpty) {
-        showPaymentError = true;
-        snackbar.error('course.navItem.landing_page.editor.pricing_form.payment_required');
-        return;
-      }
-
-      if (isPaymentLinkInvalid) {
-        showPaymentError = true;
-        snackbar.error('course.navItem.landing_page.editor.pricing_form.payment_invalid_url');
-        return;
-      }
-    }
-
-    showPaymentError = false;
     selectedSectionKey = null;
   }
 
@@ -216,12 +182,6 @@
   });
 
   async function handleSave() {
-    if (isPaymentLinkEmpty) {
-      snackbar.error('course.navItem.landing_page.editor.pricing_form.payment_required');
-      selectedSectionKey = 'pricing';
-      return;
-    }
-
     const courseReviews = course.metadata?.reviews;
     if (courseReviews?.length) {
       const savedReviews = courseReviews
@@ -243,13 +203,10 @@
 
       const updatePayload = {
         ...course,
-        type: course.type ?? undefined,
         slug: course.slug!,
         isPublished: course.isPublished ?? undefined,
         bannerImage: course.bannerImage ?? undefined,
-        cost: course.cost ?? undefined,
         overview: course.overview ?? undefined,
-        compliance: course.compliance ?? undefined,
         certificate: course.certificate
           ? {
               ...course.certificate,
@@ -312,7 +269,7 @@
       <CloseButton onClick={handleClose} />
 
       <div class="flex items-center gap-1" data-open={sidebar.open} data-mobile={sidebar.isMobile}>
-        <Button type="button" variant="outline" onclick={handleSave} {loading} disabled={loading || isPaymentLinkEmpty}>
+        <Button type="button" variant="outline" onclick={handleSave} {loading} disabled={loading}>
           {$t('course.navItem.landing_page.editor.save')}
         </Button>
         <HoverableItem>
@@ -381,8 +338,6 @@
         <ReviewsForm bind:course {setter} />
       {:else if selectedSection.key === 'instructor'}
         <InstructorForm bind:course {setter} />
-      {:else if selectedSection.key === 'pricing'}
-        <PricingForm bind:course {setter} bind:showPaymentError />
       {/if}
     </div>
   {/if}

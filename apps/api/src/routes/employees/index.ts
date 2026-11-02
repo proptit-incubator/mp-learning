@@ -14,6 +14,8 @@ import {
   ZImportEmployees,
   ZUpdateEmployee
 } from '@cio/utils/validation/organization';
+import { ZAssignCourses } from '@cio/utils/validation/course/enrollment';
+import { assignCourses } from '@api/services/course/enrollment';
 import {
   activateEmployee,
   createEmployee,
@@ -68,6 +70,18 @@ export const employeesRouter = new Hono()
   .get('/options', async (context) => {
     try {
       const data = await getEmployeeOptions(context.req.header('cio-org-id') ?? '', context.get('user')!.id);
+      return context.json({ success: true as const, data });
+    } catch (error) {
+      return handleError(context, error, 'employees.errors.generic');
+    }
+  })
+  .post('/assignments', zValidator('json', ZAssignCourses), async (context) => {
+    try {
+      const data = await assignCourses(
+        context.req.header('cio-org-id') ?? '',
+        context.get('user')!.id,
+        context.req.valid('json')
+      );
       return context.json({ success: true as const, data });
     } catch (error) {
       return handleError(context, error, 'employees.errors.generic');

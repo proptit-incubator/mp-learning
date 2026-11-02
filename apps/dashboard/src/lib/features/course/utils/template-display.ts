@@ -1,27 +1,4 @@
-import type { Component } from 'svelte';
-import CircleDotIcon from '@lucide/svelte/icons/circle-dot';
-import GlobeIcon from '@lucide/svelte/icons/globe';
-import ShieldCheckIcon from '@lucide/svelte/icons/shield-check';
-import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
-import UserIcon from '@lucide/svelte/icons/user';
 import type { CourseTemplatePreview } from './types';
-
-const TYPE_BADGES: Record<string, { icon: Component; labelKey: string }> = {
-  SELF_PACED: { icon: UserIcon, labelKey: 'course.navItem.settings.self_paced' },
-  LIVE_CLASS: { icon: CircleDotIcon, labelKey: 'course.navItem.settings.live_class' },
-  COMPLIANCE: { icon: ShieldCheckIcon, labelKey: 'course.navItem.settings.compliance' },
-  SPECIALIZATION: { icon: TrendingUpIcon, labelKey: 'specialization.course_tag' },
-  PUBLIC: { icon: GlobeIcon, labelKey: 'courses.course_card.public_badge' }
-};
-
-export function templateTypeBadge(type: string | null | undefined, label: (key: string) => string) {
-  if (!type) return undefined;
-
-  const badge = TYPE_BADGES[type];
-  if (!badge) return undefined;
-
-  return { icon: badge.icon, label: label(badge.labelKey) };
-}
 
 export function formatTemplateUsedDate(value: string) {
   const date = new Date(value);
@@ -49,13 +26,6 @@ export function templatePreviewSettingRows(settings: CourseTemplatePreview['sett
     rows.push({ key: 'certificate', label: translate('course_templates.preview.certificate') });
   }
 
-  if (settings.deadline) {
-    const date = formatTemplateUsedDate(settings.deadline);
-    if (date) {
-      rows.push({ key: 'deadline', label: translate('course_templates.preview.deadline', { date }) });
-    }
-  }
-
   if (settings.sequential) {
     rows.push({ key: 'sequential', label: translate('course_templates.preview.sequential') });
   }
@@ -78,17 +48,6 @@ export function templatePreviewSettingRows(settings: CourseTemplatePreview['sett
 
   if (settings.aiTutor) {
     rows.push({ key: 'aiTutor', label: translate('course_templates.preview.ai_tutor') });
-  }
-
-  if (settings.compliance) {
-    rows.push({
-      key: 'complianceRetake',
-      label: translate('course_templates.preview.compliance_retake', { months: settings.compliance.months })
-    });
-
-    if (settings.compliance.mandatory) {
-      rows.push({ key: 'complianceMandatory', label: translate('course_templates.preview.compliance_mandatory') });
-    }
   }
 
   return rows;

@@ -7,8 +7,6 @@ import type {
   CourseFunnelRequest,
   LandingStatsData,
   LandingStatsRequest,
-  PopularTypesData,
-  PopularTypesRequest,
   TopCoursesData,
   TopCoursesRequest
 } from '../utils/types';
@@ -17,13 +15,11 @@ class AnalyticsApi extends BaseApi {
   landing = $state<LandingStatsData | null>(null);
   country = $state<CountryBreakdownData>([]);
   funnel = $state<CourseFunnelData | null>(null);
-  popularTypes = $state<PopularTypesData>([]);
   topCourses = $state<TopCoursesData>([]);
 
   loadingLanding = $state(false);
   loadingCountry = $state(false);
   loadingFunnel = $state(false);
-  loadingPopularTypes = $state(false);
   loadingTopCourses = $state(false);
 
   range = $state<7 | 30 | 90>(30);
@@ -32,13 +28,7 @@ class AnalyticsApi extends BaseApi {
   private topCoursesRequestSeq = 0;
 
   get loading() {
-    return (
-      this.loadingLanding ||
-      this.loadingCountry ||
-      this.loadingFunnel ||
-      this.loadingPopularTypes ||
-      this.loadingTopCourses
-    );
+    return this.loadingLanding || this.loadingCountry || this.loadingFunnel || this.loadingTopCourses;
   }
 
   private query(orgId: string, bust: boolean) {
@@ -81,18 +71,6 @@ class AnalyticsApi extends BaseApi {
     this.loadingFunnel = false;
   }
 
-  async fetchPopularTypes(orgId: string, bust = false) {
-    this.loadingPopularTypes = true;
-    await this.execute<PopularTypesRequest>({
-      requestFn: () => classroomio.dash['popular-types'].$get({ query: this.query(orgId, bust) }),
-      logContext: 'fetching analytics popular types',
-      onSuccess: (response) => {
-        this.popularTypes = response.data;
-      }
-    });
-    this.loadingPopularTypes = false;
-  }
-
   async fetchTopCourses(orgId: string, bust = false) {
     const requestSeq = ++this.topCoursesRequestSeq;
     const query = this.query(orgId, bust);
@@ -121,7 +99,6 @@ class AnalyticsApi extends BaseApi {
       this.fetchLanding(orgId, bust),
       this.fetchCountry(orgId, bust),
       this.fetchFunnel(orgId, bust),
-      this.fetchPopularTypes(orgId, bust),
       this.fetchTopCourses(orgId, bust)
     ]);
   }

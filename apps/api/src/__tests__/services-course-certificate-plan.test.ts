@@ -113,8 +113,7 @@ describe('assertCertificateChangeAllowed', () => {
     await expect(
       assertCertificateChangeAllowed(COURSE_ID, {
         ...storedCertificate,
-        theme: undefined,
-        deadline: null
+        theme: undefined
       })
     ).resolves.toBeUndefined();
     expect(getActiveOrganizationPlan).not.toHaveBeenCalled();

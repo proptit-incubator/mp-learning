@@ -1,5 +1,10 @@
 import type { UserEnrolledCourses } from '$features/course/types';
-import { getStudentCourseProgressPercent, isStudentCourseComplete } from '$features/course/utils/compliance-utils';
+import {
+  getStudentCourseDueDate,
+  getStudentCourseProgressPercent,
+  isStudentCourseAssigned,
+  isStudentCourseComplete
+} from '$features/course/utils/student-course-progress';
 import { CourseSortBy } from '$features/course/utils/constants';
 
 type LearningCourse = UserEnrolledCourses[number];
@@ -14,11 +19,10 @@ export function normalizeLearningSearch(value: string): string {
 }
 
 export function getLearningDeadline(course: LearningCourse): number {
-  if (!(course.isRequired ?? course.type === 'COMPLIANCE') || isStudentCourseComplete(course))
-    return Number.POSITIVE_INFINITY;
+  if (isStudentCourseComplete(course)) return Number.POSITIVE_INFINITY;
 
-  const deadlineValue = course.learningDueDate ?? course.complianceDueDate;
-  const deadline = deadlineValue ? new Date(deadlineValue).getTime() : Number.NaN;
+  const dueDate = getStudentCourseDueDate(course);
+  const deadline = dueDate ? new Date(dueDate).getTime() : Number.NaN;
   return Number.isFinite(deadline) ? deadline : Number.POSITIVE_INFINITY;
 }
 
@@ -35,10 +39,12 @@ export function prioritizeLearningCourses(courses: UserEnrolledCourses): UserEnr
 export function filterLearningCourses(
   courses: UserEnrolledCourses,
   search: string,
-  sort: CourseSortBy
+  sort: CourseSortBy,
+  keepOrder = false
 ): UserEnrolledCourses {
   const normalizedSearch = normalizeLearningSearch(search);
   const matchingCourses = courses.filter((course) => normalizeLearningSearch(course.title).includes(normalizedSearch));
+  if (keepOrder) return matchingCourses;
 
   return matchingCourses.sort((leftCourse, rightCourse) => {
     if (sort === CourseSortBy.Lessons) return (rightCourse.lessonCount ?? 0) - (leftCourse.lessonCount ?? 0);
@@ -56,7 +62,7 @@ export function filterLearningCourses(
 export function getLearningSummary(courses: UserEnrolledCourses, now: number) {
   const completed = courses.filter(isStudentCourseComplete);
   const pending = prioritizeLearningCourses(courses.filter((course) => !isStudentCourseComplete(course)));
-  const mandatory = pending.filter((course) => course.isRequired ?? course.type === 'COMPLIANCE');
+  const mandatory = pending.filter(isStudentCourseAssigned);
   const overdue = mandatory.filter((course) => getLearningDeadline(course) < now);
   const completedItems = courses.reduce(
     (total, course) => total + (course.progressRate ?? 0) + (course.exercisesCompleted ?? 0),

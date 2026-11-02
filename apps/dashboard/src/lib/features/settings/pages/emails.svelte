@@ -46,11 +46,11 @@
   const templateGroups = [
     {
       key: 'settings.emails.groups.enrollment',
-      emailIds: ['employeeActivation', 'studentCourseWelcome', 'studentCohortWelcome']
+      emailIds: ['employeeActivation', 'studentCourseWelcome', 'assignmentDueReminder']
     },
     {
       key: 'settings.emails.groups.learning',
-      emailIds: ['quizAssigned', 'submissionGraded', 'cohortGoalReminder', 'studentCourseCompletion']
+      emailIds: ['quizAssigned', 'submissionGraded', 'recertificationReopened', 'studentCourseCompletion']
     },
     {
       key: 'settings.emails.groups.live_sessions',

@@ -22,8 +22,6 @@ function buildCourseDashboardPath(eventType: TWebhookEventType, courseId: string
       : `/courses/${courseId}/submissions`;
   }
 
-  if (eventType.startsWith('compliance.')) return `/courses/${courseId}/compliance`;
-
   if (
     eventType.startsWith('course.member.') ||
     eventType === 'course.completed' ||
@@ -58,19 +56,11 @@ export function buildWebhookLinks(
   const appBaseUrl = getAppBaseUrl();
   const learnerBaseUrl = getDashboardBaseUrl(org ?? undefined);
   const courseId = readString(data, 'courseId');
-  const cohortId = readString(data, 'cohortId');
 
   if (courseId) {
     return {
       dashboard: `${appBaseUrl}${buildCourseDashboardPath(eventType, courseId, data)}`,
       student: `${learnerBaseUrl}/courses/${courseId}`
-    };
-  }
-
-  if (cohortId) {
-    return {
-      dashboard: `${appBaseUrl}/cohorts/${cohortId}/courses`,
-      student: `${learnerBaseUrl}/cohorts/${cohortId}/courses`
     };
   }
 

@@ -723,39 +723,6 @@ export async function selectCountryDailyAggregates(fromIso: string, toIso: strin
 }
 
 /**
- * Aggregate enrollments and course-page views by `course.type` for an org
- * in a date range. Joins the daily course rollup with the canonical course
- * row so the result groups by the enum (SELF_PACED / LIVE_CLASS / COMPLIANCE
- * / PUBLIC).
- */
-export async function selectPopularCourseTypes(orgId: string, fromDate: string, toDate: string) {
-  try {
-    return await db
-      .select({
-        type: schema.course.type,
-        enrollments: sql<number>`SUM(${schema.analyticsCourseDaily.enrollments})::int`.as('enrollments'),
-        views: sql<number>`SUM(${schema.analyticsCourseDaily.views})::int`.as('views'),
-        completions: sql<number>`SUM(${schema.analyticsCourseDaily.completions})::int`.as('completions'),
-        courseCount: sql<number>`COUNT(DISTINCT ${schema.analyticsCourseDaily.courseId})::int`.as('course_count')
-      })
-      .from(schema.analyticsCourseDaily)
-      .innerJoin(schema.course, eq(schema.course.id, schema.analyticsCourseDaily.courseId))
-      .where(
-        and(
-          eq(schema.analyticsCourseDaily.orgId, orgId),
-          sql`${schema.analyticsCourseDaily.date} >= ${fromDate}`,
-          sql`${schema.analyticsCourseDaily.date} <= ${toDate}`
-        )
-      )
-      .groupBy(schema.course.type)
-      .orderBy(desc(sql`SUM(${schema.analyticsCourseDaily.enrollments})`));
-  } catch (error) {
-    console.error('selectPopularCourseTypes error:', error);
-    throw new Error('Failed to select popular course types');
-  }
-}
-
-/**
  * Top courses by page views for an org in a date range. Joins the daily
  * course rollup with the canonical course row so the result includes the
  * live title. Courses with zero views in the window are omitted.

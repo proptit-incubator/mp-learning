@@ -2,22 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { z, ZodError } from 'zod';
 import { Hono } from 'hono';
 
-import { ZCourseType } from '@cio/utils/validation/course';
 import { AppError, ErrorCodes, formatZodErrorMessage, handleError, handlePublicApiError } from '@api/utils/errors';
 
 describe('formatZodErrorMessage', () => {
   it('formats issue paths and messages', () => {
     const schema = z.object({
       course: z.object({
-        type: ZCourseType
+        status: z.enum(['ACTIVE', 'ARCHIVED'])
       })
     });
 
     try {
-      schema.parse({ course: { type: 'INVALID' } });
+      schema.parse({ course: { status: 'INVALID' } });
     } catch (error) {
       expect(error).toBeInstanceOf(ZodError);
-      expect(formatZodErrorMessage(error as ZodError)).toContain('course.type:');
+      expect(formatZodErrorMessage(error as ZodError)).toContain('course.status:');
     }
   });
 });

@@ -25,7 +25,6 @@
   import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
   import { openUpgradeModal } from '$lib/utils/store/upgrade-modal';
   import { AI_CHAT_MODEL_STORAGE_KEY } from '$features/ai-assistant/utils/constants';
-  import type { TCourseType } from '@cio/db/types';
   import {
     AGENT_MODELS,
     DEFAULT_PICKER_MODEL_ID,
@@ -167,7 +166,7 @@
       setInitialChatTemplateId(selectedTemplateId);
     }
 
-    await courseApi.create({ title, description, type: 'SELF_PACED' as TCourseType }, (courseId) => {
+    await courseApi.create({ title, description }, (courseId) => {
       goto(resolve(`/courses/${courseId}/lessons`, {}));
     });
   }

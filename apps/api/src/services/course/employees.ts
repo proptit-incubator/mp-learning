@@ -1,11 +1,8 @@
 import { db } from '@cio/db/drizzle';
+import * as schema from '@cio/db/schema';
+import { and, eq, inArray } from 'drizzle-orm';
 import type { TGroupmember } from '@cio/db/types';
-import {
-  assignEmployeeCourseRecords,
-  findCourseEmployees,
-  getCourseEmployeeContext,
-  insertCourseEmployees
-} from '@cio/db/queries/course/employees';
+import { findCourseEmployees, getCourseEmployeeContext, insertCourseEmployees } from '@cio/db/queries/course/employees';
 import { getCourseWithOrgData } from '@cio/db/queries/course';
 import { getEmployeeAccess, lockEmployeeOrganization } from '@cio/db/queries/organization';
 import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
@@ -20,12 +17,7 @@ import { captureLearnersEnrolled } from '@api/services/product-events';
 import type { TAddCourseMembers } from '@cio/utils/validation/course/people';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { enqueueTransactionalEmail } from '@api/services/jobs';
-import { emitComplianceEnrollmentEvents, ensureComplianceEnrollmentRecordsForProfiles } from './compliance';
-import {
-  createEnrollmentSource,
-  createTrainingAssignment,
-  ensureLearnerMembership
-} from '@cio/db/queries/course/learning-access';
+import { createEnrollments } from '@cio/db/queries/course/enrollment';
 import { lockCourseForEnrollment } from '@cio/db/queries/course/library';
 
 export async function listAvailableCourseEmployees(courseId: string, search?: string) {
@@ -90,67 +82,48 @@ export async function enrollExistingCourseEmployees(
       throw new AppError('Select an employee with an instructor role', ErrorCodes.VALIDATION_ERROR, 400);
     }
 
-    const values = members.map((member) => {
-      const employee = employeeByProfile.get(member.profileId!)!;
-      return {
+    const staffValues = members
+      .filter((member) => member.roleId !== ROLE.STUDENT)
+      .map((member) => ({
         groupId,
         profileId: member.profileId!,
         roleId: member.roleId,
-        email: employee.email,
-        learningAccessManaged: member.roleId === ROLE.STUDENT
-      };
-    });
-    const addedMembers = await insertCourseEmployees(values, transaction);
-    const trainingNotifications = [];
-    for (const member of members) {
-      if (member.roleId !== ROLE.STUDENT) continue;
-
-      const enrollment = await createEnrollmentSource(courseId, member.profileId!, 'DIRECT', transaction);
-      if (!enrollment.created) continue;
-
-      const learner = employeeByProfile.get(member.profileId!)!;
-      const identity = await ensureLearnerMembership(groupId, member.profileId!, learner.email, transaction);
-      if (!identity) throw new AppError('Course member conflict', ErrorCodes.CONFLICT, 409);
-
-      const assignment = await createTrainingAssignment(
-        enrollment.source.id,
-        {
-          assignedBy: actorProfileId,
-          required: true,
-          dueDate: null,
-          message: ''
-        },
-        transaction
-      );
-      trainingNotifications.push({ member: identity, assignmentId: assignment!.id });
-    }
-    const assignedEmployeeIds = members.flatMap((member) =>
+        email: employeeByProfile.get(member.profileId!)!.email
+      }));
+    const addedStaff = staffValues.length ? await insertCourseEmployees(staffValues, transaction) : [];
+    const learnerEmployeeIds = members.flatMap((member) =>
       member.roleId === ROLE.STUDENT ? [employeeByProfile.get(member.profileId!)!.id] : []
     );
-    await assignEmployeeCourseRecords(assignedEmployeeIds, courseId, transaction);
-
-    const learnerIds = members.flatMap((member) =>
-      member.roleId === ROLE.STUDENT && member.profileId ? [member.profileId] : []
+    const created = await createEnrollments(
+      { courseIds: [courseId], employeeIds: learnerEmployeeIds, kind: 'ASSIGNED', assignedBy: actorProfileId },
+      transaction
     );
-    const compliance = await ensureComplianceEnrollmentRecordsForProfiles([courseId], learnerIds, transaction);
-    return { addedMembers, compliance, trainingNotifications };
+    const createdEmployeeIds = new Set(created.map((row) => row.employeeId));
+    const learnerProfileIds = employees
+      .filter((employee) => createdEmployeeIds.has(employee.id))
+      .map((employee) => employee.profileId!);
+    const learners = learnerProfileIds.length
+      ? await transaction
+          .select()
+          .from(schema.groupmember)
+          .where(and(eq(schema.groupmember.groupId, groupId), inArray(schema.groupmember.profileId, learnerProfileIds)))
+      : [];
+    const assignmentIdByProfile = new Map(
+      created.map((row) => [employees.find((employee) => employee.id === row.employeeId)?.profileId ?? '', row.id])
+    );
+    return { addedMembers: [...addedStaff, ...learners], assignmentIdByProfile };
   });
 
   captureLearnersEnrolled(result.addedMembers, 'admin', eventSource);
   const source = webhookSource ?? buildMemberSource('admin');
-  const effects: Promise<unknown>[] = [
-    invalidateOrgStats(organizationId),
-    emitComplianceEnrollmentEvents(result.compliance.createdRecords)
-  ];
-  const notificationMembers = result.addedMembers.filter((member) => member.roleId !== ROLE.STUDENT);
-  notificationMembers.push(...result.trainingNotifications.map((item) => item.member));
-  for (const member of notificationMembers) {
+  const effects: Promise<unknown>[] = [invalidateOrgStats(organizationId)];
+  for (const member of result.addedMembers) {
     effects.push(emitCourseMemberAddedWebhookEvent(courseId, member, { source, actorProfileId }));
     if (!sendEmail) continue;
 
-    const training = result.trainingNotifications.find((item) => item.member.id === member.id);
-    const notification = training
-      ? { idempotencyKey: `training-assignment:${training.assignmentId}`, message: '' }
+    const assignmentId = member.profileId ? result.assignmentIdByProfile.get(member.profileId) : undefined;
+    const notification = assignmentId
+      ? { idempotencyKey: `course-assignment:${assignmentId}`, message: '' }
       : undefined;
     effects.push(sendCourseAccessEmail(courseId, member, organizationId, undefined, notification));
   }

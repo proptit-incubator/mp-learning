@@ -9,26 +9,20 @@
   interface Props {
     activeFilterCount: number;
     filterPublished: FilterPublished;
-    filterCourseType: string;
     filterTagSlugs: string[];
     availableTags: WidgetDetail['availableTags'];
-    courseTypeOptions: { value: string; label: string }[];
     onClearAll: () => void;
     onFilterPublishedChange: (value: FilterPublished) => void;
-    onFilterCourseTypeChange: (value: string) => void;
     onFilterTagSlugsChange: (slugs: string[]) => void;
   }
 
   let {
     activeFilterCount,
     filterPublished,
-    filterCourseType,
     filterTagSlugs,
     availableTags,
-    courseTypeOptions,
     onClearAll,
     onFilterPublishedChange,
-    onFilterCourseTypeChange,
     onFilterTagSlugsChange
   }: Props = $props();
 </script>
@@ -87,35 +81,6 @@
               onclick={() => onFilterPublishedChange(val as FilterPublished)}
             >
               {label}
-            </button>
-          {/each}
-        </div>
-      </div>
-
-      <!-- Course type -->
-      <div class="space-y-2">
-        <p class="ui:text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
-          {$t('widgets.filter.course_type')}
-        </p>
-        <div class="flex flex-wrap gap-1.5">
-          <button
-            type="button"
-            class="rounded-full border px-3 py-1 text-xs transition-colors {filterCourseType === 'all'
-              ? 'ui:border-foreground ui:bg-foreground ui:text-background'
-              : 'ui:border-border ui:bg-background ui:text-foreground ui:hover:bg-muted'}"
-            onclick={() => onFilterCourseTypeChange('all')}
-          >
-            {$t('widgets.filter.all')}
-          </button>
-          {#each courseTypeOptions as opt (opt.value)}
-            <button
-              type="button"
-              class="rounded-full border px-3 py-1 text-xs transition-colors {filterCourseType === opt.value
-                ? 'ui:border-foreground ui:bg-foreground ui:text-background'
-                : 'ui:border-border ui:bg-background ui:text-foreground ui:hover:bg-muted'}"
-              onclick={() => onFilterCourseTypeChange(opt.value)}
-            >
-              {opt.label}
             </button>
           {/each}
         </div>

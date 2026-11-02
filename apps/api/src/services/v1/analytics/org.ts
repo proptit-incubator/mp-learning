@@ -1,34 +1,18 @@
-import type {
-  TPublicApiOrgAnalyticsQuery,
-  TPublicApiOrgAnalyticsSection,
-  TPublicApiPaginationQuery
-} from '@cio/utils/validation/public-api';
+import type { TPublicApiOrgAnalyticsQuery, TPublicApiOrgAnalyticsSection } from '@cio/utils/validation/public-api';
 import {
   PUBLIC_API_ANALYTICS_TTL_SECONDS,
   PUBLIC_API_LOGIN_ACTIVITY_TTL_SECONDS,
   publicApiAnalyticsKey
 } from '@api/utils/redis/key-generators';
-import { assertOrgAdmin, assertOrgTeamMember, paginateInMemory } from '@api/services/v1/shared';
+import { assertOrgTeamMember } from '@api/services/v1/shared';
 import { cachedRead, type CachedRead } from '@api/utils/redis/cached-read';
-import {
-  getCountryBreakdown,
-  getCourseFunnel,
-  getLandingStats,
-  getPopularTypes,
-  getTopCoursesByViews
-} from '@api/services/analytics';
+import { getCountryBreakdown, getCourseFunnel, getLandingStats, getTopCoursesByViews } from '@api/services/analytics';
 import { getOrganisationAnalytics, getStudentLoginActivity } from '@api/services/dash';
 import { ROLE } from '@cio/utils/constants';
-import { getOrgComplianceOverview } from '@api/services/course/compliance';
 
-const ADMIN_ONLY_SECTIONS: ReadonlySet<TPublicApiOrgAnalyticsSection> = new Set(['loginActivity', 'compliance']);
+const ADMIN_ONLY_SECTIONS: ReadonlySet<TPublicApiOrgAnalyticsSection> = new Set(['loginActivity']);
 
 const TTL = PUBLIC_API_ANALYTICS_TTL_SECONDS;
-
-// Shared by the compliance section and the paginated learners list, so paging never rebuilds the report.
-function readComplianceOverview(orgId: string) {
-  return cachedRead(publicApiAnalyticsKey('compliance', orgId), TTL, () => getOrgComplianceOverview(orgId));
-}
 
 // The public API keeps its own cache entry per section and skips the dashboard's (bustCache), so `generatedAt` is
 // the real compute time. `limit` trims lists after the read, so it never adds cache keys.
@@ -61,8 +45,6 @@ async function readSection(
     }
     case 'funnel':
       return cachedRead(key(days), TTL, () => getCourseFunnel(orgId, days, undefined, true));
-    case 'courseTypes':
-      return cachedRead(key(days), TTL, () => getPopularTypes(orgId, days, true));
     case 'topCourses': {
       const entry = await cachedRead(key(days), TTL, () => getTopCoursesByViews(orgId, days, true));
       return { ...entry, data: entry.data.slice(0, limit) };
@@ -71,16 +53,12 @@ async function readSection(
       return cachedRead(key(days), PUBLIC_API_LOGIN_ACTIVITY_TTL_SECONDS, () =>
         getStudentLoginActivity(orgId, days, true)
       );
-    case 'compliance': {
-      const entry = await readComplianceOverview(orgId);
-      return { ...entry, data: { summary: entry.data.summary, courses: entry.data.courses } };
-    }
   }
 }
 
 /**
  * Org analytics, one cached read per requested section. Mirrors `orgTeamMemberMiddleware`; admin-only sections
- * (login activity, compliance, as on the dashboard) are left out for tutors and listed in `meta.omitted`.
+ * (login activity, as on the dashboard) are left out for tutors and listed in `meta.omitted`.
  */
 export async function getPublicApiOrgAnalyticsService(
   orgId: string,
@@ -107,16 +85,4 @@ export async function getPublicApiOrgAnalyticsService(
       generatedAt: entries.map((entry) => entry.generatedAt).sort()[0] ?? null
     }
   };
-}
-
-export async function listPublicApiComplianceLearnersService(
-  orgId: string,
-  actorId: string | null,
-  query: TPublicApiPaginationQuery
-) {
-  await assertOrgAdmin(orgId, actorId);
-
-  const { data } = await readComplianceOverview(orgId);
-
-  return paginateInMemory(data.learners, query);
 }

@@ -37,7 +37,7 @@ describe('course outline', () => {
   });
 });
 
-describe.skipIf(!hasDatabase)('top-level content placement', () => {
+describe.skipIf(!hasDatabase)('top-level content placement', { timeout: 30_000 }, () => {
   async function createCourseWithOutline() {
     const { db } = await import('@db/drizzle');
     const schema = await import('@db/schema');

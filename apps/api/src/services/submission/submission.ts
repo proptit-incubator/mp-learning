@@ -52,7 +52,6 @@ import { QUESTION_TYPE_ID_TO_KEY } from '@cio/question-types';
 import { getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
 import { emitCourseWebhookEvent } from '@cio/core/services/webhook/emit';
 import { generateDocumentDownloadPresignedUrls, generateVideoDownloadPresignedUrls } from '@cio/core/utils/s3';
-import { syncComplianceProgressFromSubmission } from '@api/services/course/compliance';
 import { evaluateCourseCertification } from '@api/services/course/completion';
 import { isExerciseCompletedForMember } from '@cio/db/queries/course/progression';
 import type { TEventSource } from '@cio/core/services/posthog';
@@ -903,7 +902,6 @@ export async function createSubmissionService(
           console.error('Failed to send exercise submission update email:', emailError);
         });
 
-        await syncComplianceProgressFromSubmission(courseId, submittedBy, exerciseId);
         await triggerCertificationIfExerciseComplete(courseId, exerciseId, submittedBy);
         await emitSubmissionCreatedWebhookEvent(submission, {
           statusId: projectLegacyStatusId(gradingState),
@@ -925,7 +923,6 @@ export async function createSubmissionService(
       console.error('Failed to send exercise submission update email:', emailError);
     });
 
-    await syncComplianceProgressFromSubmission(courseId, submittedBy, exerciseId);
     await triggerCertificationIfExerciseComplete(courseId, exerciseId, submittedBy);
     await emitSubmissionCreatedWebhookEvent(submission);
     await emitExerciseCompletionIfReached(submission, wasCompleteBefore);
@@ -1001,10 +998,6 @@ export async function updateSubmissionService(
       void sendSubmissionUpdateEmail(submissionId, nextLegacyStatusId).catch((emailError) => {
         console.error('Failed to send submission update email:', emailError);
       });
-    }
-
-    if (updated.gradingState === 'completed' && updated.courseId && updated.submittedBy) {
-      await syncComplianceProgressFromSubmission(updated.courseId, updated.submittedBy, updated.exerciseId);
     }
 
     if (statusChanged || gradingStateChanged) {
@@ -1122,10 +1115,6 @@ export async function updateSubmissionGradesBatch(
       void sendSubmissionUpdateEmail(submissionId, targetStatusId).catch((emailError) => {
         console.error('Failed to send submission update email:', emailError);
       });
-    }
-
-    if (updated.courseId && updated.submittedBy) {
-      await syncComplianceProgressFromSubmission(updated.courseId, updated.submittedBy, updated.exerciseId);
     }
 
     if (statusChanged || currentGradingState !== targetGradingState) {

@@ -35,11 +35,10 @@ export function captureOrganizationCreated(
 export function captureLearnerInvited(input: {
   profileId: string | null | undefined;
   orgId: string;
-  target: 'course' | 'org' | 'cohort';
+  target: 'course' | 'org';
   inviteType: 'email' | 'link';
   count: number;
   courseId?: string;
-  cohortId?: string;
   source: TEventSource;
 }): void {
   if (input.count < 1) return;
@@ -53,13 +52,12 @@ export function captureLearnerInvited(input: {
       invite_type: input.inviteType,
       invite_count: input.count,
       ...(input.courseId && { course_id: input.courseId }),
-      ...(input.cohortId && { cohort_id: input.cohortId }),
       source: input.source
     }
   });
 }
 
-export type TEnrollSource = 'self' | 'invite' | 'invite_link' | 'admin' | 'audience' | 'cohort' | 'org_invite';
+export type TEnrollSource = 'self' | 'invite' | 'invite_link' | 'admin' | 'audience' | 'org_invite';
 
 /**
  * One `learner_enrolled` per new student membership. Rows that aren't students are skipped,
@@ -85,15 +83,12 @@ export function captureLearnersEnrolled(
           const course = courseByGroupId.get(student.groupId);
           if (!course) return [];
 
-          const isPaid = Number(course.cost ?? 0) > 0;
-
           return {
             event: 'learner_enrolled',
             distinctId: student.profileId,
             orgId: course.organizationId,
             properties: {
               course_id: course.courseId,
-              is_paid: isPaid,
               enroll_source: enrollSource,
               source
             }

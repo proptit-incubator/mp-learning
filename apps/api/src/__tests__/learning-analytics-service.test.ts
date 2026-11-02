@@ -15,11 +15,15 @@ describe('training report definitions', () => {
       enrolledEmployees: 3,
       assignments: 8,
       completed: 2,
-      inProgress: 4,
-      notStarted: 2,
+      in_progress: 4,
+      not_started: 2,
       overdue: 1,
+      expired: 0,
+      waived: 0,
       courses: [],
-      attention: []
+      attention: [],
+      batches: [],
+      rows: []
     });
     vi.mocked(getLearningAnalyticsActivity).mockResolvedValue({
       activeLearners: 1,
@@ -45,11 +49,15 @@ describe('training report definitions', () => {
       enrolledEmployees: 0,
       assignments: 0,
       completed: 0,
-      inProgress: 0,
-      notStarted: 0,
+      in_progress: 0,
+      not_started: 0,
       overdue: 0,
+      expired: 0,
+      waived: 0,
       courses: [],
-      attention: []
+      attention: [],
+      batches: [],
+      rows: []
     });
     const report = await getLearningAnalytics('org-1', 30);
     expect(report.completionRate).toBeNull();

@@ -74,8 +74,7 @@ export const v1CourseCertificateRouter = new Hono()
           CertificateSettingsResponse
         ),
         400: {
-          description:
-            'Invalid path or body (including a deadline that is not an ISO 8601 datetime with a timezone), an empty body, or a published compliance course left without a deadline'
+          description: 'Invalid path or body, or an empty body'
         },
         401: errorResponses.unauthorized,
         403: courseForbiddenResponses.teamWrite,
@@ -108,7 +107,7 @@ export const v1CourseCertificatesRouter = new Hono()
       tags: [TAG],
       responses: {
         200: jsonResponse(
-          'Issued certificates returned; compliance cycle and recertification history is not included',
+          'Issued certificates returned; recertification history is not included',
           IssuedCertificatesResponse
         ),
         400: errorResponses.badRequest,

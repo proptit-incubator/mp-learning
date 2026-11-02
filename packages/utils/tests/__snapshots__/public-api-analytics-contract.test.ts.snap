@@ -54,7 +54,7 @@ exports[`public API analytics request contract > ZPublicApiLearnerAnalyticsParam
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "properties": {
     "profileId": {
-      "description": "The profileId returned by the compliance and course student lists.",
+      "description": "The profileId returned by the course student lists.",
       "format": "uuid",
       "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
       "type": "string",
@@ -77,17 +77,15 @@ exports[`public API analytics request contract > ZPublicApiOrgAnalyticsQuery kee
       "type": "number",
     },
     "include": {
-      "description": "Comma-separated sections to return: overview, traffic, countries, funnel, courseTypes, topCourses, loginActivity, compliance. Default: overview. overview: totals (courses, students, certificates), top courses by students, and recent certificates. traffic: landing and course page views, unique visitors, enrollments and completions, with a per-day series. countries: views and enrollments by visitor country. funnel: landing view → course page view → enrollment → completion; for one course, use GET /courses/{courseId}/analytics?include=funnel. courseTypes: views, enrollments and completions by course type. topCourses: the most viewed course pages. loginActivity: student logins by day of week (org admin only). compliance: compliance status counts, overall and per course (org admin only); list the learners with GET /analytics/compliance/learners.",
+      "description": "Comma-separated sections to return: overview, traffic, countries, funnel, topCourses, loginActivity. Default: overview. overview: totals (courses, students, certificates), top courses by students, and recent certificates. traffic: landing and course page views, unique visitors, enrollments and completions, with a per-day series. countries: views and enrollments by visitor country. funnel: landing view → course page view → enrollment → completion; for one course, use GET /courses/{courseId}/analytics?include=funnel. topCourses: the most viewed course pages. loginActivity: student logins by day of week (org admin only).",
       "items": {
         "enum": [
           "overview",
           "traffic",
           "countries",
           "funnel",
-          "courseTypes",
           "topCourses",
           "loginActivity",
-          "compliance",
         ],
         "type": "string",
       },

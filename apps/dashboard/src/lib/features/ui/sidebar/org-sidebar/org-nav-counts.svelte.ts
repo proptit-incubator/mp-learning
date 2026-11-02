@@ -1,6 +1,6 @@
 import { BaseApi, classroomio } from '$lib/utils/services/api';
 
-export type OrgNavCountKey = 'courses' | 'cohorts' | 'media' | 'tags';
+export type OrgNavCountKey = 'courses' | 'media' | 'tags';
 
 export type OrgNavCounts = Record<OrgNavCountKey, number>;
 

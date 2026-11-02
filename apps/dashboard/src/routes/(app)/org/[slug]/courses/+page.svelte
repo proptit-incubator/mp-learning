@@ -39,15 +39,7 @@
   let sortKey: CourseSortBy = $state(DEFAULT_COURSE_SORT);
   let selectedOrder = $state<CourseSortOrder>(DEFAULT_SORT_ORDER);
   let selectedTags = $state<string[]>([]);
-  let courseType = $state<string>('all');
   let publishedStatus = $state<PublishedStatusFilter>('all');
-
-  const courseTypeOptions = $derived([
-    { value: 'SELF_PACED', label: $t('new_course_modal.self_paced_label') },
-    { value: 'LIVE_CLASS', label: $t('new_course_modal.live_class_label') },
-    { value: 'COMPLIANCE', label: $t('new_course_modal.compliance_label') },
-    { value: 'PUBLIC', label: $t('new_course_modal.public_label') }
-  ]);
 
   let hasInitializedFilters = $state(false);
   let isFiltering = $state(false);
@@ -55,9 +47,7 @@
   let appliedUrlSearch = $state('');
 
   const filtersFromUrl = $derived(parseCourseListFilters(page.url.searchParams));
-  const listIsUnfiltered = $derived(
-    !searchValue.trim() && selectedTags.length === 0 && courseType === 'all' && publishedStatus === 'all'
-  );
+  const listIsUnfiltered = $derived(!searchValue.trim() && selectedTags.length === 0 && publishedStatus === 'all');
   const hasMoreCourses = $derived(data.pagination?.hasMore ?? false);
 
   $effect(() => {
@@ -71,7 +61,6 @@
     sortKey = filters.sortKey;
     selectedOrder = filters.order;
     selectedTags = filters.tags;
-    courseType = filters.courseType;
     publishedStatus = filters.publishedStatus;
   }
 
@@ -138,10 +127,9 @@
 
     const tagsChanged = selectedTags.join(',') !== urlFilters.tags.join(',');
     const sortChanged = sortKey !== urlFilters.sortKey || selectedOrder !== urlFilters.order;
-    const typeChanged = courseType !== urlFilters.courseType;
     const statusChanged = publishedStatus !== urlFilters.publishedStatus;
 
-    if (!tagsChanged && !sortChanged && !typeChanged && !statusChanged) {
+    if (!tagsChanged && !sortChanged && !statusChanged) {
       return;
     }
 
@@ -152,7 +140,6 @@
       tags: selectedTags,
       sortKey,
       order: selectedOrder,
-      courseType,
       publishedStatus
     });
   });
@@ -280,9 +267,7 @@
             <CourseFilterPopover
               bind:sortKey
               bind:selectedOrder
-              bind:courseType
               bind:publishedStatus
-              {courseTypeOptions}
               {selectedTags}
               tagGroups={data.tagGroups}
               {isFiltering}

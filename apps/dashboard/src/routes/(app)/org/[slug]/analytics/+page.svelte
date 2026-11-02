@@ -27,8 +27,15 @@
   import RefreshButton from '$features/analytics/components/refresh-button.svelte';
   import LearningActivityChart from '$features/analytics/components/learning-activity-chart.svelte';
   import { LearningAnalyticsApi } from '$features/analytics/api/learning-analytics.svelte';
-  import { buildLearningExport, filterLearningReportCourses } from '$features/analytics/utils/learning-analytics-utils';
-  import type { LearningCourseFilter } from '$features/analytics/utils/types';
+  import {
+    buildAssignmentExport,
+    buildLearningExport,
+    filterAssignmentRows,
+    filterLearningReportCourses
+  } from '$features/analytics/utils/learning-analytics-utils';
+  import type { LearningCourseFilter, LearningState } from '$features/analytics/utils/types';
+  import { EnrollmentStateBadge } from '$features/enrollment';
+  import * as Select from '@cio/ui/base/select';
 
   const learningApi = new LearningAnalyticsApi();
   let searchValue = $state('');
@@ -38,6 +45,41 @@
   const initialLoading = $derived(!report && learningApi.loading);
   const filteredCourses = $derived(filterLearningReportCourses(snapshot?.courses ?? [], searchValue, courseFilter));
   const courseFilters = ['all', 'assigned', 'overdue'] as const;
+  const STATE_OPTIONS = ['all', 'overdue', 'expired', 'not_started', 'in_progress', 'completed', 'waived'] as const;
+  let rowCourseId = $state('');
+  let rowBatch = $state('');
+  let rowState = $state<LearningState | 'all'>('all');
+  let rowSearch = $state('');
+  const assignmentRows = $derived(
+    filterAssignmentRows(snapshot?.rows ?? [], {
+      courseId: rowCourseId,
+      batchLabel: rowBatch,
+      state: rowState,
+      search: rowSearch
+    })
+  );
+  const assignmentExport = $derived(
+    buildAssignmentExport(
+      assignmentRows,
+      $t('learning_analytics.assigned_section.title'),
+      {
+        employee: $t('employees.name'),
+        code: $t('employees.code'),
+        department: $t('employees.department'),
+        course: $t('learning_analytics.course'),
+        batch: $t('enrollment.batch'),
+        due: $t('enrollment.due'),
+        state: $t('enrollment.state_label'),
+        progress: $t('enrollment.progress'),
+        completed: $t('employees.completed'),
+        validUntil: $t('enrollment.valid_until')
+      },
+      (state) => $t(`enrollment.state.${state}`)
+    )
+  );
+  function formatDay(value: string | null) {
+    return value ? new Intl.DateTimeFormat(getIntlLocale(), { dateStyle: 'medium' }).format(new Date(value)) : '';
+  }
   const states = $derived([
     {
       key: 'completed',
@@ -47,13 +89,13 @@
     },
     {
       key: 'in_progress',
-      count: snapshot?.inProgress ?? 0,
+      count: snapshot?.in_progress ?? 0,
       color: 'ui:bg-primary',
       label: 'learning_analytics.in_progress'
     },
     {
       key: 'not_started',
-      count: snapshot?.notStarted ?? 0,
+      count: snapshot?.not_started ?? 0,
       color: 'ui:bg-muted-foreground/30',
       label: 'learning_analytics.not_started'
     }
@@ -85,7 +127,7 @@
       {
         icon: ClockIcon,
         label: 'learning_analytics.not_started',
-        value: snapshot?.notStarted ?? 0,
+        value: snapshot?.not_started ?? 0,
         description: assignmentDescription,
         tone: 'info'
       },
@@ -276,9 +318,9 @@
             {:else if report && snapshot}
               <div class="space-y-3">
                 <a
-                  href={$isOrgAdmin ? `${$currentOrgPath}/compliance` : '#learning-course-report'}
+                  href="#learning-assigned-report"
                   onclick={() => {
-                    if (!$isOrgAdmin) courseFilter = 'overdue';
+                    rowState = 'overdue';
                   }}
                   class="ui:bg-warning-soft ui:text-warning-foreground flex items-center gap-3 rounded-lg p-3"
                   ><ShieldAlertIcon class="custom size-4 shrink-0" /><span
@@ -302,7 +344,7 @@
                   ><ArrowUpRightIcon class="ui:text-muted-foreground size-3.5" /></a
                 >
               </div>
-              {#if !snapshot.overdue && !report.unassignedEmployees && !snapshot.notStarted}<p
+              {#if !snapshot.overdue && !report.unassignedEmployees && !snapshot.not_started}<p
                   class="ui:text-success-foreground mt-4 flex items-start gap-2 text-xs leading-relaxed"
                 >
                   <CircleCheckIcon class="custom mt-0.5 size-4 shrink-0" />{$t('learning_analytics.no_priorities')}
@@ -390,8 +432,8 @@
                           >{/if}
                       </div></Table.Cell
                     ><Table.Cell class="text-right tabular-nums">{course.assigned}</Table.Cell><Table.Cell
-                      class="ui:text-muted-foreground text-right tabular-nums">{course.notStarted}</Table.Cell
-                    ><Table.Cell class="text-right tabular-nums">{course.inProgress}</Table.Cell><Table.Cell
+                      class="ui:text-muted-foreground text-right tabular-nums">{course.not_started}</Table.Cell
+                    ><Table.Cell class="text-right tabular-nums">{course.in_progress}</Table.Cell><Table.Cell
                       class="text-right tabular-nums">{course.completed}</Table.Cell
                     ><Table.Cell class="text-right tabular-nums"
                       >{#if course.overdue}<Badge variant="warning">{course.overdue}</Badge>{:else}<span
@@ -414,6 +456,116 @@
           <div class="ui:border-border ui:text-muted-foreground border-t px-5 py-3 text-[11px]">
             {$t('learning_analytics.progress_definition')}
           </div>
+        </section>
+
+        <section
+          id="learning-assigned-report"
+          class="ui:bg-card ui:shadow-card scroll-mt-20 overflow-hidden rounded-xl border"
+        >
+          <div class="flex flex-wrap items-start justify-between gap-4 p-5">
+            <div class="space-y-1">
+              <h2 class="text-sm font-semibold">{$t('learning_analytics.assigned_section.title')}</h2>
+              <p class="ui:text-muted-foreground text-xs leading-relaxed">
+                {$t('learning_analytics.assigned_section.note')}
+              </p>
+            </div>
+            <ExportMenu document={assignmentExport} disabled={!assignmentRows.length} />
+          </div>
+          {#if snapshot}
+            <div class="flex flex-wrap gap-2 px-5">
+              {#each STATE_OPTIONS.slice(1) as state (state)}
+                <button
+                  type="button"
+                  class="ui:bg-muted ui:hover:bg-accent rounded-lg px-3 py-2 text-left text-xs {rowState === state
+                    ? 'ring-primary ring-2'
+                    : ''}"
+                  onclick={() => (rowState = rowState === state ? 'all' : state)}
+                  ><span class="block text-lg font-semibold tabular-nums">{snapshot[state]}</span>{$t(
+                    `enrollment.state.${state}`
+                  )}</button
+                >
+              {/each}
+            </div>
+            <div class="flex flex-wrap items-center gap-2 p-5">
+              <Search placeholder={$t('employees.search')} bind:value={rowSearch} />
+              <Select.Root type="single" value={rowCourseId} onValueChange={(value) => (rowCourseId = value ?? '')}>
+                <Select.Trigger class="w-56"
+                  >{snapshot.courses.find((course) => course.id === rowCourseId)?.title ??
+                    $t('learning_analytics.assigned_section.all_courses')}</Select.Trigger
+                >
+                <Select.Content>
+                  <Select.Item value="">{$t('learning_analytics.assigned_section.all_courses')}</Select.Item>
+                  {#each snapshot.courses.filter((course) => course.assigned > 0) as course (course.id)}
+                    <Select.Item value={course.id}>{course.title}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+              <Select.Root type="single" value={rowBatch} onValueChange={(value) => (rowBatch = value ?? '')}>
+                <Select.Trigger class="w-48"
+                  >{rowBatch || $t('learning_analytics.assigned_section.all_batches')}</Select.Trigger
+                >
+                <Select.Content>
+                  <Select.Item value="">{$t('learning_analytics.assigned_section.all_batches')}</Select.Item>
+                  {#each snapshot.batches as batch (batch.batchLabel)}
+                    <Select.Item value={batch.batchLabel}
+                      >{batch.batchLabel} · {batch.completed}/{batch.assigned}</Select.Item
+                    >
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+            </div>
+            {#if !assignmentRows.length}
+              <Empty
+                icon={BookOpenIcon}
+                title={$t('learning_analytics.assigned_section.empty')}
+                description={$t('mp_workspace.adjust_search')}
+                class="md:p-6!"
+              />
+            {:else}
+              <Table.Root class="min-w-[900px]">
+                <Table.Header
+                  ><Table.Row
+                    ><Table.Head>{$t('employees.name')}</Table.Head><Table.Head
+                      >{$t('learning_analytics.course')}</Table.Head
+                    ><Table.Head>{$t('enrollment.batch')}</Table.Head><Table.Head>{$t('enrollment.due')}</Table.Head
+                    ><Table.Head>{$t('enrollment.state_label')}</Table.Head><Table.Head
+                      >{$t('enrollment.progress')}</Table.Head
+                    ></Table.Row
+                  ></Table.Header
+                >
+                <Table.Body>
+                  {#each assignmentRows.slice(0, 200) as row (row.enrollmentId)}
+                    <Table.Row
+                      ><Table.Cell
+                        ><a
+                          href={`${$currentOrgPath}/employees?search=${encodeURIComponent(row.employeeCode)}`}
+                          class="ui:hover:text-primary font-medium">{row.fullname}</a
+                        >
+                        <p class="ui:text-muted-foreground text-xs">
+                          {row.employeeCode}{row.department ? ` · ${row.department}` : ''}
+                        </p></Table.Cell
+                      ><Table.Cell
+                        ><a href={`/courses/${row.courseId}/people`} class="ui:hover:text-primary">{row.courseTitle}</a
+                        ></Table.Cell
+                      ><Table.Cell>{row.batchLabel ?? ''}</Table.Cell><Table.Cell>{formatDay(row.dueDate)}</Table.Cell
+                      ><Table.Cell><EnrollmentStateBadge state={row.state} /></Table.Cell><Table.Cell
+                        ><div class="flex items-center gap-2">
+                          <Progress value={row.progress} class="h-1.5 w-20" /><span class="text-xs tabular-nums"
+                            >{row.progress}%</span
+                          >
+                        </div></Table.Cell
+                      ></Table.Row
+                    >
+                  {/each}
+                </Table.Body>
+              </Table.Root>
+              {#if assignmentRows.length > 200}
+                <p class="ui:text-muted-foreground border-t px-5 py-3 text-[11px]">
+                  {$t('learning_analytics.assigned_section.truncated', { count: assignmentRows.length })}
+                </p>
+              {/if}
+            {/if}
+          {/if}
         </section>
 
         {#if snapshot && snapshot.attention.length > 0}
@@ -440,7 +592,7 @@
                       >{:else if employee.assigned === 0}<Badge variant="outline"
                         >{$t('learning_analytics.unassigned')}</Badge
                       >{:else}<Badge variant="secondary"
-                        >{$t('learning_analytics.not_started_count', { count: employee.notStarted })}</Badge
+                        >{$t('learning_analytics.not_started_count', { count: employee.not_started })}</Badge
                       >{/if}<ArrowUpRightIcon class="ui:text-muted-foreground size-4" /></a
                   >
                 </li>{/each}

@@ -15,7 +15,7 @@ import {
 } from '@cio/utils/validation/course';
 import { db } from '@db/drizzle';
 import { isExerciseCompletedSql } from '@db/queries/course/progression';
-import { learningMembershipSql } from './learning-access';
+import { learnerAccessSql } from './enrollment';
 
 export type CourseMemberWithProfile = TGroupmember & {
   profile: {
@@ -235,11 +235,7 @@ export async function getPaginatedCourseMembers(
         or(
           sql`${schema.groupmember.roleId} <> ${ROLE.STUDENT}`,
           isNull(schema.groupmember.profileId),
-          learningMembershipSql(
-            sql`${schema.course.id}`,
-            sql`${schema.course.groupId}`,
-            sql`${schema.groupmember.profileId}`
-          )
+          learnerAccessSql(sql`${schema.course.id}`, sql`${schema.groupmember.profileId}`)
         )!
       );
 
@@ -551,7 +547,8 @@ export async function updateCourseMember(
 
 export async function hasCourseLearnerHistory(courseId: string, memberId: string, profileId: string | null) {
   const [row] = await db.execute<{ retained: boolean }>(sql`select (
-    exists (select 1 from course_enrollment_source where course_id = ${courseId} and profile_id = ${profileId})
+    exists (select 1 from course_enrollment ce join employee e on e.id = ce.employee_id
+      join organizationmember om on om.id = e.member_id where ce.course_id = ${courseId} and om.profile_id = ${profileId})
     or exists (select 1 from course_completion_record where course_id = ${courseId} and group_member_id = ${memberId})
     or exists (select 1 from lesson_completion lc join lesson l on l.id = lc.lesson_id where l.course_id = ${courseId} and lc.profile_id = ${profileId})
     or exists (select 1 from submission where submitted_by = ${memberId})

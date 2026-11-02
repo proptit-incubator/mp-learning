@@ -1,6 +1,5 @@
 <script lang="ts">
   import { untrack } from 'svelte';
-  import { Badge } from '@cio/ui/base/badge';
   import { Button } from '@cio/ui/base/button';
   import { Progress } from '@cio/ui/base/progress';
   import { Skeleton } from '@cio/ui/base/skeleton';
@@ -26,11 +25,11 @@
   import LibraryCourseCard from '../components/library-course-card.svelte';
   import SectionCard from '$features/ui/section-card.svelte';
   import {
-    getStudentCourseComplianceDate,
-    getStudentCourseComplianceStatusKey,
-    getStudentCourseComplianceStatusVariant,
-    getStudentCourseProgressPercent
-  } from '$features/course/utils/compliance-utils';
+    getStudentCourseDueDate,
+    getStudentCourseProgressPercent,
+    isStudentCourseAssigned
+  } from '$features/course/utils/student-course-progress';
+  import EnrollmentStateBadge from '$features/enrollment/components/enrollment-state-badge.svelte';
   import { getStudentCourseContinuePath } from '$features/course/utils/student-course-navigation';
   import { getLearningSummary } from '../utils/learning-overview';
 
@@ -43,7 +42,7 @@
   const heroProgress = $derived(heroCourse ? getStudentCourseProgressPercent(heroCourse) : 0);
   const upcomingSessions = $derived(
     learningApi.enrolledCourses
-      .filter((course) => course.type === 'LIVE_CLASS' && course.upcomingSession)
+      .filter((course) => course.upcomingSession)
       .map((course) => ({
         lessonId: course.upcomingSession!.lessonId,
         courseTitle: course.title,
@@ -83,7 +82,7 @@
       icon: ShieldCheckIcon,
       value: summary.mandatory.length,
       label: 'mp_workspace.pending_mandatory',
-      href: '/lms/mylearning?tab=mandatory',
+      href: '/lms/mylearning?tab=todo',
       tone: 'amber'
     }
   ]);
@@ -136,7 +135,7 @@
 
     {#if !learningApi.isWorkspaceLoading && summary.overdue.length > 0}
       <a
-        href="/lms/mylearning?tab=mandatory"
+        href="/lms/mylearning?tab=todo"
         class="ui:bg-warning-soft ui:text-warning-foreground flex items-center gap-3 rounded-xl border border-current/15 px-4 py-3 text-sm"
       >
         <TriangleAlertIcon class="custom size-5 shrink-0" /><span class="flex-1"
@@ -192,21 +191,18 @@
                     )}
               </h2>
               {#if heroCourse}
-                {@const deadline = getStudentCourseComplianceDate(heroCourse)}
+                {@const deadline = getStudentCourseDueDate(heroCourse)}
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-white/80">
                   <span class="inline-flex items-center gap-1.5"
                     ><BookOpenIcon class="custom size-3.5" />{$t('lms_home.lesson_count', {
                       count: heroCourse.lessonCount ?? 0
                     })}</span
                   >
-                  {#if heroCourse.isRequired ?? heroCourse.type === 'COMPLIANCE'}<span
-                      class="inline-flex items-center gap-1.5"
+                  {#if isStudentCourseAssigned(heroCourse)}<span class="inline-flex items-center gap-1.5"
                       ><ShieldCheckIcon class="custom size-3.5" />{$t('lms_home.mandatory')}</span
                     >{/if}
                   {#if deadline}<span class="inline-flex items-center gap-1.5"
-                      ><CalendarClockIcon class="custom size-3.5" />{$t(deadline.labelKey)}: {formatDate(
-                        deadline.value
-                      )}</span
+                      ><CalendarClockIcon class="custom size-3.5" />{$t('enrollment.due')}: {formatDate(deadline)}</span
                     >{/if}
                 </div>
               {:else}
@@ -339,8 +335,7 @@
         {:else if summary.mandatory.length}
           <ul class="space-y-3">
             {#each summary.mandatory.slice(0, 4) as course (course.id)}
-              {@const statusKey = getStudentCourseComplianceStatusKey(course)}{@const deadline =
-                getStudentCourseComplianceDate(course)}
+              {@const deadline = getStudentCourseDueDate(course)}
               <li>
                 <a
                   href={getStudentCourseContinuePath(course.id)}
@@ -353,16 +348,14 @@
                   <span class="min-w-0 flex-1 space-y-1.5"
                     ><span class="line-clamp-2 block text-[13px] leading-relaxed font-medium">{course.title}</span
                     >{#if deadline}<span class="ui:text-muted-foreground block text-xs"
-                        >{$t(deadline.labelKey)}: {formatDate(deadline.value)}</span
-                      >{/if}{#if statusKey}<Badge variant={getStudentCourseComplianceStatusVariant(course)}
-                        >{$t(statusKey)}</Badge
-                      >{/if}</span
+                        >{$t('enrollment.due')}: {formatDate(deadline)}</span
+                      >{/if}<EnrollmentStateBadge state={course.enrollment?.state} /></span
                   >
                 </a>
               </li>
             {/each}
           </ul>
-          <Button variant="outline" size="sm" class="mt-4 w-full" href="/lms/mylearning?tab=mandatory"
+          <Button variant="outline" size="sm" class="mt-4 w-full" href="/lms/mylearning?tab=todo"
             >{$t('mp_workspace.view_mandatory')}<ArrowRightIcon class="size-3.5" /></Button
           >
         {:else}

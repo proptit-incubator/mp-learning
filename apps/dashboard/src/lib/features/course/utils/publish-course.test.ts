@@ -4,7 +4,6 @@ import type { Course } from './types';
 const mocks = vi.hoisted(() => ({ update: vi.fn() }));
 vi.mock('$features/course/api', () => ({ courseApi: { update: mocks.update, errors: {} } }));
 vi.mock('$features/ui/snackbar/store', () => ({ snackbar: { error: vi.fn() } }));
-vi.mock('./compliance-deadline', () => ({ isCourseMissingComplianceDeadline: () => false }));
 
 import { publishCourse } from './publish-course';
 
@@ -23,7 +22,6 @@ describe('publishing preserves internal access policy', () => {
       id: 'course-id',
       title: 'Internal course',
       slug: 'internal-course',
-      type: 'SELF_PACED',
       cost: 0,
       metadata
     } as Course;

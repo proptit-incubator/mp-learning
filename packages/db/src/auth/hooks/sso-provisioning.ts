@@ -4,8 +4,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { User } from 'better-auth';
 import { db } from '@db/drizzle';
-import { enrollUsersInCourseGroups } from '@db/queries/group';
-import { getOrgCourseGroups } from '@db/queries/course';
+import { createEnrollments, findEmployeeByProfile } from '@db/queries/course/enrollment';
 import { markUserAndProfileEmailVerified } from '@db/queries/auth';
 
 const DEFAULT_STUDENT_ROLE_ID = 3;
@@ -103,9 +102,10 @@ export async function ensureOrgMembership(
 
     if (courseIds.length > 0) {
       try {
-        const courseGroups = await getOrgCourseGroups(orgId, courseIds);
-        const validGroupIds = courseGroups.map((cg) => cg.groupId).filter(Boolean) as string[];
-        await enrollUsersInCourseGroups(validGroupIds, [{ profileId: userId, email: emailLower }], invite.roleId);
+        const employee = await findEmployeeByProfile(orgId, userId);
+        if (employee && invite.roleId === DEFAULT_STUDENT_ROLE_ID) {
+          await createEnrollments({ courseIds, employeeIds: [employee.id], kind: 'ASSIGNED' });
+        }
       } catch (error) {
         console.error('ensureOrgMembership course enrollment error:', error);
       }

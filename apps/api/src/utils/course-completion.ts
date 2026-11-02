@@ -23,16 +23,6 @@ export function calcCourseProgressPercent(params: {
   return Math.round((completedItems / totalItems) * 100);
 }
 
-export function isBeforeOrEqualDeadline(deadlineIso: string | null | undefined, now: Date): boolean {
-  if (!deadlineIso) return true;
-
-  const deadlineDate = new Date(deadlineIso);
-
-  if (Number.isNaN(deadlineDate.getTime())) return true;
-
-  return now.getTime() <= deadlineDate.getTime();
-}
-
 /**
  * Persists certificate earned time, then sends the completion email and records
  * {@link setMemberCertificationEmailSent}, without blocking the HTTP handler.

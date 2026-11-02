@@ -90,7 +90,6 @@
     capturePosthogEvent('join_course', {
       course_id: courseData.id,
       course_title: courseData.title,
-      course_cost: courseData.cost,
       course_free: isFree
     });
 

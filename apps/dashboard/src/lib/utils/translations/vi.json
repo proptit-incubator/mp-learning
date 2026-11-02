@@ -414,7 +414,6 @@
           "recent": "Gần đây",
           "suggested": "Gợi ý",
           "courses": "Khóa học",
-          "cohorts": "Lớp đào tạo",
           "widgets": "Widget",
           "tags": "Thẻ",
           "students": "Học viên",
@@ -470,58 +469,9 @@
       "description": "Trang bạn tìm không tồn tại hoặc đã được chuyển đi.",
       "home": "Về trang chủ"
     },
-    "back": "Quay lại"
-  },
-  "compliance": {
-    "title": "Tuân thủ",
-    "subtitle": "Theo dõi trạng thái chứng nhận của mọi khóa học tuân thủ trong tổ chức.",
-    "summary": {
-      "heading": "Trạng thái học viên",
-      "description": "Số học viên theo trạng thái trong tất cả khóa học tuân thủ."
-    },
-    "tabs": {
-      "courses": "Theo khóa học",
-      "learners": "Học viên"
-    },
-    "status": {
-      "compliant": "Đã tuân thủ",
-      "expiring_soon": "Sắp hết hạn",
-      "in_grace_period": "Trong thời gian ân hạn",
-      "non_compliant": "Chưa tuân thủ",
-      "in_progress": "Đang thực hiện",
-      "not_started": "Chưa bắt đầu",
-      "waived": "Được miễn",
-      "no_record": "Chưa có hồ sơ"
-    },
-    "filter": {
-      "all": "Tất cả",
-      "compliant": "Đã tuân thủ",
-      "expiring_soon": "Sắp hết hạn",
-      "in_grace_period": "Đang ân hạn",
-      "non_compliant": "Chưa tuân thủ",
-      "in_progress": "Đang thực hiện",
-      "not_started": "Chưa bắt đầu",
-      "waived": "Được miễn",
-      "no_record": "Chưa có hồ sơ"
-    },
-    "courses": {
-      "heading": "Khóa học",
-      "description": "Khóa học tuân thủ và số học viên theo trạng thái",
-      "empty": "Chưa có khóa học tuân thủ nào",
-      "course": "Khóa học",
-      "learners": "Học viên",
-      "completion": "Hoàn thành"
-    },
-    "learners": {
-      "heading": "Học viên",
-      "subtitle": "{count, number} kết quả phù hợp",
-      "empty": "Không có học viên nào khớp với bộ lọc này",
-      "learner": "Học viên",
-      "course": "Khóa học",
-      "status": "Trạng thái",
-      "due_date": "Hạn",
-      "expires": "Hết hạn"
-    }
+    "back": "Quay lại",
+    "user_avatar_alt": "Ảnh đại diện người dùng",
+    "course_count": "{count, plural, one {# khóa học} other {# khóa học}}"
   },
   "login": {
     "welcome": "Chào mừng bạn trở lại",
@@ -627,7 +577,6 @@
         "organization": "Tổ chức",
         "expires_at": "Ngày hết hạn",
         "course_name": "Tên khóa học",
-        "cohort_name": "Tên lớp đào tạo",
         "student_name": "Tên học viên",
         "course_message": "Lời nhắn của giảng viên",
         "course_names": "Các khóa học",
@@ -670,10 +619,10 @@
         "studentCourseInvite": "Gửi khi bạn mời ai đó tham gia khóa học.",
         "studentOrgInvite": "Gửi khi bạn mời ai đó vào tổ chức.",
         "studentCourseWelcome": "Gửi khi thêm nhân viên hiện có vào khóa học và bật tùy chọn thông báo qua email.",
-        "studentCohortWelcome": "Gửi khi học viên được cấp quyền truy cập lớp đào tạo.",
+        "assignmentDueReminder": "Gửi khi khóa được giao sắp đến hạn hoặc đã quá hạn.",
         "quizAssigned": "Gửi khi học viên được giao bài tập.",
         "submissionGraded": "Gửi khi bài nộp của học viên được chấm.",
-        "cohortGoalReminder": "Gửi khi mục tiêu của lớp đào tạo đến hạn hoặc quá hạn.",
+        "recertificationReopened": "Gửi khi khóa học được mở lại vì chứng nhận đã hết hạn.",
         "studentCourseCompletion": "Gửi khi học viên hoàn thành khóa học.",
         "sessionReminder": "Gửi trước buổi học trực tuyến đã lên lịch.",
         "sessionUpdated": "Gửi khi thông tin buổi học trực tuyến thay đổi.",
@@ -699,9 +648,9 @@
         "studentCourseWelcome": "Cấp quyền truy cập khóa học",
         "studentCourseCompletion": "Hoàn thành khóa học",
         "studentOrgInvite": "Lời mời tham gia tổ chức",
-        "studentCohortWelcome": "Chào mừng vào lớp đào tạo",
+        "assignmentDueReminder": "Nhắc hạn hoàn thành khóa được giao",
         "studentProvePayment": "Yêu cầu chứng từ thanh toán",
-        "cohortGoalReminder": "Nhắc mục tiêu lớp đào tạo",
+        "recertificationReopened": "Đến kỳ học lại",
         "quizAssigned": "Đã giao bài tập",
         "sessionReminder": "Nhắc lịch buổi học trực tuyến",
         "sessionUpdated": "Buổi học trực tuyến đã cập nhật",
@@ -760,10 +709,6 @@
           "heading": "Khóa học",
           "description": "Ghi danh, bài nộp, bài học, thông báo và hoàn thành trong các khóa học của bạn."
         },
-        "cohort": {
-          "heading": "Lớp đào tạo",
-          "description": "Nhắc nhở về mục tiêu học tập và hạn hoàn thành của lớp đào tạo."
-        },
         "enrollment": {
           "heading": "Ghi danh",
           "description": "Email chào mừng gửi khi quản trị viên thêm thành viên vào khóa học hoặc lớp đào tạo."
@@ -791,8 +736,8 @@
           "description": "Gửi email cho học viên khi được giao bài tập hoặc được nhắc làm bài."
         },
         "cohortReminder": {
-          "label": "Nhắc mục tiêu lớp đào tạo",
-          "description": "Gửi email cho học viên về mục tiêu học tập sắp đến hạn hoặc đã quá hạn."
+          "label": "Nhắc hạn khóa được giao",
+          "description": "Gửi email cho nhân viên trước khi khóa được giao đến hạn."
         },
         "session": {
           "label": "Nhắc lịch và cập nhật buổi học trực tuyến",
@@ -1659,7 +1604,6 @@
     "dashboard": "Tổng quan",
     "stats": "Thống kê",
     "analytics": "Phân tích",
-    "compliance": "Đào tạo bắt buộc",
     "courses": "Khóa học",
     "tags": "Thẻ phân loại",
     "community": "Hỏi đáp",
@@ -1680,9 +1624,7 @@
     "upgrade_count": "{studentCount}/{studentLimit}",
     "upgrade_students": "{studentCount}/{studentLimit} học viên",
     "upgrade_left": "Còn {count}",
-    "cohorts": "Lớp đào tạo",
     "exit_course": "Thoát khóa học",
-    "exit_cohort": "Thoát lớp đào tạo",
     "ai_studio": "Soạn khóa học AI",
     "reports": "Báo cáo",
     "system": "Hệ thống"
@@ -2230,10 +2172,6 @@
       "title": "Lối tắt quản trị",
       "add_learners": "Thêm nhân viên",
       "add_learners_description": "Cấp tài khoản và giao quyền học tập",
-      "create_cohort": "Mở lớp đào tạo",
-      "create_cohort_description": "Gom khóa học và học viên theo chương trình",
-      "mandatory_training": "Theo dõi đào tạo bắt buộc",
-      "mandatory_training_description": "Xem ai quá hạn hoặc chưa bắt đầu",
       "upload_documents": "Tải tài liệu lên",
       "upload_documents_description": "Video, slide và tệp dùng cho bài học"
     }
@@ -4627,17 +4565,12 @@
       "all_courses": "Tất cả khóa học",
       "select_courses": "Chọn khóa học cụ thể",
       "select_courses_placeholder": "Chọn khóa học...",
-      "select_cohorts_placeholder": "Chọn lớp đào tạo...",
       "send_email": "Gửi email mời cho người được nhập",
       "back": "Quay lại",
       "start_over": "Chọn tệp khác",
       "snackbar_success": "{imported} lời mời mới, {assigned} học viên hiện có được cấp quyền truy cập, gia hạn {pendingInvitesRenewed} lời mời đang chờ (đã gửi {emailsSent} email)",
       "snackbar_no_emails": "Vui lòng nhập ít nhất một địa chỉ email",
       "snackbar_failed": "Không nhập được học viên. Vui lòng thử lại.",
-      "cohort_access": "Quyền truy cập lớp đào tạo",
-      "no_cohorts": "Không gán lớp đào tạo",
-      "all_cohorts": "Tất cả lớp đào tạo",
-      "select_cohorts": "Chọn lớp đào tạo cụ thể",
       "drop_csv": "Thả tệp CSV vào đây hoặc nhấp để chọn tệp",
       "csv_hint": "Tệp CSV UTF-8 có cột email. Tối đa {rows} dòng, 5 MB.",
       "download_template": "Tải xuống tệp mẫu",
@@ -4898,20 +4831,6 @@
       "country": "Quốc gia",
       "visitors": "Người xem",
       "enrollments_short": "đã ghi danh"
-    },
-    "popularTypes": {
-      "heading": "Loại khóa học phổ biến",
-      "description": "Lượt ghi danh theo loại khóa học",
-      "subtitle": "{total} lượt ghi danh ở tất cả các loại",
-      "empty": "Chưa có dữ liệu ghi danh",
-      "course_count": "{count, plural, one {# khóa học} other {# khóa học}}",
-      "views_short": "lượt xem",
-      "types": {
-        "SELF_PACED": "Tự học",
-        "LIVE_CLASS": "Buổi học trực tuyến",
-        "COMPLIANCE": "Tuân thủ",
-        "PUBLIC": "Công khai"
-      }
     },
     "topCourses": {
       "heading": "Khóa học được xem nhiều nhất",
@@ -5195,7 +5114,6 @@
     "explore": "Thư viện đào tạo",
     "help": "Trợ giúp",
     "settings": "Tài khoản",
-    "cohorts": "Lớp đào tạo",
     "group_learning": "Học tập"
   },
   "lms": {
@@ -5210,7 +5128,14 @@
     "any_progress": "Các khóa học bạn bắt đầu sẽ hiển thị tại đây",
     "not_completed": "Chưa hoàn thành khóa học nào",
     "any_course": "Các khóa học bạn hoàn thành sẽ hiển thị tại đây",
-    "find_courses": "Tìm khóa học"
+    "find_courses": "Tìm khóa học",
+    "tabs": {
+      "todo": "Cần hoàn thành",
+      "self": "Tự học",
+      "completed": "Đã hoàn thành"
+    },
+    "todo_empty": "Hiện chưa có khóa học nào được giao",
+    "self_empty": "Chưa có khóa tự đăng ký nào đang học"
   },
   "certificates": {
     "heading": "Chứng chỉ",
@@ -5558,32 +5483,6 @@
     "generic": {
       "success_delete": "Đã xóa",
       "try_again": "Đã xảy ra lỗi. Vui lòng thử lại sau"
-    },
-    "cohort": {
-      "success": {
-        "comment_deleted": "Đã xóa bình luận",
-        "comment_added": "Đã thêm bình luận",
-        "feed_delete_success": "Đã xóa bài đăng",
-        "post_created": "Đã tạo bài đăng",
-        "post_updated": "Đã cập nhật bài đăng"
-      },
-      "error": {
-        "reaction_error": "Đã xảy ra lỗi khi thả cảm xúc cho bài đăng",
-        "news_feed_fail": "Không tải được bảng tin của lớp đào tạo",
-        "post_create_failed": "Không tạo được bài đăng",
-        "post_update_failed": "Không cập nhật được bài đăng",
-        "code": {
-          "cohort_forbidden": "Bạn phải là thành viên của lớp đào tạo này để thực hiện thao tác này.",
-          "cohort_member_check_failed": "Không xác minh được tư cách thành viên lớp đào tạo của bạn. Vui lòng thử lại.",
-          "cohort_not_found": "Không tìm thấy lớp đào tạo này.",
-          "cohort_create_failed": "Không tạo được lớp đào tạo.",
-          "cohort_update_failed": "Không cập nhật được lớp đào tạo.",
-          "cohort_delete_failed": "Không xóa được lớp đào tạo.",
-          "cohort_member_not_found": "Không tìm thấy thành viên lớp đào tạo này.",
-          "cohort_newsfeed_not_found": "Không tìm thấy bài đăng này.",
-          "cohort_newsfeed_comment_not_found": "Không tìm thấy bình luận này."
-        }
-      }
     }
   },
   "specialization": {
@@ -5984,223 +5883,6 @@
       "transcript": "Bản chép lời"
     }
   },
-  "cohorts": {
-    "heading": "Lớp đào tạo",
-    "description": "Cấp quyền truy cập nhiều khóa học cho một nhóm người, giống như một lớp học",
-    "page_title": "Lớp đào tạo",
-    "search_placeholder": "Tìm lớp đào tạo",
-    "create": "Lớp đào tạo mới",
-    "create_success": "Đã tạo lớp đào tạo",
-    "update_success": "Đã cập nhật lớp đào tạo",
-    "delete_success": "Đã xóa lớp đào tạo",
-    "members_added": "Đã thêm thành viên",
-    "member_removed": "Đã gỡ thành viên",
-    "invite_sent": "Đã gửi lời mời",
-    "course_added": "Đã thêm khóa học",
-    "multiple_added": "Đã thêm các khóa học",
-    "course_removed": "Đã gỡ khóa học",
-    "empty_title": "Chưa có lớp đào tạo nào",
-    "empty_description": "Tạo lớp đào tạo cấp chứng chỉ hoặc tuân thủ đầu tiên.",
-    "no_matching_cohorts": "Không có lớp đào tạo nào khớp với bộ lọc.",
-    "status": {
-      "active": "Đang hoạt động",
-      "inactive": "Ngừng hoạt động",
-      "archived": "Đã lưu trữ"
-    },
-    "filters": {
-      "filter": "Lọc",
-      "clear_all": "Xóa tất cả",
-      "popover_title": "Bộ lọc",
-      "sort": "Sắp xếp",
-      "order": "Thứ tự",
-      "status": "Trạng thái",
-      "ascending": "Tăng dần",
-      "descending": "Giảm dần",
-      "sort_name": "Tên",
-      "sort_courses": "Khóa học",
-      "sort_students": "Học viên",
-      "sort_status": "Trạng thái"
-    },
-    "table": {
-      "name": "Tên",
-      "courses": "Khóa học",
-      "students": "Học viên",
-      "status": "Trạng thái",
-      "description": "Mô tả"
-    },
-    "sidebar": {
-      "newsfeed": "Bảng tin",
-      "courses": "Khóa học",
-      "people": "Thành viên",
-      "settings": "Cài đặt"
-    },
-    "create_modal": {
-      "title": "Tạo lớp đào tạo",
-      "description": "Thêm một lớp đào tạo cấp chứng chỉ hoặc tuân thủ mới.",
-      "name_label": "Tên",
-      "name_placeholder": "VD: Chứng chỉ an toàn lao động",
-      "description_label": "Mô tả",
-      "description_placeholder": "Lớp đào tạo này về nội dung gì?",
-      "submit": "Tạo"
-    },
-    "card": {
-      "courses": "Khóa học",
-      "students": "Học viên"
-    },
-    "newsfeed": {
-      "heading": "Bảng tin",
-      "post": "Bài đăng mới",
-      "post_placeholder": "Bạn muốn chia sẻ điều gì?",
-      "make_a_post": "Tạo bài đăng",
-      "edit_post": "Sửa bài đăng",
-      "editor_placeholder": "Chia sẻ thông tin mới với lớp đào tạo",
-      "cancel": "Hủy",
-      "post_submit": "Đăng",
-      "pinned": "Đã ghim",
-      "delete_feed_title": "Xóa bài đăng",
-      "delete_feed_description": "Bạn có chắc muốn xóa bài đăng này không?",
-      "confirm_delete": "Xóa",
-      "user_avatar_alt": "Ảnh đại diện người dùng",
-      "card": {
-        "pin": "Ghim",
-        "unpin": "Bỏ ghim",
-        "edit": "Sửa",
-        "delete": "Xóa"
-      },
-      "comments": {
-        "comment": "bình luận",
-        "showing_of": "Đang hiển thị {shown}/{total}",
-        "hide": "Ẩn bình luận",
-        "placeholder": "Viết bình luận",
-        "submit_aria": "Gửi bình luận",
-        "delete": "Xóa"
-      },
-      "empty_title": "Chưa có bài đăng nào",
-      "empty_description": "Hãy là người đầu tiên đăng bài."
-    },
-    "courses": {
-      "add": "Thêm khóa học",
-      "add_modal_title": "Thêm khóa học vào lớp đào tạo",
-      "select_course": "Chọn khóa học",
-      "select_courses": "Chọn các khóa học",
-      "select_placeholder": "Chọn khóa học…",
-      "search_placeholder": "Tìm khóa học",
-      "no_available_courses": "Không còn khóa học nào để thêm.",
-      "no_matching_courses": "Không có khóa học nào khớp với từ khóa tìm kiếm.",
-      "no_matching_cohort_courses": "Không có khóa học nào trong lớp đào tạo khớp với từ khóa tìm kiếm.",
-      "pagination_status": "Trang {page}/{totalPages}",
-      "empty_title": "Chưa có khóa học nào",
-      "empty_description": "Thêm khóa học vào lớp đào tạo này.",
-      "empty_student_description": "Lớp đào tạo này chưa có khóa học nào được xuất bản.",
-      "published_access_callout_title": "Quyền truy cập của học viên",
-      "published_access_callout_description": "Học viên chỉ truy cập được các khóa học đã xuất bản. Khóa học chưa xuất bản vẫn có thể nằm trong lớp đào tạo để nhóm quản trị chuẩn bị, nhưng sẽ được ẩn với học viên cho đến khi bạn xuất bản."
-    },
-    "people": {
-      "invite": "Mời",
-      "invite_modal_title": "Mời thành viên",
-      "invite_modal_description": "Thêm thành viên vào lớp đào tạo này qua email.",
-      "email_label": "Email",
-      "role_label": "Vai trò",
-      "add_another": "Thêm người khác",
-      "invite_submit": "Gửi lời mời",
-      "empty_title": "Chưa có thành viên nào",
-      "empty_description": "Mời mọi người tham gia lớp đào tạo này.",
-      "name": "Tên",
-      "joined": "Ngày tham gia",
-      "filter_title": "Lọc thành viên",
-      "views": {
-        "all": "Tất cả thành viên",
-        "tutors": "Giảng viên",
-        "students": "Học viên",
-        "pending_invites": "Lời mời đang chờ",
-        "never_logged_in": "Chưa từng đăng nhập"
-      }
-    },
-    "lms": {
-      "empty_title": "Chưa có lớp đào tạo nào",
-      "empty_description": "Bạn chưa được ghi danh vào lớp đào tạo nào."
-    },
-    "settings": {
-      "general": "Chung",
-      "name_label": "Tên",
-      "description_label": "Mô tả",
-      "status_label": "Trạng thái",
-      "save": "Lưu thay đổi",
-      "danger_zone": "Vùng nguy hiểm",
-      "delete": "Xóa lớp đào tạo",
-      "delete_description": "Sau khi xóa, lớp đào tạo này và toàn bộ dữ liệu sẽ không thể khôi phục.",
-      "confirm_delete": "Bạn có chắc muốn xóa lớp đào tạo này không? Thao tác này không thể hoàn tác."
-    },
-    "goals": {
-      "heading": "Mục tiêu học tập",
-      "description": "Đặt mục tiêu đo lường được trên nhiều khóa học cho mọi người trong lớp đào tạo này.",
-      "add": "Mục tiêu mới",
-      "empty_title": "Chưa có mục tiêu nào",
-      "empty_description": "Tạo mục tiêu để theo dõi tiến độ của nhóm qua nhiều khóa học.",
-      "created": "Đã tạo mục tiêu",
-      "updated": "Đã cập nhật mục tiêu",
-      "deleted": "Đã xóa mục tiêu",
-      "delete_confirm": "Xóa mục tiêu này? Lịch sử trạng thái của từng học viên cũng sẽ bị xóa.",
-      "modal": {
-        "create_title": "Mục tiêu mới",
-        "edit_title": "Sửa mục tiêu",
-        "title_label": "Tiêu đề",
-        "title_placeholder": "VD: Hội nhập nhân viên mới",
-        "description_label": "Mô tả",
-        "description_placeholder": "Thông tin thêm cho nhóm (không bắt buộc)",
-        "type_label": "Loại",
-        "courses_label": "Khóa học",
-        "required_count_label": "Số khóa học cần hoàn thành",
-        "score_threshold_label": "Điểm đạt của mỗi học viên (%)",
-        "team_pass_rate_label": "Tỷ lệ đạt của nhóm (%)",
-        "deadline_label": "Hạn hoàn thành",
-        "deadline_date_label": "Ngày hết hạn",
-        "relative_days_label": "Số ngày kể từ khi học viên tham gia",
-        "recurring_months_label": "Lặp lại mỗi (tháng)",
-        "reminders_label": "Nhắc nhở (số ngày trước hạn)",
-        "reminders_helper": "Phân tách bằng dấu phẩy. Ví dụ: 7, 3, 1",
-        "save": "Lưu",
-        "cancel": "Hủy"
-      },
-      "type": {
-        "complete_all": "Hoàn thành tất cả khóa học đã chọn",
-        "n_of_m": "Hoàn thành N trong M khóa học đã chọn",
-        "score": "Đạt điểm trên ngưỡng ở mọi khóa học",
-        "pass_rate": "Ngưỡng tỷ lệ đạt của nhóm",
-        "readiness": "Sẵn sàng (không có hạn)"
-      },
-      "deadline_kind": {
-        "absolute": "Ngày cố định",
-        "relative_to_join": "Tính từ ngày học viên tham gia",
-        "recurring": "Định kỳ",
-        "none": "Không có hạn"
-      },
-      "status": {
-        "completed": "Đã hoàn thành",
-        "in_progress": "Đang thực hiện",
-        "at_risk": "Có nguy cơ trễ hạn",
-        "overdue": "Quá hạn",
-        "not_started": "Chưa bắt đầu",
-        "waived": "Được miễn"
-      },
-      "tile": {
-        "on_track": "đúng tiến độ",
-        "completed_short": "hoàn thành",
-        "overdue_short": "quá hạn",
-        "at_risk_short": "có nguy cơ"
-      },
-      "lms": {
-        "heading": "Mục tiêu của bạn",
-        "empty_title": "Chưa có mục tiêu nào",
-        "empty_description": "Khi giảng viên đặt mục tiêu, mục tiêu sẽ hiển thị tại đây.",
-        "due_in_days": "Còn {days} ngày đến hạn",
-        "due_tomorrow": "Đến hạn ngày mai",
-        "due_today": "Đến hạn hôm nay",
-        "overdue": "Quá hạn",
-        "no_deadline": "Không có hạn"
-      }
-    }
-  },
   "invite_link": {
     "tab_label": "Liên kết mời",
     "title": "Liên kết mời",
@@ -6338,8 +6020,6 @@
       "lesson_download": "Học viên có thể tải xuống bài học",
       "self_enrollment": "Học viên có thể tự ghi danh",
       "ai_tutor": "Đã bật trợ giảng AI",
-      "compliance_retake": "Học lại mỗi {months, plural, one {# tháng} other {# tháng}}",
-      "compliance_mandatory": "Bắt buộc",
       "counts": "{sections} chương · {lessons} bài học · {exercises} bài tập",
       "questions": "{count, plural, one {# câu hỏi} other {# câu hỏi}}"
     },
@@ -6541,7 +6221,6 @@
     "customize_lms": "Tùy chỉnh cổng học tập",
     "courses": "Khóa học",
     "home": "Trang chủ",
-    "cohort": "Lớp đào tạo",
     "course": "Khóa học",
     "quiz": "Trắc nghiệm",
     "join_platform": "Tham gia MP Learning",
@@ -6574,7 +6253,6 @@
   "lms_pages": {
     "my_learning_subtitle": "Các khóa học bạn được giao hoặc đã tự ghi danh.",
     "explore_subtitle": "Các khóa đào tạo nội bộ dành cho nhân viên MP Transformation.",
-    "cohorts_subtitle": "Các lớp và chương trình đào tạo bạn đang tham gia.",
     "exercises_subtitle": "Theo dõi bài nộp và điểm số trong các khóa học.",
     "exercises_column_empty": "Chưa có bài nào"
   },
@@ -6656,6 +6334,14 @@
       "all": "Tất cả khóa học",
       "assigned": "Đã giao",
       "overdue": "Quá hạn"
+    },
+    "assigned_section": {
+      "title": "Đào tạo được giao",
+      "note": "Từng khóa được giao cho từng nhân viên, kèm trạng thái hiện tại.",
+      "all_courses": "Tất cả khóa học",
+      "all_batches": "Tất cả đợt",
+      "empty": "Không có lượt giao phù hợp",
+      "truncated": "Đang hiển thị 200 / {count} dòng. Xuất file để xem đầy đủ."
     }
   },
   "employees": {
@@ -6796,57 +6482,87 @@
     "clear_filters": "Xóa bộ lọc",
     "unassigned": "Chưa cập nhật",
     "empty_hint": "Thêm nhân viên mới hoặc điều chỉnh bộ lọc để tìm người bạn cần.",
-    "page_label": "Trang {page} / {pages}"
+    "page_label": "Trang {page} / {pages}",
+    "job_title": "Chức danh"
   },
   "training_library": {
     "enrolled": "Đã tham gia",
     "available_to_you": "Bạn có quyền học",
     "self_enrollment": "Tự đăng ký",
-    "assigned_only": "Khóa học theo phân công",
     "goals": "Mục tiêu học tập",
     "exercise_count": "{count} bài tập",
     "start_continue": "Bắt đầu / Tiếp tục học",
     "self_enrollment_hint": "Đăng ký để thêm khóa này vào Khóa học của tôi.",
     "enroll": "Đăng ký học",
-    "assigned_only_hint": "Khóa học này do bộ phận đào tạo phân công. Liên hệ HR/L&D hoặc giảng viên để được cấp quyền học.",
     "enrollment_error": "Chưa thể đăng ký. Hãy tải lại trang để kiểm tra khóa học và thử lại.",
     "back": "Về thư viện đào tạo",
     "settings_self_enrollment": "Cho phép nhân viên tự đăng ký",
-    "compliance_hint": "Khóa tuân thủ chỉ được giao bởi người phụ trách đào tạo, không cho tự đăng ký.",
     "settings_self_enrollment_hint": "Khóa đã xuất bản sẽ xuất hiện trong thư viện khi bật tùy chọn này. Tắt không thu hồi quyền người đã đăng ký.",
-    "enrolled_success": "Đăng ký khóa học thành công."
+    "enrolled_success": "Đăng ký khóa học thành công.",
+    "assigned_only_hint": "Khóa học này do bộ phận đào tạo phân công. Liên hệ HR/L&D hoặc giảng viên để được cấp quyền học."
   },
   "training_assignment": {
-    "title": "Giao đào tạo",
-    "required": "Bắt buộc",
-    "recommended": "Khuyến nghị",
-    "deadline": "Hạn hoàn thành",
-    "message": "Lời nhắn cho người học",
-    "saved": "Đã giao đào tạo",
-    "cancelled": "Đã hủy",
-    "cancel_failed": "Không thể hủy nguồn tham gia này",
-    "cancel": "Hủy phân công",
-    "sources": "Nguồn tham gia",
     "learners": "Người học",
-    "staff": "Đội ngũ giảng dạy",
-    "assigned": "Được giao",
-    "self_selected": "Tự đăng ký",
-    "access_only": "Được học, không có yêu cầu hoàn thành riêng",
-    "revoke_access": "Thu hồi nguồn truy cập này",
-    "history": "Lịch sử tham gia",
-    "no_sources": "Không còn nguồn tham gia hiệu lực",
-    "description": "Chọn nhân viên và yêu cầu hoàn thành. Tiến độ học hiện có được giữ nguyên.",
-    "existing_hint": "Phân công đã có giữ nguyên hạn. Hủy và giao lại nếu cần thay đổi yêu cầu.",
-    "cancel_hint": "Chỉ hủy nguồn được chọn. Giữ tiến độ, lịch sử học và quyền từ các nguồn khác.",
-    "compliance_controls": "Sử dụng chức năng miễn trừ và điều chỉnh hạn của khóa tuân thủ.",
-    "source": {
-      "SELF": "Tự đăng ký",
-      "DIRECT": "Giao trực tiếp",
-      "LEGACY": "Dữ liệu cũ: chưa xác định nguồn",
-      "PROGRAM": "Chương trình",
-      "COHORT": "Nhóm đào tạo",
-      "COMPLIANCE": "Kỳ đào tạo tuân thủ"
+    "staff": "Đội ngũ giảng dạy"
+  },
+  "enrollment": {
+    "assign_title": "Giao khóa học",
+    "assign_description": "Chọn khóa học và nhân viên. Khóa được giao là bắt buộc hoàn thành; tiến độ hiện có được giữ nguyên.",
+    "assign_button": "Giao khóa học",
+    "courses": "Khóa học",
+    "employees": "Nhân viên",
+    "pick_courses": "Tìm khóa học đã xuất bản",
+    "pick_employees": "Tìm nhân viên",
+    "all_employees": "Tất cả nhân viên đang hoạt động",
+    "filter_department": "Theo phòng ban",
+    "filter_job_title": "Theo chức danh",
+    "selected_count": "Đã chọn {count}",
+    "due_date": "Hạn hoàn thành",
+    "due": "Hạn",
+    "batch_label": "Đợt đào tạo",
+    "batch_placeholder": "VD: Hội nhập 11/2026",
+    "batch": "Đợt",
+    "message": "Lời nhắn cho người học",
+    "notify": "Gửi email cho người học",
+    "submit": "Giao",
+    "assigned_result": "Đã giao {assigned}, đã có từ trước {existing}",
+    "failed": "Chưa lưu được việc giao khóa học. Vui lòng thử lại.",
+    "saved": "Đã cập nhật",
+    "revoked": "Đã thu hồi",
+    "how_joined": "Cách tham gia",
+    "assigned_by": "giao bởi {name}",
+    "valid_until": "Hiệu lực đến",
+    "no_enrollment": "Không còn hiệu lực",
+    "employee_courses": "Khóa học được giao",
+    "progress": "Tiến độ",
+    "state_label": "Trạng thái",
+    "select_all": "Chọn tất cả trong trang",
+    "waive_reason": "Lý do miễn",
+    "waive_expires": "Hết miễn vào (tùy chọn)",
+    "kind": {
+      "ASSIGNED": "Được giao",
+      "SELF": "Tự đăng ký"
     },
-    "created_at": "Thời điểm tham gia"
+    "state": {
+      "not_started": "Chưa bắt đầu",
+      "in_progress": "Đang học",
+      "completed": "Hoàn thành",
+      "overdue": "Quá hạn",
+      "expired": "Hết hiệu lực",
+      "waived": "Miễn"
+    },
+    "actions": {
+      "change_due": "Đổi hạn",
+      "waive": "Miễn",
+      "revoke": "Thu hồi",
+      "revoke_confirm": "Thu hồi khóa học này của {name}? Tiến độ và lịch sử học vẫn được giữ."
+    },
+    "recertification": {
+      "title": "Học lại định kỳ",
+      "description": "Kết quả hoàn thành có hiệu lực trong số tháng nhất định. Khi hết hiệu lực, người được giao phải học lại.",
+      "months_label": "Hiệu lực (tháng)",
+      "months_helper": "Người học được nhắc 30 ngày trước khi hết hiệu lực và có 30 ngày để học lại.",
+      "every": "Học lại mỗi {months} tháng"
+    }
   }
 }

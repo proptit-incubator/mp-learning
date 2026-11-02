@@ -1,4 +1,4 @@
-import { courseLearnerCountSql, learningMembershipSql } from '../course/learning-access';
+import { courseLearnerCountSql, learnerAccessSql } from '../course/enrollment';
 import {
   analyticsLoginEvents,
   and,
@@ -25,7 +25,7 @@ export function getCourseStats(orgId: string) {
     .select({
       courseId: course.id,
       courseTitle: course.title,
-      totalStudents: courseLearnerCountSql(sql`${course.id}`, sql`${course.groupId}`).as('total_students'),
+      totalStudents: courseLearnerCountSql(sql`${course.id}`).as('total_students'),
       totalLessons: sql<number>`COUNT(DISTINCT ${lesson.id})`.as('total_lessons'),
       completedLessons: sql<number>`
         COUNT(DISTINCT ${lessonCompletion.id}) 
@@ -43,7 +43,7 @@ export function getCourseStats(orgId: string) {
       and(
         eq(groupmember.groupId, group.id),
         eq(groupmember.roleId, 3),
-        learningMembershipSql(sql`${course.id}`, sql`${course.groupId}`, sql`${groupmember.profileId}`)
+        learnerAccessSql(sql`${course.id}`, sql`${groupmember.profileId}`)
       )
     )
     .leftJoin(lesson, eq(lesson.courseId, course.id))
@@ -96,7 +96,7 @@ export function getRecentEnrollments(orgId: string) {
       and(
         eq(groupmember.groupId, group.id),
         eq(groupmember.roleId, 3),
-        learningMembershipSql(sql`${course.id}`, sql`${course.groupId}`, sql`${groupmember.profileId}`)
+        learnerAccessSql(sql`${course.id}`, sql`${groupmember.profileId}`)
       )
     )
     .innerJoin(profile, eq(profile.id, groupmember.profileId))

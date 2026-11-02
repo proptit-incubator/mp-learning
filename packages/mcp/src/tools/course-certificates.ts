@@ -64,7 +64,7 @@ export function registerCourseCertificateTools(server: McpServer, apiClient: Cla
 
   server.tool(
     'list_course_certificates',
-    `List the students who earned a course's certificate, with when they earned it and when its email was sent; ${COURSE_TEAM_RULE}. Compliance cycle and recertification history is not included.`,
+    `List the students who earned a course's certificate, with when they earned it and when its email was sent; ${COURSE_TEAM_RULE}.`,
     listCourseCertificatesShape,
     READ_ONLY,
     async (args) => {

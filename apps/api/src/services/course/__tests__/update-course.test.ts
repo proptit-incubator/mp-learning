@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { NonAutoGradableQuestionOffender } from '@cio/utils/validation/course';
 
 const mocks = vi.hoisted(() => ({
   transaction: vi.fn(),
@@ -29,7 +28,8 @@ describe('updateCourseWithTags', () => {
     mocks.transaction.mockImplementation(async (callback) => callback(transactionClient));
     mocks.updateCourse.mockResolvedValue({
       course: { id: 'course-1', title: 'Updated course' },
-      conversionOffenders: null
+      publishedNow: false,
+      publishChange: null
     });
     mocks.replaceCourseTags.mockResolvedValue([{ id: 'tag-1' }]);
   });
@@ -53,35 +53,28 @@ describe('updateCourseWithTags', () => {
     );
     expect(result).toEqual({
       course: { id: 'course-1', title: 'Updated course' },
-      conversionOffenders: null,
+      publishedNow: false,
+      publishChange: null,
       tags: [{ id: 'tag-1' }]
     });
   });
 
-  it('passes through the conversion offenders updateCourse reports', async () => {
-    const offenders: NonAutoGradableQuestionOffender[] = [
-      {
-        questionId: 'question-1',
-        questionTitle: 'Describe your approach',
-        exerciseId: 'exercise-1',
-        exerciseTitle: 'Week 1 reflection',
-        typeId: 3
-      }
-    ];
+  it('passes through the publish change updateCourse reports', async () => {
     mocks.updateCourse.mockResolvedValue({
       course: { id: 'course-1', title: 'Updated course' },
-      conversionOffenders: offenders
+      publishedNow: true,
+      publishChange: 'published'
     });
 
     const result = await updateCourseWithTags({
       courseId: 'course-1',
-      courseData: { title: 'Updated course' },
+      courseData: { isPublished: true },
       orgId: 'org-1',
       updatedByUserId: 'user-1',
       tagIds: ['tag-1']
     });
 
-    expect(result.conversionOffenders).toEqual(offenders);
+    expect(result).toMatchObject({ publishedNow: true, publishChange: 'published' });
   });
 
   it('propagates tag failures so the transaction can roll back the course update', async () => {

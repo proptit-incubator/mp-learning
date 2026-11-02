@@ -10,48 +10,30 @@
   import { t } from '$lib/utils/functions/translations';
   import { CoursesApi } from '$features/course/api/courses.svelte';
   import { CourseSortBy, DEFAULT_COURSE_SORT } from '$features/course/utils/constants';
-  import { isStudentCourseComplete } from '$features/course/utils/compliance-utils';
-  import { filterLearningCourses } from '../utils/learning-overview';
+  import { isStudentCourseAssigned, isStudentCourseComplete } from '$features/course/utils/student-course-progress';
+  import { filterLearningCourses, prioritizeLearningCourses } from '../utils/learning-overview';
 
   const learningApi = new CoursesApi();
   let searchValue = $state('');
   let sortKey = $state<CourseSortBy>(DEFAULT_COURSE_SORT);
   let loadedOrganization = $state('');
   let hasLoaded = $state(false);
-  const coursesInProgress = $derived(learningApi.enrolledCourses.filter((course) => !isStudentCourseComplete(course)));
-  const coursesComplete = $derived(learningApi.enrolledCourses.filter(isStudentCourseComplete));
-  const mandatoryCourses = $derived(
-    coursesInProgress.filter((course) => course.isRequired ?? course.type === 'COMPLIANCE')
-  );
+  const pendingCourses = $derived(learningApi.enrolledCourses.filter((course) => !isStudentCourseComplete(course)));
+  const todoCourses = $derived(prioritizeLearningCourses(pendingCourses.filter(isStudentCourseAssigned)));
+  const selfCourses = $derived(pendingCourses.filter((course) => !isStudentCourseAssigned(course)));
+  const completedCourses = $derived(learningApi.enrolledCourses.filter(isStudentCourseComplete));
   const tabs = $derived([
+    { label: $t('my_learning.tabs.todo'), value: 'todo', courses: todoCourses, empty: 'my_learning.todo_empty' },
+    { label: $t('my_learning.tabs.self'), value: 'self', courses: selfCourses, empty: 'my_learning.self_empty' },
     {
-      label: $t('my_learning.progress'),
-      count: coursesInProgress.length,
-      value: 'in_progress',
-      courses: coursesInProgress
-    },
-    {
-      label: $t('lms_home.mandatory_title'),
-      count: mandatoryCourses.length,
-      value: 'mandatory',
-      courses: mandatoryCourses
-    },
-    {
-      label: $t('training_assignment.assigned'),
-      count: coursesInProgress.filter((course) => course.isAssigned).length,
-      value: 'assigned',
-      courses: coursesInProgress.filter((course) => course.isAssigned)
-    },
-    {
-      label: $t('training_assignment.self_selected'),
-      count: coursesInProgress.filter((course) => course.isSelfEnrolled).length,
-      value: 'self',
-      courses: coursesInProgress.filter((course) => course.isSelfEnrolled)
-    },
-    { label: $t('my_learning.complete'), count: coursesComplete.length, value: 'completed', courses: coursesComplete }
+      label: $t('my_learning.tabs.completed'),
+      value: 'completed',
+      courses: completedCourses,
+      empty: 'my_learning.not_completed'
+    }
   ]);
-  const selectedTab = $derived(page.url.searchParams.get('tab') ?? 'in_progress');
-  const activeTab = $derived(tabs.some((tab) => tab.value === selectedTab) ? selectedTab : 'in_progress');
+  const selectedTab = $derived(page.url.searchParams.get('tab') ?? 'todo');
+  const activeTab = $derived(tabs.some((tab) => tab.value === selectedTab) ? selectedTab : 'todo');
 
   $effect(() => {
     const organizationId = $currentOrg.id;
@@ -91,7 +73,7 @@
       <UnderlineTabs.Trigger value={tab.value}>
         {tab.label}<span
           class="ui:bg-muted ui:text-muted-foreground ml-1.5 rounded-md px-1.5 py-0.5 text-[11px] tabular-nums"
-          >{hasLoaded ? tab.count : '…'}</span
+          >{hasLoaded ? tab.courses.length : '…'}</span
         >
       </UnderlineTabs.Trigger>
     {/each}
@@ -102,21 +84,11 @@
         <CoursesPage
           bind:searchValue
           bind:sortKey
-          courses={filterLearningCourses(tab.courses, searchValue, sortKey)}
-          emptyTitle={$t(
-            searchValue
-              ? 'mp_workspace.no_results'
-              : tab.value === 'completed'
-                ? 'my_learning.not_completed'
-                : 'my_learning.not_in_progress'
-          )}
-          emptyDescription={$t(
-            searchValue
-              ? 'mp_workspace.adjust_search'
-              : tab.value === 'mandatory'
-                ? 'lms_home.mandatory_empty'
-                : 'my_learning.any_progress'
-          )}
+          courses={tab.value === 'todo' && sortKey === DEFAULT_COURSE_SORT
+            ? filterLearningCourses(tab.courses, searchValue, sortKey, true)
+            : filterLearningCourses(tab.courses, searchValue, sortKey)}
+          emptyTitle={$t(searchValue ? 'mp_workspace.no_results' : tab.empty)}
+          emptyDescription={$t(searchValue ? 'mp_workspace.adjust_search' : 'my_learning.any_progress')}
           isLMS={true}
           isLoading={!hasLoaded || learningApi.isLoading}
         >

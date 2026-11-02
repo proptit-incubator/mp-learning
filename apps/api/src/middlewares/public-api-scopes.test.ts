@@ -4,7 +4,7 @@ import { Hono } from '@api/utils/hono';
 
 import { publicApiScopesMiddleware } from './public-api-scopes';
 
-const COHORT_SCOPES = ['cohort:read', 'cohort:write'];
+const TEAM_SCOPES = ['team:read', 'team:write'];
 const MEDIA_SCOPES = ['media:write'];
 
 function buildApp(scopes: string[]) {
@@ -14,8 +14,8 @@ function buildApp(scopes: string[]) {
       await next();
     })
     .use('*', publicApiScopesMiddleware)
-    .get('/cohorts', (c) => c.json({ success: true }))
-    .post('/cohorts/:cohortId/invite', (c) => c.json({ success: true }, 201))
+    .get('/team', (c) => c.json({ success: true }))
+    .put('/team/:memberId', (c) => c.json({ success: true }))
     .put('/courses/:courseId', (c) => c.json({ success: true }))
     .delete('/courses/:courseId', (c) => c.json({ success: true }))
     .get('/audience', (c) => c.json({ success: true }))
@@ -38,26 +38,26 @@ function buildApp(scopes: string[]) {
 }
 
 describe('publicApiScopesMiddleware', () => {
-  it('lets a key with the MCP default cohort scopes reach cohort reads and writes', async () => {
-    const app = buildApp(COHORT_SCOPES);
+  it('lets a key with the team scopes reach team reads and writes', async () => {
+    const app = buildApp(TEAM_SCOPES);
 
-    expect((await app.request('/public-api/v1/cohorts')).status).toBe(200);
-    expect((await app.request('/public-api/v1/cohorts/c1/invite', { method: 'POST' })).status).toBe(201);
+    expect((await app.request('/public-api/v1/team')).status).toBe(200);
+    expect((await app.request('/public-api/v1/team/m1', { method: 'PUT' })).status).toBe(200);
   });
 
-  it('keeps cohort-scoped keys out of course update/delete and every other public API route', async () => {
-    const app = buildApp(COHORT_SCOPES);
+  it('keeps team-scoped keys out of course update/delete and every other public API route', async () => {
+    const app = buildApp(TEAM_SCOPES);
 
     expect((await app.request('/public-api/v1/courses/c1', { method: 'PUT' })).status).toBe(403);
     expect((await app.request('/public-api/v1/courses/c1', { method: 'DELETE' })).status).toBe(403);
     expect((await app.request('/public-api/v1/audience')).status).toBe(403);
   });
 
-  it('needs cohort:write for cohort writes', async () => {
-    const app = buildApp(['cohort:read']);
+  it('needs team:write for team writes', async () => {
+    const app = buildApp(['team:read']);
 
-    expect((await app.request('/public-api/v1/cohorts')).status).toBe(200);
-    expect((await app.request('/public-api/v1/cohorts/c1/invite', { method: 'POST' })).status).toBe(403);
+    expect((await app.request('/public-api/v1/team')).status).toBe(200);
+    expect((await app.request('/public-api/v1/team/m1', { method: 'PUT' })).status).toBe(403);
   });
 
   it('lets analytics:read reach only analytics GETs', async () => {
@@ -70,11 +70,11 @@ describe('publicApiScopesMiddleware', () => {
     expect((await app.request('/public-api/v1/analytics', { method: 'POST' })).status).toBe(403);
     expect((await app.request('/public-api/v1/courses/c1/students')).status).toBe(403);
     expect((await app.request('/public-api/v1/courses/c1')).status).toBe(403);
-    expect((await app.request('/public-api/v1/cohorts')).status).toBe(403);
+    expect((await app.request('/public-api/v1/team')).status).toBe(403);
   });
 
-  it('keeps cohort-scoped keys out of analytics', async () => {
-    const app = buildApp(COHORT_SCOPES);
+  it('keeps team-scoped keys out of analytics', async () => {
+    const app = buildApp(TEAM_SCOPES);
 
     expect((await app.request('/public-api/v1/analytics')).status).toBe(403);
     expect((await app.request('/public-api/v1/courses/c1/analytics')).status).toBe(403);
@@ -84,7 +84,7 @@ describe('publicApiScopesMiddleware', () => {
     const app = buildApp(['public_api:*']);
 
     expect((await app.request('/public-api/v1/courses/c1', { method: 'PUT' })).status).toBe(200);
-    expect((await app.request('/public-api/v1/cohorts/c1/invite', { method: 'POST' })).status).toBe(201);
+    expect((await app.request('/public-api/v1/team/m1', { method: 'PUT' })).status).toBe(200);
     expect(
       (await app.request('/public-api/v1/courses/c1/members/m1/lessons/l1/completion', { method: 'PUT' })).status
     ).toBe(200);
@@ -132,13 +132,13 @@ describe('publicApiScopesMiddleware', () => {
   it('keeps a media:write key out of every other public API route', async () => {
     const app = buildApp(MEDIA_SCOPES);
 
-    expect((await app.request('/public-api/v1/cohorts')).status).toBe(403);
+    expect((await app.request('/public-api/v1/team')).status).toBe(403);
     expect((await app.request('/public-api/v1/courses/c1', { method: 'PUT' })).status).toBe(403);
     expect((await app.request('/public-api/v1/audience')).status).toBe(403);
   });
 
-  it('does not let a cohort-scoped key create an asset upload', async () => {
-    const app = buildApp(COHORT_SCOPES);
+  it('does not let a team-scoped key create an asset upload', async () => {
+    const app = buildApp(TEAM_SCOPES);
 
     expect((await app.request('/public-api/v1/assets', { method: 'POST' })).status).toBe(403);
   });

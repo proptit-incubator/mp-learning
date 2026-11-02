@@ -1,5 +1,4 @@
 export * from './attendance.svelte';
-export * from './compliance.svelte';
 export * from './course-clone.svelte';
 export * from './course-template.svelte';
 export * from './course.svelte';

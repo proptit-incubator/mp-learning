@@ -1,13 +1,10 @@
 <script lang="ts">
-  import { tick } from 'svelte';
   import { Button } from '@cio/ui/base/button';
   import * as Dialog from '@cio/ui/base/dialog';
   import { courseApi } from '$features/course/api';
   import { publishCourse } from '$features/course/utils/publish-course';
   import { openCoursePreview } from '$features/course/utils/course-preview';
-  import { goToCourseCompletionDeadline } from '$features/course/utils/compliance-deadline';
   import { t } from '$lib/utils/functions/translations';
-  import CertificateDeadlineRequiredDialog from './certificate-deadline-required-dialog.svelte';
 
   interface Props {
     open?: boolean;
@@ -17,7 +14,6 @@
   let { open = $bindable(false), currentOrgDomain = '' }: Props = $props();
 
   let isPublishing = $state(false);
-  let openDeadlineDialog = $state(false);
 
   async function handlePublishCourse() {
     const course = courseApi.course;
@@ -30,13 +26,6 @@
     const result = await publishCourse(course);
     isPublishing = false;
 
-    if (!result.ok && result.reason === 'missing_deadline') {
-      open = false;
-      await tick();
-      openDeadlineDialog = true;
-      return;
-    }
-
     if (!result.ok) {
       return;
     }
@@ -48,18 +37,6 @@
       courseSlug: courseApi.course?.slug,
       currentOrgDomain
     });
-  }
-
-  async function goToCompletionDeadline() {
-    const courseId = courseApi.course?.id;
-    openDeadlineDialog = false;
-
-    if (!courseId) {
-      return;
-    }
-
-    await tick();
-    goToCourseCompletionDeadline(courseId);
   }
 </script>
 
@@ -87,5 +64,3 @@
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
-
-<CertificateDeadlineRequiredDialog bind:open={openDeadlineDialog} onGoToDeadline={goToCompletionDeadline} />

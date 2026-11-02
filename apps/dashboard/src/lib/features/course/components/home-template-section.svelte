@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { TemplateCard, DEFAULT_COURSE_BANNER_IMAGE } from '@cio/ui';
   import { courseTemplateApi } from '$features/course/api';
-  import { templateCardSubtitle, templateTypeBadge } from '$features/course/utils/template-display';
+  import { templateCardSubtitle } from '$features/course/utils/template-display';
   import { t } from '$lib/utils/functions/translations';
   import { currentOrg, currentOrgPath } from '$lib/utils/store/org';
 
@@ -57,7 +57,6 @@
             subtitle={templateCardSubtitle(template.lastUsedAt, orgIds.has(template.id), $t)}
             imageUrl={template.bannerImage || DEFAULT_COURSE_BANNER_IMAGE}
             imageAlt={template.title}
-            typeBadge={templateTypeBadge(template.type, $t)}
             onclick={() => goto(galleryHref(template.id))}
           />
         {/each}

@@ -1,7 +1,6 @@
 <script lang="ts">
   import * as Field from '@cio/ui/base/field';
   import * as Select from '@cio/ui/base/select';
-  import { Badge } from '@cio/ui/base/badge';
   import { Button } from '@cio/ui/base/button';
   import { Search } from '@cio/ui/custom/search';
   import { CheckboxOptionCardGroup, type CheckboxOptionCardOption } from '@cio/ui/custom/checkbox-option-card';
@@ -18,7 +17,6 @@
     selectedCourseIds: string[];
     courseSearch: string;
     filterPublished: FilterPublished;
-    filterCourseType: string;
     filterTagSlugs: string[];
     filteredCourses: WidgetDetail['availableCourses'];
     activeFilterCount: number;
@@ -32,25 +30,12 @@
     selectedCourseIds = $bindable(),
     courseSearch = $bindable(),
     filterPublished = $bindable(),
-    filterCourseType = $bindable(),
     filterTagSlugs = $bindable(),
     filteredCourses,
     activeFilterCount,
     onContinueToLayout,
     onClearFilters
   }: Props = $props();
-
-  const courseTypeLabels = $derived<Record<string, string>>({
-    LIVE_CLASS: $t('new_course_modal.live_class_label'),
-    SELF_PACED: $t('new_course_modal.self_paced_label'),
-    COMPLIANCE: $t('new_course_modal.compliance_label')
-  });
-
-  const courseTypeOptions = $derived([
-    { value: 'LIVE_CLASS', label: $t('new_course_modal.live_class_label') },
-    { value: 'SELF_PACED', label: $t('new_course_modal.self_paced_label') },
-    { value: 'COMPLIANCE', label: $t('new_course_modal.compliance_label') }
-  ]);
 
   const courseOptions = $derived<CheckboxOptionCardOption[]>(
     filteredCourses.map((course) => ({
@@ -93,13 +78,10 @@
         <CourseFilterPopover
           {activeFilterCount}
           {filterPublished}
-          {filterCourseType}
           {filterTagSlugs}
           availableTags={detail.availableTags}
-          {courseTypeOptions}
           onClearAll={onClearFilters}
           onFilterPublishedChange={(val) => (filterPublished = val)}
-          onFilterCourseTypeChange={(val) => (filterCourseType = val)}
           onFilterTagSlugsChange={(slugs) => (filterTagSlugs = slugs)}
         />
       </div>
@@ -110,12 +92,6 @@
         </p>
       {:else}
         <CheckboxOptionCardGroup options={courseOptions} bind:value={selectedCourseIds} class="grid-cols-1">
-          {#snippet titleSuffix(option)}
-            {@const course = filteredCourses.find((entry) => entry.id === option.id)}
-            {#if course?.courseType && courseTypeLabels[course.courseType]}
-              <Badge variant="outline" class="shrink-0 text-[10px]">{courseTypeLabels[course.courseType]}</Badge>
-            {/if}
-          {/snippet}
           {#snippet footer(option)}
             {@const course = filteredCourses.find((entry) => entry.id === option.id)}
             {#if course}

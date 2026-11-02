@@ -9,7 +9,7 @@ const hasDatabase = Boolean(
   process.env.DATABASE_URL || process.env.PRIVATE_DATABASE_URL || process.env.PGBOUNCER_DATABASE_URL
 );
 
-describe.skipIf(!hasDatabase)('listCourseStudentsService database pagination', () => {
+describe.skipIf(!hasDatabase)('listCourseStudentsService database pagination', { timeout: 30_000 }, () => {
   const studentEmails = [
     'student-1@pagination.test',
     'student-2@pagination.test',

@@ -20,10 +20,7 @@ export type TWebhookEventContext = {
     id: string;
     title: string | null;
     slug: string | null;
-    type: string | null;
     isPublished: boolean | null;
-    cost: number | null;
-    currency: string | null;
     tags: string[];
   } | null;
   statusLabels: Map<number, string>;
@@ -356,10 +353,7 @@ export async function getWebhookEventContext(
                 id: schema.course.id,
                 title: schema.course.title,
                 slug: schema.course.slug,
-                type: schema.course.type,
-                isPublished: schema.course.isPublished,
-                cost: schema.course.cost,
-                currency: schema.course.currency
+                isPublished: schema.course.isPublished
               })
               .from(schema.course)
               .where(eq(schema.course.id, input.courseId))

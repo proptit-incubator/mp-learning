@@ -136,7 +136,6 @@
               bind:selectedCourseIds={store.selectedCourseIds}
               bind:courseSearch={store.courseSearch}
               bind:filterPublished={store.filterPublished}
-              bind:filterCourseType={store.filterCourseType}
               bind:filterTagSlugs={store.filterTagSlugs}
               filteredCourses={store.filteredCourses}
               activeFilterCount={store.activeFilterCount}

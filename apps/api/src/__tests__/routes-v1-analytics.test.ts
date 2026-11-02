@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@api/services/v1/analytics/org', () => ({
-  getPublicApiOrgAnalyticsService: vi.fn(),
-  listPublicApiComplianceLearnersService: vi.fn()
+  getPublicApiOrgAnalyticsService: vi.fn()
 }));
 
 vi.mock('@api/services/v1/analytics/course', () => ({
@@ -31,10 +30,7 @@ import {
   getPublicApiCourseAnalyticsService,
   listPublicApiCourseAnalyticsStudentsService
 } from '@api/services/v1/analytics/course';
-import {
-  getPublicApiOrgAnalyticsService,
-  listPublicApiComplianceLearnersService
-} from '@api/services/v1/analytics/org';
+import { getPublicApiOrgAnalyticsService } from '@api/services/v1/analytics/org';
 import { getCourseService } from '@api/services/v1/courses/course';
 import { getPublicApiLearnerAnalyticsService } from '@api/services/v1/analytics/learner';
 import { v1AnalyticsRouter } from '@api/routes/v1/analytics';
@@ -80,16 +76,16 @@ describe('GET /analytics', () => {
   it('parses a comma-separated include with days and limit', async () => {
     vi.mocked(getPublicApiOrgAnalyticsService).mockResolvedValue(ORG_RESULT as never);
 
-    await app.request('/analytics?include=traffic,%20compliance&days=90&limit=10');
+    await app.request('/analytics?include=traffic,%20loginActivity&days=90&limit=10');
 
     expect(getPublicApiOrgAnalyticsService).toHaveBeenCalledWith('org-1', 'actor-1', {
-      include: ['traffic', 'compliance'],
+      include: ['traffic', 'loginActivity'],
       days: 90,
       limit: 10
     });
   });
 
-  it.each(['days=14', 'days=0', 'days=abc', 'include=bogus', 'include=', 'limit=0', 'limit=21'])(
+  it.each(['days=14', 'days=0', 'days=abc', 'include=bogus', 'include=compliance', 'include=', 'limit=0', 'limit=21'])(
     'rejects %s with 400',
     async (query) => {
       const response = await app.request(`/analytics?${query}`);
@@ -110,25 +106,9 @@ describe('GET /analytics', () => {
   });
 });
 
-describe('GET /analytics/compliance/learners and /analytics/learners/:profileId', () => {
+describe('GET /analytics/learners/:profileId', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it('paginates compliance learners', async () => {
-    vi.mocked(listPublicApiComplianceLearnersService).mockResolvedValue(EMPTY_PAGE as never);
-
-    const response = await app.request('/analytics/compliance/learners?page=2&limit=5');
-
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ success: true, data: [], pagination: EMPTY_PAGE.pagination });
-    expect(listPublicApiComplianceLearnersService).toHaveBeenCalledWith('org-1', 'actor-1', { page: 2, limit: 5 });
-  });
-
-  it('rejects a compliance learners limit over 100', async () => {
-    const response = await app.request('/analytics/compliance/learners?limit=101');
-
-    expect(response.status).toBe(400);
   });
 
   it('validates the learner profileId and maps service errors', async () => {

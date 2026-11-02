@@ -15,22 +15,16 @@ vi.mock('@api/services/dash', () => ({
   getStudentLoginActivity: vi.fn().mockResolvedValue([])
 }));
 
-vi.mock('@api/services/course/compliance', () => ({
-  getOrgComplianceOverview: vi.fn().mockResolvedValue({})
-}));
-
 vi.mock('@api/services/analytics', () => ({
   getCountryBreakdown: vi.fn().mockResolvedValue([]),
   getCourseFunnel: vi.fn().mockResolvedValue({ steps: [] }),
   getLandingStats: vi.fn().mockResolvedValue({}),
-  getPopularTypes: vi.fn().mockResolvedValue([]),
   getTopCoursesByViews: vi.fn().mockResolvedValue([]),
   ingestEventBatch: vi.fn()
 }));
 
 import { getOrganisationAnalytics, getStudentLoginActivity } from '@api/services/dash';
-import { getOrgComplianceOverview } from '@api/services/course/compliance';
-import { getCountryBreakdown, getCourseFunnel, getLandingStats, getPopularTypes } from '@api/services/analytics';
+import { getCountryBreakdown, getCourseFunnel, getLandingStats } from '@api/services/analytics';
 import { dashAnalyticsRouter } from '@api/routes/dash';
 
 const OWN_ORG = 'org-own';
@@ -53,8 +47,7 @@ describe('dash analytics routes read the org verified by the middleware', () => 
 
   it.each([
     ['/landing-stats', getLandingStats],
-    ['/country-breakdown', getCountryBreakdown],
-    ['/popular-types', getPopularTypes]
+    ['/country-breakdown', getCountryBreakdown]
   ])('%s uses the verified org', async (path, service) => {
     const response = await get(`${path}?orgId=${OTHER_ORG}`);
 
@@ -68,12 +61,10 @@ describe('dash analytics routes read the org verified by the middleware', () => 
     expect(getCourseFunnel).toHaveBeenCalledWith(OWN_ORG, 30, undefined, false);
   });
 
-  it('/login-activity and /compliance-overview use the verified org', async () => {
+  it('/login-activity uses the verified org', async () => {
     await get(`/login-activity?orgId=${OTHER_ORG}`);
-    await get(`/compliance-overview?orgId=${OTHER_ORG}`);
 
     expect(getStudentLoginActivity).toHaveBeenCalledWith(OWN_ORG, 90);
-    expect(getOrgComplianceOverview).toHaveBeenCalledWith(OWN_ORG);
   });
 
   it('still rejects a header org the user does not belong to', async () => {

@@ -110,38 +110,6 @@ export async function deleteOrganization(sql: postgres.Sql, orgId: string) {
       courseIds.length > 0 ? await tx`SELECT id FROM course_newsfeed WHERE course_id IN ${tx(courseIds)}` : [];
     const newsfeedIds = newsfeeds.map((n) => n.id);
 
-    // Programs (legacy)
-    const programs = await tx`SELECT id FROM program WHERE organization_id = ${orgId}`;
-    const programIds = programs.map((p) => p.id);
-
-    const programMembers =
-      programIds.length > 0 ? await tx`SELECT id FROM program_member WHERE program_id IN ${tx(programIds)}` : [];
-    const programMemberIds = programMembers.map((pm) => pm.id);
-
-    const programNewsfeeds =
-      programIds.length > 0 ? await tx`SELECT id FROM program_newsfeed WHERE program_id IN ${tx(programIds)}` : [];
-    const programNewsfeedIds = programNewsfeeds.map((pn) => pn.id);
-
-    const programGoals =
-      programIds.length > 0 ? await tx`SELECT id FROM program_goal WHERE program_id IN ${tx(programIds)}` : [];
-    const programGoalIds = programGoals.map((pg) => pg.id);
-
-    // Cohorts
-    const cohorts = await tx`SELECT id FROM cohort WHERE organization_id = ${orgId}`;
-    const cohortIds = cohorts.map((c) => c.id);
-
-    const cohortMembers =
-      cohortIds.length > 0 ? await tx`SELECT id FROM cohort_member WHERE cohort_id IN ${tx(cohortIds)}` : [];
-    const cohortMemberIds = cohortMembers.map((cm) => cm.id);
-
-    const cohortNewsfeeds =
-      cohortIds.length > 0 ? await tx`SELECT id FROM cohort_newsfeed WHERE cohort_id IN ${tx(cohortIds)}` : [];
-    const cohortNewsfeedIds = cohortNewsfeeds.map((cn) => cn.id);
-
-    const cohortGoals =
-      cohortIds.length > 0 ? await tx`SELECT id FROM cohort_goal WHERE cohort_id IN ${tx(cohortIds)}` : [];
-    const cohortGoalIds = cohortGoals.map((cg) => cg.id);
-
     // Widgets
     const widgets = await tx`SELECT id FROM widget WHERE organization_id = ${orgId}`;
     const widgetIds = widgets.map((w) => w.id);
@@ -397,40 +365,6 @@ export async function deleteOrganization(sql: postgres.Sql, orgId: string) {
     }
     if (groupIds.length > 0) {
       await tx`DELETE FROM "group" WHERE id IN ${tx(groupIds)}`;
-    }
-
-    // Phase 24: Programs (legacy)
-    if (programMemberIds.length > 0) {
-      await tx`DELETE FROM program_member WHERE id IN ${tx(programMemberIds)}`;
-    }
-    if (programGoalIds.length > 0) {
-      await tx`DELETE FROM program_goal_assignment WHERE goal_id IN ${tx(programGoalIds)}`;
-      await tx`DELETE FROM program_goal WHERE id IN ${tx(programGoalIds)}`;
-    }
-    if (programNewsfeedIds.length > 0) {
-      await tx`DELETE FROM program_newsfeed_comment WHERE program_newsfeed_id IN ${tx(programNewsfeedIds)}`;
-      await tx`DELETE FROM program_newsfeed WHERE id IN ${tx(programNewsfeedIds)}`;
-    }
-    if (programIds.length > 0) {
-      await tx`DELETE FROM program_course WHERE program_id IN ${tx(programIds)}`;
-      await tx`DELETE FROM program WHERE id IN ${tx(programIds)}`;
-    }
-
-    // Phase 25: Cohorts
-    if (cohortMemberIds.length > 0) {
-      await tx`DELETE FROM cohort_member WHERE id IN ${tx(cohortMemberIds)}`;
-    }
-    if (cohortGoalIds.length > 0) {
-      await tx`DELETE FROM cohort_goal_assignment WHERE goal_id IN ${tx(cohortGoalIds)}`;
-      await tx`DELETE FROM cohort_goal WHERE id IN ${tx(cohortGoalIds)}`;
-    }
-    if (cohortNewsfeedIds.length > 0) {
-      await tx`DELETE FROM cohort_newsfeed_comment WHERE cohort_newsfeed_id IN ${tx(cohortNewsfeedIds)}`;
-      await tx`DELETE FROM cohort_newsfeed WHERE id IN ${tx(cohortNewsfeedIds)}`;
-    }
-    if (cohortIds.length > 0) {
-      await tx`DELETE FROM cohort_course WHERE cohort_id IN ${tx(cohortIds)}`;
-      await tx`DELETE FROM cohort WHERE id IN ${tx(cohortIds)}`;
     }
 
     // Phase 26: Widgets

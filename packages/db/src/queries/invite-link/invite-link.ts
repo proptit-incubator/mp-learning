@@ -4,7 +4,7 @@ import { and, eq, isNull, sql } from 'drizzle-orm';
 import { db, type DbOrTxClient } from '@db/drizzle';
 import type { TInviteLink, TNewInviteLink } from '@db/types';
 
-export type TInviteLinkResourceType = 'COURSE' | 'COHORT';
+export type TInviteLinkResourceType = 'COURSE';
 
 export type TInviteLinkTarget = {
   resourceType: TInviteLinkResourceType;
@@ -12,19 +12,11 @@ export type TInviteLinkTarget = {
 };
 
 function targetCondition(target: TInviteLinkTarget) {
-  if (target.resourceType === 'COURSE') {
-    return and(eq(schema.inviteLink.resourceType, 'COURSE'), eq(schema.inviteLink.courseId, target.resourceId));
-  }
-
-  return and(eq(schema.inviteLink.resourceType, 'COHORT'), eq(schema.inviteLink.cohortId, target.resourceId));
+  return and(eq(schema.inviteLink.resourceType, 'COURSE'), eq(schema.inviteLink.courseId, target.resourceId));
 }
 
-export function toInviteLinkColumns(target: TInviteLinkTarget): { courseId: string | null; cohortId: string | null } {
-  if (target.resourceType === 'COURSE') {
-    return { courseId: target.resourceId, cohortId: null };
-  }
-
-  return { courseId: null, cohortId: target.resourceId };
+export function toInviteLinkColumns(target: TInviteLinkTarget): { courseId: string } {
+  return { courseId: target.resourceId };
 }
 
 /** Returns the link regardless of revoked state, so a disabled link can be re-enabled. */
@@ -45,10 +37,7 @@ export async function getInviteLinkByTarget(target: TInviteLinkTarget, roleId: n
 
 export async function createInviteLink(values: TNewInviteLink): Promise<TInviteLink> {
   try {
-    const conflictTarget =
-      values.resourceType === 'COURSE'
-        ? [schema.inviteLink.courseId, schema.inviteLink.roleId]
-        : [schema.inviteLink.cohortId, schema.inviteLink.roleId];
+    const conflictTarget = [schema.inviteLink.courseId, schema.inviteLink.roleId];
 
     const [created] = await db
       .insert(schema.inviteLink)
@@ -62,15 +51,12 @@ export async function createInviteLink(values: TNewInviteLink): Promise<TInviteL
       return created;
     }
 
-    const resourceId = values.resourceType === 'COURSE' ? values.courseId : values.cohortId;
+    const resourceId = values.courseId;
     if (!resourceId) {
       throw new Error('Invite link is missing its resource id');
     }
 
-    const existing = await getInviteLinkByTarget(
-      { resourceType: values.resourceType as TInviteLinkResourceType, resourceId },
-      values.roleId
-    );
+    const existing = await getInviteLinkByTarget({ resourceType: 'COURSE', resourceId }, values.roleId);
 
     if (!existing) {
       throw new Error('Failed to create invite link');
@@ -127,7 +113,6 @@ export type TInviteLinkWithContext = {
     status: string;
     isPublished: boolean;
   } | null;
-  cohort: { id: string; name: string; description: string | null; coverImage: string | null; status: string } | null;
 };
 
 /** Loads a link by token hash with its org and target resource. */
@@ -153,17 +138,11 @@ export async function getInviteLinkByTokenHash(
         courseDescription: schema.course.description,
         courseSlug: schema.course.slug,
         courseStatus: schema.course.status,
-        courseIsPublished: schema.course.isPublished,
-        cohortId: schema.cohort.id,
-        cohortName: schema.cohort.name,
-        cohortDescription: schema.cohort.description,
-        cohortCoverImage: schema.cohort.coverImage,
-        cohortStatus: schema.cohort.status
+        courseIsPublished: schema.course.isPublished
       })
       .from(schema.inviteLink)
       .innerJoin(schema.organization, eq(schema.inviteLink.organizationId, schema.organization.id))
       .leftJoin(schema.course, eq(schema.inviteLink.courseId, schema.course.id))
-      .leftJoin(schema.cohort, eq(schema.inviteLink.cohortId, schema.cohort.id))
       .where(eq(schema.inviteLink.tokenHash, tokenHash))
       .limit(1);
 
@@ -180,15 +159,6 @@ export async function getInviteLinkByTokenHash(
             slug: row.courseSlug ?? null,
             status: row.courseStatus ?? '',
             isPublished: !!row.courseIsPublished
-          }
-        : null,
-      cohort: row.cohortId
-        ? {
-            id: row.cohortId,
-            name: row.cohortName ?? '',
-            description: row.cohortDescription ?? null,
-            coverImage: row.cohortCoverImage ?? null,
-            status: row.cohortStatus ?? ''
           }
         : null
     };

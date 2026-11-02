@@ -33,6 +33,28 @@ export async function enqueueSessionReminderScan(options: JobsOptions = {}): Pro
   return job.id;
 }
 
+/** Enqueue a one-off run of the assignment due-date reminder scan. */
+export async function enqueueAssignmentDueReminderScan(options: JobsOptions = {}): Promise<string | undefined> {
+  const job = await getQueue(QUEUE_NAMES.notifications).add(
+    JOB_NAMES.notifications.assignmentDueReminderScan,
+    {},
+    { ...QUEUE_DEFAULTS[QUEUE_NAMES.notifications], ...options }
+  );
+
+  return job.id;
+}
+
+/** Enqueue a one-off run of the recertification expiry scan. */
+export async function enqueueRecertificationExpiryScan(options: JobsOptions = {}): Promise<string | undefined> {
+  const job = await getQueue(QUEUE_NAMES.notifications).add(
+    JOB_NAMES.notifications.recertificationExpiryScan,
+    {},
+    { ...QUEUE_DEFAULTS[QUEUE_NAMES.notifications], ...options }
+  );
+
+  return job.id;
+}
+
 /** Enqueue a "session updated" notification that emails members an updated calendar invite. */
 export async function enqueueNotifyCourseSessionUpdate(
   payload: TNotifyCourseSessionUpdatePayload,

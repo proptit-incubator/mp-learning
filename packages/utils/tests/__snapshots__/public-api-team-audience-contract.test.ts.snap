@@ -4,20 +4,13 @@ exports[`public API team and audience update contract > ZPublicApiAssignAudience
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "properties": {
-    "cohortIds": {
-      "items": {
-        "format": "uuid",
-        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-        "type": "string",
-      },
-      "type": "array",
-    },
     "courseIds": {
       "items": {
         "format": "uuid",
         "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
         "type": "string",
       },
+      "minItems": 1,
       "type": "array",
     },
     "profileIds": {
@@ -37,6 +30,7 @@ exports[`public API team and audience update contract > ZPublicApiAssignAudience
   },
   "required": [
     "profileIds",
+    "courseIds",
   ],
   "type": "object",
 }

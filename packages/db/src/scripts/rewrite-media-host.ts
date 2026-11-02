@@ -67,8 +67,6 @@ const TARGETS: Array<{ table: string; columns: Column[] }> = [
   { table: 'lesson_language', columns: [{ name: 'content' }] },
   { table: 'course_newsfeed', columns: [{ name: 'content' }] },
   { table: 'course_newsfeed_comment', columns: [{ name: 'content' }] },
-  { table: 'program_newsfeed', columns: [{ name: 'content' }] },
-  { table: 'program_newsfeed_comment', columns: [{ name: 'content' }] },
   { table: 'community_question', columns: [{ name: 'body' }] }
 ];
 

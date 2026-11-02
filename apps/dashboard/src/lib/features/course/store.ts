@@ -1,4 +1,3 @@
-import type { TCourseType } from '@cio/db/types';
 import type { Course } from '$features/course/types';
 import type { CourseMembers, CourseSectionWithLessons, ListLessons } from '$features/course/utils/types';
 import { writable, type Writable } from 'svelte/store';
@@ -15,9 +14,6 @@ export const defaultCourse: Course = {
   title: '',
   description: '',
   overview: null,
-  type: 'LIVE_CLASS' as TCourseType,
-  cost: 0,
-  currency: 'USD',
   status: 'ACTIVE',
   certificate: {
     isDownloadable: false,

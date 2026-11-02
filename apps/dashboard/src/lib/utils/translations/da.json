@@ -43,7 +43,9 @@
       "description": "The page you are looking for does not exist or has been moved.",
       "home": "Back to home"
     },
-    "back": "Tilbage"
+    "back": "Tilbage",
+    "user_avatar_alt": "User avatar",
+    "course_count": "{count, plural, one {# course} other {# courses}}"
   },
   "validations": {
     "generic": {
@@ -492,32 +494,6 @@
       "generate_1080_failed": "Kunne ikke generere 1080p gengivelse"
     },
     "social_auth_not_enabled": "Denne godkendelsesudbyder er ikke aktiveret.",
-    "cohort": {
-      "error": {
-        "reaction_error": "Der opstod en fejl under reaktion på indlægget",
-        "news_feed_fail": "Kunne ikke hente kohortens nyhedsfeed",
-        "post_create_failed": "Kunne ikke oprette indlæg",
-        "post_update_failed": "Kunne ikke opdatere indlægget",
-        "code": {
-          "cohort_forbidden": "Du skal være medlem af dette kohorte for at udføre denne handling.",
-          "cohort_member_check_failed": "Vi kunne ikke bekræfte dit kohortemedlemskab. Prøv igen.",
-          "cohort_not_found": "Dette kohorte kunne ikke findes.",
-          "cohort_create_failed": "Kunne ikke oprette kohorten.",
-          "cohort_update_failed": "Kunne ikke opdatere kohorten.",
-          "cohort_delete_failed": "Kunne ikke slette kohorten.",
-          "cohort_member_not_found": "Dette kohortemedlem kunne ikke findes.",
-          "cohort_newsfeed_not_found": "Det indlæg kunne ikke findes.",
-          "cohort_newsfeed_comment_not_found": "Den kommentar kunne ikke findes."
-        }
-      },
-      "success": {
-        "comment_deleted": "Kommentar slettet",
-        "comment_added": "Kommentar tilføjet",
-        "feed_delete_success": "Indlægget blev slettet",
-        "post_created": "Indlægget er oprettet",
-        "post_updated": "Opslaget blev opdateret"
-      }
-    },
     "report": {
       "success": "Tak. Vi gennemgår denne anmeldelse.",
       "error": "Anmeldelsen kunne ikke sendes. Prøv venligst igen.",
@@ -557,7 +533,14 @@
     "any_progress": "Ethvert kursus, du starter, vil blive vist her",
     "not_completed": "Intet kursus gennemført",
     "any_course": "Ethvert kursus, du gennemfører, vil blive vist her",
-    "find_courses": "Find kurser"
+    "find_courses": "Find kurser",
+    "tabs": {
+      "todo": "To complete",
+      "self": "Self-paced",
+      "completed": "Completed"
+    },
+    "todo_empty": "Nothing assigned to you right now",
+    "self_empty": "No self-enrolled courses in progress"
   },
   "certificates": {
     "heading": "Certifikater",
@@ -580,7 +563,6 @@
     "explore": "Udforsk",
     "help": "Hjælp",
     "settings": "Indstillinger",
-    "cohorts": "Kohorter",
     "group_learning": "Learning"
   },
   "upgrade": {
@@ -657,20 +639,6 @@
     "no_data_default_description": "Der er ingen data at vise på nuværende tidspunkt.",
     "subtitle": "Forstå, hvordan besøgende opdager dine kurser og konverterer til studerende.",
     "refresh": "Opdater",
-    "popularTypes": {
-      "heading": "Populære kursustyper",
-      "description": "Tilmeldinger grupperet efter kursustype",
-      "subtitle": "{total} tilmeldinger på tværs af alle typer",
-      "empty": "Ingen tilmeldingsdata endnu",
-      "course_count": "{count, plural, one {# kursus} other {# kurser}}",
-      "views_short": "visninger",
-      "types": {
-        "SELF_PACED": "Selv-tempo",
-        "LIVE_CLASS": "Live klasse",
-        "COMPLIANCE": "Overholdelse",
-        "PUBLIC": "Offentlig"
-      }
-    },
     "topCourses": {
       "heading": "Topkurser efter visninger",
       "description": "Kurser rangeret efter sidevisninger",
@@ -796,11 +764,6 @@
       "snackbar_no_emails": "Indtast venligst mindst én e-mailadresse",
       "snackbar_failed": "Kunne ikke importere brugere",
       "page_subtitle": "Tilføj mange personer på én gang via e-mail, og tildel dem kurser eller kohorter, hvis du vil.",
-      "cohort_access": "Kohorteadgang",
-      "no_cohorts": "Ingen kohortetildeling",
-      "all_cohorts": "Alle kohorter",
-      "select_cohorts": "Vælg specifikke kohorter",
-      "select_cohorts_placeholder": "Vælg kohorter...",
       "drop_csv": "Slip en CSV-fil her, eller klik for at vælge en",
       "csv_hint": "UTF-8 CSV med en e-mail-kolonne. Op til {rows} rækker, 5 MB.",
       "download_template": "Download skabelonen",
@@ -3333,10 +3296,6 @@
       "title": "Admin shortcuts",
       "add_learners": "Add employees",
       "add_learners_description": "Import a list or invite by email",
-      "create_cohort": "Open a training class",
-      "create_cohort_description": "Group courses and learners by programme",
-      "mandatory_training": "Track mandatory training",
-      "mandatory_training_description": "See who is overdue or not started",
       "upload_documents": "Upload documents",
       "upload_documents_description": "Videos, slides and files for lessons"
     }
@@ -3585,10 +3544,7 @@
     "widgets": "Widgets",
     "stats": "Statistik",
     "analytics": "Analyse",
-    "compliance": "Overholdelse",
-    "cohorts": "Uddannelsesprogrammer",
     "exit_course": "Forlad dette kursus",
-    "exit_cohort": "Forlad denne kohorte",
     "upgrade_now": "Opgrader nu",
     "upgrade_label": "Opgrader",
     "upgrade_count": "{studentCount}/{studentLimit}",
@@ -4462,10 +4418,6 @@
           "heading": "Tilmelding",
           "description": "Velkomst-e-mails sendt, når personalet tilføjer medlemmer til kurser eller kohorter."
         },
-        "cohort": {
-          "heading": "Kohorte",
-          "description": "Påmindelser om kohortens læringsmål og deadlines."
-        },
         "course": {
           "heading": "Kursus",
           "description": "Tilmeldinger, afleveringer, lektioner, meddelelser og gennemførelser i dine kurser."
@@ -4512,30 +4464,30 @@
         "studentCourseWelcome": "Course access granted",
         "studentCourseCompletion": "Kursusafslutning",
         "studentOrgInvite": "Organisation invitation",
-        "studentCohortWelcome": "Kohorte velkommen",
         "studentProvePayment": "Anmodning om betalingsbevis",
-        "cohortGoalReminder": "Påmindelse om kohortemål",
         "quizAssigned": "Quiz tildelt",
         "sessionReminder": "Live session påmindelse",
         "sessionUpdated": "Live session opdateret",
         "submissionGraded": "Indsendelse bedømt",
         "newsfeedPost": "Kursus nyhedsfeed indlæg",
-        "employeeActivation": "Employee account activation"
+        "employeeActivation": "Employee account activation",
+        "assignmentDueReminder": "Assignment due reminder",
+        "recertificationReopened": "Recertification reopened"
       },
       "descriptions": {
         "studentCourseInvite": "Sendes, når du inviterer nogen til et kursus.",
         "studentOrgInvite": "Sendes, når du inviterer nogen til din organisation.",
         "studentCourseWelcome": "Sent when an existing employee is added to a course with email notifications enabled.",
-        "studentCohortWelcome": "Sendes når en elev får adgang til en kohorte.",
         "quizAssigned": "Sendes når en quiz er tildelt en elev.",
         "submissionGraded": "Sendes når en elevs øvelsesindlevering gennemgås.",
-        "cohortGoalReminder": "Sendes, når et kohortemål er forfaldent eller forsinket.",
         "studentCourseCompletion": "Sendes, når en elev gennemfører et kursus.",
         "sessionReminder": "Sendt før en planlagt live-session.",
         "sessionUpdated": "Sendes, når detaljerne i livesessionen ændres.",
         "newsfeedPost": "Sendes når et nyt kursusopslag er offentliggjort.",
         "studentProvePayment": "Sendes, når en elev skal fremlægge betalingsbevis.",
-        "employeeActivation": "Sent when an activation link is issued or resent from Employees. Links are single use and expire after 48 hours."
+        "employeeActivation": "Sent when an activation link is issued or resent from Employees. Links are single use and expire after 48 hours.",
+        "assignmentDueReminder": "Sent when an assigned course is approaching or past its due date.",
+        "recertificationReopened": "Sent when a course reopens because its certification has expired."
       },
       "groups": {
         "enrollment": "Accounts and enrollment",
@@ -4547,7 +4499,6 @@
         "organization": "Organisation",
         "expires_at": "Udløbsdato",
         "course_name": "Kursusnavn",
-        "cohort_name": "Kohortenavn",
         "student_name": "Elevens navn",
         "course_message": "Instruktør besked",
         "course_names": "Kurser",
@@ -4654,8 +4605,7 @@
           "widgets": "Widgets",
           "tags": "Tags",
           "students": "studerende",
-          "settings": "Indstillinger",
-          "cohorts": "Kohorter"
+          "settings": "Indstillinger"
         }
       }
     },
@@ -5694,57 +5644,6 @@
       "transcript": "Transskription"
     }
   },
-  "compliance": {
-    "title": "Overholdelse",
-    "subtitle": "Spor certificeringsstatus på tværs af alle overholdelseskurser i din organisation.",
-    "learners": {
-      "heading": "studerende",
-      "subtitle": "{count, number} matcher",
-      "empty": "Ingen elever matcher dette filter",
-      "learner": "Studerende",
-      "course": "Kursus",
-      "status": "Status",
-      "due_date": "Forfalder",
-      "expires": "Udløber"
-    },
-    "courses": {
-      "heading": "Kurser",
-      "description": "Overholdelseskurser med elevstatus tæller",
-      "empty": "Ingen compliance-kurser endnu",
-      "course": "Kursus",
-      "learners": "studerende",
-      "completion": "Fuldførelse"
-    },
-    "filter": {
-      "all": "Alle",
-      "compliant": "Overensstemmende",
-      "expiring_soon": "Udløber snart",
-      "in_grace_period": "I nåde",
-      "non_compliant": "Ikke-kompatibel",
-      "in_progress": "I gang",
-      "not_started": "Ikke startet",
-      "waived": "Frafaldet",
-      "no_record": "Ingen rekord"
-    },
-    "status": {
-      "compliant": "Overensstemmende",
-      "expiring_soon": "Udløber snart",
-      "in_grace_period": "I afdragsfri periode",
-      "non_compliant": "Ikke-kompatibel",
-      "in_progress": "I gang",
-      "not_started": "Ikke startet",
-      "waived": "Frafaldet",
-      "no_record": "Ingen rekord"
-    },
-    "tabs": {
-      "courses": "Af kurs",
-      "learners": "studerende"
-    },
-    "summary": {
-      "heading": "Studerendes status",
-      "description": "Tæller på tværs af elever i alle compliance-kurser."
-    }
-  },
   "public_course": {
     "exercise": {
       "submit": "Tjek mine svar",
@@ -5956,223 +5855,6 @@
       "failed": "Upload mislykkedes"
     }
   },
-  "cohorts": {
-    "heading": "Kohorter",
-    "page_title": "Kohorter",
-    "create": "Ny kohorte",
-    "create_success": "Cohort oprettet",
-    "update_success": "Cohort opdateret",
-    "delete_success": "Cohort slettet",
-    "members_added": "Medlemmer tilføjet",
-    "member_removed": "Medlem fjernet",
-    "course_added": "Kursus tilføjet",
-    "course_removed": "Kursus fjernet",
-    "empty_title": "Ingen kohorter endnu",
-    "empty_description": "Opret din første certificerings- eller compliance-kohorte.",
-    "settings": {
-      "general": "Generelt",
-      "name_label": "Navn",
-      "description_label": "Beskrivelse",
-      "status_label": "Status",
-      "save": "Gem ændringer",
-      "danger_zone": "Farezone",
-      "delete": "Slet kohorte",
-      "delete_description": "Når det er slettet, kan dette kohorte og alle dets data ikke gendannes.",
-      "confirm_delete": "Er du sikker på, at du vil slette dette kohorte? Dette kan ikke fortrydes."
-    },
-    "lms": {
-      "empty_title": "Ingen kohorter endnu",
-      "empty_description": "Du er ikke blevet tilmeldt nogen kohorter."
-    },
-    "people": {
-      "invite": "Inviter",
-      "invite_modal_title": "Inviter medlemmer",
-      "invite_modal_description": "Tilføj personer til dette kohorte via e-mail.",
-      "email_label": "E-mail",
-      "role_label": "Rolle",
-      "add_another": "Tilføj en anden",
-      "invite_submit": "Send invitationer",
-      "empty_title": "Ingen medlemmer endnu",
-      "empty_description": "Inviter folk til at deltage i dette kohorte.",
-      "name": "Navn",
-      "joined": "Tiltrådte",
-      "filter_title": "Filtrer folk",
-      "views": {
-        "all": "Alle mennesker",
-        "tutors": "Undervisere",
-        "students": "studerende",
-        "pending_invites": "Afventende invitationer",
-        "never_logged_in": "Aldrig logget ind"
-      }
-    },
-    "courses": {
-      "add": "Tilføj kursus",
-      "add_modal_title": "Føj kursus til kohorte",
-      "select_course": "Vælg et kursus",
-      "select_placeholder": "Vælg et kursus...",
-      "empty_title": "Ingen kurser endnu",
-      "empty_description": "Tilføj kurser til dette kohorte.",
-      "select_courses": "Vælg kurser",
-      "search_placeholder": "Søg efter kurser",
-      "no_available_courses": "Ingen tilgængelige kurser at tilføje.",
-      "no_matching_courses": "Ingen kurser matcher din søgning.",
-      "no_matching_cohort_courses": "Ingen kohortekurser matcher din søgning.",
-      "pagination_status": "Side {page} af {totalPages}",
-      "published_access_callout_title": "Studerendes adgang",
-      "published_access_callout_description": "Studerende har kun adgang til offentliggjorte kurser. Kurser kan være i denne kohorte for dit team, mens de stadig ikke er udgivet, men de forbliver skjulte for eleverne, indtil du udgiver dem.",
-      "empty_student_description": "Der er endnu ingen offentliggjorte kurser i denne kohorte."
-    },
-    "newsfeed": {
-      "post": "Nyt indlæg",
-      "post_placeholder": "Hvad tænker du på?",
-      "post_submit": "Indlæg",
-      "empty_title": "Ingen indlæg endnu",
-      "empty_description": "Vær den første til at poste noget.",
-      "heading": "Nyhedsfeed",
-      "make_a_post": "Lav et indlæg",
-      "edit_post": "Rediger indlæg",
-      "editor_placeholder": "Del en opdatering med din kohorte",
-      "cancel": "Annuller",
-      "pinned": "Fastgjort",
-      "delete_feed_title": "Slet indlæg",
-      "delete_feed_description": "Er du sikker på, at du vil slette dette indlæg?",
-      "confirm_delete": "Slet",
-      "user_avatar_alt": "Bruger avatar",
-      "comments": {
-        "comment": "kommentar",
-        "showing_of": "Viser {shown} af {total}",
-        "hide": "Skjul kommentarer",
-        "placeholder": "Tilføj kohortekommentar",
-        "submit_aria": "Send kommentar",
-        "delete": "Slet"
-      },
-      "card": {
-        "pin": "Fastgør",
-        "unpin": "Frigør",
-        "edit": "Rediger",
-        "delete": "Slet"
-      }
-    },
-    "create_modal": {
-      "title": "Opret kohorte",
-      "description": "Tilføj en ny certificerings- eller compliance-kohorte.",
-      "name_label": "Navn",
-      "name_placeholder": "f.eks. OSHA sikkerhedscertificering",
-      "description_label": "Beskrivelse",
-      "description_placeholder": "Hvad handler denne kohorte om?",
-      "submit": "Opret"
-    },
-    "sidebar": {
-      "newsfeed": "Nyhedsfeed",
-      "courses": "Kurser",
-      "people": "Mennesker",
-      "settings": "Indstillinger"
-    },
-    "status": {
-      "active": "Aktiv",
-      "inactive": "Inaktiv",
-      "archived": "Arkiveret"
-    },
-    "description": "Giv en gruppe mennesker adgang til flere kurser, f.eks. en klasse",
-    "search_placeholder": "Søg kohorter",
-    "multiple_added": "Kurser tilføjet",
-    "no_matching_cohorts": "Ingen kohorter matcher dine filtre.",
-    "card": {
-      "courses": "Kurser",
-      "students": "studerende"
-    },
-    "table": {
-      "name": "Navn",
-      "courses": "Kurser",
-      "students": "studerende",
-      "status": "Status",
-      "description": "Beskrivelse"
-    },
-    "filters": {
-      "filter": "Filter",
-      "clear_all": "Ryd alle",
-      "popover_title": "Filtre",
-      "sort": "Sorter",
-      "order": "Bestil",
-      "status": "Status",
-      "ascending": "Stig.",
-      "descending": "Fald.",
-      "sort_name": "Navn",
-      "sort_courses": "Kurser",
-      "sort_students": "studerende",
-      "sort_status": "Status"
-    },
-    "invite_sent": "Invitationer sendt",
-    "goals": {
-      "heading": "Læringsmål",
-      "description": "Sæt målbare mål, der spænder over flere kurser for alle i denne kohorte.",
-      "add": "Nyt mål",
-      "empty_title": "Ingen mål endnu",
-      "empty_description": "Opret et mål for at spore teamfremskridt på tværs af flere kurser.",
-      "created": "Mål skabt",
-      "updated": "Mål opdateret",
-      "deleted": "Mål slettet",
-      "delete_confirm": "Vil du slette dette mål? Per-elev statushistorik vil blive fjernet.",
-      "lms": {
-        "heading": "Dine mål",
-        "empty_title": "Ingen mål tildelt",
-        "empty_description": "Når dine instruktører sætter sig mål, dukker de op her.",
-        "due_in_days": "Forfalder om {days} dage",
-        "due_tomorrow": "Afleveres i morgen",
-        "due_today": "Forfalder i dag",
-        "overdue": "Forfalden",
-        "no_deadline": "Ingen deadline"
-      },
-      "tile": {
-        "on_track": "på sporet",
-        "completed_short": "afsluttet",
-        "overdue_short": "forfalden",
-        "at_risk_short": "i fare"
-      },
-      "status": {
-        "completed": "Afsluttet",
-        "in_progress": "I gang",
-        "at_risk": "I fare",
-        "overdue": "Forfalden",
-        "not_started": "Ikke startet",
-        "waived": "Frafaldet"
-      },
-      "deadline_kind": {
-        "absolute": "Absolut dato",
-        "relative_to_join": "I forhold til elevtilslutning",
-        "recurring": "Tilbagevendende",
-        "none": "Ingen deadline"
-      },
-      "type": {
-        "complete_all": "Gennemfør alle udvalgte kurser",
-        "n_of_m": "Gennemfør N af M udvalgte kurser",
-        "score": "Score over tærsklen på hvert kursus",
-        "pass_rate": "Teamets beståelsesgrænse",
-        "readiness": "Beredskab (ingen deadline)"
-      },
-      "modal": {
-        "create_title": "Nyt mål",
-        "edit_title": "Rediger mål",
-        "title_label": "Titel",
-        "title_placeholder": "f.eks. Onboarding rampe",
-        "description_label": "Beskrivelse",
-        "description_placeholder": "Valgfri kontekst for holdet",
-        "type_label": "Type",
-        "courses_label": "Kurser",
-        "required_count_label": "Antal nødvendige kurser",
-        "score_threshold_label": "Beståelsesscore pr. elev (%)",
-        "team_pass_rate_label": "Holdbeståelsesprocent (%)",
-        "deadline_label": "Deadline",
-        "deadline_date_label": "Deadline dato",
-        "relative_days_label": "Dage fra eleven tiltræder",
-        "recurring_months_label": "Gentag hver (måned)",
-        "reminders_label": "Påmindelser (dage før termin)",
-        "reminders_helper": "Kommasepareret. Eksempel: 7, 3, 1",
-        "save": "Gem",
-        "cancel": "Annuller"
-      }
-    }
-  },
   "invite_link": {
     "tab_label": "Invitationslink",
     "title": "Invitationslink",
@@ -6329,9 +6011,7 @@
       "comments_off": "Lektionens kommentarer er slået fra",
       "lesson_download": "Elever kan downloade lektioner",
       "self_enrollment": "Eleverne kan selv være med",
-      "ai_tutor": "AI-vejleder er tændt",
-      "compliance_retake": "Gentag hver {months, plural, one {# måned} other {# måneder}}",
-      "compliance_mandatory": "Obligatorisk"
+      "ai_tutor": "AI-vejleder er tændt"
     },
     "menu": {
       "open": "Åbn",
@@ -6531,7 +6211,6 @@
     "customize_lms": "Customize LMS",
     "courses": "Courses",
     "home": "Home",
-    "cohort": "Cohort",
     "course": "Course",
     "quiz": "Quiz",
     "join_platform": "Join MP Learning",
@@ -6564,7 +6243,6 @@
   "lms_pages": {
     "my_learning_subtitle": "Courses assigned to you or that you enrolled in.",
     "explore_subtitle": "Internal courses open to MP Transformation employees.",
-    "cohorts_subtitle": "Training classes and programmes you belong to.",
     "exercises_subtitle": "Track submissions and grades across your courses.",
     "exercises_column_empty": "Nothing here yet"
   },
@@ -6646,6 +6324,14 @@
       "all": "All courses",
       "assigned": "Assigned",
       "overdue": "Overdue"
+    },
+    "assigned_section": {
+      "title": "Assigned training",
+      "note": "Every assigned course per employee, with its computed status.",
+      "all_courses": "All courses",
+      "all_batches": "All batches",
+      "empty": "No assignments match",
+      "truncated": "Showing the first 200 of {count} rows. Export to see all."
     }
   },
   "employees": {
@@ -6786,13 +6472,13 @@
     "clear_filters": "Clear filters",
     "unassigned": "Not assigned",
     "empty_hint": "Add your first employee or adjust the filters to find the people you need.",
-    "page_label": "Page {page} of {pages}"
+    "page_label": "Page {page} of {pages}",
+    "job_title": "Job title"
   },
   "training_library": {
     "enrolled": "Tilmeldt",
     "available_to_you": "Tilgængelig for dig",
     "self_enrollment": "Selvtilmelding",
-    "assigned_only": "Tildelt uddannelse",
     "goals": "Læringsmål",
     "exercise_count": "{count} opgaver",
     "start_continue": "Start / fortsæt",
@@ -6802,41 +6488,71 @@
     "enrollment_error": "Tilmelding mislykkedes. Genindlæs siden, og prøv igen.",
     "back": "Tilbage til kursuskataloget",
     "settings_self_enrollment": "Tillad medarbejderes selvtilmelding",
-    "compliance_hint": "Complianceuddannelse tildeles. Selvtilmelding er ikke tilgængelig.",
     "settings_self_enrollment_hint": "Udgivne kurser vises i kataloget, når denne indstilling er aktiveret. Deaktivering bevarer eksisterende tilmeldinger.",
     "enrolled_success": "Du er nu tilmeldt."
   },
   "training_assignment": {
-    "title": "Tildel uddannelse",
-    "required": "Obligatorisk",
-    "recommended": "Anbefalet",
-    "deadline": "Frist for gennemførelse",
-    "message": "Besked til deltagere",
-    "saved": "Uddannelse tildelt",
-    "cancelled": "Annulleret",
-    "cancel_failed": "Denne deltagelseskilde kan ikke annulleres",
-    "cancel": "Annuller tildeling",
-    "sources": "Deltagelseskilder",
     "learners": "Deltagere",
-    "staff": "Undervisningsteam",
-    "assigned": "Tildelt til mig",
-    "self_selected": "Selvvalgt",
-    "access_only": "Adgang uden individuelt gennemførelseskrav",
-    "revoke_access": "Tilbagekald denne adgangskilde",
-    "history": "Deltagelseshistorik",
-    "no_sources": "Ingen aktiv deltagelseskilde",
-    "description": "Vælg medarbejdere og gennemførelseskrav. Eksisterende fremskridt bevares.",
-    "existing_hint": "Eksisterende frister bevares. Annuller og tildel igen for at ændre kravet.",
-    "cancel_hint": "Kun denne kilde annulleres. Fremskridt, historik og andre adgangskilder bevares.",
-    "compliance_controls": "Brug de eksisterende fritagelses- og fristfunktioner til compliancekurser.",
-    "source": {
-      "SELF": "Selvtilmelding",
-      "DIRECT": "Direkte tildeling",
-      "LEGACY": "Ældre data: ukendt kilde",
-      "PROGRAM": "Program",
-      "COHORT": "Hold",
-      "COMPLIANCE": "Compliancecyklus"
+    "staff": "Undervisningsteam"
+  },
+  "enrollment": {
+    "assign_title": "Assign courses",
+    "assign_description": "Choose courses and employees. Assigned courses must be completed; existing progress is kept.",
+    "assign_button": "Assign courses",
+    "courses": "Courses",
+    "employees": "Employees",
+    "pick_courses": "Search published courses",
+    "pick_employees": "Search employees",
+    "all_employees": "All active employees",
+    "filter_department": "By department",
+    "filter_job_title": "By job title",
+    "selected_count": "{count} selected",
+    "due_date": "Due date",
+    "due": "Due",
+    "batch_label": "Training batch",
+    "batch_placeholder": "e.g. Onboarding 11/2026",
+    "batch": "Batch",
+    "message": "Message to learners",
+    "notify": "Email the learners",
+    "submit": "Assign",
+    "assigned_result": "Assigned {assigned}, already assigned {existing}",
+    "failed": "Could not save the assignment. Please try again.",
+    "saved": "Assignment updated",
+    "revoked": "Assignment revoked",
+    "how_joined": "How they joined",
+    "assigned_by": "assigned by {name}",
+    "valid_until": "Valid until",
+    "no_enrollment": "No active enrollment",
+    "employee_courses": "Assigned courses",
+    "progress": "Progress",
+    "state_label": "Status",
+    "select_all": "Select all on this page",
+    "waive_reason": "Reason for exemption",
+    "waive_expires": "Exemption ends (optional)",
+    "kind": {
+      "ASSIGNED": "Assigned",
+      "SELF": "Self-enrolled"
     },
-    "created_at": "Deltagelsesdato"
+    "state": {
+      "not_started": "Not started",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "overdue": "Overdue",
+      "expired": "Expired",
+      "waived": "Exempt"
+    },
+    "actions": {
+      "change_due": "Change due date",
+      "waive": "Exempt",
+      "revoke": "Revoke",
+      "revoke_confirm": "Revoke this course for {name}? Their progress and history are kept."
+    },
+    "recertification": {
+      "title": "Retake periodically",
+      "description": "A completion stays valid for a set number of months. When it expires, assigned learners must complete the course again.",
+      "months_label": "Valid for (months)",
+      "months_helper": "Learners are reminded 30 days before it expires and get 30 days to retake.",
+      "every": "Retake every {months} months"
+    }
   }
 }

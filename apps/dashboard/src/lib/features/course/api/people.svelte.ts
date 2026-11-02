@@ -1,5 +1,3 @@
-import { ZAssignCourseTraining } from '@cio/utils/validation/course/training-assignment';
-import { mapZodErrorsToTranslations } from '$lib/utils/validation';
 import type {
   AddPeopleRequest,
   AvailableCourseEmployeesRequest,
@@ -27,43 +25,50 @@ import { toPeopleRequestQuery } from '$features/course/utils/people-utils';
 import type { TAddCourseMembers } from '@cio/utils/validation/course/people';
 import { snackbar } from '$features/ui/snackbar/store';
 import { t } from '$lib/utils/functions/translations';
-import type { AssignTrainingRequest, AssignTrainingPayload, RevokeLearningSourceRequest } from '../utils/types';
+import type { RevokeEnrollmentRequest, UpdateEnrollmentDueDateRequest, WaiveEnrollmentRequest } from '../utils/types';
 
 /**
  * API class for course members operations
  */
 export class PeopleApi extends BaseApiWithErrors {
-  async assignTraining(courseId: string, payload: AssignTrainingPayload) {
-    const validated = ZAssignCourseTraining.safeParse(payload);
-    if (!validated.success) {
-      this.errors = mapZodErrorsToTranslations(validated.error);
-      snackbar.error('snackbar.course_api.members_add_failed');
-      return;
-    }
-
-    return this.execute<AssignTrainingRequest>({
+  async updateEnrollmentDueDate(courseId: string, enrollmentId: string, dueDate: string | null) {
+    return this.execute<UpdateEnrollmentDueDateRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].members['training-assignments'].$post({
-          param: { courseId },
-          json: validated.data
+        classroomio.course[':courseId'].members.enrollments[':enrollmentId'].$patch({
+          param: { courseId, enrollmentId },
+          json: { dueDate }
         }),
-      logContext: 'assigning internal training',
-      onSuccess: () => snackbar.success('training_assignment.saved'),
-      onError: () => snackbar.error('snackbar.course_api.members_add_failed')
+      logContext: 'updating an enrollment due date',
+      onSuccess: () => snackbar.success('enrollment.saved'),
+      onError: () => snackbar.error('enrollment.failed')
     });
   }
 
-  async revokeLearningSource(courseId: string, sourceId: string) {
-    return this.execute<RevokeLearningSourceRequest>({
+  async waiveEnrollment(courseId: string, enrollmentId: string, json: { reason: string; expiresAt: string | null }) {
+    return this.execute<WaiveEnrollmentRequest>({
       requestFn: () =>
-        classroomio.course[':courseId'].members['learning-sources'][':sourceId'].$delete({
-          param: { courseId, sourceId }
+        classroomio.course[':courseId'].members.enrollments[':enrollmentId'].waive.$post({
+          param: { courseId, enrollmentId },
+          json
         }),
-      logContext: 'revoking a learning source',
-      onSuccess: () => snackbar.success('training_assignment.cancelled'),
-      onError: () => snackbar.error('training_assignment.cancel_failed')
+      logContext: 'waiving an enrollment',
+      onSuccess: () => snackbar.success('enrollment.saved'),
+      onError: () => snackbar.error('enrollment.failed')
     });
   }
+
+  async revokeEnrollment(courseId: string, enrollmentId: string) {
+    return this.execute<RevokeEnrollmentRequest>({
+      requestFn: () =>
+        classroomio.course[':courseId'].members.enrollments[':enrollmentId'].$delete({
+          param: { courseId, enrollmentId }
+        }),
+      logContext: 'revoking an enrollment',
+      onSuccess: () => snackbar.success('enrollment.revoked'),
+      onError: () => snackbar.error('enrollment.failed')
+    });
+  }
+
   availableEmployees = $state<AvailableCourseEmployees | null>(null);
   private availableEmployeesRequest = 0;
 

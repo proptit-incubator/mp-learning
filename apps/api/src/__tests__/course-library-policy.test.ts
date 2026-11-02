@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canSelfEnrollInCourse, isCourseShownInLibrary } from '@cio/utils/functions/course-enrollment';
+import { isCourseShownInLibrary, isSelfEnrollmentAllowed } from '@cio/utils/functions/course-enrollment';
 import { ZInternalCourseEnrollBody } from '@cio/utils/validation/course';
 
 describe('internal course library policy', () => {
@@ -14,14 +14,10 @@ describe('internal course library policy', () => {
     expect(isCourseShownInLibrary(metadata)).toBe(expected);
   });
 
-  it.each(['SELF_PACED', 'LIVE_CLASS', 'COMPLIANCE'])('separates visibility from enrollment for %s', (type) => {
-    for (const showInLibrary of [false, true]) {
-      for (const allowSelfEnrollment of [false, true]) {
-        const metadata = { showInLibrary, allowSelfEnrollment };
-        const course = { type, metadata };
-        expect(canSelfEnrollInCourse(course)).toBe(type !== 'COMPLIANCE' && allowSelfEnrollment);
-      }
-    }
+  it('decides self-enrollment from the course setting alone', () => {
+    expect(isSelfEnrollmentAllowed({ allowSelfEnrollment: false })).toBe(false);
+    expect(isSelfEnrollmentAllowed({ allowSelfEnrollment: true })).toBe(true);
+    expect(isSelfEnrollmentAllowed({ allowNewStudent: false })).toBe(false);
   });
 
   it('accepts an empty enrollment body and rejects legacy invitations and extra fields', () => {

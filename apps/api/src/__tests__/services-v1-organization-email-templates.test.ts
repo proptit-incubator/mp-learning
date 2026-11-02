@@ -118,7 +118,7 @@ describe('services/v1/organization/email-templates', () => {
       isCustomized: true,
       updatedAt: savedFrWelcome.updatedAt,
       content: savedFrWelcome.content,
-      variables: ['org_name', 'course_name'],
+      variables: ['org_name', 'course_name', 'due_date', 'batch_label'],
       hasActionLink: true
     });
   });

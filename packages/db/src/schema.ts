@@ -24,7 +24,6 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import type { AnswerData } from '@cio/question-types';
-import { COURSE_TYPE_VALUES } from '@cio/utils/constants/course-type';
 import type { CourseProgressionMode } from '@cio/utils/functions/course-progression';
 import { EMAIL_LOCALES } from '@cio/utils/email';
 import { LESSON_VERSION_KIND_VALUES } from '@cio/utils/constants/lesson-version';
@@ -34,7 +33,6 @@ import {
 } from '@cio/utils/constants/live-session-reminder';
 import { sql } from 'drizzle-orm';
 
-export const courseType = pgEnum('COURSE_TYPE', [...COURSE_TYPE_VALUES]);
 export const locale = pgEnum('LOCALE', [...EMAIL_LOCALES]);
 export const lessonVersionKind = pgEnum('LESSON_VERSION_KIND', [...LESSON_VERSION_KIND_VALUES]);
 export const plan = pgEnum('PLAN', ['EARLY_ADOPTER', 'ENTERPRISE', 'BASIC']);
@@ -148,32 +146,6 @@ export const employeeActivation = pgTable('employee_activation', {
   expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'string' }).notNull(),
   usedAt: timestamp('used_at', { withTimezone: true, mode: 'string' })
 });
-
-export const employeeCourse = pgTable(
-  'employee_course',
-  {
-    employeeId: uuid('employee_id')
-      .notNull()
-      .references(() => employee.id),
-    courseId: uuid('course_id')
-      .notNull()
-      .references(() => course.id, { onDelete: 'cascade' })
-  },
-  (table) => [primaryKey({ columns: [table.employeeId, table.courseId] })]
-);
-
-export const employeeCohort = pgTable(
-  'employee_cohort',
-  {
-    employeeId: uuid('employee_id')
-      .notNull()
-      .references(() => employee.id),
-    cohortId: uuid('cohort_id')
-      .notNull()
-      .references(() => cohort.id, { onDelete: 'cascade' })
-  },
-  (table) => [primaryKey({ columns: [table.employeeId, table.cohortId] })]
-);
 
 export const employeeAudit = pgTable('employee_audit', {
   id: uuid().defaultRandom().primaryKey(),
@@ -871,9 +843,6 @@ export const course = pgTable(
         escalation?: { enabled?: boolean; email?: string };
       };
     }>(),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    cost: bigint({ mode: 'number' }).default(sql`'0'`),
-    currency: varchar().default('USD').notNull(),
     bannerImage: text('banner_image'),
     isPublished: boolean('is_published').default(false),
     /** Manual display position on public surfaces; NULL = not curated (sorts by createdAt DESC). */
@@ -894,26 +863,11 @@ export const course = pgTable(
         ];
         idFormat?: string;
       };
-      deadline?: string | null;
       emailMessage?: string | null;
     }>(),
-    compliance: jsonb().$type<{
-      retakeIntervalMonths: number;
-      gracePeriodDays?: number;
-      reminderDaysBefore?: number[];
-      isMandatory?: boolean;
-      framework?: 'HIPAA' | 'OSHA' | 'SOX' | 'GDPR' | 'PCI_DSS' | 'FERPA' | 'ISO' | 'CUSTOM' | null;
-      maxRetakeAttempts?: number | null;
-    }>(),
     status: text().default('ACTIVE').notNull(),
-    type: courseType().default('SELF_PACED'),
-    callout: jsonb().$type<{
-      title: string;
-      description: string;
-      buttonLabel: string;
-      buttonUrl: string;
-      animation?: 'waves' | 'dotted' | 'none';
-    } | null>()
+    /** Months a completion stays valid; null means the course never has to be retaken. */
+    recertificationMonths: integer('recertification_months')
   },
   (table) => [
     foreignKey({
@@ -969,18 +923,10 @@ export const courseCompletionRecord = pgTable(
     groupMemberId: uuid('group_member_id').notNull(),
     profileId: uuid('profile_id').notNull(),
     cycleNumber: integer('cycle_number').default(1).notNull(),
-    status: varchar().default('not_started').notNull(),
-    dueDate: timestamp('due_date', { withTimezone: true, mode: 'string' }).notNull(),
     startedAt: timestamp('started_at', { withTimezone: true, mode: 'string' }),
-    completedAt: timestamp('completed_at', { withTimezone: true, mode: 'string' }),
+    completedAt: timestamp('completed_at', { withTimezone: true, mode: 'string' }).notNull(),
     validUntil: timestamp('valid_until', { withTimezone: true, mode: 'string' }),
-    expiredAt: timestamp('expired_at', { withTimezone: true, mode: 'string' }),
     score: integer(),
-    attempts: integer().default(0),
-    timeSpentMinutes: integer('time_spent_minutes').default(0),
-    waivedBy: uuid('waived_by'),
-    waiverReason: text('waiver_reason'),
-    waiverExpiresAt: timestamp('waiver_expires_at', { withTimezone: true, mode: 'string' }),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
   },
@@ -1000,43 +946,10 @@ export const courseCompletionRecord = pgTable(
       foreignColumns: [profile.id],
       name: 'course_completion_record_profile_id_fkey'
     }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.waivedBy],
-      foreignColumns: [profile.id],
-      name: 'course_completion_record_waived_by_fkey'
-    }).onDelete('set null'),
     unique('course_completion_record_course_profile_cycle_key').on(table.courseId, table.profileId, table.cycleNumber),
     index('idx_course_completion_record_course_id').on(table.courseId),
     index('idx_course_completion_record_profile_id').on(table.profileId),
-    index('idx_course_completion_record_status').on(table.status),
-    index('idx_course_completion_record_due_date').on(table.dueDate),
     index('idx_course_completion_record_valid_until').on(table.validUntil)
-  ]
-);
-
-export const courseCompletionNotificationEvent = pgTable(
-  'course_completion_notification_event',
-  {
-    id: uuid()
-      .default(sql`gen_random_uuid()`)
-      .primaryKey()
-      .notNull(),
-    courseCompletionRecordId: uuid('course_completion_record_id').notNull(),
-    channel: varchar().notNull(),
-    eventType: varchar('event_type').notNull(),
-    sentAt: timestamp('sent_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.courseCompletionRecordId],
-      foreignColumns: [courseCompletionRecord.id],
-      name: 'course_completion_notification_event_record_id_fkey'
-    }).onDelete('cascade'),
-    unique('course_completion_notification_event_record_channel_type_key').on(
-      table.courseCompletionRecordId,
-      table.channel,
-      table.eventType
-    )
   ]
 );
 
@@ -1485,7 +1398,6 @@ export const groupmember = pgTable(
     email: varchar(),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow(),
     assignedStudentId: varchar('assigned_student_id'),
-    learningAccessManaged: boolean('learning_access_managed').default(false).notNull(),
     completedAt: timestamp('completed_at', { withTimezone: true, mode: 'string' }),
     certificateEarnedAt: timestamp('certificate_earned_at', { withTimezone: true, mode: 'string' }),
     certificationEmailSentAt: timestamp('certification_email_sent_at', { withTimezone: true, mode: 'string' })
@@ -1512,43 +1424,43 @@ export const groupmember = pgTable(
   ]
 );
 
-export const courseEnrollmentSource = pgTable(
-  'course_enrollment_source',
+export const courseEnrollment = pgTable(
+  'course_enrollment',
   {
     id: uuid().defaultRandom().primaryKey(),
     courseId: uuid('course_id')
       .notNull()
       .references(() => course.id, { onDelete: 'cascade' }),
-    profileId: uuid('profile_id')
+    employeeId: uuid('employee_id')
       .notNull()
-      .references(() => profile.id),
-    kind: varchar({ length: 20 }).notNull().$type<'SELF' | 'DIRECT' | 'LEGACY'>(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+      .references(() => employee.id, { onDelete: 'cascade' }),
+    kind: varchar({ length: 20 }).notNull().$type<'ASSIGNED' | 'SELF'>(),
+    status: varchar({ length: 20 }).default('ACTIVE').notNull().$type<'ACTIVE' | 'WAIVED' | 'REVOKED'>(),
+    assignedBy: uuid('assigned_by').references(() => profile.id, { onDelete: 'set null' }),
+    dueDate: timestamp('due_date', { withTimezone: true, mode: 'string' }),
+    batchLabel: varchar('batch_label', { length: 120 }),
+    message: text().default('').notNull(),
+    waivedBy: uuid('waived_by').references(() => profile.id, { onDelete: 'set null' }),
+    waiverReason: text('waiver_reason'),
+    waiverExpiresAt: timestamp('waiver_expires_at', { withTimezone: true, mode: 'string' }),
     revokedAt: timestamp('revoked_at', { withTimezone: true, mode: 'string' }),
-    revokedBy: uuid('revoked_by').references(() => profile.id)
+    revokedBy: uuid('revoked_by').references(() => profile.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
   },
   (table) => [
-    uniqueIndex('course_enrollment_source_active_unique')
-      .on(table.courseId, table.profileId, table.kind)
-      .where(sql`${table.revokedAt} is null`),
-    index('course_enrollment_source_profile_idx').on(table.profileId, table.courseId),
-    check('course_enrollment_source_kind_check', sql`${table.kind} in ('SELF', 'DIRECT', 'LEGACY')`)
+    uniqueIndex('course_enrollment_active_unique')
+      .on(table.courseId, table.employeeId, table.kind)
+      .where(sql`${table.status} <> 'REVOKED'`),
+    index('course_enrollment_employee_idx').on(table.employeeId, table.courseId),
+    index('course_enrollment_course_status_idx').on(table.courseId, table.status),
+    index('course_enrollment_batch_label_idx')
+      .on(table.batchLabel)
+      .where(sql`${table.batchLabel} is not null`),
+    check('course_enrollment_kind_check', sql`${table.kind} in ('ASSIGNED', 'SELF')`),
+    check('course_enrollment_status_check', sql`${table.status} in ('ACTIVE', 'WAIVED', 'REVOKED')`)
   ]
 );
-
-export const courseTrainingAssignment = pgTable('course_training_assignment', {
-  id: uuid().defaultRandom().primaryKey(),
-  enrollmentSourceId: uuid('enrollment_source_id')
-    .notNull()
-    .unique()
-    .references(() => courseEnrollmentSource.id, { onDelete: 'cascade' }),
-  assignedBy: uuid('assigned_by').references(() => profile.id),
-  required: boolean().default(true).notNull(),
-  dueDate: timestamp('due_date', { withTimezone: true, mode: 'string' }),
-  message: text().default('').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
-});
-
 export const courseInvite = pgTable(
   'course_invite',
   {
@@ -3196,382 +3108,10 @@ export const courseImportDraft = pgTable(
   ]
 );
 
-// ─── Programs ────────────────────────────────────────────────────────────────
-
-export const programStatus = pgEnum('PROGRAM_STATUS', ['ACTIVE', 'INACTIVE', 'ARCHIVED']);
-
-export const program = pgTable(
-  'program',
-  {
-    id: uuid()
-      .default(sql`gen_random_uuid()`)
-      .primaryKey()
-      .notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow(),
-    organizationId: uuid('organization_id').notNull(),
-    name: varchar().notNull(),
-    description: text(),
-    coverImage: text('cover_image'),
-    status: programStatus().default('ACTIVE').notNull(),
-    createdByProfileId: uuid('created_by_profile_id')
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.organizationId],
-      foreignColumns: [organization.id],
-      name: 'program_organization_id_fkey'
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.createdByProfileId],
-      foreignColumns: [profile.id],
-      name: 'program_created_by_profile_id_fkey'
-    }),
-    index('idx_program_organization_id').on(table.organizationId)
-  ]
-);
-
-export const programCourse = pgTable(
-  'program_course',
-  {
-    id: uuid()
-      .default(sql`gen_random_uuid()`)
-      .primaryKey()
-      .notNull(),
-    programId: uuid('program_id').notNull(),
-    courseId: uuid('course_id').notNull(),
-    addedAt: timestamp('added_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.programId],
-      foreignColumns: [program.id],
-      name: 'program_course_program_id_fkey'
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.courseId],
-      foreignColumns: [course.id],
-      name: 'program_course_course_id_fkey'
-    }).onDelete('cascade'),
-    unique('program_course_program_id_course_id_unique').on(table.programId, table.courseId),
-    index('idx_program_course_program_id').on(table.programId)
-  ]
-);
-
-export const programMember = pgTable(
-  'program_member',
-  {
-    id: uuid()
-      .default(sql`gen_random_uuid()`)
-      .primaryKey()
-      .notNull(),
-    programId: uuid('program_id').notNull(),
-    profileId: uuid('profile_id'),
-    roleId: integer('role_id').notNull(),
-    email: text(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.programId],
-      foreignColumns: [program.id],
-      name: 'program_member_program_id_fkey'
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.profileId],
-      foreignColumns: [profile.id],
-      name: 'program_member_profile_id_fkey'
-    }),
-    foreignKey({
-      columns: [table.roleId],
-      foreignColumns: [role.id],
-      name: 'program_member_role_id_fkey'
-    }),
-    unique('program_member_program_id_profile_id_unique').on(table.programId, table.profileId),
-    index('idx_program_member_program_id').on(table.programId),
-    index('idx_program_member_profile_id').on(table.profileId)
-  ]
-);
-
-export const programNewsfeed = pgTable(
-  'program_newsfeed',
-  {
-    id: uuid().defaultRandom().primaryKey().notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    authorId: uuid('author_id'),
-    programId: uuid('program_id'),
-    content: text(),
-    reaction: jsonb()
-      .default({ clap: [], smile: [], thumbsup: [], thumbsdown: [] })
-      .$type<{ clap: string[]; smile: string[]; thumbsup: string[]; thumbsdown: string[] }>(),
-    isPinned: boolean('is_pinned').default(false).notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.authorId],
-      foreignColumns: [programMember.id],
-      name: 'program_newsfeed_author_id_fkey'
-    }),
-    foreignKey({
-      columns: [table.programId],
-      foreignColumns: [program.id],
-      name: 'program_newsfeed_program_id_fkey'
-    }).onDelete('cascade'),
-    index('idx_program_newsfeed_program_id').on(table.programId)
-  ]
-);
-
-export const programNewsfeedComment = pgTable(
-  'program_newsfeed_comment',
-  {
-    id: bigint({ mode: 'number' }).primaryKey().generatedByDefaultAsIdentity({
-      name: 'program_newsfeed_comment_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      cache: 1
-    }),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    authorId: uuid('author_id'),
-    content: text(),
-    programNewsfeedId: uuid('program_newsfeed_id')
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.authorId],
-      foreignColumns: [programMember.id],
-      name: 'program_newsfeed_comment_author_id_fkey'
-    }),
-    foreignKey({
-      columns: [table.programNewsfeedId],
-      foreignColumns: [programNewsfeed.id],
-      name: 'program_newsfeed_comment_program_newsfeed_id_fkey'
-    }).onDelete('cascade')
-  ]
-);
-
-// ─── Program Goals ────────────────────────────────────────────────────────────
-//
-// A team-level "is the team done" target. A small generalisation of the
-// per-course `course.compliance` field: applies across multiple courses, scoped
-// to a program's members, and aggregated for owner roll-ups. Per-learner status
-// is materialised in `programGoalAssignment` so dashboards stay cheap.
-
-export const programGoalType = pgEnum('PROGRAM_GOAL_TYPE', [
-  'complete_all',
-  'n_of_m',
-  'score',
-  'pass_rate',
-  'readiness'
-]);
-
-export const programGoalDeadlineKind = pgEnum('PROGRAM_GOAL_DEADLINE_KIND', [
-  'absolute',
-  'relative_to_join',
-  'recurring',
-  'none'
-]);
-
-export const programGoalStatus = pgEnum('PROGRAM_GOAL_STATUS', ['active', 'archived']);
-
-export const programGoalAssignmentStatus = pgEnum('PROGRAM_GOAL_ASSIGNMENT_STATUS', [
-  'not_started',
-  'in_progress',
-  'completed',
-  'at_risk',
-  'overdue',
-  'waived'
-]);
-
-export const programGoal = pgTable(
-  'program_goal',
-  {
-    id: uuid()
-      .default(sql`gen_random_uuid()`)
-      .primaryKey()
-      .notNull(),
-    programId: uuid('program_id').notNull(),
-    title: varchar({ length: 255 }).notNull(),
-    description: text(),
-    type: programGoalType().notNull(),
-    /** Course IDs the goal targets. JSONB so we can attach per-course config later if needed. */
-    courseIds: jsonb('course_ids').$type<string[]>().default([]).notNull(),
-    /** Required only for n_of_m. */
-    requiredCount: integer('required_count'),
-    /** Per-learner score threshold (0–100). Required for `score` and `pass_rate`. */
-    scoreThreshold: integer('score_threshold'),
-    /** Team-wide pass-rate threshold (0–100). Required for `pass_rate`. */
-    teamPassRateThreshold: integer('team_pass_rate_threshold'),
-    deadlineKind: programGoalDeadlineKind('deadline_kind').default('none').notNull(),
-    /** Used when deadlineKind = 'absolute'. */
-    deadlineDate: timestamp('deadline_date', { withTimezone: true, mode: 'string' }),
-    /** Used when deadlineKind = 'relative_to_join'. */
-    relativeDays: integer('relative_days'),
-    /** Used when deadlineKind = 'recurring'. */
-    recurringMonths: integer('recurring_months'),
-    /** Reminder cadence (days before due). Mirrors `course.compliance.reminderDaysBefore`. */
-    reminderDaysBefore: jsonb('reminder_days_before').$type<number[]>().default([7, 1]).notNull(),
-    status: programGoalStatus().default('active').notNull(),
-    createdByProfileId: uuid('created_by_profile_id'),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.programId],
-      foreignColumns: [program.id],
-      name: 'program_goal_program_id_fkey'
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.createdByProfileId],
-      foreignColumns: [profile.id],
-      name: 'program_goal_created_by_profile_id_fkey'
-    }).onDelete('set null'),
-    index('idx_program_goal_program_id').on(table.programId),
-    index('idx_program_goal_status').on(table.status)
-  ]
-);
-
-export const programGoalAssignment = pgTable(
-  'program_goal_assignment',
-  {
-    id: uuid()
-      .default(sql`gen_random_uuid()`)
-      .primaryKey()
-      .notNull(),
-    goalId: uuid('goal_id').notNull(),
-    programMemberId: uuid('program_member_id').notNull(),
-    /** Resolved due date for this learner (null when goal has no deadline). */
-    dueDate: timestamp('due_date', { withTimezone: true, mode: 'string' }),
-    status: programGoalAssignmentStatus().default('not_started').notNull(),
-    /** Cached count of completed required courses (for n_of_m / complete_all dashboards). */
-    completedCount: integer('completed_count').default(0).notNull(),
-    /** Cached numerator for the requirement (e.g. courses required to complete). */
-    requiredCount: integer('required_count').default(0).notNull(),
-    completedAt: timestamp('completed_at', { withTimezone: true, mode: 'string' }),
-    lastEvaluatedAt: timestamp('last_evaluated_at', { withTimezone: true, mode: 'string' }),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.goalId],
-      foreignColumns: [programGoal.id],
-      name: 'program_goal_assignment_goal_id_fkey'
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.programMemberId],
-      foreignColumns: [programMember.id],
-      name: 'program_goal_assignment_program_member_id_fkey'
-    }).onDelete('cascade'),
-    unique('program_goal_assignment_goal_id_program_member_id_unique').on(table.goalId, table.programMemberId),
-    index('idx_program_goal_assignment_goal_id').on(table.goalId),
-    index('idx_program_goal_assignment_program_member_id').on(table.programMemberId),
-    index('idx_program_goal_assignment_due_date').on(table.dueDate)
-  ]
-);
-
-// ─── Cohorts (successor to Programs; program tables retained for migration) ──
-
-export const cohortStatus = pgEnum('COHORT_STATUS', ['ACTIVE', 'INACTIVE', 'ARCHIVED']);
-
-export const cohort = pgTable(
-  'cohort',
-  {
-    id: uuid()
-      .default(sql`gen_random_uuid()`)
-      .primaryKey()
-      .notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow(),
-    organizationId: uuid('organization_id').notNull(),
-    name: varchar().notNull(),
-    description: text(),
-    coverImage: text('cover_image'),
-    status: cohortStatus().default('ACTIVE').notNull(),
-    createdByProfileId: uuid('created_by_profile_id')
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.organizationId],
-      foreignColumns: [organization.id],
-      name: 'cohort_organization_id_fkey'
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.createdByProfileId],
-      foreignColumns: [profile.id],
-      name: 'cohort_created_by_profile_id_fkey'
-    }),
-    index('idx_cohort_organization_id').on(table.organizationId)
-  ]
-);
-
-export const cohortCourse = pgTable(
-  'cohort_course',
-  {
-    id: uuid()
-      .default(sql`gen_random_uuid()`)
-      .primaryKey()
-      .notNull(),
-    cohortId: uuid('cohort_id').notNull(),
-    courseId: uuid('course_id').notNull(),
-    addedAt: timestamp('added_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.cohortId],
-      foreignColumns: [cohort.id],
-      name: 'cohort_course_cohort_id_fkey'
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.courseId],
-      foreignColumns: [course.id],
-      name: 'cohort_course_course_id_fkey'
-    }).onDelete('cascade'),
-    unique('cohort_course_cohort_id_course_id_unique').on(table.cohortId, table.courseId),
-    index('idx_cohort_course_cohort_id').on(table.cohortId)
-  ]
-);
-
-export const cohortMember = pgTable(
-  'cohort_member',
-  {
-    id: uuid()
-      .default(sql`gen_random_uuid()`)
-      .primaryKey()
-      .notNull(),
-    cohortId: uuid('cohort_id').notNull(),
-    profileId: uuid('profile_id'),
-    roleId: integer('role_id').notNull(),
-    email: text(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.cohortId],
-      foreignColumns: [cohort.id],
-      name: 'cohort_member_cohort_id_fkey'
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.profileId],
-      foreignColumns: [profile.id],
-      name: 'cohort_member_profile_id_fkey'
-    }),
-    foreignKey({
-      columns: [table.roleId],
-      foreignColumns: [role.id],
-      name: 'cohort_member_role_id_fkey'
-    }),
-    unique('cohort_member_cohort_id_profile_id_unique').on(table.cohortId, table.profileId),
-    index('idx_cohort_member_cohort_id').on(table.cohortId),
-    index('idx_cohort_member_profile_id').on(table.profileId)
-  ]
-);
-
-export const inviteLinkResourceType = pgEnum('INVITE_LINK_RESOURCE_TYPE', ['COURSE', 'COHORT']);
+export const inviteLinkResourceType = pgEnum('INVITE_LINK_RESOURCE_TYPE', ['COURSE']);
 
 /**
- * Permanent, revocable share links for resource invites (course, cohort, ...).
+ * Permanent, revocable share links for course invites.
  * Separate from `organization_invite`, which owns platform invites.
  */
 export const inviteLink = pgTable(
@@ -3584,7 +3124,6 @@ export const inviteLink = pgTable(
     organizationId: uuid('organization_id').notNull(),
     resourceType: inviteLinkResourceType('resource_type').notNull(),
     courseId: uuid('course_id'),
-    cohortId: uuid('cohort_id'),
     roleId: bigint('role_id', { mode: 'number' }).notNull(),
     /** Raw token, kept so staff can re-copy the link. */
     token: text().notNull(),
@@ -3614,181 +3153,17 @@ export const inviteLink = pgTable(
       name: 'invite_link_course_id_fkey'
     }).onDelete('cascade'),
     foreignKey({
-      columns: [table.cohortId],
-      foreignColumns: [cohort.id],
-      name: 'invite_link_cohort_id_fkey'
-    }).onDelete('cascade'),
-    foreignKey({
       columns: [table.roleId],
       foreignColumns: [role.id],
       name: 'invite_link_role_id_fkey'
     }),
     unique('invite_link_token_hash_key').on(table.tokenHash),
-    // One link per (resource, role); NULLs are distinct so the two never collide.
     unique('invite_link_course_id_role_id_unique').on(table.courseId, table.roleId),
-    unique('invite_link_cohort_id_role_id_unique').on(table.cohortId, table.roleId),
     check(
       'invite_link_resource_target_check',
-      sql`(
-        (${table.resourceType} = 'COURSE' AND ${table.courseId} IS NOT NULL AND ${table.cohortId} IS NULL)
-        OR (${table.resourceType} = 'COHORT' AND ${table.cohortId} IS NOT NULL AND ${table.courseId} IS NULL)
-      )`
+      sql`(${table.resourceType} = 'COURSE' AND ${table.courseId} IS NOT NULL)`
     ),
     index('idx_invite_link_organization_id').on(table.organizationId)
-  ]
-);
-
-export const cohortNewsfeed = pgTable(
-  'cohort_newsfeed',
-  {
-    id: uuid().defaultRandom().primaryKey().notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    authorId: uuid('author_id'),
-    cohortId: uuid('cohort_id'),
-    content: text(),
-    reaction: jsonb()
-      .default({ clap: [], smile: [], thumbsup: [], thumbsdown: [] })
-      .$type<{ clap: string[]; smile: string[]; thumbsup: string[]; thumbsdown: string[] }>(),
-    isPinned: boolean('is_pinned').default(false).notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.authorId],
-      foreignColumns: [cohortMember.id],
-      name: 'cohort_newsfeed_author_id_fkey'
-    }),
-    foreignKey({
-      columns: [table.cohortId],
-      foreignColumns: [cohort.id],
-      name: 'cohort_newsfeed_cohort_id_fkey'
-    }).onDelete('cascade'),
-    index('idx_cohort_newsfeed_cohort_id').on(table.cohortId)
-  ]
-);
-
-export const cohortNewsfeedComment = pgTable(
-  'cohort_newsfeed_comment',
-  {
-    id: bigint({ mode: 'number' }).primaryKey().generatedByDefaultAsIdentity({
-      name: 'cohort_newsfeed_comment_id_seq',
-      startWith: 1,
-      increment: 1,
-      minValue: 1,
-      cache: 1
-    }),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    authorId: uuid('author_id'),
-    content: text(),
-    cohortNewsfeedId: uuid('cohort_newsfeed_id')
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.authorId],
-      foreignColumns: [cohortMember.id],
-      name: 'cohort_newsfeed_comment_author_id_fkey'
-    }),
-    foreignKey({
-      columns: [table.cohortNewsfeedId],
-      foreignColumns: [cohortNewsfeed.id],
-      name: 'cohort_newsfeed_comment_cohort_newsfeed_id_fkey'
-    }).onDelete('cascade')
-  ]
-);
-
-export const cohortGoalType = pgEnum('COHORT_GOAL_TYPE', ['complete_all', 'n_of_m', 'score', 'pass_rate', 'readiness']);
-
-export const cohortGoalDeadlineKind = pgEnum('COHORT_GOAL_DEADLINE_KIND', [
-  'absolute',
-  'relative_to_join',
-  'recurring',
-  'none'
-]);
-
-export const cohortGoalStatus = pgEnum('COHORT_GOAL_STATUS', ['active', 'archived']);
-
-export const cohortGoalAssignmentStatus = pgEnum('COHORT_GOAL_ASSIGNMENT_STATUS', [
-  'not_started',
-  'in_progress',
-  'completed',
-  'at_risk',
-  'overdue',
-  'waived'
-]);
-
-export const cohortGoal = pgTable(
-  'cohort_goal',
-  {
-    id: uuid()
-      .default(sql`gen_random_uuid()`)
-      .primaryKey()
-      .notNull(),
-    cohortId: uuid('cohort_id').notNull(),
-    title: varchar({ length: 255 }).notNull(),
-    description: text(),
-    type: cohortGoalType().notNull(),
-    courseIds: jsonb('course_ids').$type<string[]>().default([]).notNull(),
-    requiredCount: integer('required_count'),
-    scoreThreshold: integer('score_threshold'),
-    teamPassRateThreshold: integer('team_pass_rate_threshold'),
-    deadlineKind: cohortGoalDeadlineKind('deadline_kind').default('none').notNull(),
-    deadlineDate: timestamp('deadline_date', { withTimezone: true, mode: 'string' }),
-    relativeDays: integer('relative_days'),
-    recurringMonths: integer('recurring_months'),
-    reminderDaysBefore: jsonb('reminder_days_before').$type<number[]>().default([7, 1]).notNull(),
-    status: cohortGoalStatus().default('active').notNull(),
-    createdByProfileId: uuid('created_by_profile_id'),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.cohortId],
-      foreignColumns: [cohort.id],
-      name: 'cohort_goal_cohort_id_fkey'
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.createdByProfileId],
-      foreignColumns: [profile.id],
-      name: 'cohort_goal_created_by_profile_id_fkey'
-    }).onDelete('set null'),
-    index('idx_cohort_goal_cohort_id').on(table.cohortId),
-    index('idx_cohort_goal_status').on(table.status)
-  ]
-);
-
-export const cohortGoalAssignment = pgTable(
-  'cohort_goal_assignment',
-  {
-    id: uuid()
-      .default(sql`gen_random_uuid()`)
-      .primaryKey()
-      .notNull(),
-    goalId: uuid('goal_id').notNull(),
-    cohortMemberId: uuid('cohort_member_id').notNull(),
-    dueDate: timestamp('due_date', { withTimezone: true, mode: 'string' }),
-    status: cohortGoalAssignmentStatus().default('not_started').notNull(),
-    completedCount: integer('completed_count').default(0).notNull(),
-    requiredCount: integer('required_count').default(0).notNull(),
-    completedAt: timestamp('completed_at', { withTimezone: true, mode: 'string' }),
-    lastEvaluatedAt: timestamp('last_evaluated_at', { withTimezone: true, mode: 'string' }),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.goalId],
-      foreignColumns: [cohortGoal.id],
-      name: 'cohort_goal_assignment_goal_id_fkey'
-    }).onDelete('cascade'),
-    foreignKey({
-      columns: [table.cohortMemberId],
-      foreignColumns: [cohortMember.id],
-      name: 'cohort_goal_assignment_cohort_member_id_fkey'
-    }).onDelete('cascade'),
-    unique('cohort_goal_assignment_goal_id_cohort_member_id_unique').on(table.goalId, table.cohortMemberId),
-    index('idx_cohort_goal_assignment_goal_id').on(table.goalId),
-    index('idx_cohort_goal_assignment_cohort_member_id').on(table.cohortMemberId),
-    index('idx_cohort_goal_assignment_due_date').on(table.dueDate)
   ]
 );
 

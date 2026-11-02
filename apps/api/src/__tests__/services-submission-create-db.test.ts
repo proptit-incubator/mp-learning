@@ -9,7 +9,7 @@ const hasDatabase = Boolean(
   process.env.DATABASE_URL || process.env.PRIVATE_DATABASE_URL || process.env.PGBOUNCER_DATABASE_URL
 );
 
-describe.skipIf(!hasDatabase)('createSubmissionService against the database', () => {
+describe.skipIf(!hasDatabase)('createSubmissionService against the database', { timeout: 30_000 }, () => {
   const suffix = `${Date.now()}`;
   let organizationId = '';
   let userId = '';

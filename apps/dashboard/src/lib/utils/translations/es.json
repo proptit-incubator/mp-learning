@@ -43,7 +43,9 @@
       "description": "The page you are looking for does not exist or has been moved.",
       "home": "Back to home"
     },
-    "back": "Atrás"
+    "back": "Atrás",
+    "user_avatar_alt": "User avatar",
+    "course_count": "{count, plural, one {# course} other {# courses}}"
   },
   "validations": {
     "generic": {
@@ -492,32 +494,6 @@
       "generate_1080_failed": "No se pudo generar una reproducción de 1080p"
     },
     "social_auth_not_enabled": "Este proveedor de autenticación no está habilitado.",
-    "cohort": {
-      "error": {
-        "reaction_error": "Se produjo un error al reaccionar a la publicación.",
-        "news_feed_fail": "No se pudo recuperar el suministro de noticias del cohorte",
-        "post_create_failed": "No se pudo crear la publicación",
-        "post_update_failed": "No se pudo actualizar la publicación",
-        "code": {
-          "cohort_forbidden": "Debes ser miembro de este cohorte para realizar esta acción.",
-          "cohort_member_check_failed": "No pudimos verificar su membresía en el cohorte. Intentar otra vez.",
-          "cohort_not_found": "No se pudo encontrar este cohorte.",
-          "cohort_create_failed": "No se pudo crear el cohorte.",
-          "cohort_update_failed": "No se pudo actualizar el cohorte.",
-          "cohort_delete_failed": "No se pudo eliminar el cohorte.",
-          "cohort_member_not_found": "No se pudo encontrar ese miembro del cohorte.",
-          "cohort_newsfeed_not_found": "Esa publicación no se pudo encontrar.",
-          "cohort_newsfeed_comment_not_found": "Ese comentario no se pudo encontrar."
-        }
-      },
-      "success": {
-        "comment_deleted": "Comentario eliminado",
-        "comment_added": "Comentario añadido",
-        "feed_delete_success": "Publicación eliminada exitosamente",
-        "post_created": "Publicación creada exitosamente",
-        "post_updated": "Publicación actualizada exitosamente"
-      }
-    },
     "report": {
       "success": "Gracias. Revisaremos este informe.",
       "error": "No se pudo enviar el informe. Inténtalo de nuevo.",
@@ -557,7 +533,14 @@
     "any_progress": "Cualquier curso que inicies se mostrará aquí.",
     "not_completed": "Ningún curso completado",
     "any_course": "Cualquier curso que completes se mostrará aquí.",
-    "find_courses": "encontrar cursos"
+    "find_courses": "encontrar cursos",
+    "tabs": {
+      "todo": "To complete",
+      "self": "Self-paced",
+      "completed": "Completed"
+    },
+    "todo_empty": "Nothing assigned to you right now",
+    "self_empty": "No self-enrolled courses in progress"
   },
   "certificates": {
     "heading": "Certificados",
@@ -580,7 +563,6 @@
     "explore": "Explorar",
     "help": "Ayuda",
     "settings": "Configuración",
-    "cohorts": "Cohortes",
     "group_learning": "Learning"
   },
   "upgrade": {
@@ -657,20 +639,6 @@
     "no_data_default_description": "No hay datos para mostrar en este momento.",
     "subtitle": "Comprenda cómo los visitantes descubren sus cursos y se convierten en estudiantes.",
     "refresh": "Actualizar",
-    "popularTypes": {
-      "heading": "Tipos de cursos populares",
-      "description": "Inscripciones agrupadas por tipo de curso",
-      "subtitle": "{total} inscripciones en todos los tipos",
-      "empty": "Aún no hay datos de matrícula",
-      "course_count": "{count, plural, one {# curso} other {# cursos}}",
-      "views_short": "vistas",
-      "types": {
-        "SELF_PACED": "a su propio ritmo",
-        "LIVE_CLASS": "clase en vivo",
-        "COMPLIANCE": "Cumplimiento",
-        "PUBLIC": "Público"
-      }
-    },
     "topCourses": {
       "heading": "Cursos principales por vistas",
       "description": "Cursos clasificados por vistas de página",
@@ -796,11 +764,6 @@
       "snackbar_no_emails": "Por favor ingrese al menos una dirección de correo electrónico",
       "snackbar_failed": "No se pudieron importar usuarios",
       "page_subtitle": "Agrega muchas personas a la vez por correo electrónico y asígnales cursos o cohortes si quieres.",
-      "cohort_access": "Acceso a cohortes",
-      "no_cohorts": "Sin asignación de cohorte",
-      "all_cohorts": "Todas las cohortes",
-      "select_cohorts": "Seleccionar cohortes específicas",
-      "select_cohorts_placeholder": "Elige cohortes...",
       "drop_csv": "Arrastra un archivo CSV aquí o haz clic para elegir uno",
       "csv_hint": "CSV UTF-8 con una columna de correo electrónico. Hasta {rows} filas, 5 MB.",
       "download_template": "Descargar la plantilla",
@@ -3333,10 +3296,6 @@
       "title": "Admin shortcuts",
       "add_learners": "Add employees",
       "add_learners_description": "Import a list or invite by email",
-      "create_cohort": "Open a training class",
-      "create_cohort_description": "Group courses and learners by programme",
-      "mandatory_training": "Track mandatory training",
-      "mandatory_training_description": "See who is overdue or not started",
       "upload_documents": "Upload documents",
       "upload_documents_description": "Videos, slides and files for lessons"
     }
@@ -3585,10 +3544,7 @@
     "widgets": "Widgets",
     "stats": "Estadísticas",
     "analytics": "Analíticas",
-    "compliance": "Cumplimiento",
-    "cohorts": "Programas de formación",
     "exit_course": "Salir de este curso",
-    "exit_cohort": "Salir de esta cohorte",
     "upgrade_now": "Actualiza ahora",
     "upgrade_label": "Actualizar",
     "upgrade_count": "{studentCount}/{studentLimit}",
@@ -4462,10 +4418,6 @@
           "heading": "Inscripción",
           "description": "Correos de bienvenida enviados cuando el personal añade miembros a cursos o cohortes."
         },
-        "cohort": {
-          "heading": "Cohorte",
-          "description": "Recordatorios sobre objetivos de aprendizaje y plazos de la cohorte."
-        },
         "course": {
           "heading": "Curso",
           "description": "Inscripciones, entregas, lecciones, anuncios y finalizaciones en tus cursos."
@@ -4512,30 +4464,30 @@
         "studentCourseWelcome": "Course access granted",
         "studentCourseCompletion": "Finalización del curso",
         "studentOrgInvite": "Invitación de organización",
-        "studentCohortWelcome": "Bienvenida a la cohorte",
         "studentProvePayment": "Solicitud de comprobante de pago",
-        "cohortGoalReminder": "Recordatorio de objetivos de cohorte",
         "quizAssigned": "Prueba asignada",
         "sessionReminder": "Recordatorio de sesión en vivo",
         "sessionUpdated": "Sesión en vivo actualizada",
         "submissionGraded": "Envío calificado",
         "newsfeedPost": "Publicación de noticias del curso",
-        "employeeActivation": "Employee account activation"
+        "employeeActivation": "Employee account activation",
+        "assignmentDueReminder": "Assignment due reminder",
+        "recertificationReopened": "Recertification reopened"
       },
       "descriptions": {
         "studentCourseInvite": "Se envía cuando invitas a alguien a un curso.",
         "studentOrgInvite": "Se envía cuando invitas a alguien a tu organización.",
         "studentCourseWelcome": "Sent when an existing employee is added to a course with email notifications enabled.",
-        "studentCohortWelcome": "Enviado cuando un estudiante recibe acceso a una cohorte.",
         "quizAssigned": "Se envía cuando se asigna una prueba a un estudiante.",
         "submissionGraded": "Se envía cuando se revisa el envío de ejercicios de un estudiante.",
-        "cohortGoalReminder": "Se envía cuando un objetivo de cohorte está vencido o vencido.",
         "studentCourseCompletion": "Enviado cuando un estudiante completa un curso.",
         "sessionReminder": "Enviado antes de una sesión en vivo programada.",
         "sessionUpdated": "Enviado cuando cambian los detalles de la sesión en vivo.",
         "newsfeedPost": "Enviado cuando se publica una nueva publicación del curso.",
         "studentProvePayment": "Se envía cuando un estudiante necesita proporcionar un comprobante de pago.",
-        "employeeActivation": "Sent when an activation link is issued or resent from Employees. Links are single use and expire after 48 hours."
+        "employeeActivation": "Sent when an activation link is issued or resent from Employees. Links are single use and expire after 48 hours.",
+        "assignmentDueReminder": "Sent when an assigned course is approaching or past its due date.",
+        "recertificationReopened": "Sent when a course reopens because its certification has expired."
       },
       "groups": {
         "enrollment": "Accounts and enrollment",
@@ -4547,7 +4499,6 @@
         "organization": "Organización",
         "expires_at": "Fecha de caducidad",
         "course_name": "Nombre del curso",
-        "cohort_name": "Nombre de la cohorte",
         "student_name": "Nombre del estudiante",
         "course_message": "Mensaje del instructor",
         "course_names": "Cursos",
@@ -4654,8 +4605,7 @@
           "widgets": "Widgets",
           "tags": "Etiquetas",
           "students": "estudiantes",
-          "settings": "Configuración",
-          "cohorts": "Cohortes"
+          "settings": "Configuración"
         }
       }
     },
@@ -5694,57 +5644,6 @@
       "transcript": "Transcripción"
     }
   },
-  "compliance": {
-    "title": "Cumplimiento",
-    "subtitle": "Realice un seguimiento del estado de la certificación en todos los cursos de cumplimiento de su organización.",
-    "learners": {
-      "heading": "estudiantes",
-      "subtitle": "{count, number} coincidente",
-      "empty": "Ningún estudiante coincide con este filtro",
-      "learner": "Estudiante",
-      "course": "Curso",
-      "status": "Estado",
-      "due_date": "Vence",
-      "expires": "Vence"
-    },
-    "courses": {
-      "heading": "Cursos",
-      "description": "Cumplimiento de cursos con estatus de estudiante.",
-      "empty": "Aún no hay cursos de cumplimiento",
-      "course": "Curso",
-      "learners": "estudiantes",
-      "completion": "Finalización"
-    },
-    "filter": {
-      "all": "Todos",
-      "compliant": "Cumple",
-      "expiring_soon": "Expira pronto",
-      "in_grace_period": "en gracia",
-      "non_compliant": "No conforme",
-      "in_progress": "En progreso",
-      "not_started": "No iniciado",
-      "waived": "Renunciado",
-      "no_record": "Sin registro"
-    },
-    "status": {
-      "compliant": "Cumple",
-      "expiring_soon": "Expira pronto",
-      "in_grace_period": "En periodo de gracia",
-      "non_compliant": "No conforme",
-      "in_progress": "En progreso",
-      "not_started": "No iniciado",
-      "waived": "Renunciado",
-      "no_record": "Sin registro"
-    },
-    "tabs": {
-      "courses": "Por curso",
-      "learners": "estudiantes"
-    },
-    "summary": {
-      "heading": "Estado del estudiante",
-      "description": "Cuenta entre los estudiantes en todos los cursos de cumplimiento."
-    }
-  },
   "public_course": {
     "exercise": {
       "submit": "revisa mis respuestas",
@@ -5956,223 +5855,6 @@
       "failed": "Error al subir"
     }
   },
-  "cohorts": {
-    "heading": "Cohortes",
-    "page_title": "Cohortes",
-    "create": "Nueva cohorte",
-    "create_success": "Cohorte creado",
-    "update_success": "Cohorte actualizado",
-    "delete_success": "Cohorte eliminado",
-    "members_added": "Miembros agregados",
-    "member_removed": "Miembro eliminado",
-    "course_added": "Curso agregado",
-    "course_removed": "Curso eliminado",
-    "empty_title": "Aún no hay cohortes",
-    "empty_description": "Crea tu primera cohorte de certificación o cumplimiento.",
-    "settings": {
-      "general": "generales",
-      "name_label": "Nombre",
-      "description_label": "Descripción",
-      "status_label": "Estado",
-      "save": "Guardar cambios",
-      "danger_zone": "Zona de peligro",
-      "delete": "Eliminar cohorte",
-      "delete_description": "Una vez eliminada, esta cohorte y todos sus datos no se podrán recuperar.",
-      "confirm_delete": "¿Está seguro de que desea eliminar esta cohorte? Esto no se puede deshacer."
-    },
-    "lms": {
-      "empty_title": "Aún no hay cohortes",
-      "empty_description": "No has estado inscrito en ningún cohorte."
-    },
-    "people": {
-      "invite": "invitar",
-      "invite_modal_title": "Invitar miembros",
-      "invite_modal_description": "Agrega personas a esta cohorte por correo electrónico.",
-      "email_label": "Correo electrónico",
-      "role_label": "Rol",
-      "add_another": "agregar otro",
-      "invite_submit": "Enviar invitaciones",
-      "empty_title": "Aún no hay miembros",
-      "empty_description": "Invita a personas a unirse a esta cohorte.",
-      "name": "Nombre",
-      "joined": "Se unió",
-      "filter_title": "Filtrar personas",
-      "views": {
-        "all": "todas las personas",
-        "tutors": "Tutores",
-        "students": "estudiantes",
-        "pending_invites": "Invitaciones pendientes",
-        "never_logged_in": "Nunca inicie sesión"
-      }
-    },
-    "courses": {
-      "add": "Agregar curso",
-      "add_modal_title": "Agregar curso a la cohorte",
-      "select_course": "Seleccione un curso",
-      "select_placeholder": "Elige un curso…",
-      "empty_title": "Aún no hay cursos",
-      "empty_description": "Agrega cursos a esta cohorte.",
-      "select_courses": "Seleccionar cursos",
-      "search_placeholder": "Buscar cursos",
-      "no_available_courses": "No hay cursos disponibles para agregar.",
-      "no_matching_courses": "Ningún curso coincide con tu búsqueda.",
-      "no_matching_cohort_courses": "Ningún curso de cohorte coincide con su búsqueda.",
-      "pagination_status": "Página {page} de {totalPages}",
-      "published_access_callout_title": "Acceso de estudiantes",
-      "published_access_callout_description": "Los estudiantes solo tienen acceso a los cursos publicados. Los cursos pueden estar en esta cohorte para su equipo mientras aún no están publicados, pero permanecen ocultos para los estudiantes hasta que los publique.",
-      "empty_student_description": "Aún no hay cursos publicados en esta cohorte."
-    },
-    "newsfeed": {
-      "post": "Nueva publicación",
-      "post_placeholder": "¿Qué tienes en mente?",
-      "post_submit": "Publicar",
-      "empty_title": "Aún no hay publicaciones",
-      "empty_description": "Sé el primero en publicar algo.",
-      "heading": "Noticias",
-      "make_a_post": "Hacer una publicación",
-      "edit_post": "Editar publicación",
-      "editor_placeholder": "Comparte una actualización con tu cohorte",
-      "cancel": "Cancelar",
-      "pinned": "Fijado",
-      "delete_feed_title": "Eliminar publicación",
-      "delete_feed_description": "¿Estás seguro de que deseas eliminar esta publicación?",
-      "confirm_delete": "Eliminar",
-      "user_avatar_alt": "avatar de usuario",
-      "comments": {
-        "comment": "comentario",
-        "showing_of": "Mostrando {shown} de {total}",
-        "hide": "Ocultar comentarios",
-        "placeholder": "Agregar comentario de cohorte",
-        "submit_aria": "Enviar comentario",
-        "delete": "Eliminar"
-      },
-      "card": {
-        "pin": "Fijar",
-        "unpin": "Desanclar",
-        "edit": "Editar",
-        "delete": "Eliminar"
-      }
-    },
-    "create_modal": {
-      "title": "Crear cohorte",
-      "description": "Agrega una nueva cohorte de certificación o cumplimiento.",
-      "name_label": "Nombre",
-      "name_placeholder": "por ej. Certificación de seguridad OSHA",
-      "description_label": "Descripción",
-      "description_placeholder": "¿De qué trata esta cohorte?",
-      "submit": "crear"
-    },
-    "sidebar": {
-      "newsfeed": "Noticias",
-      "courses": "Cursos",
-      "people": "gente",
-      "settings": "Configuración"
-    },
-    "status": {
-      "active": "Activo",
-      "inactive": "Inactivo",
-      "archived": "Archivado"
-    },
-    "description": "Dar a un grupo de personas acceso a múltiples cursos, como una clase",
-    "search_placeholder": "Cohortes de búsqueda",
-    "multiple_added": "Cursos agregados",
-    "no_matching_cohorts": "Ningún cohorte coincide con tus filtros.",
-    "card": {
-      "courses": "Cursos",
-      "students": "estudiantes"
-    },
-    "table": {
-      "name": "Nombre",
-      "courses": "Cursos",
-      "students": "estudiantes",
-      "status": "Estado",
-      "description": "Descripción"
-    },
-    "filters": {
-      "filter": "Filtrar",
-      "clear_all": "Borrar todo",
-      "popover_title": "Filtros",
-      "sort": "ordenar",
-      "order": "Orden",
-      "status": "Estado",
-      "ascending": "Asc",
-      "descending": "Desc",
-      "sort_name": "Nombre",
-      "sort_courses": "Cursos",
-      "sort_students": "estudiantes",
-      "sort_status": "Estado"
-    },
-    "invite_sent": "Invitaciones enviadas",
-    "goals": {
-      "heading": "Metas de aprendizaje",
-      "description": "Establezca objetivos mensurables que abarquen varios cursos para todos los participantes de esta cohorte.",
-      "add": "Nuevo objetivo",
-      "empty_title": "Aún no hay goles",
-      "empty_description": "Cree un objetivo para realizar un seguimiento del progreso del equipo en varios cursos.",
-      "created": "Objetivo creado",
-      "updated": "Objetivo actualizado",
-      "deleted": "Objetivo eliminado",
-      "delete_confirm": "¿Eliminar este objetivo? Se eliminará el historial de estado por estudiante.",
-      "lms": {
-        "heading": "Tus objetivos",
-        "empty_title": "No hay objetivos asignados",
-        "empty_description": "Cuando sus instructores establezcan objetivos, aparecerán aquí.",
-        "due_in_days": "Vencimiento en {days} días",
-        "due_tomorrow": "Vencimiento mañana",
-        "due_today": "Vencimiento hoy",
-        "overdue": "Vencido",
-        "no_deadline": "Sin fecha límite"
-      },
-      "tile": {
-        "on_track": "en camino",
-        "completed_short": "completado",
-        "overdue_short": "vencido",
-        "at_risk_short": "en riesgo"
-      },
-      "status": {
-        "completed": "Completado",
-        "in_progress": "En progreso",
-        "at_risk": "En riesgo",
-        "overdue": "Vencido",
-        "not_started": "No iniciado",
-        "waived": "Renunciado"
-      },
-      "deadline_kind": {
-        "absolute": "fecha absoluta",
-        "relative_to_join": "En relación con la incorporación de estudiantes",
-        "recurring": "recurrente",
-        "none": "Sin fecha límite"
-      },
-      "type": {
-        "complete_all": "Completa todos los cursos seleccionados",
-        "n_of_m": "Completa N de M cursos seleccionados",
-        "score": "Puntuación por encima del umbral en cada curso",
-        "pass_rate": "Umbral de tasa de aprobación del equipo",
-        "readiness": "Preparación (sin fecha límite)"
-      },
-      "modal": {
-        "create_title": "Nuevo objetivo",
-        "edit_title": "Editar objetivo",
-        "title_label": "Título",
-        "title_placeholder": "por ej. Rampa de embarque",
-        "description_label": "Descripción",
-        "description_placeholder": "Contexto opcional para el equipo.",
-        "type_label": "Tipo",
-        "courses_label": "Cursos",
-        "required_count_label": "Número de cursos requeridos",
-        "score_threshold_label": "Puntaje aprobado por estudiante (%)",
-        "team_pass_rate_label": "Tasa de aprobación del equipo (%)",
-        "deadline_label": "Fecha límite",
-        "deadline_date_label": "Fecha límite",
-        "relative_days_label": "Días desde que se incorpora el estudiante",
-        "recurring_months_label": "Repetir cada (meses)",
-        "reminders_label": "Recordatorios (días antes del vencimiento)",
-        "reminders_helper": "Separados por comas. Ejemplo: 7, 3, 1",
-        "save": "Guardar",
-        "cancel": "Cancelar"
-      }
-    }
-  },
   "invite_link": {
     "tab_label": "Enlace de invitación",
     "title": "Enlace de invitación",
@@ -6329,9 +6011,7 @@
       "comments_off": "Los comentarios de la lección están desactivados.",
       "lesson_download": "Los estudiantes pueden descargar lecciones",
       "self_enrollment": "Los estudiantes pueden unirse ellos mismos.",
-      "ai_tutor": "El tutor de IA está activado",
-      "compliance_retake": "Repetir cada {months, plural, one {# mes} other {# meses}}",
-      "compliance_mandatory": "Obligatorio"
+      "ai_tutor": "El tutor de IA está activado"
     },
     "menu": {
       "open": "Abierto",
@@ -6531,7 +6211,6 @@
     "customize_lms": "Customize LMS",
     "courses": "Courses",
     "home": "Home",
-    "cohort": "Cohort",
     "course": "Course",
     "quiz": "Quiz",
     "join_platform": "Join MP Learning",
@@ -6564,7 +6243,6 @@
   "lms_pages": {
     "my_learning_subtitle": "Courses assigned to you or that you enrolled in.",
     "explore_subtitle": "Internal courses open to MP Transformation employees.",
-    "cohorts_subtitle": "Training classes and programmes you belong to.",
     "exercises_subtitle": "Track submissions and grades across your courses.",
     "exercises_column_empty": "Nothing here yet"
   },
@@ -6646,6 +6324,14 @@
       "all": "All courses",
       "assigned": "Assigned",
       "overdue": "Overdue"
+    },
+    "assigned_section": {
+      "title": "Assigned training",
+      "note": "Every assigned course per employee, with its computed status.",
+      "all_courses": "All courses",
+      "all_batches": "All batches",
+      "empty": "No assignments match",
+      "truncated": "Showing the first 200 of {count} rows. Export to see all."
     }
   },
   "employees": {
@@ -6786,13 +6472,13 @@
     "clear_filters": "Clear filters",
     "unassigned": "Not assigned",
     "empty_hint": "Add your first employee or adjust the filters to find the people you need.",
-    "page_label": "Page {page} of {pages}"
+    "page_label": "Page {page} of {pages}",
+    "job_title": "Job title"
   },
   "training_library": {
     "enrolled": "Inscrito",
     "available_to_you": "Disponible para ti",
     "self_enrollment": "Autoinscripción",
-    "assigned_only": "Formación asignada",
     "goals": "Objetivos de aprendizaje",
     "exercise_count": "{count} ejercicios",
     "start_continue": "Empezar / continuar",
@@ -6802,41 +6488,71 @@
     "enrollment_error": "No se ha podido realizar la inscripción. Actualiza la página e inténtalo de nuevo.",
     "back": "Volver al catálogo",
     "settings_self_enrollment": "Permitir la autoinscripción de empleados",
-    "compliance_hint": "La formación de cumplimiento se asigna. No permite la inscripción libre.",
     "settings_self_enrollment_hint": "Los cursos publicados aparecen en el catálogo al activar esta opción. Desactivarla conserva las inscripciones existentes.",
     "enrolled_success": "Te has inscrito correctamente."
   },
   "training_assignment": {
-    "title": "Asignar formación",
-    "required": "Obligatorio",
-    "recommended": "Recomendado",
-    "deadline": "Fecha límite",
-    "message": "Mensaje para los participantes",
-    "saved": "Formación asignada",
-    "cancelled": "Cancelado",
-    "cancel_failed": "No se puede cancelar esta fuente",
-    "cancel": "Cancelar asignación",
-    "sources": "Fuentes de participación",
     "learners": "Participantes",
-    "staff": "Equipo docente",
-    "assigned": "Formación asignada",
-    "self_selected": "Elección personal",
-    "access_only": "Acceso sin obligación individual de finalización",
-    "revoke_access": "Revocar esta fuente de acceso",
-    "history": "Historial de participación",
-    "no_sources": "No hay fuentes de participación activas",
-    "description": "Seleccione empleados y el requisito de finalización. Se conserva el progreso existente.",
-    "existing_hint": "Se conservan los plazos existentes. Cancele y vuelva a asignar para cambiar el requisito.",
-    "cancel_hint": "Solo se cancela esta fuente. Se conservan el progreso, el historial y los demás accesos.",
-    "compliance_controls": "Utilice los controles existentes de exención y plazos para los cursos de cumplimiento.",
-    "source": {
-      "SELF": "Inscripción libre",
-      "DIRECT": "Asignación directa",
-      "LEGACY": "Datos antiguos: origen sin verificar",
-      "PROGRAM": "Programa",
-      "COHORT": "Cohorte",
-      "COMPLIANCE": "Ciclo de cumplimiento"
+    "staff": "Equipo docente"
+  },
+  "enrollment": {
+    "assign_title": "Assign courses",
+    "assign_description": "Choose courses and employees. Assigned courses must be completed; existing progress is kept.",
+    "assign_button": "Assign courses",
+    "courses": "Courses",
+    "employees": "Employees",
+    "pick_courses": "Search published courses",
+    "pick_employees": "Search employees",
+    "all_employees": "All active employees",
+    "filter_department": "By department",
+    "filter_job_title": "By job title",
+    "selected_count": "{count} selected",
+    "due_date": "Due date",
+    "due": "Due",
+    "batch_label": "Training batch",
+    "batch_placeholder": "e.g. Onboarding 11/2026",
+    "batch": "Batch",
+    "message": "Message to learners",
+    "notify": "Email the learners",
+    "submit": "Assign",
+    "assigned_result": "Assigned {assigned}, already assigned {existing}",
+    "failed": "Could not save the assignment. Please try again.",
+    "saved": "Assignment updated",
+    "revoked": "Assignment revoked",
+    "how_joined": "How they joined",
+    "assigned_by": "assigned by {name}",
+    "valid_until": "Valid until",
+    "no_enrollment": "No active enrollment",
+    "employee_courses": "Assigned courses",
+    "progress": "Progress",
+    "state_label": "Status",
+    "select_all": "Select all on this page",
+    "waive_reason": "Reason for exemption",
+    "waive_expires": "Exemption ends (optional)",
+    "kind": {
+      "ASSIGNED": "Assigned",
+      "SELF": "Self-enrolled"
     },
-    "created_at": "Fecha de participación"
+    "state": {
+      "not_started": "Not started",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "overdue": "Overdue",
+      "expired": "Expired",
+      "waived": "Exempt"
+    },
+    "actions": {
+      "change_due": "Change due date",
+      "waive": "Exempt",
+      "revoke": "Revoke",
+      "revoke_confirm": "Revoke this course for {name}? Their progress and history are kept."
+    },
+    "recertification": {
+      "title": "Retake periodically",
+      "description": "A completion stays valid for a set number of months. When it expires, assigned learners must complete the course again.",
+      "months_label": "Valid for (months)",
+      "months_helper": "Learners are reminded 30 days before it expires and get 30 days to retake.",
+      "every": "Retake every {months} months"
+    }
   }
 }

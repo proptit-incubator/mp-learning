@@ -1,26 +1,13 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
-import { addGroupMember, enrollUsersInCourseGroups, getGroupMemberIdByGroupAndProfile } from '@cio/db/queries/group';
-import { getCourseGroupIds, getCourseWithOrgData, lockCourseStatusForAccept } from '@cio/db/queries/course';
-import {
-  getCohortById,
-  getCourseIdsByCohortIds,
-  insertCohortMemberIfAbsent,
-  lockCohortStatusForAccept
-} from '@cio/db/queries/cohort';
-import { ensureComplianceEnrollmentRecordsForProfiles } from '@api/services/course/compliance';
-import { enqueueTransactionalEmail } from '@api/services/jobs';
-import { buildEmailBranding, buildEmailFromName } from '@cio/email';
-import { getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
+import { addGroupMember, getGroupMemberIdByGroupAndProfile } from '@cio/db/queries/group';
+import { getCourseWithOrgData, lockCourseStatusForAccept } from '@cio/db/queries/course';
+import { createEnrollments, ensureLearnerMembership, findEmployeeByProfile } from '@cio/db/queries/course/enrollment';
 import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
 import type { DbOrTxClient } from '@cio/db/drizzle';
-import type { TCohortMember } from '@cio/db/queries/cohort';
 import type { TGroupmember } from '@cio/db/types';
 import { captureLearnersEnrolled } from '@api/services/product-events';
-import {
-  buildMemberSource,
-  emitCohortMemberWebhookEvent,
-  emitCourseMemberAddedWebhookEvent
-} from '@cio/core/services/webhook/emit';
+import { buildMemberSource, emitCourseMemberAddedWebhookEvent } from '@cio/core/services/webhook/emit';
+import { ROLE } from '@cio/utils/constants';
 import type { TInviteLinkWithContext } from '@cio/db/queries/invite-link';
 import type { TInviteLinkResourceType } from '@cio/utils/validation/invite-link';
 
@@ -37,7 +24,6 @@ export type InviteLinkPreview = {
 export type InviteLinkEnrollResult = {
   isFreshJoin: boolean;
   enrolledMembers?: TGroupmember[];
-  cohortMember?: TCohortMember | null;
 };
 
 type InviteLinkHandler = {
@@ -54,7 +40,7 @@ type InviteLinkHandler = {
     profileId: string,
     email: string
   ): Promise<InviteLinkEnrollResult>;
-  /** Runs after the transaction commits. Best-effort: compliance backfill, cache invalidation, email. */
+  /** Runs after the transaction commits. Best-effort: webhooks, cache invalidation, analytics. */
   afterCommit(
     context: TInviteLinkWithContext,
     profileId: string,
@@ -72,42 +58,24 @@ function requireCourse(context: TInviteLinkWithContext) {
   return context.course;
 }
 
-function requireCohort(context: TInviteLinkWithContext) {
-  if (!context.cohort) {
-    throw new AppError('This invite link is no longer valid', ErrorCodes.NOT_FOUND, 404);
+async function enrollLearnerFromLink(
+  tx: DbOrTxClient,
+  organizationId: string,
+  courseId: string,
+  groupId: string,
+  profileId: string,
+  email: string
+): Promise<InviteLinkEnrollResult> {
+  const employee = await findEmployeeByProfile(organizationId, profileId, tx);
+  if (!employee || employee.status !== 'ACTIVE') {
+    throw new AppError('Only active employees can join this course', ErrorCodes.FORBIDDEN, 403);
   }
 
-  return context.cohort;
-}
+  const created = await createEnrollments({ courseIds: [courseId], employeeIds: [employee.id], kind: 'SELF' }, tx);
+  if (created.length === 0) return { isFreshJoin: false };
 
-/** Failures are swallowed: the learner is already enrolled, so a bad email must not fail the join. */
-async function sendCohortWelcomeEmail(input: {
-  organization: TInviteLinkWithContext['organization'];
-  cohortId: string;
-  cohortName: string;
-  profileId: string;
-  email: string;
-}): Promise<void> {
-  const { organization, cohortId, cohortName, profileId, email } = input;
-  const loginUrl = getDashboardBaseUrl(organization);
-  const branding = buildEmailBranding(organization);
-
-  try {
-    await enqueueTransactionalEmail('studentCohortWelcome', {
-      to: email,
-      fields: {
-        orgName: organization.name,
-        cohortName: cohortName || 'Cohort',
-        loginUrl,
-        branding
-      },
-      from: buildEmailFromName(`${organization.name} (via ClassroomIO.com)`),
-      idempotencyKey: `invite-link-cohort-welcome:${cohortId}:${profileId}`,
-      preference: { organizationId: organization.id, recipientProfileId: profileId }
-    });
-  } catch (error) {
-    console.error('sendCohortWelcomeEmail enqueue error', { cohortId, profileId }, error);
-  }
+  const member = await ensureLearnerMembership(groupId, profileId, email, tx);
+  return { isFreshJoin: true, enrolledMembers: member ? [member] : [] };
 }
 
 const courseHandler: InviteLinkHandler = {
@@ -146,6 +114,10 @@ const courseHandler: InviteLinkHandler = {
       throw new AppError('This course is not available for enrollment', ErrorCodes.VALIDATION_ERROR, 400);
     }
 
+    if (context.invite.roleId === ROLE.STUDENT) {
+      return enrollLearnerFromLink(tx, context.organization.id, course.id, locked.groupId, profileId, email);
+    }
+
     const existingMemberId = await getGroupMemberIdByGroupAndProfile(locked.groupId, profileId, tx);
     const isFreshJoin = !existingMemberId;
     if (!isFreshJoin) return { isFreshJoin };
@@ -173,99 +145,9 @@ const courseHandler: InviteLinkHandler = {
       });
     }
 
-    await ensureComplianceEnrollmentRecordsForProfiles([course.id], [profileId]);
     await invalidateOrgStats(context.organization.id);
 
     captureLearnersEnrolled(enrolledMembers ?? [], 'invite_link');
-  },
-
-  redirectTo() {
-    return '/lms';
-  }
-};
-
-const cohortHandler: InviteLinkHandler = {
-  async resolveOrganizationId(cohortId) {
-    const cohort = await getCohortById(cohortId);
-
-    if (!cohort) {
-      throw new AppError('Cohort not found', ErrorCodes.COHORT_NOT_FOUND, 404);
-    }
-
-    return cohort.organizationId;
-  },
-
-  preview(context) {
-    const cohort = requireCohort(context);
-
-    return {
-      resourceType: 'COHORT',
-      resourceName: cohort.name,
-      description: cohort.description,
-      coverImage: cohort.coverImage,
-      isResourceOpen: cohort.status === 'ACTIVE'
-    };
-  },
-
-  async enrollMembership(tx, context, profileId, email) {
-    const cohort = requireCohort(context);
-    const locked = await lockCohortStatusForAccept(tx, cohort.id);
-
-    if (!locked || locked.status !== 'ACTIVE') {
-      throw new AppError('This invite is no longer accepting new members', ErrorCodes.VALIDATION_ERROR, 403);
-    }
-
-    const roleId = context.invite.roleId;
-
-    // Not `assignAudienceToCourses`: it filters to org-role STUDENT, silently skipping
-    // org admins/tutors. Cohort role is independent of org role.
-    const createdMember = await insertCohortMemberIfAbsent({ cohortId: cohort.id, roleId, profileId, email }, tx);
-    const isFreshJoin = createdMember !== null;
-
-    // Runs for existing members too, so re-opening the link repairs a partial join.
-    const cohortCourseIds = await getCourseIdsByCohortIds([cohort.id], tx);
-
-    if (cohortCourseIds.length === 0) return { isFreshJoin, cohortMember: createdMember };
-
-    const courseGroups = await getCourseGroupIds(cohortCourseIds, tx);
-    const groupIds = courseGroups.map((mapping) => mapping.groupId).filter(Boolean) as string[];
-    const enrolledMembers = await enrollUsersInCourseGroups(groupIds, [{ profileId, email }], roleId, tx, 'CONTEXT');
-
-    return { isFreshJoin, enrolledMembers, cohortMember: createdMember };
-  },
-
-  async afterCommit(context, profileId, email, { isFreshJoin, enrolledMembers, cohortMember }) {
-    const cohort = requireCohort(context);
-
-    captureLearnersEnrolled(enrolledMembers ?? [], 'invite_link');
-
-    if (cohortMember) {
-      await emitCohortMemberWebhookEvent(
-        'cohort.member.added',
-        context.organization.id,
-        cohort.id,
-        cohortMember,
-        profileId
-      );
-    }
-
-    const cohortCourseIds = await getCourseIdsByCohortIds([cohort.id]);
-
-    if (cohortCourseIds.length > 0) {
-      await ensureComplianceEnrollmentRecordsForProfiles(cohortCourseIds, [profileId]);
-    }
-
-    await invalidateOrgStats(context.organization.id);
-
-    if (isFreshJoin && email) {
-      await sendCohortWelcomeEmail({
-        organization: context.organization,
-        cohortId: cohort.id,
-        cohortName: cohort.name,
-        profileId,
-        email
-      });
-    }
   },
 
   redirectTo() {
@@ -278,8 +160,7 @@ const cohortHandler: InviteLinkHandler = {
  * one nullable FK column, and create/toggle routes on that resource's router.
  */
 export const INVITE_LINK_HANDLERS: Record<TInviteLinkResourceType, InviteLinkHandler> = {
-  COURSE: courseHandler,
-  COHORT: cohortHandler
+  COURSE: courseHandler
 };
 
 export function getInviteLinkHandler(resourceType: string): InviteLinkHandler {

@@ -428,8 +428,7 @@ async function seedCourse(adminProfileId: string) {
       allowNewStudent: true
     },
     isPublished: true,
-    status: 'ACTIVE',
-    type: 'SELF_PACED'
+    status: 'ACTIVE'
   });
   await db.insert(courseSection).values({ id: SECTION_ID, courseId: COURSE_ID, title: 'Projects', order: 1 });
   await db.insert(lesson).values([

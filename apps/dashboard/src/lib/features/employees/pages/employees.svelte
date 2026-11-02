@@ -32,8 +32,35 @@
   import { Button } from '@cio/ui/base/button';
   import { Skeleton } from '@cio/ui/base/skeleton';
   import { UserAvatar } from '@cio/ui/custom/user-avatar';
+  import BookPlusIcon from '@lucide/svelte/icons/book-plus';
+  import { SvelteSet } from 'svelte/reactivity';
+  import { AssignCoursesModal, EnrollmentStateBadge } from '$features/enrollment';
 
   const api = new EmployeesApi();
+  const selectedIds = new SvelteSet<string>();
+  let assignOpen = $state(false);
+  let assignEmployeeIds = $state<string[]>([]);
+  let assignLabel = $state<string | undefined>(undefined);
+  const visibleIds = $derived(api.roster?.rows.map((row) => row.id) ?? []);
+  const allVisibleSelected = $derived(visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id)));
+
+  function openAssign(employeeIds: string[], label?: string) {
+    assignEmployeeIds = employeeIds;
+    assignLabel = label;
+    assignOpen = true;
+  }
+
+  function toggleAllVisible(checked: boolean) {
+    for (const id of visibleIds) {
+      if (checked) selectedIds.add(id);
+      else selectedIds.delete(id);
+    }
+  }
+
+  function afterAssign() {
+    selectedIds.clear();
+    if (api.detailOpen && api.details) void api.view(api.details.employee);
+  }
   let loadedLocation = '';
   const search = new DebouncedSearch({
     onApply: (value) => {
@@ -45,6 +72,13 @@
   const department = new DebouncedSearch({
     onApply: (value) => {
       api.department = value;
+      api.page = 1;
+      void api.load();
+    }
+  });
+  const jobTitle = new DebouncedSearch({
+    onApply: (value) => {
+      api.jobTitle = value;
       api.page = 1;
       void api.load();
     }
@@ -77,6 +111,7 @@
   onDestroy(() => {
     search.destroy();
     department.destroy();
+    jobTitle.destroy();
   });
 
   async function initialize(parameters: URLSearchParams, location: string) {
@@ -90,10 +125,12 @@
     };
     api.search = query.search;
     api.department = query.department;
+    api.jobTitle = query.jobTitle ?? '';
     api.status = query.status ?? '';
     api.page = query.page;
     search.sync(api.search);
     department.sync(api.department);
+    jobTitle.sync(api.jobTitle);
     await api.load();
     if (loadedLocation !== location) return;
 
@@ -112,8 +149,6 @@
     await api.loadOptions();
     api.importRows = [];
     api.importResult = null;
-    api.importCourseIds = [];
-    api.importCohortIds = [];
     api.importSend = true;
     api.message = '';
     api.importOpen = true;
@@ -137,6 +172,11 @@
         {#if canManage}
           <Button variant="outline" onclick={openImport} disabled={api.isLoading}
             ><UploadIcon size={16} />{$t('employees.import')}</Button
+          >
+          <Button variant="outline" onclick={() => openAssign([...selectedIds])} disabled={!selectedIds.size}
+            ><BookPlusIcon size={16} />{$t('enrollment.assign_button')}{selectedIds.size
+              ? ` (${selectedIds.size})`
+              : ''}</Button
           >
           <Button onclick={() => api.openCreate()} disabled={api.isLoading} testId="employee-create"
             ><PlusIcon size={17} />{$t('employees.add')}</Button
@@ -183,7 +223,15 @@
             value={department.draft}
             oninput={(event) => department.input(event.currentTarget.value)}
           />
-          {#if api.profileId || api.search || api.department || api.status || Object.values(api.learningFilters).some(Boolean)}<Button
+          <Input
+            id="employee-job-title-filter"
+            class="department-filter"
+            aria-label={$t('employees.job_title')}
+            placeholder={$t('employees.job_title')}
+            value={jobTitle.draft}
+            oninput={(event) => jobTitle.input(event.currentTarget.value)}
+          />
+          {#if api.profileId || api.search || api.department || api.jobTitle || api.status || Object.values(api.learningFilters).some(Boolean)}<Button
               size="sm"
               variant="secondary"
               onclick={() => {
@@ -191,10 +239,12 @@
                 api.learningFilters = {};
                 api.search = '';
                 api.department = '';
+                api.jobTitle = '';
                 api.status = '';
                 api.page = 1;
                 search.reset();
                 department.reset();
+                jobTitle.reset();
                 void api.load();
               }}>{$t('employees.clear_filters')}</Button
             >{/if}
@@ -221,7 +271,13 @@
           <Table.Root class="employee-table">
             <Table.Header
               ><Table.Row
-                ><Table.Head>{$t('employees.name')}</Table.Head><Table.Head>{$t('employees.code')}</Table.Head
+                >{#if canManage}<Table.Head class="w-10"
+                    ><Checkbox
+                      aria-label={$t('enrollment.select_all')}
+                      checked={allVisibleSelected}
+                      onCheckedChange={(checked) => toggleAllVisible(!!checked)}
+                    /></Table.Head
+                  >{/if}<Table.Head>{$t('employees.name')}</Table.Head><Table.Head>{$t('employees.code')}</Table.Head
                 ><Table.Head>{$t('employees.department')}</Table.Head><Table.Head
                   >{$t('employees.role_label')}</Table.Head
                 ><Table.Head>{$t('employees.status_label')}</Table.Head><Table.Head>{$t('employees.start')}</Table.Head
@@ -231,6 +287,16 @@
             <Table.Body>
               {#each api.roster.rows as staff (staff.id)}
                 <Table.Row class="employee-row">
+                  {#if canManage}<Table.Cell
+                      ><Checkbox
+                        aria-label={staff.fullname}
+                        checked={selectedIds.has(staff.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) selectedIds.add(staff.id);
+                          else selectedIds.delete(staff.id);
+                        }}
+                      /></Table.Cell
+                    >{/if}
                   <Table.Cell
                     ><div class="employee-identity">
                       <UserAvatar src={staff.avatarUrl} alt={staff.fullname} class="size-10 shrink-0" />
@@ -278,7 +344,9 @@
                           >{/snippet}</DropdownMenu.Trigger
                       ><DropdownMenu.Content align="end" class="w-56">
                         <DropdownMenu.Item onclick={() => api.view(staff)}>{$t('employees.details')}</DropdownMenu.Item>
-                        {#if canManage}<DropdownMenu.Item onclick={() => api.openEdit(staff)}
+                        {#if canManage}<DropdownMenu.Item onclick={() => openAssign([staff.id], staff.fullname)}
+                            >{$t('enrollment.assign_button')}</DropdownMenu.Item
+                          ><DropdownMenu.Item onclick={() => api.openEdit(staff)}
                             >{$t('employees.edit')}</DropdownMenu.Item
                           >
                           {#if staff.status === 'DRAFT' || staff.status === 'INVITED'}<DropdownMenu.Item
@@ -305,7 +373,7 @@
                   </Table.Cell>
                 </Table.Row>
               {:else}<Table.Row
-                  ><Table.Cell colspan={7}
+                  ><Table.Cell colspan={canManage ? 8 : 7}
                     ><div class="directory-empty">
                       <span class="empty-icon"><UsersIcon size={28} /></span>
                       <h3>{$t('employees.empty')}</h3>
@@ -450,41 +518,6 @@
           </Field.Field>
         </Field.Group>
       </Field.Set>
-      <Field.Separator />
-      <Field.Set
-        ><Field.Legend>{$t('employees.learning')}</Field.Legend><Field.Description
-          >{$t('employees.learning_hint')}</Field.Description
-        >
-        <Field.Group>
-          {#each api.options?.courses ?? [] as course (course.id)}<Field.Field orientation="horizontal"
-              ><Checkbox
-                id={`employee-course-${course.id}`}
-                checked={api.fields.courseIds.includes(course.id)}
-                onCheckedChange={(checked) => {
-                  api.fields.courseIds = checked
-                    ? [...api.fields.courseIds, course.id]
-                    : api.fields.courseIds.filter((courseId) => courseId !== course.id);
-                }}
-              /><Field.Label for={`employee-course-${course.id}`}>
-                {course.title}
-                {#if !course.isPublished}<span class="ui:text-muted-foreground text-xs"
-                    >· {$t('courses.course_card.unpublished')}</span
-                  >{/if}
-              </Field.Label></Field.Field
-            >{/each}
-          {#each api.options?.cohorts ?? [] as cohort (cohort.id)}<Field.Field orientation="horizontal"
-              ><Checkbox
-                id={`employee-cohort-${cohort.id}`}
-                checked={api.fields.cohortIds.includes(cohort.id)}
-                onCheckedChange={(checked) => {
-                  api.fields.cohortIds = checked
-                    ? [...api.fields.cohortIds, cohort.id]
-                    : api.fields.cohortIds.filter((cohortId) => cohortId !== cohort.id);
-                }}
-              /><Field.Label for={`employee-cohort-${cohort.id}`}>{cohort.name}</Field.Label></Field.Field
-            >{/each}
-        </Field.Group>
-      </Field.Set>
     </Field.Group>
     {#if api.message}<p role="alert" class="ui:text-destructive text-sm">{$t(api.message)}</p>{/if}
     <Dialog.Footer>
@@ -540,38 +573,6 @@
           }}
         /><Field.Label for="employee-import-send">{$t('employees.send_import')}</Field.Label></Field.Field
       >
-      <Field.Set
-        ><Field.Legend>{$t('employees.learning')}</Field.Legend>
-        {#each api.options?.courses ?? [] as course (course.id)}<Field.Field orientation="horizontal"
-            ><Checkbox
-              id={`import-course-${course.id}`}
-              checked={api.importCourseIds.includes(course.id)}
-              onCheckedChange={(checked) => {
-                api.importCourseIds = checked
-                  ? [...api.importCourseIds, course.id]
-                  : api.importCourseIds.filter((id) => id !== course.id);
-                api.importResult = null;
-              }}
-            /><Field.Label for={`import-course-${course.id}`}>
-              {course.title}
-              {#if !course.isPublished}<span class="ui:text-muted-foreground text-xs"
-                  >· {$t('courses.course_card.unpublished')}</span
-                >{/if}
-            </Field.Label></Field.Field
-          >{/each}
-        {#each api.options?.cohorts ?? [] as cohort (cohort.id)}<Field.Field orientation="horizontal"
-            ><Checkbox
-              id={`import-cohort-${cohort.id}`}
-              checked={api.importCohortIds.includes(cohort.id)}
-              onCheckedChange={(checked) => {
-                api.importCohortIds = checked
-                  ? [...api.importCohortIds, cohort.id]
-                  : api.importCohortIds.filter((id) => id !== cohort.id);
-                api.importResult = null;
-              }}
-            /><Field.Label for={`import-cohort-${cohort.id}`}>{cohort.name}</Field.Label></Field.Field
-          >{/each}
-      </Field.Set>
     </Field.Group>
     {#if api.importResult}
       <p class="text-sm">
@@ -670,29 +671,34 @@
         </div>
       </dl>
     {/if}
-    <h3 class="ui:border-border mt-6 border-b pb-3 text-base font-semibold">{$t('employees.learning_report')}</h3>
+    <div class="ui:border-border mt-6 flex items-center justify-between gap-3 border-b pb-3">
+      <h3 class="text-base font-semibold">{$t('enrollment.employee_courses')}</h3>
+      {#if canManage && api.details}<Button
+          size="sm"
+          variant="outline"
+          onclick={() => openAssign([api.details!.employee.id], api.details!.employee.fullname)}
+          ><BookPlusIcon size={15} />{$t('enrollment.assign_button')}</Button
+        >{/if}
+    </div>
     <Table.Root
       ><Table.Header
         ><Table.Row
-          ><Table.Head>{$t('employees.course')}</Table.Head><Table.Head>{$t('training_assignment.sources')}</Table.Head
-          ><Table.Head>{$t('employees.result')}</Table.Head><Table.Head>{$t('employees.score')}</Table.Head><Table.Head
-            >{$t('employees.due')}</Table.Head
-          ><Table.Head>{$t('employees.completed')}</Table.Head></Table.Row
+          ><Table.Head>{$t('employees.course')}</Table.Head><Table.Head>{$t('enrollment.how_joined')}</Table.Head
+          ><Table.Head>{$t('enrollment.state_label')}</Table.Head><Table.Head>{$t('enrollment.progress')}</Table.Head
+          ><Table.Head>{$t('employees.due')}</Table.Head><Table.Head>{$t('employees.completed')}</Table.Head></Table.Row
         ></Table.Header
       ><Table.Body
-        >{#each api.details?.learning ?? [] as course, index (`${course.courseId}-${index}`)}<Table.Row
-            ><Table.Cell>{course.title}</Table.Cell><Table.Cell>
-              {#each course.learningSources.filter((source) => !source.revokedAt) as source (`${source.kind}:${source.sourceId}`)}
-                <p>
-                  {$t(`training_assignment.source.${source.kind}`)}{source.required
-                    ? ` · ${$t('training_assignment.required')}`
-                    : ''}
-                </p>
-              {/each}
-            </Table.Cell><Table.Cell>{$t(`employees.progress.${course.status ?? 'assigned'}`)}</Table.Cell><Table.Cell
-              >{course.score ?? ''}</Table.Cell
-            ><Table.Cell>{course.dueDate ? new Date(course.dueDate).toLocaleDateString() : ''}</Table.Cell><Table.Cell
-              >{course.completedAt ? new Date(course.completedAt).toLocaleDateString() : ''}</Table.Cell
+        >{#each api.details?.enrollments ?? [] as enrollment (enrollment.id)}<Table.Row
+            ><Table.Cell
+              >{enrollment.courseTitle}{#if enrollment.batchLabel}<p class="ui:text-muted-foreground text-xs">
+                  {enrollment.batchLabel}
+                </p>{/if}</Table.Cell
+            ><Table.Cell>{$t(`enrollment.kind.${enrollment.kind}`)}</Table.Cell><Table.Cell
+              ><EnrollmentStateBadge state={enrollment.state} /></Table.Cell
+            ><Table.Cell>{enrollment.progressPercent}%</Table.Cell><Table.Cell
+              >{enrollment.dueDate ? new Date(enrollment.dueDate).toLocaleDateString($locale) : ''}</Table.Cell
+            ><Table.Cell
+              >{enrollment.completedAt ? new Date(enrollment.completedAt).toLocaleDateString($locale) : ''}</Table.Cell
             ></Table.Row
           >{:else}<Table.Row><Table.Cell colspan={6}>{$t('employees.no_learning')}</Table.Cell></Table.Row
           >{/each}</Table.Body
@@ -757,6 +763,13 @@
     >
   </Dialog.Content>
 </Dialog.Root>
+
+<AssignCoursesModal
+  bind:open={assignOpen}
+  employeeIds={assignEmployeeIds}
+  employeeLabel={assignLabel}
+  onAssigned={afterAssign}
+/>
 
 <style>
   :global(.employee-workspace) {

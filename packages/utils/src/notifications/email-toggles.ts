@@ -24,7 +24,7 @@ export const TUTOR_ONLY_PERSONAL_EMAIL_NOTIFICATION_TOGGLE_KEYS = ['newStudent',
 export type TutorOnlyPersonalEmailNotificationToggleKey =
   (typeof TUTOR_ONLY_PERSONAL_EMAIL_NOTIFICATION_TOGGLE_KEYS)[number];
 
-export type EmailNotificationSectionId = 'course' | 'cohort' | 'enrollment';
+export type EmailNotificationSectionId = 'course' | 'assignment' | 'enrollment';
 
 export type EmailNotificationSection<TKey extends string = EmailNotificationToggleKey> = {
   id: EmailNotificationSectionId;
@@ -37,7 +37,7 @@ export const PERSONAL_EMAIL_NOTIFICATION_SECTIONS: EmailNotificationSection<Pers
     keys: ['newStudent', 'newSubmission', 'gradingResult', 'newsfeed', 'quizAssigned', 'session', 'courseCompletion']
   },
   {
-    id: 'cohort',
+    id: 'assignment',
     keys: ['cohortReminder']
   }
 ];
@@ -48,7 +48,7 @@ export const ORG_EMAIL_NOTIFICATION_SECTIONS: EmailNotificationSection[] = [
     keys: ['newStudent', 'newSubmission', 'gradingResult', 'newsfeed', 'quizAssigned', 'session', 'courseCompletion']
   },
   {
-    id: 'cohort',
+    id: 'assignment',
     keys: ['cohortReminder']
   },
   {
@@ -68,11 +68,11 @@ export const EMAIL_TOGGLE_MAP = {
   newsfeedPost: 'newsfeed',
   newsfeedComment: 'newsfeed',
   quizAssigned: 'quizAssigned',
-  cohortGoalReminder: 'cohortReminder',
+  assignmentDueReminder: 'cohortReminder',
+  recertificationReopened: 'cohortReminder',
   sessionReminder: 'session',
   sessionUpdated: 'session',
   studentCourseWelcome: 'enrollmentWelcome',
-  studentCohortWelcome: 'enrollmentWelcome',
   teacherCourseWelcome: 'enrollmentWelcome',
   studentCourseCompletion: 'courseCompletion'
 } as const satisfies Record<string, EmailNotificationToggleKey>;

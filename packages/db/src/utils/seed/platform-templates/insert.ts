@@ -266,7 +266,6 @@ async function insertLaunchTemplate(orgId: string, fixture: LaunchTemplateFixtur
       title: fixture.title,
       description: fixture.description,
       slug,
-      type: fixture.type,
       bannerImage: fixture.bannerImage,
       groupId: group.id,
       isTemplate: true,
@@ -276,9 +275,7 @@ async function insertLaunchTemplate(orgId: string, fixture: LaunchTemplateFixtur
       isPublished: false,
       status: 'ACTIVE',
       metadata: fixture.metadata as TNewCourse['metadata'],
-      certificate: (fixture.certificate ?? {}) as TNewCourse['certificate'],
-      compliance: fixture.compliance as TNewCourse['compliance'],
-      callout: fixture.callout as TNewCourse['callout']
+      certificate: (fixture.certificate ?? {}) as TNewCourse['certificate']
     },
     dbClient
   );
@@ -318,7 +315,7 @@ async function insertLaunchTemplate(orgId: string, fixture: LaunchTemplateFixtur
           slug: lessonSlugs[index],
           order: index + 1,
           isUnlocked: true,
-          public: fixture.type === 'PUBLIC',
+          public: false,
           videos: videosByLesson[index] ?? []
         })),
         dbClient

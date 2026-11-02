@@ -3,7 +3,8 @@ import { getCourseContentItems, type CourseContentItemRow } from '@cio/db/querie
 import { getCourseOrganizationId } from '@cio/db/queries/tag';
 import { getOrganizationById } from '@cio/db/queries/organization';
 import type { TCourse, TOrganization } from '@cio/db/types';
-import { generateSlug, isPublishedComplianceMissingDeadline } from '@cio/utils/functions';
+import { generateSlug } from '@cio/utils/functions';
+import { isCoursePaid } from '@cio/utils/validation/course';
 import { ContentType } from '@cio/utils/constants';
 import type { TCourseLandingPageUpdate } from '@cio/utils/validation/course';
 
@@ -36,17 +37,7 @@ export type CourseGoLiveReadiness = {
 type CourseReadinessInput = {
   course: Pick<
     TCourse,
-    | 'id'
-    | 'title'
-    | 'description'
-    | 'overview'
-    | 'slug'
-    | 'bannerImage'
-    | 'logo'
-    | 'metadata'
-    | 'type'
-    | 'cost'
-    | 'certificate'
+    'id' | 'title' | 'description' | 'overview' | 'slug' | 'bannerImage' | 'logo' | 'metadata' | 'certificate'
   >;
   contentItems: CourseContentItemRow[];
   suggestedSlug?: string;
@@ -199,31 +190,9 @@ export function evaluateCourseGoLiveReadiness(input: CourseReadinessInput): Cour
     );
   }
 
-  if ((course.cost ?? 0) > 0 && !hasMeaningfulText(course.metadata?.paymentLink)) {
+  if (isCoursePaid(course.metadata) && !hasMeaningfulText(course.metadata?.paymentLink)) {
     warnings.push(
       buildIssue('PAYMENT_LINK_MISSING', 'Add a payment link for this paid course.', 'course.metadata.paymentLink')
-    );
-  }
-
-  if (course.type === 'COMPLIANCE') {
-    if (
-      isPublishedComplianceMissingDeadline({
-        type: course.type,
-        isPublished: true,
-        deadline: course.certificate?.deadline
-      })
-    ) {
-      blockers.push(
-        buildIssue(
-          'COMPLIANCE_DEADLINE_MISSING',
-          'Compliance courses require a completion deadline before they can be published.',
-          'course.certificate.deadline'
-        )
-      );
-    }
-
-    warnings.push(
-      buildIssue('COMPLIANCE_REVIEW_RECOMMENDED', 'Review compliance settings before publishing.', 'course.compliance')
     );
   }
 

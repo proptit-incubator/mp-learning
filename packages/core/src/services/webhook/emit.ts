@@ -196,8 +196,6 @@ export function buildMemberSource(
     method,
     inviteId: ids.inviteId ?? null,
     inviteLinkId: ids.inviteLinkId ?? null,
-    cohortId: ids.cohortId ?? null,
-    programId: ids.programId ?? null,
     apiKeyId: ids.apiKeyId ?? null
   };
 }
@@ -288,23 +286,6 @@ export async function emitCoursePublishWebhookEvent(
   if (!publishChange) return;
 
   await emitCourseWebhookEvent(courseId, publishChange === 'published' ? 'course.published' : 'course.unpublished', {
-    actorProfileId
-  });
-}
-
-export async function emitCohortMemberWebhookEvent(
-  eventType: 'cohort.member.added' | 'cohort.member.removed',
-  organizationId: string,
-  cohortId: string,
-  member: { id: string; profileId: string | null; email: string | null; roleId: number },
-  actorProfileId: string | null = null
-): Promise<void> {
-  await emitWebhookEvent(organizationId, eventType, {
-    cohortId,
-    memberId: member.id,
-    profileId: member.profileId,
-    email: member.email,
-    roleId: member.roleId,
     actorProfileId
   });
 }

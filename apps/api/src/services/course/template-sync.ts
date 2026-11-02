@@ -84,8 +84,6 @@ function toCarrier(course: TCourse): SettingCarrier {
   return {
     description: course.description,
     bannerImage: course.bannerImage,
-    cost: course.cost,
-    currency: course.currency,
     updatedAt: course.updatedAt,
     metadata: (course.metadata ?? null) as SettingMetadata | null,
     certificate: (course.certificate ?? null) as SettingCertificate | null

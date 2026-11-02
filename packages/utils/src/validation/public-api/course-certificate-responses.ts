@@ -10,7 +10,6 @@ export const ZPublicApiCertificateSettingsResponse = z.object({
     .describe('Controls learner downloads only; the download endpoint works either way.'),
   theme: z.string().describe('Falls back to design.templateId when nothing is stored.'),
   design: ZPublicApiCertificateDesign.describe('The default design when nothing is stored.'),
-  deadline: z.iso.datetime({ offset: true }).nullable().describe('null when nothing is stored.'),
   emailMessage: z.string().nullable().describe('null when nothing is stored.')
 });
 

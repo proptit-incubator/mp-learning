@@ -45,6 +45,8 @@ export const JOB_NAMES = {
   notifications: {
     notifyCourseExercise: 'notify-course-exercise',
     sessionReminderScan: 'session-reminder-scan',
+    assignmentDueReminderScan: 'assignment-due-reminder-scan',
+    recertificationExpiryScan: 'recertification-expiry-scan',
     notifyCourseSessionUpdate: 'notify-course-session-update'
   },
   webhooks: {

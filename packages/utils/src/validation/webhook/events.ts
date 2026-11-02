@@ -1,10 +1,6 @@
 import * as z from 'zod';
 
-import {
-  WEBHOOK_COMPLIANCE_TRIGGERS,
-  WEBHOOK_MEMBER_SOURCE_METHODS,
-  type TWebhookEventType
-} from '../../constants/webhook';
+import { WEBHOOK_MEMBER_SOURCE_METHODS, type TWebhookEventType } from '../../constants/webhook';
 
 const organizationInviteInput = z
   .object({
@@ -29,8 +25,6 @@ const memberSourceInput = z
     method: z.enum(WEBHOOK_MEMBER_SOURCE_METHODS),
     inviteId: z.string().nullable(),
     inviteLinkId: z.string().nullable(),
-    cohortId: z.string().nullable(),
-    programId: z.string().nullable(),
     apiKeyId: z.string().nullable()
   })
   .strict();
@@ -117,30 +111,6 @@ const exerciseCompletionInput = z
   })
   .strict();
 
-const complianceRecordInput = z
-  .object({
-    courseId: z.string(),
-    recordId: z.string(),
-    memberId: z.string().nullable(),
-    profileId: z.string(),
-    cycleNumber: z.number(),
-    actorProfileId: z.string().nullable()
-  })
-  .strict();
-
-const complianceStatusChangedInput = complianceRecordInput.extend({
-  status: z.string(),
-  previousStatus: z.string().nullable(),
-  trigger: z.enum(WEBHOOK_COMPLIANCE_TRIGGERS),
-  dueDate: z.string().nullable(),
-  validUntil: z.string().nullable()
-});
-
-const complianceWaivedInput = complianceRecordInput.extend({
-  reason: z.string().nullable(),
-  waiverExpiresAt: z.string().nullable()
-});
-
 const organizationMemberInput = z
   .object({
     memberId: z.string(),
@@ -159,17 +129,6 @@ const organizationMemberUpdatedInput = organizationMemberInput.extend({
 const coursePublishInput = z
   .object({
     courseId: z.string(),
-    actorProfileId: z.string().nullable()
-  })
-  .strict();
-
-const cohortMemberInput = z
-  .object({
-    cohortId: z.string(),
-    memberId: z.string(),
-    profileId: z.string().nullable(),
-    email: z.string().nullable(),
-    roleId: z.number(),
     actorProfileId: z.string().nullable()
   })
   .strict();
@@ -213,15 +172,11 @@ export const ZWebhookEventInput = {
   'course.submission.status_changed': submissionStatusChangedInput,
   'lesson.completion.updated': lessonCompletionInput,
   'exercise.completion.updated': exerciseCompletionInput,
-  'compliance.record.status_changed': complianceStatusChangedInput,
-  'compliance.record.waived': complianceWaivedInput,
   'organization.member.added': organizationMemberInput,
   'organization.member.removed': organizationMemberInput,
   'organization.member.updated': organizationMemberUpdatedInput,
   'course.published': coursePublishInput,
   'course.unpublished': coursePublishInput,
-  'cohort.member.added': cohortMemberInput,
-  'cohort.member.removed': cohortMemberInput,
   'lesson.session.scheduled': lessonSessionInput,
   'course.payment_request.created': paymentRequestInput
 } as const satisfies Record<TWebhookEventType, z.ZodTypeAny>;
@@ -242,17 +197,12 @@ const courseRef = z
     id: z.string(),
     title: z.string().nullable(),
     slug: z.string().nullable(),
-    type: z.string().nullable(),
     isPublished: z.boolean().nullable(),
-    cost: z.number().nullable(),
-    currency: z.string().nullable(),
     tags: z.array(z.string())
   })
   .strict();
 
 const itemRef = z.object({ id: z.string(), title: z.string().nullable() }).strict();
-
-const cohortRef = z.object({ id: z.string(), name: z.string().nullable() }).strict();
 
 const linksRef = z.object({ dashboard: z.string().nullable(), student: z.string().nullable() }).strict();
 
@@ -275,12 +225,13 @@ const exerciseRef = itemRef.extend({
 
 const lessonExerciseRef = itemRef.extend({ section: itemRef.nullable() });
 
-const complianceDetailsRef = z
+const completionRecordRef = z
   .object({
     cycleNumber: z.number(),
-    dueDate: z.string().nullable(),
+    startedAt: z.string().nullable(),
+    completedAt: z.string(),
     validUntil: z.string().nullable(),
-    completedLate: z.boolean().nullable()
+    score: z.number().nullable()
   })
   .strict();
 
@@ -329,10 +280,8 @@ const courseCompletionData = courseCompletionInput.extend({
   enrolledAt: z.string().nullable(),
   startedAt: z.string().nullable(),
   score: z.number().nullable(),
-  attempts: z.number().nullable(),
-  timeSpentMinutes: z.number().nullable(),
   progress: progressRef.nullable(),
-  compliance: complianceDetailsRef.nullable(),
+  completionRecord: completionRecordRef.nullable(),
   links: linksRef
 });
 
@@ -381,20 +330,6 @@ const exerciseCompletionData = exerciseCompletionInput.extend({
   links: linksRef
 });
 
-const complianceStatusChangedData = complianceStatusChangedInput.extend({
-  course: courseRef,
-  student: personRef,
-  actor: personRef.nullable(),
-  links: linksRef
-});
-
-const complianceWaivedData = complianceWaivedInput.extend({
-  course: courseRef,
-  student: personRef,
-  actor: personRef.nullable(),
-  links: linksRef
-});
-
 const organizationMemberData = organizationMemberInput.extend({
   member: personRef,
   role: z.string(),
@@ -411,14 +346,6 @@ const organizationMemberUpdatedData = organizationMemberUpdatedInput.extend({
 
 const coursePublishData = coursePublishInput.extend({
   course: courseRef,
-  actor: personRef.nullable(),
-  links: linksRef
-});
-
-const cohortMemberData = cohortMemberInput.extend({
-  cohort: cohortRef,
-  student: personRef,
-  role: z.string(),
   actor: personRef.nullable(),
   links: linksRef
 });
@@ -455,19 +382,15 @@ export const ZWebhookEventData = {
   'course.submission.status_changed': submissionStatusChangedData,
   'lesson.completion.updated': lessonCompletionData,
   'exercise.completion.updated': exerciseCompletionData,
-  'compliance.record.status_changed': complianceStatusChangedData,
-  'compliance.record.waived': complianceWaivedData,
   'organization.member.added': organizationMemberData,
   'organization.member.removed': organizationMemberData,
   'organization.member.updated': organizationMemberUpdatedData,
   'course.published': coursePublishData,
   'course.unpublished': coursePublishData,
-  'cohort.member.added': cohortMemberData,
-  'cohort.member.removed': cohortMemberData,
   'lesson.session.scheduled': lessonSessionData,
   'course.payment_request.created': paymentRequestData
 } as const satisfies Record<TWebhookEventType, z.ZodTypeAny>;
 
 export type TWebhookEventData<TEvent extends TWebhookEventType> = z.infer<(typeof ZWebhookEventData)[TEvent]>;
 
-export type TCourseWebhookEventType = Exclude<TWebhookEventType, `organization.${string}` | `cohort.${string}`>;
+export type TCourseWebhookEventType = Exclude<TWebhookEventType, `organization.${string}`>;

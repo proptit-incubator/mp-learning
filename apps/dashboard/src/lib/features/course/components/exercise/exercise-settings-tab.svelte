@@ -2,14 +2,12 @@
   import { Switch } from '@cio/ui/base/switch';
   import { Label } from '@cio/ui/base/label';
   import { Button } from '@cio/ui/base/button';
-  import { InputField } from '@cio/ui/custom/input-field';
   import { NumberField } from '@cio/ui/custom/number-field';
   import { questionnaire } from './store';
   import { exerciseApi } from '$features/course/api';
   import { courseApi } from '$features/course/api';
   import { t } from '$lib/utils/functions/translations';
   import { snackbar } from '$features/ui/snackbar/store';
-  import { slugifyTitle } from '@cio/utils/validation';
   import * as Select from '@cio/ui/base/select';
 
   type Props = {
@@ -21,13 +19,6 @@
   let { exerciseId, onBeforeSave = () => true, totalSubmissions = 0 }: Props = $props();
 
   let saving = $state(false);
-  let slug = $state($questionnaire.slug ?? '');
-
-  $effect(() => {
-    slug = $questionnaire.slug ?? '';
-  });
-
-  const isPublicCourse = $derived(courseApi.course?.type === 'PUBLIC');
 
   async function saveSettings() {
     if (!courseApi.course?.id) return;
@@ -39,13 +30,11 @@
     const allowMultipleAttempts = !!$questionnaire.allowMultipleAttempts;
     const completionPolicy = $questionnaire.completionPolicy ?? 'submitted';
     const passThreshold = $questionnaire.passThreshold ?? 100;
-    const slugPayload = isPublicCourse && slug ? slug : undefined;
 
     await exerciseApi.update(courseApi.course.id, exerciseId, {
       allowMultipleAttempts,
       completionPolicy,
-      passThreshold,
-      slug: slugPayload
+      passThreshold
     });
     saving = false;
 
@@ -135,21 +124,6 @@
       </div>
     {/if}
   </div>
-
-  {#if isPublicCourse}
-    <div class="rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
-      <InputField
-        label={$t('course.navItem.settings.slug.label')}
-        helperMessage={$t('course.navItem.settings.slug.description')}
-        value={slug}
-        placeholder={slugifyTitle($questionnaire.title ?? '')}
-        onInput={(e) => {
-          slug = e.currentTarget.value;
-        }}
-        errorMessage={exerciseApi.errors.slug}
-      />
-    </div>
-  {/if}
 
   <Button onclick={saveSettings} loading={saving} disabled={!courseApi.course?.id}>
     {$t('course.navItem.lessons.exercises.all_exercises.settings_save')}

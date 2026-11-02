@@ -47,15 +47,11 @@
   import Submissions from '$features/course/components/exercise/submissions/submissions.svelte';
   import UpdateDescription from '$features/course/components/exercise/update-description.svelte';
   import { ContentNavigationActions } from '$features/course/components/lesson';
-  import { PublicConversionBanner } from '$features/course/components';
-  import { publicConversionFlow } from '$features/course/store/public-conversion.svelte';
-  import { getManualQuestionsFromList } from '$features/course/utils/public-conversion-utils';
   import {
     // RefreshPageData,
     RoleBasedSecurity,
     UnsavedChanges
   } from '$features/ui';
-  import { isSelfPacedLikeCourse } from '$features/course/utils/compliance-utils';
   import { getOrderedNavigableContent } from '$features/course/utils/content';
   import { saveExerciseDraft } from '$features/course/utils/exercise-draft';
   import { onUpgradeCheckoutHandoff } from '$lib/utils/store/upgrade-modal';
@@ -482,17 +478,6 @@
         if (!silent) {
           snackbar.success('snackbar.exercise.success');
         }
-
-        if (publicConversionFlow.isActive && publicConversionFlow.courseId === courseApi.course?.id) {
-          const activeQuestions = getActiveExerciseQuestions($questionnaire.questions ?? []);
-          const manualQuestions = getManualQuestionsFromList(activeQuestions);
-          const exerciseTitle =
-            exerciseApi.exercise?.title ||
-            $questionnaire.title ||
-            t.get('course.navItem.settings.public_conversion.untitled_exercise');
-
-          publicConversionFlow.syncExerciseQuestions(exerciseId, manualQuestions, exerciseTitle);
-        }
         isSaving = false;
         return true;
       }
@@ -525,12 +510,6 @@
       hasUnsavedChanges = false;
     })
   );
-
-  $effect(() => {
-    if (courseApi.course?.id) {
-      publicConversionFlow.restoreForCourse(courseApi.course.id);
-    }
-  });
 
   $effect(() => {
     const nextTab = normalizeExerciseTab(page.url.searchParams.get('tab'));
@@ -631,7 +610,6 @@
       t.get('course.navItem.lessons.exercises.all_exercises.heading')
   );
 
-  const isPublicCourse = $derived(courseApi.course?.type === 'PUBLIC');
   const activeQuestionTypeIds = $derived(
     ($questionnaire.questions ?? []).filter((q) => !q.deletedAt).map((q) => getQuestionTypeId(q))
   );
@@ -645,7 +623,7 @@
   const requiresPositivePointsForAutoGrade = $derived(isFullyAutoGradable);
 
   const teacherAutoGradeBadge = $derived.by(() => {
-    if ($isOrgStudent || isPublicCourse || activeQuestionTypeIds.length === 0) return null;
+    if ($isOrgStudent || activeQuestionTypeIds.length === 0) return null;
     return isFullyAutoGradable ? ('auto' as const) : ('manual' as const);
   });
 
@@ -689,13 +667,9 @@
     preview = !preview;
     reorderQuestions = false;
   }
-
-  const isConversionActive = $derived(
-    publicConversionFlow.isActive && publicConversionFlow.courseId === courseApi.course?.id
-  );
 </script>
 
-<Page.Header isSticky={!isConversionActive} class={`min-h-9 ${isConversionActive ? '' : 'ui:z-app-bar top-12!'}`}>
+<Page.Header isSticky class="ui:z-app-bar top-12! min-h-9">
   <Page.HeaderContent>
     <Page.Title class="flex flex-col gap-2">
       <span>{exerciseDisplayTitle}</span>
@@ -822,18 +796,6 @@
   </Page.Action>
 </Page.Header>
 
-{#if !$isStudentExperience}
-  <PublicConversionBanner
-    {exerciseId}
-    onJumpToQuestion={() => {
-      selectedTab = 'questions';
-      preview = false;
-      reorderQuestions = false;
-    }}
-    onSave={handleSave}
-  />
-{/if}
-
 <Page.Body>
   {#snippet child()}
     <div class="overflow-x-hidden pb-20">
@@ -864,13 +826,7 @@
           <UnderlineTabs.Content value="questions" class="mx-auto w-full md:max-w-3xl">
             <UpdateDescription {preview} />
             {#if !preview}
-              <EditMode
-                {exerciseId}
-                {goBack}
-                {requiresPositivePointsForAutoGrade}
-                {isPublicCourse}
-                {reorderQuestions}
-              />
+              <EditMode {exerciseId} {goBack} {requiresPositivePointsForAutoGrade} {reorderQuestions} />
             {:else}
               <ViewMode {preview} {exerciseId} isFetchingExercise={isFetching} {mySubmissions} />
             {/if}

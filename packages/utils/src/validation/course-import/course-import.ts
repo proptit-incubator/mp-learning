@@ -1,7 +1,6 @@
 import * as z from 'zod';
 
-import { ZComplianceSettings, ZCourseMetadata } from '../course/course';
-import { ZCourseType } from '../course/course-type';
+import { ZCourseMetadata } from '../course/course';
 import { ZExerciseQuestionTypeId } from '../exercise/exercise';
 import { ZLessonVideoItem } from '../lesson/lesson';
 
@@ -26,19 +25,12 @@ export const ZCourseImportSourceReference = z.object({
 });
 export type TCourseImportSourceReference = z.infer<typeof ZCourseImportSourceReference>;
 
-export const ZCourseImportDraftCourse = z
-  .object({
-    title: z.string().min(1),
-    description: z.string().min(1),
-    type: ZCourseType,
-    locale: ZSupportedLocale.default('en'),
-    metadata: ZCourseMetadata.optional(),
-    compliance: ZComplianceSettings.optional()
-  })
-  .refine((data) => data.type !== 'COMPLIANCE' || data.compliance !== undefined, {
-    message: 'Compliance settings are required for COMPLIANCE courses',
-    path: ['compliance']
-  });
+export const ZCourseImportDraftCourse = z.object({
+  title: z.string().min(1),
+  description: z.string().min(1),
+  locale: ZSupportedLocale.default('en'),
+  metadata: ZCourseMetadata.optional()
+});
 export type TCourseImportDraftCourse = z.infer<typeof ZCourseImportDraftCourse>;
 
 export const ZCourseImportDraftSection = z.object({
@@ -360,21 +352,13 @@ export type TCourseImportDraftUpdate = z.infer<typeof ZCourseImportDraftUpdate>;
 export const ZCourseImportDraftPublishBase = z.object({
   title: z.string().min(1).optional(),
   description: z.string().min(1).optional(),
-  type: ZCourseType.optional(),
   metadata: ZCourseMetadata.optional(),
-  compliance: ZComplianceSettings.optional(),
   bannerImageUrl: z.string().url().optional(),
   bannerImageQuery: z.string().min(1).max(120).optional(),
   generateBannerImage: z.boolean().optional()
 });
 
-export const ZCourseImportDraftPublish = ZCourseImportDraftPublishBase.refine(
-  (data) => data.type !== 'COMPLIANCE' || data.compliance !== undefined,
-  {
-    message: 'Compliance settings are required for COMPLIANCE courses',
-    path: ['compliance']
-  }
-);
+export const ZCourseImportDraftPublish = ZCourseImportDraftPublishBase;
 export type TCourseImportDraftPublish = z.infer<typeof ZCourseImportDraftPublish>;
 
 export const ZCourseImportDraftPublishToCourseBase = ZCourseImportDraftPublishBase.extend({
@@ -382,11 +366,5 @@ export const ZCourseImportDraftPublishToCourseBase = ZCourseImportDraftPublishBa
   syncMode: z.enum(['merge', 'replace']).default('merge')
 });
 
-export const ZCourseImportDraftPublishToCourse = ZCourseImportDraftPublishToCourseBase.refine(
-  (data) => data.type !== 'COMPLIANCE' || data.compliance !== undefined,
-  {
-    message: 'Compliance settings are required for COMPLIANCE courses',
-    path: ['compliance']
-  }
-);
+export const ZCourseImportDraftPublishToCourse = ZCourseImportDraftPublishToCourseBase;
 export type TCourseImportDraftPublishToCourse = z.infer<typeof ZCourseImportDraftPublishToCourse>;

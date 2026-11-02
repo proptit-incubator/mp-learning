@@ -60,7 +60,6 @@ export type LaunchTemplateFixture = {
   slug: string;
   title: string;
   description: string;
-  type: 'SELF_PACED' | 'PUBLIC' | 'COMPLIANCE';
   bannerImage: string;
   metadata: Record<string, unknown>;
   certificate?: Record<string, unknown>;
@@ -129,7 +128,6 @@ const customerOnboarding: LaunchTemplateFixture = {
   title: 'Customer Onboarding Academy',
   description:
     'A self-paced academy that takes a new customer from first login to a working workflow, with a certificate at the end.',
-  type: 'SELF_PACED',
   bannerImage: templateBanner('customer-onboarding-academy'),
   metadata: {
     skills: [
@@ -531,7 +529,6 @@ const productTraining: LaunchTemplateFixture = {
   slug: 'product-training-power-user',
   title: 'Product Training: Power User Path',
   description: 'A deeper path for admins and analysts, with a branch, a French translation, and tutor-graded answers.',
-  type: 'SELF_PACED',
   bannerImage: templateBanner('product-training-power-user'),
   metadata: {
     skills: [
@@ -931,7 +928,6 @@ const publicMiniCourse: LaunchTemplateFixture = {
   slug: 'customer-education-101',
   title: 'Customer Education 101',
   description: 'A free public mini course for prospects. No signup. Each lesson ends with a short quiz.',
-  type: 'PUBLIC',
   bannerImage: templateBanner('customer-education-101'),
   metadata: {
     skills: [
@@ -1336,7 +1332,6 @@ const chatgptWork: LaunchTemplateFixture = {
   title: 'Getting Started with ChatGPT Work',
   description:
     'Learn to use ChatGPT Work for real tasks: connect your apps, reuse skills, schedule work, create docs and slides, and work from your phone. Built on OpenAI’s official video series.',
-  type: 'SELF_PACED',
   bannerImage: templateBanner('getting-started-with-chatgpt-work'),
   metadata: {
     skills: [
@@ -1828,7 +1823,6 @@ const aiFluency: LaunchTemplateFixture = {
   title: 'AI Fluency: Framework & Foundations',
   description:
     'Build practical AI fluency with the 4D framework: Delegation, Description, Discernment, and Diligence. Built on the AI Fluency course videos from Anthropic, Prof. Rick Dakan, and Prof. Joseph Feller.',
-  type: 'SELF_PACED',
   bannerImage: templateBanner('ai-fluency-framework-foundations'),
   metadata: {
     skills: ['Delegation', 'Description', 'Discernment', 'Diligence', 'Effective prompting', 'Evaluating AI output'],
@@ -2384,7 +2378,6 @@ const hubspotSalesHub: LaunchTemplateFixture = {
   title: 'HubSpot Sales Hub Essentials',
   description:
     'Get productive in HubSpot Sales Hub: manage leads, write cold emails with templates and sequences, run a consistent sales process, and coach with call recordings. Built on HubSpot Academy’s official videos.',
-  type: 'SELF_PACED',
   bannerImage: templateBanner('hubspot-sales-hub-essentials'),
   metadata: {
     skills: [
@@ -2818,7 +2811,6 @@ const salesforceCpq: LaunchTemplateFixture = {
   title: 'Salesforce CPQ Admin Essentials',
   description:
     'Short, practical demos for Salesforce admins: bundles, product rules, guided selling, subscriptions, multi-dimensional quoting, contracted pricing, approvals, and quote documents. Built on Salesforce’s official micro demos.',
-  type: 'SELF_PACED',
   bannerImage: templateBanner('salesforce-cpq-admin-essentials'),
   metadata: {
     skills: [

@@ -45,13 +45,12 @@ export class EmployeesApi extends BaseApiWithErrors {
   learningFilters = $state<EmployeeLearningFilters>({});
   search = $state('');
   department = $state('');
+  jobTitle = $state('');
   status = $state<EmployeeStatus | ''>('');
   page = $state(1);
   importRows = $state<EmployeeImportRow[]>([]);
   importResult = $state<ImportResult | null>(null);
   importSend = $state(true);
-  importCourseIds = $state<string[]>([]);
-  importCohortIds = $state<string[]>([]);
   importOpen = $state(false);
   importing = $state(false);
   exporting = $state(false);
@@ -84,6 +83,7 @@ export class EmployeesApi extends BaseApiWithErrors {
       profileId: this.profileId,
       search: this.search,
       department: this.department,
+      jobTitle: this.jobTitle || undefined,
       status,
       page: String(this.page),
       limit: '25'
@@ -255,9 +255,7 @@ export class EmployeesApi extends BaseApiWithErrors {
   async runImport(preview: boolean) {
     const rows = this.importRows.map((row) => ({
       ...row,
-      sendActivation: this.importSend,
-      courseIds: this.importCourseIds,
-      cohortIds: this.importCohortIds
+      sendActivation: this.importSend
     }));
     this.importing = true;
     try {

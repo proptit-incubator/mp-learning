@@ -5,24 +5,6 @@ import { PUBLIC_API_COURSE_ANALYTICS_SECTIONS, PUBLIC_API_ORG_ANALYTICS_SECTIONS
 const timestamp = z.string();
 const nullableTimestamp = z.string().nullable();
 
-const COMPLIANCE_STATUSES = [
-  'compliant',
-  'expiring_soon',
-  'in_grace_period',
-  'non_compliant',
-  'waived',
-  'in_progress',
-  'not_started',
-  'no_record'
-] as const;
-
-const complianceCounts = z.object(
-  Object.fromEntries(COMPLIANCE_STATUSES.map((status) => [status, z.number()])) as Record<
-    (typeof COMPLIANCE_STATUSES)[number],
-    z.ZodNumber
-  >
-);
-
 export const ZPublicApiAnalyticsOverviewResponse = z.object({
   totalCertificates: z.number(),
   numberOfCourses: z.number(),
@@ -81,14 +63,6 @@ export const ZPublicApiAnalyticsFunnelResponse = z.object({
   )
 });
 
-export const ZPublicApiAnalyticsCourseTypeResponse = z.object({
-  type: z.string(),
-  enrollments: z.number(),
-  views: z.number(),
-  completions: z.number(),
-  courseCount: z.number()
-});
-
 export const ZPublicApiAnalyticsTopCourseResponse = z.object({
   courseId: z.string().uuid(),
   title: z.string(),
@@ -98,37 +72,6 @@ export const ZPublicApiAnalyticsTopCourseResponse = z.object({
 export const ZPublicApiLoginActivityResponse = z.object({
   day: z.enum(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']),
   count: z.number()
-});
-
-export const ZPublicApiComplianceOverviewResponse = z.object({
-  summary: z.object({
-    totalLearners: z.number(),
-    totalCourses: z.number(),
-    counts: complianceCounts
-  }),
-  courses: z.array(
-    z.object({
-      courseId: z.string().uuid(),
-      courseTitle: z.string(),
-      learnerCount: z.number(),
-      counts: complianceCounts
-    })
-  )
-});
-
-export const ZPublicApiComplianceLearnerResponse = z.object({
-  groupMemberId: z.string().uuid(),
-  profileId: z.string().uuid().nullable(),
-  fullname: z.string().nullable(),
-  email: z.string().nullable(),
-  avatarUrl: z.string().nullable(),
-  courseId: z.string().uuid(),
-  courseTitle: z.string(),
-  status: z.enum(COMPLIANCE_STATUSES),
-  cycleNumber: z.number().nullable(),
-  dueDate: nullableTimestamp,
-  completedAt: nullableTimestamp,
-  validUntil: nullableTimestamp
 });
 
 const ZExerciseStat = z.object({
@@ -156,7 +99,6 @@ export const ZPublicApiLearnerAnalyticsResponse = z.object({
     z.object({
       id: z.string().uuid(),
       title: z.string(),
-      type: z.string().nullable(),
       lessonsCount: z.number(),
       lessonsCompleted: z.number(),
       exercisesCount: z.number(),
@@ -167,7 +109,6 @@ export const ZPublicApiLearnerAnalyticsResponse = z.object({
         .describe('True when progress could not be loaded; the course is left out of overall progress'),
       averageGrade: z.number().nullable(),
       certificateEarnedAt: nullableTimestamp,
-      complianceStatus: z.string().nullable(),
       exercises: z.array(ZExerciseStat).nullable().describe('null when exercise stats could not be loaded')
     })
   )
@@ -208,10 +149,8 @@ export const ZPublicApiOrgAnalyticsResponse = z
     traffic: ZPublicApiAnalyticsTrafficResponse.optional(),
     countries: z.array(ZPublicApiAnalyticsCountryResponse).optional(),
     funnel: ZPublicApiAnalyticsFunnelResponse.optional(),
-    courseTypes: z.array(ZPublicApiAnalyticsCourseTypeResponse).optional(),
     topCourses: z.array(ZPublicApiAnalyticsTopCourseResponse).optional(),
-    loginActivity: z.array(ZPublicApiLoginActivityResponse).optional(),
-    compliance: ZPublicApiComplianceOverviewResponse.optional()
+    loginActivity: z.array(ZPublicApiLoginActivityResponse).optional()
   })
   .describe('Only the requested sections the caller may see are present');
 

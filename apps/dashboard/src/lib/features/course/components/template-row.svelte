@@ -3,7 +3,7 @@
   import { TemplateCard, DEFAULT_COURSE_BANNER_IMAGE } from '@cio/ui';
   import { ChevronsUpDownIcon } from '@cio/ui/custom/moving-icons';
   import { courseTemplateApi } from '$features/course/api';
-  import { templateCardSubtitle, templateTypeBadge } from '$features/course/utils/template-display';
+  import { templateCardSubtitle } from '$features/course/utils/template-display';
   import { t } from '$lib/utils/functions/translations';
   import { currentOrg, currentOrgPath, isOrgAdmin } from '$lib/utils/store/org';
   import { onDestroy } from 'svelte';
@@ -86,7 +86,6 @@
               subtitle={templateCardSubtitle(template.lastUsedAt, orgIds.has(template.id), $t)}
               imageUrl={template.bannerImage || DEFAULT_COURSE_BANNER_IMAGE}
               imageAlt={template.title}
-              typeBadge={templateTypeBadge(template.type, $t)}
               onclick={() => goto(galleryHref(template.id))}
             />
           </div>

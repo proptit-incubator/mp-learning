@@ -105,7 +105,6 @@ async function shapeCourse() {
     .set({
       title: 'Live Leadership Cohort',
       description: 'A four-week live cohort for new team leads, with a weekly session and recordings of each one.',
-      type: 'LIVE_CLASS',
       isPublished: true,
       metadata
     })

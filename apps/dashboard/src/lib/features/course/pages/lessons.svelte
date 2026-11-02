@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { courseHasLiveSession } from '$features/course/utils/live-session';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { Empty } from '@cio/ui/custom/empty';
@@ -48,7 +49,7 @@
   const sectionsTotal = $derived(
     contentData.grouped ? contentData.sections.filter((section) => section.id !== 'ungrouped').length : 0
   );
-  const isLiveCourse = $derived(courseApi.course?.type === 'LIVE_CLASS');
+  const isLiveCourse = $derived(courseHasLiveSession(courseApi.course));
   const lessonsTotal = $derived(contentItems.filter((item) => item.type === ContentType.Lesson).length);
   const exercisesTotal = $derived(contentItems.filter((item) => item.type === ContentType.Exercise).length);
 

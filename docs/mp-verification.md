@@ -36,7 +36,7 @@ Node kiểm tra là 24.14.0; repository yêu cầu 24.22.1 nên trình quản l�
 
 - Build dependency dashboard (bao gồm DB, utils, core và API): đạt.
 - Build dashboard production với `NODE_OPTIONS=--max-old-space-size=8192`: đạt; heap mặc định không đủ cho bundle hiện tại.
-- 54 kiểm thử liên quan: 28 dashboard (ưu tiên khóa học, tìm kiếm tiếng Việt, trạng thái tuân thủ và route nội bộ), 19 API (đăng ký nội bộ, chặn endpoint công khai), 7 kiểm tra hợp đồng tìm kiếm thư viện: đạt.
+- 54 kiểm thử liên quan: 28 dashboard (ưu tiên khóa học, tìm kiếm tiếng Việt, trạng thái khóa được giao và route nội bộ), 19 API (đăng ký nội bộ, chặn endpoint công khai), 7 kiểm tra hợp đồng tìm kiếm thư viện: đạt.
 - Story ScrollToTop biên dịch thành công, không có cảnh báo của Svelte compiler.
 - Changed-file formatter, kiểm tra định dạng toàn bộ file thay đổi, `git diff --check` và kiểm tra prefix UI: đạt. `pnpm format:check` cũng được chạy; không có file staged.
 - Các khóa dịch mới có đủ 12 locale; placeholder được đối chiếu với tiếng Anh. `pnpm translate vi` hoàn tất và không còn khóa mới bị thiếu.

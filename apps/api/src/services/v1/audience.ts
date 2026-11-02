@@ -40,7 +40,6 @@ export async function createAudienceService(
       recipientCsv: payload.email,
       courseIds: payload.courseIds,
       allCourses: false,
-      allCohorts: false,
       sendEmail: payload.sendEmail
     },
     actorId,

@@ -17,7 +17,6 @@ type ApiHeaders = ReturnType<typeof getApiHeaders>;
 function toOrganizationCoursesApiQuery(filters: CourseListFilters, page: number) {
   const tags = filters.tags.length > 0 ? filters.tags.join(',') : undefined;
   const search = filters.search || undefined;
-  const type = filters.courseType !== 'all' ? filters.courseType : undefined;
   const status = filters.publishedStatus === 'all' ? undefined : filters.publishedStatus;
   const sort = filters.sortKey;
   const order = filters.order;
@@ -27,7 +26,6 @@ function toOrganizationCoursesApiQuery(filters: CourseListFilters, page: number)
     limit: String(ORG_COURSES_PAGE_SIZE),
     search,
     tags,
-    type,
     status,
     sort,
     order

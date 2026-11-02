@@ -8,7 +8,6 @@ import {
 import { resolveReportTarget, type ResolvedReportTarget } from '@cio/db/queries/report/targets';
 import { getOrganizationById } from '@cio/db/queries/organization';
 import { isUserCourseMemberOrOrgAdmin } from '@cio/db/queries/group';
-import { isCohortMember, isOrgAdminByCohortId } from '@cio/db/queries/cohort';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { isUniqueConstraintViolation } from '@cio/utils/errors';
 import { enqueueTransactionalEmail } from '@api/services/jobs/email-jobs';
@@ -66,19 +65,6 @@ async function canReporterAccessTarget(input: {
       }
 
       return isUserCourseMemberOrOrgAdmin(input.target.courseId, input.reporterId);
-    }
-    case 'cohort_newsfeed_post':
-    case 'cohort_newsfeed_comment': {
-      if (!input.target.cohortId) {
-        return false;
-      }
-
-      const [member, isOrgAdmin] = await Promise.all([
-        isCohortMember(input.target.cohortId, input.reporterId),
-        isOrgAdminByCohortId(input.target.cohortId, input.reporterId)
-      ]);
-
-      return member || isOrgAdmin;
     }
     case 'community_question':
     case 'community_answer':

@@ -53,7 +53,6 @@
         isDownloadable: course.certificate?.isDownloadable ?? false,
         theme: parseCertificateThemeId(course.certificate?.theme),
         design: course.certificate?.design ?? null,
-        deadline: course.certificate?.deadline ?? null,
         emailMessage: course.certificate?.emailMessage ?? null
       }
     };
@@ -98,7 +97,6 @@
         isDownloadable: courseApi.course.certificate?.isDownloadable ?? false,
         theme: certificateTheme || 'classique',
         design: courseApi.course.certificate?.design,
-        deadline: courseApi.course.certificate?.deadline ?? null,
         emailMessage: courseApi.course.certificate?.emailMessage ?? null
       }
     };

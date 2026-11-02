@@ -46,7 +46,6 @@
     updateCourseCompletionModal,
     closeCourseCompletionModal
   } from '$features/course/store/course-completion-modal';
-  import { isSelfPacedLikeCourse } from '$features/course/utils/compliance-utils';
   import { toExerciseQuestionModel } from './question-type-utils';
   import { getExerciseQuestionLabels } from './question-labels';
   import { getExerciseSectionDisplayTitle } from '$features/course/utils/exercise-section-utils';
@@ -1000,13 +999,6 @@
                 </Alert.Root>
               {/if}
             </div>
-          {:else if isSelfPacedLikeCourse(courseApi.course?.type)}
-            <Badge
-              variant="success"
-              title={$t('course.navItem.lessons.exercises.all_exercises.view_mode.status_submitted')}
-            >
-              {$t('course.navItem.lessons.exercises.all_exercises.view_mode.submitted')}
-            </Badge>
           {:else}
             <Badge
               variant="warning"

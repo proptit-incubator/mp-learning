@@ -13,7 +13,6 @@
   import CourseCover from './course-cover.svelte';
   import { locale, t } from '$lib/utils/functions/translations';
   import { buildCoursePlaceholderAvatarUrl } from '$features/course/utils/course-list-row-utils';
-  import CoursePublicBadge from './course-public-badge.svelte';
   import CourseContextMenuContent from './course-context-menu-content.svelte';
   import CourseContentIcon from './course-content-icon.svelte';
 
@@ -76,8 +75,6 @@
 
   const titleInitial = $derived(title.trim().charAt(0).toUpperCase() || 'C');
 
-  const showPublicCourseLinks = $derived(isPublished && type === 'PUBLIC' && slug.trim().length > 0);
-
   const hidden = $derived(new Set<string>(hiddenColumns));
 
   const MAX_VISIBLE_TAGS = 3;
@@ -88,9 +85,7 @@
   const remainingTagCount = $derived(Math.max(0, tags.length - MAX_VISIBLE_TAGS));
   const remainingMobileTagCount = $derived(Math.max(0, tags.length - MAX_MOBILE_VISIBLE_TAGS));
 
-  const showActionsColumn = $derived(
-    !hidden.has('actions') && (!isLMS || (isLMS && showPublicCourseLinks) || (isLMS && isExplore))
-  );
+  const showActionsColumn = $derived(!hidden.has('actions') && (!isLMS || isExplore));
 
   const gridTemplateColumns = $derived(
     COLUMN_TRACKS.filter(([key]) => {
@@ -273,9 +268,6 @@
           >
             {title}
           </p>
-          {#if type === 'PUBLIC'}
-            <CoursePublicBadge class="shrink-0 px-1.5! text-[9.5px]! @3xl:px-2! @3xl:text-xs!" />
-          {/if}
 
           {#if !hidden.has('published')}
             <div class="@3xl:hidden">
@@ -402,29 +394,16 @@
               {/snippet}
             </DropdownMenu.Trigger>
             <DropdownMenu.Content align="end">
-              {#if isLMS}
-                <CourseContextMenuContent
-                  {id}
-                  {title}
-                  {description}
-                  {isPublished}
-                  courseType={type}
-                  {slug}
-                  lmsPublicQuickOnly={true}
-                />
-              {:else}
-                <CourseContextMenuContent
-                  {id}
-                  {title}
-                  {description}
-                  {isPublished}
-                  courseType={type}
-                  {slug}
-                  includeOpen={true}
-                  hideOrgActions={false}
-                  studentCount={totalStudents}
-                />
-              {/if}
+              <CourseContextMenuContent
+                {id}
+                {title}
+                {description}
+                {isPublished}
+                {slug}
+                includeOpen={true}
+                hideOrgActions={false}
+                studentCount={totalStudents}
+              />
             </DropdownMenu.Content>
           </DropdownMenu.Root>
         {/if}

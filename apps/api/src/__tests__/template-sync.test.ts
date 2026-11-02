@@ -62,8 +62,6 @@ function carrier(overrides: Partial<SettingCarrier> = {}): SettingCarrier {
   return {
     description: 'About',
     bannerImage: null,
-    cost: 0,
-    currency: 'USD',
     updatedAt: beforeCourse,
     metadata: { progressionMode: 'free' },
     certificate: {},

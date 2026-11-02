@@ -635,10 +635,8 @@ async function buildCourseStructureSnapshot(orgId: string, courseId: string): Pr
     course: {
       title: course.title,
       description: course.description,
-      type: course.type,
       locale: fallbackLocale,
-      metadata: course.metadata,
-      compliance: course.compliance ?? undefined
+      metadata: course.metadata
     },
     tags: tags.map((tag) => tag.name),
     sections: normalizedSections,
@@ -858,19 +856,13 @@ export async function publishCourseImportDraftService(
     const draft = parseStoredDraft(existing);
     const courseTitle = overrides.title ?? draft.course.title;
     const courseDescription = overrides.description ?? draft.course.description;
-    const courseType = overrides.type ?? draft.course.type;
     const courseMetadata = overrides.metadata ?? draft.course.metadata;
-    const courseCompliance = overrides.compliance ?? draft.course.compliance;
     const courseUpdateFields: Partial<TCourse> = {
       title: courseTitle,
-      description: courseDescription,
-      type: courseType
+      description: courseDescription
     };
     if (courseMetadata) {
       courseUpdateFields.metadata = courseMetadata;
-    }
-    if (courseCompliance) {
-      courseUpdateFields.compliance = courseCompliance;
     }
 
     const sectionExternalIds = new Set(draft.sections.map((section) => section.externalId));
@@ -899,9 +891,7 @@ export async function publishCourseImportDraftService(
         {
           title: courseTitle,
           description: courseDescription,
-          type: courseType,
-          organizationId: orgId,
-          compliance: courseCompliance
+          organizationId: orgId
         },
         'import'
       );
@@ -1035,18 +1025,14 @@ export async function publishCourseImportDraftToExistingCourseService(
     const syncMode = overrides.syncMode ?? 'merge';
     const courseTitle = overrides.title ?? draft.course.title;
     const courseDescription = overrides.description ?? draft.course.description;
-    const courseType = overrides.type ?? draft.course.type;
     const courseMetadata = overrides.metadata ?? draft.course.metadata;
-    const courseCompliance = overrides.compliance ?? draft.course.compliance;
     const preferredLocale = draft.course.locale as TLocale;
     const bannerImageUrl = await resolvePublishBannerImage(courseTitle, overrides);
 
     await updateCourse(course.id, {
       title: courseTitle,
       description: courseDescription,
-      type: courseType,
-      metadata: courseMetadata,
-      compliance: courseCompliance
+      metadata: courseMetadata
     });
 
     await maybeApplyCourseBannerImage(course.id, bannerImageUrl);

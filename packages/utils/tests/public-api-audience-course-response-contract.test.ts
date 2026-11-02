@@ -13,7 +13,6 @@ import {
   ZPublicApiCreateCourseResponse,
   ZPublicApiIssuedCertificateListItemResponse,
   ZPublicApiRemoveAudienceMemberResponse,
-  ZPublicApiUpdateCourseEnvelope,
   ZPublicApiUpdateCourseStructureResponse
 } from '../src/validation/public-api';
 
@@ -27,7 +26,6 @@ const responseSchemas = {
   ZPublicApiCourseListItemResponse,
   ZPublicApiCourseDetailResponse,
   ZPublicApiCreateCourseResponse,
-  ZPublicApiUpdateCourseEnvelope,
   ZPublicApiCourseStructureResponse,
   ZPublicApiUpdateCourseStructureResponse,
   ZPublicApiCertificateSettingsResponse,

@@ -11,6 +11,8 @@ vi.mock('@api/services/jobs', async (importOriginal) => {
   return { ...original, enqueueTransactionalEmail: vi.fn(async () => ({ jobIds: ['test-email'] })) };
 });
 
+vi.mock('@cio/core/utils/redis/org-stats-cache', () => ({ invalidateOrgStats: vi.fn() }));
+
 const testDatabaseUrl = process.env.EMPLOYEE_TEST_DATABASE_URL;
 const integration = testDatabaseUrl ? describe : describe.skip;
 
@@ -21,6 +23,8 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
   let auth: (typeof import('@cio/db/auth'))['auth'];
   let resolveSignIn: (typeof import('@api/utils/employee-sign-in'))['resolveEmployeeSignInRequest'];
   let mail: typeof import('@cio/email');
+  let enrollment: typeof import('@api/services/course/enrollment');
+  let enrollmentQueries: typeof import('@cio/db/queries/course/enrollment');
   const organizationId = randomUUID();
   const otherOrgId = randomUUID();
   const administratorId = randomUUID();
@@ -45,6 +49,8 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
     auth = (await import('@cio/db/auth')).auth;
     resolveSignIn = (await import('@api/utils/employee-sign-in')).resolveEmployeeSignInRequest;
     mail = await import('@cio/email');
+    enrollment = await import('@api/services/course/enrollment');
+    enrollmentQueries = await import('@cio/db/queries/course/enrollment');
     await database.db
       .insert(database.role)
       .values([
@@ -97,8 +103,6 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
       managerId: null,
       startDate: '',
       role: 'EMPLOYEE',
-      courseIds: [],
-      cohortIds: [],
       sendActivation: false,
       ...overrides
     });
@@ -114,8 +118,21 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
     return match[1];
   }
 
-  async function activateDraft(overrides: Partial<Parameters<typeof services.createEmployee>[2]> = {}) {
+  async function assign(courseIds: string[], employeeIds: string[]) {
+    return enrollment.assignCourses(organizationId, administratorId, {
+      courseIds,
+      employeeIds,
+      message: '',
+      sendEmail: false
+    });
+  }
+
+  async function activateDraft(
+    overrides: Partial<Parameters<typeof services.createEmployee>[2]> = {},
+    courseIds: string[] = []
+  ) {
     const created = await draft({ ...overrides, sendActivation: true });
+    if (courseIds.length) await assign(courseIds, [created.employee.id]);
     const token = activationToken();
     await services.activateEmployee(token, 'Employee-password-2026');
     const identity = await queries.findEmployeeAccount(created.employee.email, organizationId);
@@ -140,8 +157,6 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
         jobTitle: '',
         managerId: null,
         startDate: '',
-        courseIds: [],
-        cohortIds: [],
         sendActivation: false
       })
     ).rejects.toThrow('employees.errors.forbidden');
@@ -248,7 +263,22 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
     await expect(services.getEmployeeDetails(otherOrgId, administratorId, report.employee.id)).rejects.toThrow(
       'employees.errors.forbidden'
     );
-    await expect(draft({ courseIds: [randomUUID()] })).rejects.toThrow('employees.errors.assignment');
+    await expect(
+      enrollment.assignCourses(organizationId, administratorId, {
+        courseIds: [randomUUID()],
+        employeeIds: [report.employee.id],
+        message: '',
+        sendEmail: false
+      })
+    ).rejects.toThrow('Course unavailable');
+    await expect(
+      enrollment.assignCourses(organizationId, manager.profileId, {
+        courseIds: [randomUUID()],
+        employeeIds: [report.employee.id],
+        message: '',
+        sendEmail: false
+      })
+    ).rejects.toMatchObject({ statusCode: 403 });
     const duplicateEmail = `duplicate-${organizationId}@example.com`;
     await expect(draft({ employeeCode: outsider.employee.employeeCode, email: duplicateEmail })).rejects.toThrow();
     const orphan = await queries.findEmployeeAccount(duplicateEmail, organizationId);
@@ -279,7 +309,8 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
     await database.db
       .insert(database.course)
       .values({ id: courseId, title: 'Employee onboarding', description: 'Integration course', groupId });
-    const created = await draft({ courseIds: [courseId], sendActivation: true });
+    const created = await draft({ sendActivation: true });
+    await assign([courseId], [created.employee.id]);
     const token = activationToken();
     await database.db.execute(
       database.sql`CREATE FUNCTION employee_test_fail_group() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'enrollment test failure'; END; $$`
@@ -301,15 +332,21 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
     }
     await services.activateEmployee(token, 'Employee-password-2026');
     const assigned = await services.getEmployeeDetails(organizationId, administratorId, created.employee.id);
-    expect(assigned.learning).toHaveLength(1);
-    expect(assigned.learning[0].status).toBe('not_started');
-    const completedAt = new Date().toISOString();
-    await database.db
-      .update(database.groupmember)
-      .set({ completedAt })
+    expect(assigned.enrollments).toHaveLength(1);
+    expect(assigned.enrollments[0]).toMatchObject({ kind: 'ASSIGNED', state: 'not_started' });
+    const [member] = await database.db
+      .select()
+      .from(database.groupmember)
       .where(database.eq(database.groupmember.groupId, groupId));
+    await enrollmentQueries.recordCourseCompletion({
+      courseId,
+      groupMemberId: member.id,
+      profileId: member.profileId!,
+      completedAt: new Date().toISOString(),
+      recertificationMonths: null
+    });
     const completed = await services.getEmployeeDetails(organizationId, administratorId, created.employee.id);
-    expect(completed.learning[0].status).toBe('completed');
+    expect(completed.enrollments[0].state).toBe('completed');
   });
 
   it('keeps an existing password on activation and follows membership demotion for administrative access', async () => {
@@ -412,7 +449,7 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
       slug: 'onboarding-lesson',
       order: 1
     });
-    const assigned = await activateDraft({ courseIds: [fixture.courseId] });
+    const assigned = await activateDraft({}, [fixture.courseId]);
     const unassigned = await draft();
     const query = { search: '', department: '', page: 1, limit: 25, profileId: assigned.profileId };
     const notStarted = await services.getEmployees(organizationId, administratorId, {
@@ -512,19 +549,12 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
     ).toEqual([staff.profileId]);
     expect(await courses.enrollExistingCourseEmployees(fixture.courseId, administratorId, members, false)).toEqual([]);
     expect(jobs.enqueueTransactionalEmail).toHaveBeenCalledTimes(1);
-    const assignments = await queries.getEmployeeAssignments(staff.id);
-    expect(assignments.courseIds).toContain(fixture.courseId);
+    const [row] = await enrollmentQueries.listCourseEnrollments(fixture.courseId);
+    expect(row).toMatchObject({ employeeId: staff.id, kind: 'ASSIGNED' });
     const { deleteCourseMember } = await import('@cio/db/queries/course/people');
     expect(await deleteCourseMember(fixture.courseId, added[0].id)).toBeNull();
-    const { getLearningContexts } = await import('@cio/db/queries/course/learning-access');
-    const { cancelCourseSource } = await import('@api/services/course/training-assignment');
-    const contexts = await getLearningContexts(organizationId, {
-      courseIds: [fixture.courseId],
-      profileIds: [staff.profileId]
-    });
-    const direct = contexts.find((source) => source.kind === 'DIRECT')!;
-    await cancelCourseSource(fixture.courseId, direct.sourceId, administratorId);
-    expect((await queries.getEmployeeAssignments(staff.id)).courseIds).not.toContain(fixture.courseId);
+    await enrollment.revokeEnrollment(fixture.courseId, row.id, administratorId);
+    expect(await enrollmentQueries.listEmployeeEnrollments(staff.id)).toEqual([]);
   });
 
   it('rejects unknown, unmanaged and suspended accounts before writing any member of a batch', async () => {
@@ -569,8 +599,6 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
       jobTitle: '',
       managerId: null,
       startDate: '',
-      courseIds: [],
-      cohortIds: [],
       sendActivation: true
     });
     await services.activateEmployee(activationToken(), 'Employee-password-2026');

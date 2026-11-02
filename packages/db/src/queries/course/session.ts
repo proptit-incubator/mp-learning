@@ -34,7 +34,6 @@ export type UpcomingLiveSessionLesson = {
 
 function upcomingLiveSessionFilters(now: Date) {
   return [
-    eq(schema.course.type, 'LIVE_CLASS'),
     eq(schema.course.status, 'ACTIVE'),
     eq(schema.course.isPublished, true),
     isNotNull(schema.lesson.callUrl),
@@ -44,7 +43,7 @@ function upcomingLiveSessionFilters(now: Date) {
 }
 
 /**
- * Live sessions (lessons with a `callUrl`) on published, active LIVE_CLASS courses starting before `until`, with each
+ * Live sessions (lessons with a `callUrl`) on published, active courses starting before `until`, with each
  * course's configured reminder offsets (null when the course never configured any).
  */
 export async function listUpcomingLiveSessionLessons(until: Date): Promise<UpcomingLiveSessionLesson[]> {

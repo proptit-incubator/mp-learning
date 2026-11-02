@@ -1,9 +1,5 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
-import {
-  calcCourseProgressPercent,
-  isBeforeOrEqualDeadline,
-  scheduleCertificationCompletionWork
-} from '@api/utils/course-completion';
+import { calcCourseProgressPercent, scheduleCertificationCompletionWork } from '@api/utils/course-completion';
 import { REQUIRED_COURSE_COMPLETION_PERCENT } from '@cio/utils/functions/course-progression';
 import {
   getCourseById,
@@ -12,6 +8,7 @@ import {
   type TCourseCertificationRow
 } from '@cio/db/queries/course/course';
 import { claimMemberCertificateEarned, claimMemberCompleted } from '@cio/db/queries/course/people';
+import { recordCourseCompletion } from '@cio/db/queries/course/enrollment';
 import { captureServerEvent } from '@cio/core/services/posthog';
 import { getCourseOrganizationId } from '@cio/db/queries/tag';
 import { emitWebhookEvent } from '@cio/core/services/webhook/emit';
@@ -23,7 +20,7 @@ import { resolveCertificateDesign } from '@api/utils/certificate';
 import type { TWebhookEventInput } from '@cio/utils/validation/webhook';
 
 export type CertificationBlocker = {
-  code: 'CERT_PROGRESS' | 'CERT_DEADLINE_PASSED' | 'CERT_NO_CONTENT';
+  code: 'CERT_PROGRESS' | 'CERT_NO_CONTENT';
   params?: Record<string, string | number>;
 };
 
@@ -51,18 +48,13 @@ async function buildCertificationEvaluation(
     exercisesCount: progress.exercisesCount
   });
 
-  const now = new Date();
   const totalContentCount = progress.lessonsCount + progress.exercisesCount;
   const completedContentCount = progress.lessonsCompleted + progress.exercisesCompleted;
   const hasContent = totalContentCount > 0;
   const hasCompletedAllContent = hasContent && completedContentCount >= totalContentCount;
-  const withinDeadline = isBeforeOrEqualDeadline(certificate.deadline, now);
 
   const blockers: CertificationBlocker[] = [];
 
-  if (!withinDeadline) {
-    blockers.push({ code: 'CERT_DEADLINE_PASSED' });
-  }
   if (!hasCompletedAllContent) {
     blockers.push({
       code: 'CERT_PROGRESS',
@@ -73,7 +65,7 @@ async function buildCertificationEvaluation(
     blockers.push({ code: 'CERT_NO_CONTENT' });
   }
 
-  const eligibleForCertificate = !!progress.groupMemberId && hasCompletedAllContent && withinDeadline;
+  const eligibleForCertificate = !!progress.groupMemberId && hasCompletedAllContent;
 
   return {
     progressPercent,
@@ -142,11 +134,15 @@ export async function evaluateCourseCertification(
     const didClaimCompletion = await claimMemberCompleted(groupMemberId, completedAt);
 
     if (didClaimCompletion) {
+      await recordCourseCompletion({
+        courseId,
+        groupMemberId,
+        profileId,
+        completedAt,
+        recertificationMonths: courseRow.recertificationMonths
+      });
       await invalidateOrgStats(courseRow.orgId);
-
-      if (courseRow.type !== 'COMPLIANCE') {
-        await emitWebhookEvent(courseRow.orgId, 'course.completed', { courseId, ...completionEventData, completedAt });
-      }
+      await emitWebhookEvent(courseRow.orgId, 'course.completed', { courseId, ...completionEventData, completedAt });
 
       trackServerEvent({
         eventType: SERVER_EVENTS.COURSE_COMPLETED,
@@ -180,19 +176,17 @@ export async function evaluateCourseCertification(
       event: 'course_completed',
       distinctId: profileId,
       orgId: courseRow.orgId,
-      properties: { course_id: courseId, course_type: courseRow.type }
+      properties: { course_id: courseId }
     });
 
-    if (courseRow.type !== 'COMPLIANCE') {
-      const certificate = buildCertificateWebhookInput({ courseRow, profileId, issuedAt: earnedAt });
+    const certificate = buildCertificateWebhookInput({ courseRow, profileId, issuedAt: earnedAt });
 
-      await emitWebhookEvent(courseRow.orgId, 'course.certificate.issued', {
-        courseId,
-        ...completionEventData,
-        completedAt: earnedAt,
-        certificate
-      });
-    }
+    await emitWebhookEvent(courseRow.orgId, 'course.certificate.issued', {
+      courseId,
+      ...completionEventData,
+      completedAt: earnedAt,
+      certificate
+    });
 
     scheduleCertificationCompletionWork({
       courseId,

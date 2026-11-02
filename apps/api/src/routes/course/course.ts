@@ -44,7 +44,6 @@ import {
   courseTemplateUpdatesRouter
 } from '@api/routes/course/course-template';
 import { sanitizeHtml } from '@cio/core/utils/sanitize-html';
-import { complianceRouter } from '@api/routes/course/compliance';
 import { contentRouter } from '@api/routes/course/content';
 import { courseMemberMiddleware } from '@api/middlewares/course-member';
 import { courseMemberOrGraderMiddleware } from '@api/middlewares/course-grader';
@@ -52,7 +51,7 @@ import { canAccessCourseSubmissions } from '@cio/db/queries/group';
 import { courseTeamMemberOrAutomationKeyMiddleware } from '@api/middlewares/course-team-member-or-automation-key';
 import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member';
 import { createRateLimiter } from '@api/middlewares/rate-limiter';
-import { enrollInternalLearner } from '@api/services/course/library';
+import { selfEnroll } from '@api/services/course/enrollment';
 import { exerciseRouter } from '@api/routes/course/exercise';
 import { extractClientIp } from '@api/utils/redis/key-generators';
 import { generateCertificatePdf, generateCertificatePng, slugifyForFilename } from '@api/utils/certificate';
@@ -176,7 +175,7 @@ export const courseRouter = new Hono()
         const { courseId } = c.req.valid('param');
         const user = c.get('user')!;
         const organizationId = c.req.header('cio-org-id')!;
-        const result = await enrollInternalLearner(organizationId, courseId, user);
+        const result = await selfEnroll(organizationId, courseId, user);
 
         return c.json(
           {
@@ -373,19 +372,13 @@ export const courseRouter = new Hono()
               data: {
                 ...result.course,
                 tags: result.tags
-              },
-              conversionBlocked: result.conversionOffenders ?? undefined
+              }
             },
             200
           );
         }
 
-        const {
-          course: result,
-          conversionOffenders,
-          publishedNow,
-          publishChange
-        } = await updateCourse(courseId, courseData);
+        const { course: result, publishedNow, publishChange } = await updateCourse(courseId, courseData);
         const userId = c.get('user')?.id ?? null;
 
         if (publishedNow) {
@@ -397,8 +390,7 @@ export const courseRouter = new Hono()
         return c.json(
           {
             success: true,
-            data: result,
-            conversionBlocked: conversionOffenders ?? undefined
+            data: result
           },
           200
         );
@@ -671,7 +663,6 @@ export const courseRouter = new Hono()
   .route('/katex', katexRouter)
   .route('/:courseId/payment-request', paymentRequestRouter)
   .route('/:courseId/content', contentRouter)
-  .route('/:courseId/compliance', complianceRouter)
   .route('/:courseId/section', sectionRouter)
   .route('/:courseId/lesson', lessonRouter)
   .route('/:courseId/exercise', exerciseRouter)

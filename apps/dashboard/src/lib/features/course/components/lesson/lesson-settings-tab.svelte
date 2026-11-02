@@ -35,7 +35,6 @@
   type LessonCompletionPolicy = 'manual' | 'video_watch' | 'none';
 
   // ── Live session (Zoom link + scheduled time + timezone) ──────────────────
-  const isLiveClass = $derived(courseApi.course?.type === 'LIVE_CLASS');
   const timezoneOptions = (() => {
     try {
       return (Intl as unknown as { supportedValuesOf?: (k: string) => string[] }).supportedValuesOf?.('timeZone') ?? [];
@@ -248,83 +247,81 @@
 
 <div class="p-4">
   <Field.Group class="w-full max-w-xl">
-    {#if isLiveClass}
-      <Field.Set>
-        <Field.Legend>{$t('course.navItem.lessons.session.heading')}</Field.Legend>
-        <Field.Description>{$t('course.navItem.lessons.session.intro')}</Field.Description>
+    <Field.Set>
+      <Field.Legend>{$t('course.navItem.lessons.session.heading')}</Field.Legend>
+      <Field.Description>{$t('course.navItem.lessons.session.intro')}</Field.Description>
 
-        <Field.Field>
-          <InputField
-            type="url"
-            label={$t('course.navItem.lessons.session.link_label')}
-            placeholder="https://zoom.us/j/..."
-            value={sessionCallUrl}
-            onInput={(e) => (sessionCallUrl = e.currentTarget.value)}
+      <Field.Field>
+        <InputField
+          type="url"
+          label={$t('course.navItem.lessons.session.link_label')}
+          placeholder="https://zoom.us/j/..."
+          value={sessionCallUrl}
+          onInput={(e) => (sessionCallUrl = e.currentTarget.value)}
+        />
+      </Field.Field>
+
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+        <Field.Field class="sm:flex-1">
+          <Field.Label for="session-datetime">{$t('course.navItem.lessons.session.datetime_label')}</Field.Label>
+          <input
+            id="session-datetime"
+            type="datetime-local"
+            class="ui:border-input ui:bg-background ui:text-foreground flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs outline-none"
+            value={sessionWallClock}
+            oninput={(e) => (sessionWallClock = (e.currentTarget as HTMLInputElement).value)}
           />
         </Field.Field>
 
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-start">
-          <Field.Field class="sm:flex-1">
-            <Field.Label for="session-datetime">{$t('course.navItem.lessons.session.datetime_label')}</Field.Label>
-            <input
-              id="session-datetime"
-              type="datetime-local"
-              class="ui:border-input ui:bg-background ui:text-foreground flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs outline-none"
-              value={sessionWallClock}
-              oninput={(e) => (sessionWallClock = (e.currentTarget as HTMLInputElement).value)}
-            />
-          </Field.Field>
-
-          <Field.Field class="sm:flex-1">
-            <Field.Label for="session-timezone">{$t('course.navItem.lessons.session.timezone_label')}</Field.Label>
-            <select
-              id="session-timezone"
-              class="ui:border-input ui:bg-background ui:text-foreground flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs outline-none"
-              value={sessionTimezone}
-              onchange={(e) => (sessionTimezone = (e.currentTarget as HTMLSelectElement).value)}
-            >
-              {#each timezoneOptions as tz (tz)}
-                <option value={tz}>{tz}</option>
-              {/each}
-            </select>
-            <Field.Description>{$t('course.navItem.lessons.session.timezone_helper')}</Field.Description>
-          </Field.Field>
-        </div>
-
-        <Field.Field>
-          <NumberField
-            integer
-            min={MIN_SESSION_DURATION_MINUTES}
-            max={MAX_SESSION_DURATION_MINUTES}
-            label={$t('course.navItem.lessons.session.duration_label')}
-            helperMessage={$t('course.navItem.lessons.session.duration_helper')}
-            bind:value={sessionDurationMinutes}
-            testId="lesson-session-duration"
-          />
+        <Field.Field class="sm:flex-1">
+          <Field.Label for="session-timezone">{$t('course.navItem.lessons.session.timezone_label')}</Field.Label>
+          <select
+            id="session-timezone"
+            class="ui:border-input ui:bg-background ui:text-foreground flex h-9 w-full rounded-md border px-3 py-1 text-sm shadow-xs outline-none"
+            value={sessionTimezone}
+            onchange={(e) => (sessionTimezone = (e.currentTarget as HTMLSelectElement).value)}
+          >
+            {#each timezoneOptions as tz (tz)}
+              <option value={tz}>{tz}</option>
+            {/each}
+          </select>
+          <Field.Description>{$t('course.navItem.lessons.session.timezone_helper')}</Field.Description>
         </Field.Field>
+      </div>
 
-        <Field.Field>
-          <InputField
-            type="url"
-            label={$t('course.navItem.lessons.session.recording_url_label')}
-            helperMessage={$t('course.navItem.lessons.session.recording_url_helper')}
-            placeholder="https://zoom.us/rec/share/..."
-            value={sessionRecordingUrl}
-            errorMessage={recordingUrlError}
-            onInput={(e) => (sessionRecordingUrl = e.currentTarget.value)}
-            testId="lesson-session-recording-url"
-          />
-        </Field.Field>
+      <Field.Field>
+        <NumberField
+          integer
+          min={MIN_SESSION_DURATION_MINUTES}
+          max={MAX_SESSION_DURATION_MINUTES}
+          label={$t('course.navItem.lessons.session.duration_label')}
+          helperMessage={$t('course.navItem.lessons.session.duration_helper')}
+          bind:value={sessionDurationMinutes}
+          testId="lesson-session-duration"
+        />
+      </Field.Field>
 
-        <div>
-          <Button size="sm" onclick={handleSaveSession} loading={isSavingSession}>
-            {$t('course.navItem.lessons.session.save')}
-          </Button>
-        </div>
-      </Field.Set>
+      <Field.Field>
+        <InputField
+          type="url"
+          label={$t('course.navItem.lessons.session.recording_url_label')}
+          helperMessage={$t('course.navItem.lessons.session.recording_url_helper')}
+          placeholder="https://zoom.us/rec/share/..."
+          value={sessionRecordingUrl}
+          errorMessage={recordingUrlError}
+          onInput={(e) => (sessionRecordingUrl = e.currentTarget.value)}
+          testId="lesson-session-recording-url"
+        />
+      </Field.Field>
 
-      <Field.Separator />
-    {/if}
+      <div>
+        <Button size="sm" onclick={handleSaveSession} loading={isSavingSession}>
+          {$t('course.navItem.lessons.session.save')}
+        </Button>
+      </div>
+    </Field.Set>
+
+    <Field.Separator />
 
     <Field.Set>
       <Field.Legend>{$t('course.navItem.lessons.settings.progression.heading')}</Field.Legend>

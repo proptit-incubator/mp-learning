@@ -11,12 +11,9 @@ export type TWebhookMemberDetails = {
 export type TWebhookCompletionRecordDetails = {
   cycleNumber: number;
   startedAt: string | null;
-  completedAt: string | null;
-  dueDate: string;
+  completedAt: string;
   validUntil: string | null;
   score: number | null;
-  attempts: number | null;
-  timeSpentMinutes: number | null;
 };
 
 export type TWebhookCertificateIssueDetails = {
@@ -103,7 +100,7 @@ export async function getWebhookMemberIdForProfile(
 }
 
 /**
- * Reads the latest compliance cycle for a student in a course. Returns null for courses without one.
+ * Reads the latest completion cycle for a student in a course. Returns null for courses without one.
  */
 export async function getWebhookCompletionRecord(
   courseId: string,
@@ -116,11 +113,8 @@ export async function getWebhookCompletionRecord(
         cycleNumber: schema.courseCompletionRecord.cycleNumber,
         startedAt: schema.courseCompletionRecord.startedAt,
         completedAt: schema.courseCompletionRecord.completedAt,
-        dueDate: schema.courseCompletionRecord.dueDate,
         validUntil: schema.courseCompletionRecord.validUntil,
-        score: schema.courseCompletionRecord.score,
-        attempts: schema.courseCompletionRecord.attempts,
-        timeSpentMinutes: schema.courseCompletionRecord.timeSpentMinutes
+        score: schema.courseCompletionRecord.score
       })
       .from(schema.courseCompletionRecord)
       .where(
@@ -352,24 +346,6 @@ export async function getWebhookLatestSubmissionScore(
   } catch (error) {
     console.error('getWebhookLatestSubmissionScore error:', error);
     throw new Error('Failed to read webhook submission score');
-  }
-}
-
-/**
- * Reads a cohort's name. Returns null when the cohort no longer exists.
- */
-export async function getWebhookCohortName(cohortId: string, client: DbOrTxClient = db): Promise<string | null> {
-  try {
-    const [row] = await client
-      .select({ name: schema.cohort.name })
-      .from(schema.cohort)
-      .where(eq(schema.cohort.id, cohortId))
-      .limit(1);
-
-    return row?.name ?? null;
-  } catch (error) {
-    console.error('getWebhookCohortName error:', error);
-    throw new Error('Failed to read webhook cohort name');
   }
 }
 

@@ -29,7 +29,7 @@ describe('public API analytics request contract', () => {
 
   it('accepts include as a comma list or an array', () => {
     expect(ZPublicApiOrgAnalyticsQuery.parse({ include: 'traffic, funnel' }).include).toEqual(['traffic', 'funnel']);
-    expect(ZPublicApiOrgAnalyticsQuery.parse({ include: ['compliance'] }).include).toEqual(['compliance']);
+    expect(ZPublicApiOrgAnalyticsQuery.parse({ include: ['countries'] }).include).toEqual(['countries']);
   });
 
   it.each([

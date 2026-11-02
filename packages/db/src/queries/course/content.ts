@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm';
 
 import { ContentType } from '@cio/utils/constants';
 import * as schema from '@db/schema';
-import { count, db, inArray, sql as drizzleSql, type DbOrTxClient } from '@db/drizzle';
+import { count, db, eq, inArray, sql as drizzleSql, type DbOrTxClient } from '@db/drizzle';
 import { isExerciseCompletedSql } from './progression';
 
 export type CourseContentItemRow = {
@@ -195,5 +195,39 @@ export async function countContentStudentWork(
   } catch (error) {
     console.error('countContentStudentWork error:', error);
     throw new Error(`Failed to count student work: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Helper for slug-collision resolution at the service layer. Returns the set of
+ * slugs already in use for the given course across both lesson and exercise
+ * tables.
+ */
+export async function getTakenItemSlugs(courseId: string): Promise<Set<string>> {
+  try {
+    const lessonSlugs = await db
+      .select({ slug: schema.lesson.slug })
+      .from(schema.lesson)
+      .where(eq(schema.lesson.courseId, courseId));
+
+    const exerciseSlugs = await db
+      .select({ slug: schema.exercise.slug })
+      .from(schema.exercise)
+      .where(eq(schema.exercise.courseId, courseId));
+
+    const taken = new Set<string>();
+    for (const row of lessonSlugs) {
+      if (row.slug) taken.add(row.slug);
+    }
+    for (const row of exerciseSlugs) {
+      if (row.slug) taken.add(row.slug);
+    }
+
+    return taken;
+  } catch (error) {
+    console.error('getTakenItemSlugs error:', error);
+    throw new Error(
+      `Failed to read taken slugs for course "${courseId}": ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }

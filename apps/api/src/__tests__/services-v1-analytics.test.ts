@@ -1,13 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@cio/db/queries/cohort', () => ({
-  getCohortMemberByProfileId: vi.fn(),
-  getCohortMemberRole: vi.fn(),
-  getCohortOrganizationId: vi.fn(),
-  isCohortMember: vi.fn(),
-  isOrgAdminByCohortId: vi.fn()
-}));
-
 vi.mock('@cio/db/queries/organization', () => ({
   getOrganizationMemberIdByOrgAndProfile: vi.fn(),
   getOrganizationMemberRoleId: vi.fn(),
@@ -27,7 +19,6 @@ vi.mock('@api/services/analytics', () => ({
   getCountryBreakdown: vi.fn(),
   getCourseFunnel: vi.fn(),
   getLandingStats: vi.fn(),
-  getPopularTypes: vi.fn(),
   getTopCoursesByViews: vi.fn()
 }));
 
@@ -38,15 +29,10 @@ vi.mock('@api/services/dash', () => ({
 
 vi.mock('@cio/core/services/course/course', () => ({
   buildCourseStudentAnalytics: vi.fn(),
-  ensureProgramCourseAccess: vi.fn(),
   getCourseAnalytics: vi.fn()
 }));
 
 vi.mock('@cio/db/queries/course/people', () => ({ getPaginatedCourseMembers: vi.fn() }));
-
-vi.mock('@api/services/course/compliance', () => ({
-  getOrgComplianceOverview: vi.fn()
-}));
 
 vi.mock('@api/services/organization', () => ({
   getUserAnalytics: vi.fn()
@@ -69,13 +55,9 @@ import {
   getPublicApiCourseAnalyticsService,
   listPublicApiCourseAnalyticsStudentsService
 } from '@api/services/v1/analytics/course';
-import {
-  getPublicApiOrgAnalyticsService,
-  listPublicApiComplianceLearnersService
-} from '@api/services/v1/analytics/org';
+import { getPublicApiOrgAnalyticsService } from '@api/services/v1/analytics/org';
 import { getCourseOrganizationId } from '@cio/db/queries/tag';
 import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
-import { getOrgComplianceOverview } from '@api/services/course/compliance';
 import { getUserAnalytics } from '@api/services/organization';
 import { getPublicApiLearnerAnalyticsService } from '@api/services/v1/analytics/learner';
 import { cachedRead } from '@api/utils/redis/cached-read';
@@ -90,12 +72,6 @@ const FIRST_PAGE = { page: 1, limit: 20 };
 
 const orgQuery = (include: string[], overrides: Partial<{ days: number; limit: number }> = {}) =>
   ({ include, days: 30, limit: 5, ...overrides }) as never;
-
-const complianceOverview = {
-  summary: { totalLearners: 2, totalCourses: 1, counts: {} },
-  courses: [{ courseId: COURSE_ID, courseTitle: 'Safety', learnerCount: 2, counts: {} }],
-  learners: [{ groupMemberId: 'gm-1' }, { groupMemberId: 'gm-2' }, { groupMemberId: 'gm-3' }]
-};
 
 const student = (id: string, fullname: string) => ({
   id,
@@ -118,7 +94,6 @@ describe('public API analytics services', () => {
     vi.mocked(isCourseTeamMemberOrOrgAdmin).mockResolvedValue(true);
     vi.mocked(getLandingStats).mockResolvedValue({ totals: {}, sparkline: [] } as never);
     vi.mocked(getStudentLoginActivity).mockResolvedValue([]);
-    vi.mocked(getOrgComplianceOverview).mockResolvedValue(complianceOverview as never);
   });
 
   describe('GET /analytics', () => {
@@ -140,38 +115,27 @@ describe('public API analytics services', () => {
     it('lets a tutor read and leaves admin-only sections out, listed in meta.omitted', async () => {
       vi.mocked(getOrganizationMemberRoleId).mockResolvedValue(ROLE.TUTOR);
 
-      const result = await getPublicApiOrgAnalyticsService(
-        ORG_ID,
-        ACTOR_ID,
-        orgQuery(['traffic', 'loginActivity', 'compliance'])
-      );
+      const result = await getPublicApiOrgAnalyticsService(ORG_ID, ACTOR_ID, orgQuery(['traffic', 'loginActivity']));
 
       expect(Object.keys(result.data)).toEqual(['traffic']);
-      expect(result.meta.omitted).toEqual([
-        { section: 'loginActivity', reason: 'requires_org_admin' },
-        { section: 'compliance', reason: 'requires_org_admin' }
-      ]);
+      expect(result.meta.omitted).toEqual([{ section: 'loginActivity', reason: 'requires_org_admin' }]);
       expect(getStudentLoginActivity).not.toHaveBeenCalled();
-      expect(getOrgComplianceOverview).not.toHaveBeenCalled();
     });
 
     it('returns an empty data object with a null generatedAt when every section is omitted', async () => {
       vi.mocked(getOrganizationMemberRoleId).mockResolvedValue(ROLE.TUTOR);
 
-      const result = await getPublicApiOrgAnalyticsService(ORG_ID, ACTOR_ID, orgQuery(['compliance']));
+      const result = await getPublicApiOrgAnalyticsService(ORG_ID, ACTOR_ID, orgQuery(['loginActivity']));
 
       expect(result.data).toEqual({});
       expect(result.meta.generatedAt).toBeNull();
     });
 
-    it('gives an admin the admin-only sections, with the compliance summary but not the learner list', async () => {
-      const result = await getPublicApiOrgAnalyticsService(ORG_ID, ACTOR_ID, orgQuery(['loginActivity', 'compliance']));
+    it('gives an admin the admin-only sections', async () => {
+      const result = await getPublicApiOrgAnalyticsService(ORG_ID, ACTOR_ID, orgQuery(['loginActivity']));
 
       expect(result.meta.omitted).toEqual([]);
-      expect(result.data).toEqual({
-        loginActivity: [],
-        compliance: { summary: complianceOverview.summary, courses: complianceOverview.courses }
-      });
+      expect(result.data).toEqual({ loginActivity: [] });
     });
 
     it.each([
@@ -242,25 +206,6 @@ describe('public API analytics services', () => {
     });
   });
 
-  describe('compliance learners', () => {
-    it('rejects an org tutor with 403, matching orgAdminMiddleware', async () => {
-      vi.mocked(getOrganizationMemberRoleId).mockResolvedValue(ROLE.TUTOR);
-
-      await expect(listPublicApiComplianceLearnersService(ORG_ID, ACTOR_ID, FIRST_PAGE)).rejects.toMatchObject({
-        statusCode: 403
-      });
-      expect(getOrgComplianceOverview).not.toHaveBeenCalled();
-    });
-
-    it('paginates from the same cache entry as the compliance section', async () => {
-      const result = await listPublicApiComplianceLearnersService(ORG_ID, ACTOR_ID, { page: 2, limit: 2 });
-
-      expect(result.items).toEqual([{ groupMemberId: 'gm-3' }]);
-      expect(result.pagination).toEqual({ page: 2, limit: 2, total: 3, totalPages: 2 });
-      expect(cachedRead).toHaveBeenCalledWith('public-api:analytics:compliance:org-1', 600, expect.any(Function));
-    });
-  });
-
   describe('learner analytics', () => {
     it('returns 404 for a profile outside the key org', async () => {
       vi.mocked(getOrganizationMemberIdByOrgAndProfile).mockResolvedValue(null);
@@ -290,7 +235,6 @@ describe('public API analytics services', () => {
           {
             id: COURSE_ID,
             title: 'Safety',
-            type: 'SELF_PACED',
             slug: 'internal-field',
             lessons_count: 2,
             lessons_completed: 1,
@@ -300,7 +244,6 @@ describe('public API analytics services', () => {
             progress_failed: false,
             average_grade: null,
             certificateEarnedAt: null,
-            complianceStatus: null,
             exercises: [
               {
                 id: 'ex-1',
@@ -329,7 +272,6 @@ describe('public API analytics services', () => {
       expect(result.courses[0]).toEqual({
         id: COURSE_ID,
         title: 'Safety',
-        type: 'SELF_PACED',
         lessonsCount: 2,
         lessonsCompleted: 1,
         exercisesCount: 1,
@@ -338,7 +280,6 @@ describe('public API analytics services', () => {
         progressFailed: false,
         averageGrade: null,
         certificateEarnedAt: null,
-        complianceStatus: null,
         exercises: [
           {
             id: 'ex-1',

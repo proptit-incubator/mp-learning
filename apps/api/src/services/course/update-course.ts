@@ -11,11 +11,7 @@ export async function updateCourseWithTags(params: {
   tagIds: string[];
 }) {
   return db.transaction(async (tx) => {
-    const { course, conversionOffenders, publishedNow, publishChange } = await updateCourse(
-      params.courseId,
-      params.courseData,
-      tx
-    );
+    const { course, publishedNow, publishChange } = await updateCourse(params.courseId, params.courseData, tx);
     const tags = await replaceCourseTags(
       params.orgId,
       params.courseId,
@@ -23,6 +19,6 @@ export async function updateCourseWithTags(params: {
       { updatedByUserId: params.updatedByUserId, dbClient: tx }
     );
 
-    return { course, conversionOffenders, publishedNow, publishChange, tags };
+    return { course, publishedNow, publishChange, tags };
   });
 }

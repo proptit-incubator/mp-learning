@@ -68,17 +68,11 @@ export const ZPublicApiUpdateAudience = z
   );
 export type TPublicApiUpdateAudience = z.infer<typeof ZPublicApiUpdateAudience>;
 
-export const ZPublicApiAssignAudienceCourses = z
-  .object({
-    profileIds: z.array(z.uuid()).min(1).max(500),
-    courseIds: z.array(z.uuid()).optional(),
-    cohortIds: z.array(z.uuid()).optional(),
-    sendEmail: z.boolean().default(true)
-  })
-  .refine((data) => (data.courseIds?.length ?? 0) > 0 || (data.cohortIds?.length ?? 0) > 0, {
-    message: 'At least one course or cohort must be selected',
-    path: ['courseIds']
-  });
+export const ZPublicApiAssignAudienceCourses = z.object({
+  profileIds: z.array(z.uuid()).min(1).max(500),
+  courseIds: z.array(z.uuid()).min(1),
+  sendEmail: z.boolean().default(true)
+});
 export type TPublicApiAssignAudienceCourses = z.infer<typeof ZPublicApiAssignAudienceCourses>;
 
 export const ZPublicApiAudienceMemberParam = z.object({

@@ -2,7 +2,6 @@ export * from './roles';
 export * from './mp-learning';
 export * from './org';
 export * from './content';
-export * from './course-type';
 export * from './domains';
 export * from './embeds';
 export * from './lesson-version';

@@ -14,26 +14,22 @@ export interface CourseListFilters {
   tags: string[];
   sortKey: CourseSortByType;
   order: CourseSortOrderType;
-  courseType: string;
   publishedStatus: PublishedStatusFilter;
 }
 
-export const COURSE_LIST_FILTER_PARAM_KEYS = ['search', 'tags', 'sort', 'order', 'type', 'status', 'next'] as const;
+export const COURSE_LIST_FILTER_PARAM_KEYS = ['search', 'tags', 'sort', 'order', 'status', 'next'] as const;
 
 export const DEFAULT_COURSE_LIST_FILTERS: CourseListFilters = {
   search: '',
   tags: [],
   sortKey: DEFAULT_COURSE_SORT,
   order: DEFAULT_SORT_ORDER,
-  courseType: 'all',
   publishedStatus: 'all'
 };
 
 export const ORG_COURSES_PAGE_SIZE = 20;
 export const DEFAULT_COURSE_LIST_NEXT = 1;
 export const MAX_COURSE_LIST_NEXT = 50;
-
-const VALID_COURSE_TYPES = new Set(['SELF_PACED', 'LIVE_CLASS', 'COMPLIANCE', 'PUBLIC']);
 
 export function parsePublishedStatusFilter(value: string | null | undefined): PublishedStatusFilter {
   if (value === 'published' || value === 'unpublished') {
@@ -62,15 +58,11 @@ export function parseCourseListFilters(params: URLSearchParams): CourseListFilte
         .filter(Boolean)
     : [];
 
-  const typeParam = params.get('type')?.trim();
-  const courseType = typeParam && VALID_COURSE_TYPES.has(typeParam) ? typeParam : 'all';
-
   return {
     search: params.get('search')?.trim() ?? '',
     tags,
     sortKey: parseCourseSortValue(params.get('sort')),
     order: parseCourseSortOrder(params.get('order')),
-    courseType,
     publishedStatus: parsePublishedStatusFilter(params.get('status'))
   };
 }
@@ -95,10 +87,6 @@ export function buildCourseListSearchParams(
 
   if (filters.order !== DEFAULT_SORT_ORDER) {
     params.set('order', filters.order);
-  }
-
-  if (filters.courseType !== 'all') {
-    params.set('type', filters.courseType);
   }
 
   if (filters.publishedStatus === 'published' || filters.publishedStatus === 'unpublished') {

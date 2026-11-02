@@ -50,7 +50,6 @@ const ids = {
   submission: '000000f1-0000-4000-8000-0000000000f1',
   exercise: '000000f2-0000-4000-8000-0000000000f2',
   lesson: '000000f3-0000-4000-8000-0000000000f3',
-  cohort: '000000a5-0000-4000-8000-0000000000a5',
   record: '000000a1-0000-4000-8000-0000000000a1'
 };
 
@@ -58,8 +57,6 @@ const memberSource = {
   method: 'invite',
   inviteId: ids.invite,
   inviteLinkId: null,
-  cohortId: null,
-  programId: null,
   apiKeyId: null
 };
 
@@ -89,15 +86,6 @@ const organizationMemberInput = {
   email: 'alex@example.com',
   roleId: 2,
   status: 'ACTIVE',
-  actorProfileId: ids.actor
-};
-
-const cohortMemberInput = {
-  cohortId: ids.cohort,
-  memberId: ids.member,
-  profileId: ids.profile,
-  email: null,
-  roleId: 3,
   actorProfileId: ids.actor
 };
 
@@ -158,29 +146,6 @@ const inputs: Record<TWebhookEventType, Record<string, unknown>> = {
     profileId: null,
     isComplete: false
   },
-  'compliance.record.status_changed': {
-    courseId: ids.course,
-    recordId: ids.record,
-    memberId: ids.member,
-    profileId: ids.profile,
-    cycleNumber: 2,
-    actorProfileId: null,
-    status: 'in_grace_period',
-    previousStatus: 'expiring_soon',
-    trigger: 'expiry_scan',
-    dueDate: '2026-10-31T00:00:00.000Z',
-    validUntil: null
-  },
-  'compliance.record.waived': {
-    courseId: ids.course,
-    recordId: ids.record,
-    memberId: ids.member,
-    profileId: ids.profile,
-    cycleNumber: 1,
-    actorProfileId: ids.actor,
-    reason: 'Medical leave',
-    waiverExpiresAt: null
-  },
   'organization.member.added': organizationMemberInput,
   'organization.member.removed': organizationMemberInput,
   'organization.member.updated': {
@@ -189,8 +154,6 @@ const inputs: Record<TWebhookEventType, Record<string, unknown>> = {
   },
   'course.published': { courseId: ids.course, actorProfileId: ids.actor },
   'course.unpublished': { courseId: ids.course, actorProfileId: null },
-  'cohort.member.added': cohortMemberInput,
-  'cohort.member.removed': cohortMemberInput,
   'lesson.session.scheduled': {
     courseId: ids.course,
     lessonId: ids.lesson,
@@ -220,10 +183,7 @@ const fullContext = () => ({
   course: {
     title: 'Intro to Data Science',
     slug: 'intro-to-data-science',
-    type: 'SELF_PACED',
     isPublished: true,
-    cost: 0,
-    currency: 'USD',
     tags: ['data']
   },
   exercise: { title: 'Week 1 quiz' },
@@ -278,11 +238,8 @@ function stubDetails() {
     cycleNumber: 2,
     startedAt: '2026-10-02T09:00:00.000Z',
     completedAt: '2026-10-13T12:15:30.000Z',
-    dueDate: '2026-10-31T00:00:00.000Z',
     validUntil: '2027-10-13T12:15:30.000Z',
-    score: 92,
-    attempts: 1,
-    timeSpentMinutes: 45
+    score: 92
   });
   mocks.getWebhookCertificateIssue.mockResolvedValue(null);
   mocks.getWebhookExerciseDetails.mockResolvedValue(exerciseDetails);
@@ -336,10 +293,7 @@ describe('webhook event enrichment', () => {
       id: ids.course,
       title: 'Intro to Data Science',
       slug: 'intro-to-data-science',
-      type: 'SELF_PACED',
       isPublished: true,
-      cost: 0,
-      currency: 'USD',
       tags: ['data']
     });
   });
@@ -490,18 +444,16 @@ describe('webhook event enrichment', () => {
       enrolledAt: '2026-10-01T09:00:00.000Z',
       startedAt: '2026-10-02T09:00:00.000Z',
       score: 92,
-      attempts: 1,
-      timeSpentMinutes: 45,
       progress: { lessonsCompleted: 2, lessonsTotal: 4, exercisesCompleted: 1, exercisesTotal: 1, percent: 60 },
-      compliance: { cycleNumber: 2, completedLate: false }
+      completionRecord: { cycleNumber: 2 }
     });
   });
 
-  it('sets compliance to null for a course without compliance cycles', async () => {
+  it('sets the completion record to null when the course has no completion cycle', async () => {
     mocks.getWebhookCompletionRecord.mockResolvedValue(null);
     const enriched = await enrichWebhookEventData(ids.org, 'course.completed', inputs['course.completed']);
 
-    expect(enriched).toMatchObject({ compliance: null, startedAt: null, score: null });
+    expect(enriched).toMatchObject({ completionRecord: null, startedAt: null, score: null });
   });
 
   it('adds the certificate download link', async () => {
@@ -559,12 +511,6 @@ describe('webhook event enrichment', () => {
     expect(enriched).not.toHaveProperty('student');
   });
 
-  it('names the cohort', async () => {
-    const enriched = await enrichWebhookEventData(ids.org, 'cohort.member.added', inputs['cohort.member.added']);
-
-    expect(enriched.cohort).toEqual({ id: ids.cohort, name: 'Fall 2026' });
-  });
-
   it('uses the requester name when the payment request has no account', async () => {
     const enriched = await enrichWebhookEventData(
       ids.org,
@@ -600,7 +546,7 @@ describe('webhook event enrichment', () => {
     );
 
     expect(enriched.student).toEqual({ id: ids.profile, name: null, email: null, externalId: null });
-    expect(enriched.course).toMatchObject({ id: ids.course, title: null, type: null, tags: [] });
+    expect(enriched.course).toMatchObject({ id: ids.course, title: null, tags: [] });
     expect(enriched.lesson).toMatchObject({ id: ids.lesson, title: null });
   });
 
@@ -611,6 +557,6 @@ describe('webhook event enrichment', () => {
 
     expect(enriched).toMatchObject(inputs['course.completed']);
     expect(enriched.student).toEqual({ id: ids.profile, name: null, email: null, externalId: null });
-    expect(enriched).toMatchObject({ progress: null, compliance: null, startedAt: null });
+    expect(enriched).toMatchObject({ progress: null, completionRecord: null, startedAt: null });
   });
 });

@@ -3,8 +3,6 @@ import * as z from 'zod';
 import { COURSE_PROGRESSION_MODES } from '../../functions/course-progression';
 import { toFiniteNumber } from '../../functions/number';
 import { ALLOWED_CONTENT_TYPES } from '../constants';
-import { ZCourseCalloutInput } from './callout';
-import { ZCourseType } from './course-type';
 import { ZLiveSessionReminderOffsets } from './live-session-reminder';
 
 export const ZGetRecommendedCourses = z.object({
@@ -295,31 +293,16 @@ export const ZCourseContentDelete = z
   });
 export type TCourseContentDelete = z.infer<typeof ZCourseContentDelete>;
 
-export const ZComplianceSettings = z.object({
-  retakeIntervalMonths: z.number().int().min(1).max(120),
-  gracePeriodDays: z.number().int().min(0).max(365).optional().default(0),
-  reminderDaysBefore: z.array(z.number().int().min(1).max(365)).max(10).optional().default([30, 7, 1]),
-  isMandatory: z.boolean().optional().default(true),
-  framework: z.enum(['HIPAA', 'OSHA', 'SOX', 'GDPR', 'PCI_DSS', 'FERPA', 'ISO', 'CUSTOM']).nullable().optional(),
-  maxRetakeAttempts: z.number().int().min(1).nullable().optional()
-});
-export type TComplianceSettings = z.infer<typeof ZComplianceSettings>;
+export const ZRecertificationMonths = z.number().int().min(1).max(120).nullable();
 
 export const ZCourseCreateBase = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
-  type: ZCourseType,
   organizationId: z.string().min(1),
-  compliance: ZComplianceSettings.optional()
+  recertificationMonths: ZRecertificationMonths.optional()
 });
 
-export const ZCourseCreate = ZCourseCreateBase.refine(
-  (data) => data.type !== 'COMPLIANCE' || data.compliance !== undefined,
-  {
-    message: 'Compliance settings are required for COMPLIANCE courses',
-    path: ['compliance']
-  }
-);
+export const ZCourseCreate = ZCourseCreateBase;
 export type TCourseCreate = z.infer<typeof ZCourseCreate>;
 
 export const ZCourseReward = z.object({
@@ -447,8 +430,6 @@ export const ZCertificationSettings = z.object({
   theme: z.string().optional(),
   /** Atelier-era certificate design (template, accent, signatories, subtitle, etc.). */
   design: ZCertificateDesign.optional(),
-  /** ISO 8601 datetime string or null to clear */
-  deadline: z.union([z.string().min(1), z.null()]).optional(),
   emailMessage: z.string().max(5000).nullable().optional()
 });
 export type TCertificationSettings = z.infer<typeof ZCertificationSettings>;
@@ -456,23 +437,16 @@ export type TCertificationSettings = z.infer<typeof ZCertificationSettings>;
 export const ZPaymentLink = z.url({ protocol: /^https?$/ });
 
 type TPaidCoursePayload = {
-  cost?: number | null;
   metadata?: { paymentEnabled?: boolean; paymentLink?: string | null } | null;
 };
 
 export type TPaidCourseIssue = {
   message: string;
-  path: ('cost' | 'metadata' | 'paymentLink')[];
+  path: ('metadata' | 'paymentLink')[];
 };
 
-/**
- * Whether a course is paid. An explicit `paymentEnabled` flag wins; otherwise
- * a course is paid once it has a positive cost. Kept as a single shared helper
- * so the dashboard/API/widget all compute "is paid" the same way.
- */
-export function isCoursePaid(cost: number | null | undefined, metadata: TPaidCoursePayload['metadata']): boolean {
-  const paidFlag = metadata?.paymentEnabled;
-  return typeof paidFlag === 'boolean' ? paidFlag : typeof cost === 'number' && cost > 0;
+export function isCoursePaid(metadata: TPaidCoursePayload['metadata']): boolean {
+  return metadata?.paymentEnabled === true;
 }
 
 /**
@@ -480,13 +454,10 @@ export function isCoursePaid(cost: number | null | undefined, metadata: TPaidCou
  * final merged state (persisted course + pending update) and not just a
  * partial request payload.
  */
-export function validatePaidCourseState(
-  cost: number | null | undefined,
-  metadata: TPaidCoursePayload['metadata']
-): TPaidCourseIssue[] {
+export function validatePaidCourseState(metadata: TPaidCoursePayload['metadata']): TPaidCourseIssue[] {
   const issues: TPaidCourseIssue[] = [];
 
-  if (!isCoursePaid(cost, metadata)) return issues;
+  if (!isCoursePaid(metadata)) return issues;
 
   const paymentLink = typeof metadata?.paymentLink === 'string' ? metadata.paymentLink.trim() : '';
   if (!paymentLink) {
@@ -501,18 +472,11 @@ export function validatePaidCourseState(
     });
   }
 
-  if (cost === undefined || cost === null || cost <= 0) {
-    issues.push({
-      message: 'Paid courses must have a cost greater than 0',
-      path: ['cost']
-    });
-  }
-
   return issues;
 }
 
 export function superRefinePaidCourse(data: TPaidCoursePayload, ctx: z.RefinementCtx) {
-  for (const issue of validatePaidCourseState(data.cost, data.metadata)) {
+  for (const issue of validatePaidCourseState(data.metadata)) {
     ctx.addIssue({
       code: 'custom',
       message: issue.message,
@@ -524,7 +488,6 @@ export function superRefinePaidCourse(data: TPaidCoursePayload, ctx: z.Refinemen
 export const ZCourseUpdateBase = z.object({
   title: z.string().min(1).optional(),
   description: z.string().min(1).optional(),
-  type: ZCourseType.optional(),
   bannerImage: z.string().optional(),
   logo: z.string().optional(),
   slug: z.string().optional(),
@@ -532,21 +495,12 @@ export const ZCourseUpdateBase = z.object({
   orgOnly: z.boolean().optional(),
   overview: z.string().optional(),
   metadata: ZCourseMetadata.optional(),
-  cost: z.number().int().min(0).optional(),
-  currency: z.enum(['NGN', 'USD']).optional(),
   certificate: ZCertificationSettings.optional(),
   tagIds: z.array(z.uuid()).max(100).optional(),
-  compliance: ZComplianceSettings.optional(),
-  callout: ZCourseCalloutInput.optional()
+  recertificationMonths: ZRecertificationMonths.optional()
 });
 
-export const ZCourseUpdate = ZCourseUpdateBase.refine(
-  (data) => data.type !== 'COMPLIANCE' || data.compliance !== undefined,
-  {
-    message: 'Compliance settings are required when changing a course to COMPLIANCE',
-    path: ['compliance']
-  }
-).superRefine(superRefinePaidCourse);
+export const ZCourseUpdate = ZCourseUpdateBase.superRefine(superRefinePaidCourse);
 export type TCourseUpdate = z.infer<typeof ZCourseUpdate>;
 
 export const ZCourseUpdateParam = z.object({
@@ -558,8 +512,6 @@ export const ZCourseLandingPageUpdate = z.object({
   title: z.string().min(1).optional(),
   description: z.string().min(1).optional(),
   overview: z.string().optional(),
-  cost: z.number().int().min(0).optional(),
-  currency: z.enum(['NGN', 'USD']).optional(),
   imageUrl: z.url().optional(),
   generateImage: z.boolean().optional(),
   imageQuery: z.string().min(1).max(120).optional(),

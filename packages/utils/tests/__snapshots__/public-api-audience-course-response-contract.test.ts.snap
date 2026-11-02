@@ -136,19 +136,6 @@ exports[`public API audience and course response contract > ZPublicApiCertificat
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
-    "deadline": {
-      "anyOf": [
-        {
-          "format": "date-time",
-          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-          "type": "string",
-        },
-        {
-          "type": "null",
-        },
-      ],
-      "description": "null when nothing is stored.",
-    },
     "design": {
       "additionalProperties": false,
       "description": "The default design when nothing is stored.",
@@ -275,7 +262,6 @@ exports[`public API audience and course response contract > ZPublicApiCertificat
     "isDownloadable",
     "theme",
     "design",
-    "deadline",
     "emailMessage",
   ],
   "type": "object",
@@ -378,60 +364,11 @@ exports[`public API audience and course response contract > ZPublicApiCourseDeta
         },
       ],
     },
-    "callout": {
-      "anyOf": [
-        {
-          "additionalProperties": false,
-          "properties": {
-            "animation": {
-              "enum": [
-                "waves",
-                "dotted",
-                "none",
-              ],
-              "type": "string",
-            },
-            "buttonLabel": {
-              "type": "string",
-            },
-            "buttonUrl": {
-              "type": "string",
-            },
-            "description": {
-              "type": "string",
-            },
-            "title": {
-              "type": "string",
-            },
-          },
-          "required": [
-            "title",
-            "description",
-            "buttonLabel",
-            "buttonUrl",
-          ],
-          "type": "object",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
     "certificate": {
       "anyOf": [
         {
           "additionalProperties": {},
           "properties": {
-            "deadline": {
-              "anyOf": [
-                {
-                  "type": "string",
-                },
-                {
-                  "type": "null",
-                },
-              ],
-            },
             "design": {
               "additionalProperties": false,
               "properties": {
@@ -507,67 +444,6 @@ exports[`public API audience and course response contract > ZPublicApiCourseDeta
               "type": "string",
             },
           },
-          "type": "object",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
-    "compliance": {
-      "anyOf": [
-        {
-          "additionalProperties": {},
-          "properties": {
-            "framework": {
-              "anyOf": [
-                {
-                  "enum": [
-                    "HIPAA",
-                    "OSHA",
-                    "SOX",
-                    "GDPR",
-                    "PCI_DSS",
-                    "FERPA",
-                    "ISO",
-                    "CUSTOM",
-                  ],
-                  "type": "string",
-                },
-                {
-                  "type": "null",
-                },
-              ],
-            },
-            "gracePeriodDays": {
-              "type": "number",
-            },
-            "isMandatory": {
-              "type": "boolean",
-            },
-            "maxRetakeAttempts": {
-              "anyOf": [
-                {
-                  "type": "number",
-                },
-                {
-                  "type": "null",
-                },
-              ],
-            },
-            "reminderDaysBefore": {
-              "items": {
-                "type": "number",
-              },
-              "type": "array",
-            },
-            "retakeIntervalMonths": {
-              "type": "number",
-            },
-          },
-          "required": [
-            "retakeIntervalMonths",
-          ],
           "type": "object",
         },
         {
@@ -1068,16 +944,6 @@ exports[`public API audience and course response contract > ZPublicApiCourseDeta
       ],
       "type": "object",
     },
-    "cost": {
-      "anyOf": [
-        {
-          "type": "number",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
     "createdAt": {
       "anyOf": [
         {
@@ -1087,9 +953,6 @@ exports[`public API audience and course response contract > ZPublicApiCourseDeta
           "type": "null",
         },
       ],
-    },
-    "currency": {
-      "type": "string",
     },
     "description": {
       "type": "string",
@@ -1636,6 +1499,18 @@ exports[`public API audience and course response contract > ZPublicApiCourseDeta
     "publicForAll": {
       "type": "boolean",
     },
+    "recertificationMonths": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer",
+        },
+        {
+          "type": "null",
+        },
+      ],
+    },
     "seedKey": {
       "anyOf": [
         {
@@ -1678,22 +1553,6 @@ exports[`public API audience and course response contract > ZPublicApiCourseDeta
     "title": {
       "type": "string",
     },
-    "type": {
-      "anyOf": [
-        {
-          "enum": [
-            "SELF_PACED",
-            "LIVE_CLASS",
-            "COMPLIANCE",
-            "PUBLIC",
-          ],
-          "type": "string",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
     "updatedAt": {
       "anyOf": [
         {
@@ -1720,16 +1579,12 @@ exports[`public API audience and course response contract > ZPublicApiCourseDeta
     "logo",
     "slug",
     "metadata",
-    "cost",
-    "currency",
     "bannerImage",
     "isPublished",
     "displayOrder",
     "certificate",
-    "compliance",
     "status",
-    "type",
-    "callout",
+    "recertificationMonths",
     "group",
     "attendance",
     "content",
@@ -1754,60 +1609,11 @@ exports[`public API audience and course response contract > ZPublicApiCourseList
         },
       ],
     },
-    "callout": {
-      "anyOf": [
-        {
-          "additionalProperties": false,
-          "properties": {
-            "animation": {
-              "enum": [
-                "waves",
-                "dotted",
-                "none",
-              ],
-              "type": "string",
-            },
-            "buttonLabel": {
-              "type": "string",
-            },
-            "buttonUrl": {
-              "type": "string",
-            },
-            "description": {
-              "type": "string",
-            },
-            "title": {
-              "type": "string",
-            },
-          },
-          "required": [
-            "title",
-            "description",
-            "buttonLabel",
-            "buttonUrl",
-          ],
-          "type": "object",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
     "certificate": {
       "anyOf": [
         {
           "additionalProperties": {},
           "properties": {
-            "deadline": {
-              "anyOf": [
-                {
-                  "type": "string",
-                },
-                {
-                  "type": "null",
-                },
-              ],
-            },
             "design": {
               "additionalProperties": false,
               "properties": {
@@ -1890,77 +1696,6 @@ exports[`public API audience and course response contract > ZPublicApiCourseList
         },
       ],
     },
-    "compliance": {
-      "anyOf": [
-        {
-          "additionalProperties": {},
-          "properties": {
-            "framework": {
-              "anyOf": [
-                {
-                  "enum": [
-                    "HIPAA",
-                    "OSHA",
-                    "SOX",
-                    "GDPR",
-                    "PCI_DSS",
-                    "FERPA",
-                    "ISO",
-                    "CUSTOM",
-                  ],
-                  "type": "string",
-                },
-                {
-                  "type": "null",
-                },
-              ],
-            },
-            "gracePeriodDays": {
-              "type": "number",
-            },
-            "isMandatory": {
-              "type": "boolean",
-            },
-            "maxRetakeAttempts": {
-              "anyOf": [
-                {
-                  "type": "number",
-                },
-                {
-                  "type": "null",
-                },
-              ],
-            },
-            "reminderDaysBefore": {
-              "items": {
-                "type": "number",
-              },
-              "type": "array",
-            },
-            "retakeIntervalMonths": {
-              "type": "number",
-            },
-          },
-          "required": [
-            "retakeIntervalMonths",
-          ],
-          "type": "object",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
-    "cost": {
-      "anyOf": [
-        {
-          "type": "number",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
     "createdAt": {
       "anyOf": [
         {
@@ -1970,9 +1705,6 @@ exports[`public API audience and course response contract > ZPublicApiCourseList
           "type": "null",
         },
       ],
-    },
-    "currency": {
-      "type": "string",
     },
     "description": {
       "type": "string",
@@ -2266,6 +1998,18 @@ exports[`public API audience and course response contract > ZPublicApiCourseList
     "publicForAll": {
       "type": "boolean",
     },
+    "recertificationMonths": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer",
+        },
+        {
+          "type": "null",
+        },
+      ],
+    },
     "seedKey": {
       "anyOf": [
         {
@@ -2337,22 +2081,6 @@ exports[`public API audience and course response contract > ZPublicApiCourseList
     "totalStudents": {
       "type": "number",
     },
-    "type": {
-      "anyOf": [
-        {
-          "enum": [
-            "SELF_PACED",
-            "LIVE_CLASS",
-            "COMPLIANCE",
-            "PUBLIC",
-          ],
-          "type": "string",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
     "updatedAt": {
       "anyOf": [
         {
@@ -2379,16 +2107,12 @@ exports[`public API audience and course response contract > ZPublicApiCourseList
     "logo",
     "slug",
     "metadata",
-    "cost",
-    "currency",
     "bannerImage",
     "isPublished",
     "displayOrder",
     "certificate",
-    "compliance",
     "status",
-    "type",
-    "callout",
+    "recertificationMonths",
     "lessonCount",
     "totalStudents",
     "exerciseCount",
@@ -2413,60 +2137,11 @@ exports[`public API audience and course response contract > ZPublicApiCourseResp
         },
       ],
     },
-    "callout": {
-      "anyOf": [
-        {
-          "additionalProperties": false,
-          "properties": {
-            "animation": {
-              "enum": [
-                "waves",
-                "dotted",
-                "none",
-              ],
-              "type": "string",
-            },
-            "buttonLabel": {
-              "type": "string",
-            },
-            "buttonUrl": {
-              "type": "string",
-            },
-            "description": {
-              "type": "string",
-            },
-            "title": {
-              "type": "string",
-            },
-          },
-          "required": [
-            "title",
-            "description",
-            "buttonLabel",
-            "buttonUrl",
-          ],
-          "type": "object",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
     "certificate": {
       "anyOf": [
         {
           "additionalProperties": {},
           "properties": {
-            "deadline": {
-              "anyOf": [
-                {
-                  "type": "string",
-                },
-                {
-                  "type": "null",
-                },
-              ],
-            },
             "design": {
               "additionalProperties": false,
               "properties": {
@@ -2549,77 +2224,6 @@ exports[`public API audience and course response contract > ZPublicApiCourseResp
         },
       ],
     },
-    "compliance": {
-      "anyOf": [
-        {
-          "additionalProperties": {},
-          "properties": {
-            "framework": {
-              "anyOf": [
-                {
-                  "enum": [
-                    "HIPAA",
-                    "OSHA",
-                    "SOX",
-                    "GDPR",
-                    "PCI_DSS",
-                    "FERPA",
-                    "ISO",
-                    "CUSTOM",
-                  ],
-                  "type": "string",
-                },
-                {
-                  "type": "null",
-                },
-              ],
-            },
-            "gracePeriodDays": {
-              "type": "number",
-            },
-            "isMandatory": {
-              "type": "boolean",
-            },
-            "maxRetakeAttempts": {
-              "anyOf": [
-                {
-                  "type": "number",
-                },
-                {
-                  "type": "null",
-                },
-              ],
-            },
-            "reminderDaysBefore": {
-              "items": {
-                "type": "number",
-              },
-              "type": "array",
-            },
-            "retakeIntervalMonths": {
-              "type": "number",
-            },
-          },
-          "required": [
-            "retakeIntervalMonths",
-          ],
-          "type": "object",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
-    "cost": {
-      "anyOf": [
-        {
-          "type": "number",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
     "createdAt": {
       "anyOf": [
         {
@@ -2629,9 +2233,6 @@ exports[`public API audience and course response contract > ZPublicApiCourseResp
           "type": "null",
         },
       ],
-    },
-    "currency": {
-      "type": "string",
     },
     "description": {
       "type": "string",
@@ -2919,6 +2520,18 @@ exports[`public API audience and course response contract > ZPublicApiCourseResp
     "publicForAll": {
       "type": "boolean",
     },
+    "recertificationMonths": {
+      "anyOf": [
+        {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer",
+        },
+        {
+          "type": "null",
+        },
+      ],
+    },
     "seedKey": {
       "anyOf": [
         {
@@ -2958,22 +2571,6 @@ exports[`public API audience and course response contract > ZPublicApiCourseResp
     "title": {
       "type": "string",
     },
-    "type": {
-      "anyOf": [
-        {
-          "enum": [
-            "SELF_PACED",
-            "LIVE_CLASS",
-            "COMPLIANCE",
-            "PUBLIC",
-          ],
-          "type": "string",
-        },
-        {
-          "type": "null",
-        },
-      ],
-    },
     "updatedAt": {
       "anyOf": [
         {
@@ -3000,16 +2597,12 @@ exports[`public API audience and course response contract > ZPublicApiCourseResp
     "logo",
     "slug",
     "metadata",
-    "cost",
-    "currency",
     "bannerImage",
     "isPublished",
     "displayOrder",
     "certificate",
-    "compliance",
     "status",
-    "type",
-    "callout",
+    "recertificationMonths",
   ],
   "type": "object",
 }
@@ -3031,79 +2624,6 @@ exports[`public API audience and course response contract > ZPublicApiCourseStru
         "course": {
           "additionalProperties": false,
           "properties": {
-            "compliance": {
-              "additionalProperties": false,
-              "properties": {
-                "framework": {
-                  "anyOf": [
-                    {
-                      "enum": [
-                        "HIPAA",
-                        "OSHA",
-                        "SOX",
-                        "GDPR",
-                        "PCI_DSS",
-                        "FERPA",
-                        "ISO",
-                        "CUSTOM",
-                      ],
-                      "type": "string",
-                    },
-                    {
-                      "type": "null",
-                    },
-                  ],
-                },
-                "gracePeriodDays": {
-                  "default": 0,
-                  "maximum": 365,
-                  "minimum": 0,
-                  "type": "integer",
-                },
-                "isMandatory": {
-                  "default": true,
-                  "type": "boolean",
-                },
-                "maxRetakeAttempts": {
-                  "anyOf": [
-                    {
-                      "maximum": 9007199254740991,
-                      "minimum": 1,
-                      "type": "integer",
-                    },
-                    {
-                      "type": "null",
-                    },
-                  ],
-                },
-                "reminderDaysBefore": {
-                  "default": [
-                    30,
-                    7,
-                    1,
-                  ],
-                  "items": {
-                    "maximum": 365,
-                    "minimum": 1,
-                    "type": "integer",
-                  },
-                  "maxItems": 10,
-                  "type": "array",
-                },
-                "retakeIntervalMonths": {
-                  "maximum": 120,
-                  "minimum": 1,
-                  "type": "integer",
-                },
-              },
-              "required": [
-                "retakeIntervalMonths",
-                "gracePeriodDays",
-                "reminderDaysBefore",
-                "isMandatory",
-              ],
-              "type": "object",
-            },
             "description": {
               "minLength": 1,
               "type": "string",
@@ -3375,20 +2895,10 @@ exports[`public API audience and course response contract > ZPublicApiCourseStru
               "minLength": 1,
               "type": "string",
             },
-            "type": {
-              "enum": [
-                "SELF_PACED",
-                "LIVE_CLASS",
-                "COMPLIANCE",
-                "PUBLIC",
-              ],
-              "type": "string",
-            },
           },
           "required": [
             "title",
             "description",
-            "type",
             "locale",
           ],
           "type": "object",
@@ -3849,9 +3359,6 @@ exports[`public API audience and course response contract > ZPublicApiCreateAudi
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
-    "alreadyEnrolledInCohorts": {
-      "type": "number",
-    },
     "alreadyEnrolledInCourses": {
       "type": "number",
     },
@@ -3919,7 +3426,6 @@ exports[`public API audience and course response contract > ZPublicApiCreateAudi
     "rows",
     "assigned",
     "alreadyEnrolledInCourses",
-    "alreadyEnrolledInCohorts",
     "pendingInvitesRenewed",
     "truncated",
   ],
@@ -3945,60 +3451,11 @@ exports[`public API audience and course response contract > ZPublicApiCreateCour
             },
           ],
         },
-        "callout": {
-          "anyOf": [
-            {
-              "additionalProperties": false,
-              "properties": {
-                "animation": {
-                  "enum": [
-                    "waves",
-                    "dotted",
-                    "none",
-                  ],
-                  "type": "string",
-                },
-                "buttonLabel": {
-                  "type": "string",
-                },
-                "buttonUrl": {
-                  "type": "string",
-                },
-                "description": {
-                  "type": "string",
-                },
-                "title": {
-                  "type": "string",
-                },
-              },
-              "required": [
-                "title",
-                "description",
-                "buttonLabel",
-                "buttonUrl",
-              ],
-              "type": "object",
-            },
-            {
-              "type": "null",
-            },
-          ],
-        },
         "certificate": {
           "anyOf": [
             {
               "additionalProperties": {},
               "properties": {
-                "deadline": {
-                  "anyOf": [
-                    {
-                      "type": "string",
-                    },
-                    {
-                      "type": "null",
-                    },
-                  ],
-                },
                 "design": {
                   "additionalProperties": false,
                   "properties": {
@@ -4081,77 +3538,6 @@ exports[`public API audience and course response contract > ZPublicApiCreateCour
             },
           ],
         },
-        "compliance": {
-          "anyOf": [
-            {
-              "additionalProperties": {},
-              "properties": {
-                "framework": {
-                  "anyOf": [
-                    {
-                      "enum": [
-                        "HIPAA",
-                        "OSHA",
-                        "SOX",
-                        "GDPR",
-                        "PCI_DSS",
-                        "FERPA",
-                        "ISO",
-                        "CUSTOM",
-                      ],
-                      "type": "string",
-                    },
-                    {
-                      "type": "null",
-                    },
-                  ],
-                },
-                "gracePeriodDays": {
-                  "type": "number",
-                },
-                "isMandatory": {
-                  "type": "boolean",
-                },
-                "maxRetakeAttempts": {
-                  "anyOf": [
-                    {
-                      "type": "number",
-                    },
-                    {
-                      "type": "null",
-                    },
-                  ],
-                },
-                "reminderDaysBefore": {
-                  "items": {
-                    "type": "number",
-                  },
-                  "type": "array",
-                },
-                "retakeIntervalMonths": {
-                  "type": "number",
-                },
-              },
-              "required": [
-                "retakeIntervalMonths",
-              ],
-              "type": "object",
-            },
-            {
-              "type": "null",
-            },
-          ],
-        },
-        "cost": {
-          "anyOf": [
-            {
-              "type": "number",
-            },
-            {
-              "type": "null",
-            },
-          ],
-        },
         "createdAt": {
           "anyOf": [
             {
@@ -4161,9 +3547,6 @@ exports[`public API audience and course response contract > ZPublicApiCreateCour
               "type": "null",
             },
           ],
-        },
-        "currency": {
-          "type": "string",
         },
         "description": {
           "type": "string",
@@ -4451,6 +3834,18 @@ exports[`public API audience and course response contract > ZPublicApiCreateCour
         "publicForAll": {
           "type": "boolean",
         },
+        "recertificationMonths": {
+          "anyOf": [
+            {
+              "maximum": 9007199254740991,
+              "minimum": -9007199254740991,
+              "type": "integer",
+            },
+            {
+              "type": "null",
+            },
+          ],
+        },
         "seedKey": {
           "anyOf": [
             {
@@ -4490,22 +3885,6 @@ exports[`public API audience and course response contract > ZPublicApiCreateCour
         "title": {
           "type": "string",
         },
-        "type": {
-          "anyOf": [
-            {
-              "enum": [
-                "SELF_PACED",
-                "LIVE_CLASS",
-                "COMPLIANCE",
-                "PUBLIC",
-              ],
-              "type": "string",
-            },
-            {
-              "type": "null",
-            },
-          ],
-        },
         "updatedAt": {
           "anyOf": [
             {
@@ -4532,16 +3911,12 @@ exports[`public API audience and course response contract > ZPublicApiCreateCour
         "logo",
         "slug",
         "metadata",
-        "cost",
-        "currency",
         "bannerImage",
         "isPublished",
         "displayOrder",
         "certificate",
-        "compliance",
         "status",
-        "type",
-        "callout",
+        "recertificationMonths",
       ],
       "type": "object",
     },
@@ -4736,55 +4111,6 @@ exports[`public API audience and course response contract > ZPublicApiRemoveAudi
     "lastActiveAt",
     "createdAt",
   ],
-  "type": "object",
-}
-`;
-
-exports[`public API audience and course response contract > ZPublicApiUpdateCourseEnvelope keeps its published shape > ZPublicApiUpdateCourseEnvelope 1`] = `
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "additionalProperties": false,
-  "properties": {
-    "conversionBlocked": {
-      "description": "Set when a type change was skipped because these questions cannot be auto-graded",
-      "items": {
-        "additionalProperties": false,
-        "properties": {
-          "exerciseId": {
-            "type": "string",
-          },
-          "exerciseTitle": {
-            "type": "string",
-          },
-          "questionId": {
-            "anyOf": [
-              {
-                "type": "number",
-              },
-              {
-                "type": "string",
-              },
-            ],
-          },
-          "questionTitle": {
-            "type": "string",
-          },
-          "typeId": {
-            "type": "number",
-          },
-        },
-        "required": [
-          "questionId",
-          "questionTitle",
-          "exerciseId",
-          "exerciseTitle",
-          "typeId",
-        ],
-        "type": "object",
-      },
-      "type": "array",
-    },
-  },
   "type": "object",
 }
 `;

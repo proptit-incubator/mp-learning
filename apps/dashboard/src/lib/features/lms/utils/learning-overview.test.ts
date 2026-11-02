@@ -3,31 +3,49 @@ import type { UserEnrolledCourses } from '$features/course/types';
 import { CourseSortBy } from '$features/course/utils/constants';
 import { filterLearningCourses, getLearningSummary, prioritizeLearningCourses } from './learning-overview';
 
-function course(overrides: Partial<UserEnrolledCourses[number]>): UserEnrolledCourses[number] {
+type Course = UserEnrolledCourses[number];
+type Enrollment = NonNullable<Course['enrollment']>;
+
+function enrollment(overrides: Partial<Enrollment>): Enrollment {
+  return {
+    courseId: 'course',
+    enrollmentId: 'enrollment',
+    kind: 'ASSIGNED',
+    status: 'ACTIVE',
+    state: 'not_started',
+    dueDate: null,
+    batchLabel: null,
+    validUntil: null,
+    message: '',
+    ...overrides
+  } as Enrollment;
+}
+
+function course(overrides: Partial<Course>): Course {
   return {
     id: 'course',
     title: 'Khóa học',
-    type: 'SELF_PACED',
     lessonCount: 10,
     exerciseCount: 0,
     progressRate: 0,
     exercisesCompleted: 0,
     createdAt: '2026-10-01T00:00:00Z',
+    enrollment: enrollment({ kind: 'SELF' }),
     ...overrides
-  } as UserEnrolledCourses[number];
+  } as Course;
 }
 
 describe('employee learning priorities', () => {
-  it('puts dated required learning before undated courses, even when undated courses have more progress', () => {
+  it('puts dated assigned learning before self-selected courses, even when those have more progress', () => {
     const optional = course({ id: 'optional', progressRate: 9 });
-    const required = course({ id: 'required', type: 'COMPLIANCE', complianceDueDate: '2026-10-26T00:00:00Z' });
+    const required = course({ id: 'required', enrollment: enrollment({ dueDate: '2026-10-26T00:00:00Z' }) });
     expect(prioritizeLearningCourses([optional, required]).map((entry) => entry.id)).toEqual(['required', 'optional']);
   });
 
-  it('orders required courses by deadline and ignores invalid deadlines', () => {
-    const later = course({ id: 'later', type: 'COMPLIANCE', complianceDueDate: '2026-10-28T00:00:00Z' });
-    const earlier = course({ id: 'earlier', type: 'COMPLIANCE', complianceDueDate: '2026-10-20T00:00:00Z' });
-    const invalid = course({ id: 'invalid', type: 'COMPLIANCE', complianceDueDate: 'invalid' });
+  it('orders assigned courses by due date and ignores invalid dates', () => {
+    const later = course({ id: 'later', enrollment: enrollment({ dueDate: '2026-10-28T00:00:00Z' }) });
+    const earlier = course({ id: 'earlier', enrollment: enrollment({ dueDate: '2026-10-20T00:00:00Z' }) });
+    const invalid = course({ id: 'invalid', enrollment: enrollment({ dueDate: 'invalid' }) });
     expect(prioritizeLearningCourses([invalid, later, earlier]).map((entry) => entry.id)).toEqual([
       'earlier',
       'later',
@@ -35,61 +53,41 @@ describe('employee learning priorities', () => {
     ]);
   });
 
-  it('excludes compliant and waived records from overdue work while retaining incomplete assessments', () => {
+  it('counts waived and completed enrollments as done and keeps expired ones pending', () => {
     const courses = [
+      course({ id: 'waived', enrollment: enrollment({ state: 'waived', dueDate: '2026-10-01T00:00:00Z' }) }),
+      course({ id: 'completed', enrollment: enrollment({ state: 'completed', dueDate: '2026-10-01T00:00:00Z' }) }),
       course({
-        id: 'waived',
-        type: 'COMPLIANCE',
-        complianceStatus: 'waived',
-        complianceDueDate: '2026-10-01T00:00:00Z'
-      }),
-      course({
-        id: 'compliant',
-        type: 'COMPLIANCE',
-        complianceStatus: 'compliant',
-        complianceDueDate: '2026-10-01T00:00:00Z'
-      }),
-      course({
-        id: 'overdue',
-        type: 'COMPLIANCE',
-        complianceStatus: 'non_compliant',
-        complianceDueDate: '2026-10-20T00:00:00Z'
+        id: 'expired',
+        progressRate: 10,
+        enrollment: enrollment({ state: 'expired', dueDate: '2026-10-20T00:00:00Z' })
       }),
       course({ id: 'assessment', progressRate: 10, exerciseCount: 1 })
     ];
     const summary = getLearningSummary(courses, Date.parse('2026-10-25T00:00:00Z'));
-    expect(summary.completed).toHaveLength(2);
-    expect(summary.overdue.map((entry) => entry.id)).toEqual(['overdue']);
+
+    expect(summary.completed.map((entry) => entry.id)).toEqual(['waived', 'completed']);
+    expect(summary.overdue.map((entry) => entry.id)).toEqual(['expired']);
     expect(summary.pending.map((entry) => entry.id)).toContain('assessment');
   });
 
-  it('matches Vietnamese without accents or case and never mutates the source list', () => {
+  it('treats only assigned enrollments as mandatory', () => {
     const courses = [
-      course({ id: 'older', title: 'Đào tạo Hội nhập' }),
-      course({ id: 'newer', title: 'HỘI NHẬP MP', createdAt: '2026-10-24T00:00:00Z' })
-    ];
-    const filtered = filterLearningCourses(courses, 'hoi nhap', CourseSortBy.DateCreated);
-    expect(filtered.map((entry) => entry.id)).toEqual(['newer', 'older']);
-    expect(courses.map((entry) => entry.id)).toEqual(['older', 'newer']);
-    expect(filterLearningCourses(courses, 'dao tao', CourseSortBy.DateCreated)).toHaveLength(1);
-  });
-
-  it('prioritizes required ordinary-course assignments without treating self-selection as mandatory', () => {
-    const courses = [
-      course({ id: 'self', isRequired: false, isSelfEnrolled: true, progressRate: 8 }),
-      course({ id: 'assigned', isRequired: true, learningDueDate: '2026-10-20T00:00:00Z' }),
-      course({ id: 'recommended', isRequired: false, isAssigned: true })
+      course({ id: 'self', progressRate: 8 }),
+      course({ id: 'assigned', enrollment: enrollment({ dueDate: '2026-10-20T00:00:00Z' }) })
     ];
     const summary = getLearningSummary(courses, Date.parse('2026-10-25T00:00:00Z'));
+
     expect(summary.mandatory.map((entry) => entry.id)).toEqual(['assigned']);
     expect(summary.overdue.map((entry) => entry.id)).toEqual(['assigned']);
-    expect(summary.pending[0].id).toBe('assigned');
   });
 
-  it('handles empty learning assignments without a fictitious completion rate', () => {
-    const summary = getLearningSummary([], Date.now());
-    expect(summary.progress).toBe(0);
-    expect(summary.pending).toEqual([]);
-    expect(summary.totalItems).toBe(0);
+  it('searches Vietnamese titles without diacritics and keeps priority order on request', () => {
+    const courses = [course({ id: 'b', title: 'An toàn thông tin' }), course({ id: 'a', title: 'Đào tạo hội nhập' })];
+    expect(filterLearningCourses(courses, 'dao tao', CourseSortBy.DateCreated).map((entry) => entry.id)).toEqual(['a']);
+    expect(filterLearningCourses(courses, '', CourseSortBy.DateCreated, true).map((entry) => entry.id)).toEqual([
+      'b',
+      'a'
+    ]);
   });
 });

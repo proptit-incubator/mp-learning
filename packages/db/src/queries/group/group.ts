@@ -4,7 +4,7 @@ import { TGroupmember, TNewGroup, TNewGroupmember } from '@db/types';
 import { sql, and, asc, eq, inArray, isNotNull, isNull, ne, or } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
-import { assignCourseGroups, learningMembershipSql } from '../course/learning-access';
+import { learnerAccessSql } from '../course/enrollment';
 import { ROLE } from '@cio/utils/constants';
 import { db, type DbOrTxClient } from '@db/drizzle';
 
@@ -61,44 +61,6 @@ export async function getExistingGroupMembers(
 }
 
 /**
- * Enroll users in course groups, skipping any existing memberships.
- * Returns the newly inserted memberships.
- */
-export async function enrollUsersInCourseGroups(
-  groupIds: string[],
-  users: Array<{ profileId: string; email?: string }>,
-  roleId: number,
-  dbClient: DbOrTxClient = db,
-  mode: 'DIRECT' | 'CONTEXT' = 'DIRECT'
-): Promise<TGroupmember[]> {
-  if (groupIds.length === 0 || users.length === 0) return [];
-
-  if (dbClient === db)
-    return db.transaction((transaction) => enrollUsersInCourseGroups(groupIds, users, roleId, transaction, mode));
-
-  const pairs = users.flatMap((u) => groupIds.map((groupId) => ({ groupId, profileId: u.profileId })));
-  const existingSet = await getExistingGroupMembers(pairs, dbClient);
-  const emailByProfile = new Map(users.map((u) => [u.profileId, u.email]));
-
-  const toInsert = pairs
-    .filter((p) => !existingSet.has(`${p.groupId}:${p.profileId}`))
-    .map((p) => ({
-      groupId: p.groupId,
-      roleId,
-      learningAccessManaged: roleId === ROLE.STUDENT,
-      profileId: p.profileId,
-      email: emailByProfile.get(p.profileId) ?? undefined
-    }));
-
-  const inserted = await addGroupMembers(toInsert, dbClient);
-  if (roleId === ROLE.STUDENT && mode === 'DIRECT') {
-    const profileIds = users.map((user) => user.profileId);
-    await assignCourseGroups(groupIds, profileIds, null, dbClient);
-  }
-  return inserted;
-}
-
-/**
  * Checks if a profile is already a member of a specific group
  * @param groupId Group ID
  * @param profileId Profile ID
@@ -137,10 +99,7 @@ export const isUserCourseMember = async (
       and(
         eq(schema.course.id, courseId),
         eq(schema.groupmember.profileId, profileId),
-        or(
-          ne(schema.groupmember.roleId, ROLE.STUDENT),
-          learningMembershipSql(sql`${schema.course.id}`, sql`${schema.course.groupId}`, profileId)
-        )
+        or(ne(schema.groupmember.roleId, ROLE.STUDENT), learnerAccessSql(sql`${schema.course.id}`, profileId))
       )
     )
     .limit(1);
@@ -196,10 +155,7 @@ export const isUserCourseMemberOrOrgAdmin = async (courseId: string, profileId: 
         or(
           and(
             isNotNull(schema.groupmember.id),
-            or(
-              ne(schema.groupmember.roleId, ROLE.STUDENT),
-              learningMembershipSql(sql`${schema.course.id}`, sql`${schema.course.groupId}`, profileId)
-            )
+            or(ne(schema.groupmember.roleId, ROLE.STUDENT), learnerAccessSql(sql`${schema.course.id}`, profileId))
           ),
           isNotNull(schema.organizationmember.id)
         )
@@ -225,10 +181,7 @@ export const getUserCourseRole = async (courseId: string, profileId: string): Pr
       and(
         eq(schema.course.id, courseId),
         eq(schema.groupmember.profileId, profileId),
-        or(
-          ne(schema.groupmember.roleId, ROLE.STUDENT),
-          learningMembershipSql(sql`${schema.course.id}`, sql`${schema.course.groupId}`, profileId)
-        )
+        or(ne(schema.groupmember.roleId, ROLE.STUDENT), learnerAccessSql(sql`${schema.course.id}`, profileId))
       )
     )
     .limit(1);
@@ -296,113 +249,9 @@ export const isCourseTeamMemberOrOrgAdmin = async (
   return result.length > 0;
 };
 
-/**
- * Active org tutor who mentors a cohort that includes this course.
- * Cohort role must be ADMIN or TUTOR. Org-only tutors are not included.
- */
-export const isActiveOrgTutorOfCourseCohort = async (courseId: string, profileId: string): Promise<boolean> => {
-  const result = await db
-    .select({ cohortMemberId: schema.cohortMember.id })
-    .from(schema.course)
-    .innerJoin(schema.group, eq(schema.course.groupId, schema.group.id))
-    .innerJoin(
-      schema.organizationmember,
-      and(
-        eq(schema.organizationmember.organizationId, schema.group.organizationId),
-        eq(schema.organizationmember.profileId, profileId),
-        eq(schema.organizationmember.roleId, ROLE.TUTOR),
-        eq(schema.organizationmember.status, 'ACTIVE')
-      )
-    )
-    .innerJoin(schema.cohort, eq(schema.cohort.organizationId, schema.group.organizationId))
-    .innerJoin(
-      schema.cohortCourse,
-      and(eq(schema.cohortCourse.cohortId, schema.cohort.id), eq(schema.cohortCourse.courseId, schema.course.id))
-    )
-    .innerJoin(
-      schema.cohortMember,
-      and(
-        eq(schema.cohortMember.cohortId, schema.cohort.id),
-        eq(schema.cohortMember.profileId, profileId),
-        or(eq(schema.cohortMember.roleId, ROLE.ADMIN), eq(schema.cohortMember.roleId, ROLE.TUTOR))
-      )
-    )
-    .where(eq(schema.course.id, courseId))
-    .limit(1);
-
-  return result.length > 0;
-};
-
-/**
- * Course group ADMIN/TUTOR, org ADMIN, or an active org tutor who mentors a cohort
- * that includes the course. Students and org-only tutors return false.
- */
-export const canAccessCourseSubmissions = async (courseId: string, profileId: string): Promise<boolean> => {
-  const isTeamOrOrgAdmin = await isCourseTeamMemberOrOrgAdmin(courseId, profileId);
-
-  if (isTeamOrOrgAdmin) {
-    return true;
-  }
-
-  return isActiveOrgTutorOfCourseCohort(courseId, profileId);
-};
-
-/**
- * Resolves program-based access to a course.
- * Returns the course group/org context plus the matched program member role.
- */
-export async function getCourseProgramAccess(
-  courseId: string,
-  profileId: string
-): Promise<{
-  courseId: string;
-  courseGroupId: string;
-  organizationId: string | null;
-  profileEmail: string | null;
-  roleId: number;
-} | null> {
-  try {
-    const result = await db
-      .select({
-        courseId: schema.course.id,
-        courseGroupId: schema.group.id,
-        organizationId: schema.group.organizationId,
-        profileEmail: schema.profile.email,
-        roleId: schema.programMember.roleId
-      })
-      .from(schema.course)
-      .innerJoin(schema.group, eq(schema.course.groupId, schema.group.id))
-      .innerJoin(schema.programCourse, eq(schema.course.id, schema.programCourse.courseId))
-      .innerJoin(
-        schema.program,
-        and(
-          eq(schema.program.id, schema.programCourse.programId),
-          eq(schema.program.status, 'ACTIVE'),
-          eq(schema.program.organizationId, schema.group.organizationId)
-        )
-      )
-      .innerJoin(
-        schema.programMember,
-        and(eq(schema.programMember.programId, schema.program.id), eq(schema.programMember.profileId, profileId))
-      )
-      .leftJoin(schema.profile, eq(schema.programMember.profileId, schema.profile.id))
-      .where(eq(schema.course.id, courseId))
-      .orderBy(asc(schema.programMember.roleId))
-      .limit(1);
-
-    if (result.length === 0) {
-      return null;
-    }
-
-    return {
-      ...result[0],
-      roleId: Number(result[0].roleId)
-    };
-  } catch (error) {
-    console.error('getCourseProgramAccess error:', error);
-    throw new Error(`Failed to get course program access: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
+/** Course group ADMIN/TUTOR or org ADMIN. Students and org-only tutors return false. */
+export const canAccessCourseSubmissions = async (courseId: string, profileId: string): Promise<boolean> =>
+  isCourseTeamMemberOrOrgAdmin(courseId, profileId);
 
 /**
  * Sets a profile's course roles in one org to their current org role. Role ids ascend by

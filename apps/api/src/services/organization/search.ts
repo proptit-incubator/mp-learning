@@ -1,18 +1,15 @@
 import {
   searchLmsCourses,
-  searchLmsCohorts,
   searchOrgAudience,
   searchOrgCourses,
-  searchOrgCohorts,
   searchOrgTagsAndGroups,
   searchOrgWidgets
 } from '@cio/db/queries';
 
 export async function searchOrganization(orgId: string, search: string, limit: number, includeAudience: boolean) {
   const audiencePromise = includeAudience ? searchOrgAudience(orgId, search, limit) : Promise.resolve([]);
-  const [courses, cohorts, widgets, tags, audience] = await Promise.all([
+  const [courses, widgets, tags, audience] = await Promise.all([
     searchOrgCourses(orgId, search, limit),
-    searchOrgCohorts(orgId, search, limit),
     searchOrgWidgets(orgId, search, limit),
     searchOrgTagsAndGroups(orgId, search, limit),
     audiencePromise
@@ -20,7 +17,6 @@ export async function searchOrganization(orgId: string, search: string, limit: n
 
   return {
     courses,
-    cohorts,
     widgets,
     tags,
     audience
@@ -28,13 +24,9 @@ export async function searchOrganization(orgId: string, search: string, limit: n
 }
 
 export async function searchLmsOrganization(orgId: string, profileId: string, search: string, limit: number) {
-  const [courses, cohorts] = await Promise.all([
-    searchLmsCourses(orgId, profileId, search, limit),
-    searchLmsCohorts(orgId, profileId, search, limit)
-  ]);
+  const courses = await searchLmsCourses(orgId, profileId, search, limit);
 
   return {
-    courses,
-    cohorts
+    courses
   };
 }

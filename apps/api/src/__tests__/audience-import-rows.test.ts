@@ -32,13 +32,6 @@ vi.mock('@cio/db/queries/course', () => ({
   getOrgCourses: vi.fn().mockResolvedValue([])
 }));
 
-vi.mock('@cio/db/queries/cohort', () => ({
-  addCohortMember: vi.fn(),
-  getCohortsByOrg: vi.fn().mockResolvedValue([]),
-  getCourseIdsByCohortIds: vi.fn().mockResolvedValue([]),
-  getExistingCohortMembers: vi.fn().mockResolvedValue([])
-}));
-
 vi.mock('@cio/db/queries/group', () => ({
   addGroupMembers: vi.fn(),
   enrollUsersInCourseGroups: vi.fn().mockResolvedValue(undefined),
@@ -75,8 +68,6 @@ import {
   getOrganizationById,
   getOrganizationMembersByNormalizedEmails
 } from '@cio/db/queries/organization';
-import { getCohortsByOrg } from '@cio/db/queries/cohort';
-import { enqueueTransactionalEmail } from '@api/services/jobs';
 import {
   assertStudentCapacityOrThrow,
   getRemainingStudentSeats,
@@ -96,7 +87,7 @@ beforeEach(() => {
 });
 
 function csv(...lines: string[]) {
-  return { recipientCsv: lines.join('\n'), allCourses: false, allCohorts: false, sendEmail: false } as never;
+  return { recipientCsv: lines.join('\n'), allCourses: false, sendEmail: false } as never;
 }
 
 describe('importAudienceMembers — one bad row does not fail the batch', () => {
@@ -162,7 +153,7 @@ describe('importAudienceMembers — one bad row does not fail the batch', () => 
   it('returns every result field when nothing is importable', async () => {
     const result = await importAudienceMembers(
       ORG,
-      { recipients: [{ email: 'broken' }], allCourses: false, allCohorts: false, sendEmail: false } as never,
+      { recipients: [{ email: 'broken' }], allCourses: false, sendEmail: false } as never,
       ACTOR
     );
 
@@ -174,7 +165,6 @@ describe('importAudienceMembers — one bad row does not fail the batch', () => 
       rows: [{ email: 'broken', name: undefined, status: 'invalid_email' }],
       assigned: 0,
       alreadyEnrolledInCourses: 0,
-      alreadyEnrolledInCohorts: 0,
       pendingInvitesRenewed: 0,
       truncated: 0
     });
@@ -210,7 +200,7 @@ describe('importAudienceMembers — seat limit', () => {
 
     const result = await importAudienceMembers(
       ORG,
-      { recipients, allCourses: false, allCohorts: false, sendEmail: false } as never,
+      { recipients, allCourses: false, sendEmail: false } as never,
       ACTOR
     );
 
@@ -255,58 +245,6 @@ describe('importAudienceMembers — seat limit', () => {
   });
 });
 
-describe('importAudienceMembers — cohort invites', () => {
-  function cohortInvite(sendEmail: boolean, ...emails: string[]) {
-    return {
-      recipientCsv: ['email', ...emails].join('\n'),
-      cohortIds: ['cohort-1'],
-      allCourses: false,
-      allCohorts: false,
-      sendEmail
-    } as never;
-  }
-
-  beforeEach(() => {
-    vi.mocked(getCohortsByOrg).mockResolvedValue([{ id: 'cohort-1', name: 'Cohort A' }] as never);
-  });
-
-  it('creates an org invite tagged with the cohort for an unknown email and queues the invite email', async () => {
-    const result = await importAudienceMembers(ORG, cohortInvite(true, 'new@test.dev'), ACTOR);
-
-    expect(createOrganizationInvites).toHaveBeenCalledWith([
-      expect.objectContaining({
-        email: 'new@test.dev',
-        createdByProfileId: ACTOR,
-        metadata: expect.objectContaining({ cohortIds: ['cohort-1'] })
-      })
-    ]);
-    expect(enqueueTransactionalEmail).toHaveBeenCalledWith(
-      'studentOrgInvite',
-      expect.objectContaining({ to: 'new@test.dev' })
-    );
-    expect(result.emailsSent).toBe(1);
-  });
-
-  it('creates the invite but sends no email when sendEmail is false', async () => {
-    const result = await importAudienceMembers(ORG, cohortInvite(false, 'new@test.dev'), ACTOR);
-
-    expect(createOrganizationInvites).toHaveBeenCalled();
-    expect(enqueueTransactionalEmail).not.toHaveBeenCalled();
-    expect(result.emailsSent).toBe(0);
-  });
-
-  it('does not create an invite for an existing student; they are enrolled directly', async () => {
-    vi.mocked(getOrganizationMembersByNormalizedEmails).mockResolvedValue([
-      { normalizedEmail: 'ada@test.dev', profileId: 'p-1', roleId: ROLE.STUDENT }
-    ] as never);
-
-    const result = await importAudienceMembers(ORG, cohortInvite(false, 'ada@test.dev'), ACTOR);
-
-    expect(result.rows[0].status).toBe('already_member');
-    expect(createOrganizationInvites).not.toHaveBeenCalled();
-  });
-});
-
 describe('importAudienceMembers — structured recipients', () => {
   it('accepts parsed rows and keeps their names', async () => {
     const result = await importAudienceMembers(
@@ -317,7 +255,6 @@ describe('importAudienceMembers — structured recipients', () => {
           { email: 'nope', name: 'Broken' }
         ],
         allCourses: false,
-        allCohorts: false,
         sendEmail: false
       } as never,
       ACTOR
@@ -335,7 +272,6 @@ describe('importAudienceMembers — structured recipients', () => {
       {
         recipients: [{ email: 'ada@test.dev' }, { email: 'ada@test.dev' }],
         allCourses: false,
-        allCohorts: false,
         sendEmail: false
       } as never,
       ACTOR

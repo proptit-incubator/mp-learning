@@ -23,34 +23,21 @@ describe('ZCourseUpdate paid-course invariants', () => {
   const validPaid = {
     title: 'Course',
     description: 'Desc',
-    cost: 50,
     metadata: {
       paymentEnabled: true,
       paymentLink: 'https://pay.example.com/checkout'
     }
   };
 
-  it('accepts a paid course with a positive cost and a valid payment link', () => {
+  it('accepts a paid course with a valid payment link', () => {
     expect(ZCourseUpdate.safeParse(validPaid).success).toBe(true);
   });
 
   it('accepts a free course', () => {
     expect(ZCourseUpdate.safeParse({ title: 'Course', description: 'Desc' }).success).toBe(true);
     expect(
-      ZCourseUpdate.safeParse({ title: 'Course', description: 'Desc', cost: 0, metadata: { paymentEnabled: false } })
-        .success
+      ZCourseUpdate.safeParse({ title: 'Course', description: 'Desc', metadata: { paymentEnabled: false } }).success
     ).toBe(true);
-  });
-
-  it('rejects a paid course with a zero cost', () => {
-    const result = ZCourseUpdate.safeParse({
-      ...validPaid,
-      cost: 0
-    });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues.some((issue) => issue.path.join('.') === 'cost')).toBe(true);
-    }
   });
 
   it('rejects a paid course without a payment link', () => {
@@ -72,44 +59,21 @@ describe('ZCourseUpdate paid-course invariants', () => {
       }).success
     ).toBe(false);
   });
-
-  it('treats a cost-only course as paid and requires a payment link', () => {
-    expect(ZCourseUpdate.safeParse({ title: 'Course', description: 'Desc', cost: 50 }).success).toBe(false);
-  });
 });
 
 describe('ZCourseLandingPageUpdateValidated paid-course invariants', () => {
-  it('accepts a paid landing-page update with a positive cost and a valid payment link', () => {
+  it('accepts a paid landing-page update with a valid payment link', () => {
     expect(
       ZCourseLandingPageUpdateValidated.safeParse({
-        cost: 50,
         metadata: { paymentEnabled: true, paymentLink: 'https://pay.example.com/checkout' }
       }).success
     ).toBe(true);
   });
 
-  it('rejects a paid landing-page update with a zero cost', () => {
-    expect(
-      ZCourseLandingPageUpdateValidated.safeParse({
-        cost: 0,
-        metadata: { paymentEnabled: true, paymentLink: 'https://pay.example.com/checkout' }
-      }).success
-    ).toBe(false);
-  });
-
   it('rejects a paid landing-page update without a valid payment link', () => {
     expect(
       ZCourseLandingPageUpdateValidated.safeParse({
-        cost: 50,
         metadata: { paymentEnabled: true, paymentLink: 'not-a-url' }
-      }).success
-    ).toBe(false);
-  });
-
-  it('rejects a paid landing-page update when paymentEnabled is true but cost is missing', () => {
-    expect(
-      ZCourseLandingPageUpdateValidated.safeParse({
-        metadata: { paymentEnabled: true, paymentLink: 'https://pay.example.com/checkout' }
       }).success
     ).toBe(false);
   });

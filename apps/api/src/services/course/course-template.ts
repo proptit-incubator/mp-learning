@@ -97,10 +97,8 @@ export async function listCourseTemplates(orgId: string) {
 }
 
 function templatePreviewSettings(template: {
-  type: string | null;
   certificate: {
     isDownloadable?: boolean;
-    deadline?: string | null;
   } | null;
   metadata: {
     progressionMode?: CourseProgressionMode;
@@ -111,32 +109,18 @@ function templatePreviewSettings(template: {
     allowNewStudent?: boolean | null;
     aiTutor?: { enabled?: boolean };
   } | null;
-  compliance: {
-    retakeIntervalMonths: number;
-    isMandatory?: boolean;
-  } | null;
 }) {
   const certificate = template.certificate ?? {};
   const metadata = template.metadata ?? {};
-  const certificateOn = certificate.isDownloadable === true;
-  const compliance =
-    template.type === 'COMPLIANCE' && template.compliance
-      ? {
-          months: template.compliance.retakeIntervalMonths,
-          mandatory: template.compliance.isMandatory === true
-        }
-      : null;
 
   return {
-    certificate: certificateOn,
-    deadline: certificate.deadline ?? null,
+    certificate: certificate.isDownloadable === true,
     sequential: metadata.progressionMode === 'sequential',
     grading: metadata.grading === true,
     commentsOff: metadata.commentsEnabled === false,
     lessonDownload: metadata.lessonDownload === true,
     selfEnrollment: isSelfEnrollmentAllowed(metadata),
-    aiTutor: metadata.aiTutor?.enabled === true,
-    compliance
+    aiTutor: metadata.aiTutor?.enabled === true
   };
 }
 
@@ -217,7 +201,6 @@ export async function getCourseTemplatePreview(templateId: string, orgId: string
     id: template.id,
     title: template.title,
     description: template.description,
-    type: template.type,
     bannerImage: template.bannerImage,
     global,
     curated,

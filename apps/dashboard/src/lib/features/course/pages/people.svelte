@@ -21,7 +21,8 @@
   import * as Tooltip from '@cio/ui/base/tooltip';
   import { ComingSoon, RoleBasedSecurity, TablePagination, UpgradeBanner } from '$features/ui';
   import TruncatedWithTooltip from '$features/course/components/truncated-with-tooltip.svelte';
-  import LearningSources from '$features/course/components/people/learning-sources.svelte';
+  import EnrollmentCell from '$features/course/components/people/enrollment-cell.svelte';
+  import { AssignCoursesModal } from '$features/enrollment';
   import InvitationModal from '$features/course/components/people/invitation-modal.svelte';
   import DeleteConfirmation from '$features/course/components/people/delete-confirmation.svelte';
   import { isStudentLimitReached } from '$lib/utils/store/org';
@@ -61,6 +62,13 @@
   import PeopleFilterPopover from '$features/course/components/people/people-filter-popover.svelte';
 
   let member: { id?: string; email?: string; profile?: { email: string } } = $state({});
+  const isAssignOpen = $derived(page.url.searchParams.get('add') === 'true');
+
+  function setAssignOpen(open: boolean) {
+    if (open || !isAssignOpen) return;
+
+    void goto(page.url.pathname, { keepFocus: true, noScroll: true });
+  }
   let copiedEmail = $state<string | null>(null);
   let memberRows = $state<CourseMembers>([]);
   let pagination = $state<CourseMembersPagination | null>(null);
@@ -159,7 +167,7 @@
 
   const tableColumns: { label: string; sortKey?: ListPeopleQuery['sortBy']; wide?: boolean }[] = $derived([
     { label: $t('course.navItem.people.name'), sortKey: 'name' },
-    { label: $t('training_assignment.sources') },
+    { label: $t('enrollment.how_joined') },
     { label: $t('course.navItem.people.progress'), sortKey: 'progress' },
     { label: $t('course.navItem.people.stage'), wide: true },
     { label: $t('course.navItem.people.enrolled_at'), sortKey: 'enrolledAt' }
@@ -243,6 +251,13 @@
 
 <InvitationModal onMembersChanged={refreshCurrentPage} />
 
+<AssignCoursesModal
+  bind:open={() => isAssignOpen, setAssignOpen}
+  courseIds={courseApi.course?.id ? [courseApi.course.id] : []}
+  courseTitle={courseApi.course?.title}
+  onAssigned={refreshCurrentPage}
+/>
+
 {#if $isStudentLimitReached}
   <UpgradeBanner className="mb-2">{$t('course.navItem.people.invite_modal.student_limit_reached')}</UpgradeBanner>
 {/if}
@@ -267,12 +282,13 @@
       onclick={() => handleFilterChange({ audience: 'staff', roleId: undefined })}
       >{$t('training_assignment.staff')}</Button
     >
-    <Button
-      size="sm"
-      variant={query.audience === 'history' ? 'default' : 'outline'}
-      onclick={() => handleFilterChange({ audience: 'history', roleId: undefined })}
-      >{$t('training_assignment.history')}</Button
-    >
+    {#if query.audience === 'staff'}
+      <RoleBasedSecurity allowedRoles={[1]}>
+        <Button size="sm" variant="secondary" class="ml-auto" href={`${page.url.pathname}?add=staff`}
+          >{$t('course.employee_enrollment.instructors')}</Button
+        >
+      </RoleBasedSecurity>
+    {/if}
   </div>
   <div class="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
     <Search
@@ -437,11 +453,10 @@
 
                 <Table.Cell>
                   {#if isStudentMember(person)}
-                    <LearningSources
+                    <EnrollmentCell
                       courseId={courseApi.course?.id ?? ''}
                       learnerName={person.profile?.fullname ?? person.email ?? ''}
-                      sources={person.learningSources}
-                      compliance={courseApi.course?.type === 'COMPLIANCE'}
+                      enrollments={person.enrollments ?? []}
                       onChanged={refreshCurrentPage}
                     />
                   {/if}

@@ -2,7 +2,6 @@ import { getCourseProgress } from '@cio/db/queries/course/course';
 import { getOrganizationById } from '@cio/db/queries/organization';
 import {
   getWebhookCertificateIssue,
-  getWebhookCohortName,
   getWebhookCompletionRecord,
   getWebhookCourseInviteDetails,
   getWebhookEventContext,
@@ -48,7 +47,6 @@ type TDetails = {
   lessonSection: { id: string; title: string | null } | null;
   submission: Awaited<ReturnType<typeof getWebhookSubmissionDetails>>;
   latestScore: number | null;
-  cohortName: string | null;
   certificateRow: Awaited<ReturnType<typeof getWebhookCertificateIssue>>;
 };
 
@@ -62,7 +60,6 @@ const EMPTY_DETAILS: TDetails = {
   lessonSection: null,
   submission: null,
   latestScore: null,
-  cohortName: null,
   certificateRow: null
 };
 
@@ -113,7 +110,6 @@ async function loadDetails(eventType: TWebhookEventType, data: Record<string, un
   const exerciseId = readString(data, 'exerciseId');
   const lessonId = readString(data, 'lessonId');
   const submissionId = readString(data, 'submissionId');
-  const cohortId = readString(data, 'cohortId');
   const isCompletionEvent = eventType === 'course.completed' || eventType === 'course.certificate.issued';
   const isSubmissionEvent = eventType.startsWith('course.submission.');
   const isInviteEvent = eventType.endsWith('.invite.created') || eventType.includes('.invite.');
@@ -130,7 +126,6 @@ async function loadDetails(eventType: TWebhookEventType, data: Record<string, un
     sectionResult,
     submissionResult,
     scoreResult,
-    cohortResult,
     certificateResult
   ] = await Promise.allSettled([
     inviteId && isInviteEvent
@@ -152,7 +147,6 @@ async function loadDetails(eventType: TWebhookEventType, data: Record<string, un
     eventType === 'exercise.completion.updated' && exerciseId && memberId
       ? getWebhookLatestSubmissionScore(exerciseId, memberId)
       : null,
-    cohortId ? getWebhookCohortName(cohortId) : null,
     eventType === 'course.certificate.issued' && courseId && profileId
       ? getWebhookCertificateIssue(courseId, profileId)
       : null
@@ -170,7 +164,6 @@ async function loadDetails(eventType: TWebhookEventType, data: Record<string, un
     lessonSection: settled('lessonSection', sectionResult, null),
     submission: settled('submission', submissionResult, null),
     latestScore: settled('latestScore', scoreResult, null),
-    cohortName: settled('cohortName', cohortResult, null),
     certificateRow: settled('certificate', certificateResult, null)
   };
 }
@@ -267,29 +260,20 @@ function applyCourseInviteDetails(enriched: Record<string, unknown>, details: TD
 
 function applyCompletionDetails(enriched: Record<string, unknown>, details: TDetails) {
   const record = details.completionRecord;
-  const completedAt = readString(enriched, 'completedAt');
 
   enriched.enrolledAt = toIsoOrNull(details.memberEnrolledAt);
   enriched.startedAt = toIsoOrNull(record?.startedAt);
   enriched.score = record?.score ?? null;
-  enriched.attempts = record?.attempts ?? null;
-  enriched.timeSpentMinutes = record?.timeSpentMinutes ?? null;
   enriched.progress = details.progress;
-
-  if (!record) {
-    enriched.compliance = null;
-
-    return;
-  }
-
-  const completedLate = completedAt ? new Date(completedAt).getTime() > new Date(record.dueDate).getTime() : null;
-
-  enriched.compliance = {
-    cycleNumber: record.cycleNumber,
-    dueDate: toIsoOrNull(record.dueDate),
-    validUntil: toIsoOrNull(record.validUntil),
-    completedLate
-  };
+  enriched.completionRecord = record
+    ? {
+        cycleNumber: record.cycleNumber,
+        startedAt: toIsoOrNull(record.startedAt),
+        completedAt: toIsoOrNull(record.completedAt),
+        validUntil: toIsoOrNull(record.validUntil),
+        score: record.score
+      }
+    : null;
 }
 
 function applySubmissionDetails(
@@ -404,10 +388,7 @@ export async function enrichWebhookEventData(
       id: courseId,
       title: context.course?.title ?? null,
       slug: context.course?.slug ?? null,
-      type: context.course?.type ?? null,
       isPublished: context.course?.isPublished ?? null,
-      cost: context.course?.cost ?? null,
-      currency: context.course?.currency ?? null,
       tags: context.course?.tags ?? []
     };
   }
@@ -420,10 +401,6 @@ export async function enrichWebhookEventData(
 
   if (lessonId) {
     enriched.lesson = { id: lessonId, title: context.lesson?.title ?? null };
-  }
-
-  if (readString(data, 'cohortId')) {
-    enriched.cohort = { id: readString(data, 'cohortId'), name: details.cohortName };
   }
 
   if ('profileId' in data) {

@@ -1,12 +1,12 @@
 import { and, asc, count, desc, eq, ilike, not, or, sql } from 'drizzle-orm';
 import { db, type DbOrTxClient } from '@db/drizzle';
 import * as schema from '@db/schema';
-import { learningMembershipSql } from './learning-access';
+import { learnerAccessSql } from './enrollment';
 import { ROLE } from '@cio/utils/constants';
-import { canSelfEnrollInCourse, resolveCourseBannerImage } from '@cio/utils/functions';
+import { isSelfEnrollmentAllowed, resolveCourseBannerImage } from '@cio/utils/functions';
 
 export function courseLearningMembershipSql(profileId: string) {
-  return learningMembershipSql(sql`${schema.course.id}`, sql`${schema.course.groupId}`, profileId);
+  return learnerAccessSql(sql`${schema.course.id}`, profileId);
 }
 
 export function courseLibraryAccessSql(profileId: string) {
@@ -20,7 +20,7 @@ export function courseLibraryAccessSql(profileId: string) {
 }
 
 function courseLibraryVisibilitySql() {
-  return sql<boolean>`coalesce(${schema.course.type}::text, 'SELF_PACED') <> 'COMPLIANCE' and COALESCE(
+  return sql<boolean>`COALESCE(
     ${schema.course.metadata}->>'allowSelfEnrollment', ${schema.course.metadata}->>'allowNewStudent', 'true') = 'true'`;
 }
 
@@ -46,7 +46,7 @@ export async function getCourseLibrary(
     eq(schema.course.status, 'ACTIVE'),
     eq(schema.course.isPublished, true),
     eq(schema.course.isTemplate, false),
-    options.courseId ? or(visibility, access) : visibility,
+    or(visibility, membership),
     options.courseId ? eq(schema.course.id, options.courseId) : undefined,
     searchPattern ? ilike(schema.course.title, searchPattern) : undefined,
     options.recommended ? not(access) : undefined
@@ -72,10 +72,10 @@ export async function getCourseLibrary(
         id: schema.course.id,
         title: schema.course.title,
         description: schema.course.description,
-        type: schema.course.type,
         bannerImage: schema.course.bannerImage,
         logo: schema.course.logo,
         metadata: schema.course.metadata,
+        recertificationMonths: schema.course.recertificationMonths,
         lessonCount,
         exerciseCount,
         isEnrolled: membership,
@@ -95,13 +95,13 @@ export async function getCourseLibrary(
   ]);
   const data = rows.map((row) => {
     const bannerImage = resolveCourseBannerImage(row);
-    const canSelfEnroll = !row.hasAccess && canSelfEnrollInCourse(row);
+    const canSelfEnroll = !row.hasAccess && isSelfEnrollmentAllowed(row.metadata);
     return {
       id: row.id,
       title: row.title,
       description: row.description,
-      type: row.type,
       bannerImage,
+      recertificationMonths: row.recertificationMonths,
       lessonCount: row.lessonCount,
       exerciseCount: row.exerciseCount,
       goals: row.metadata.goals ?? '',

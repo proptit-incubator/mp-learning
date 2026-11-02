@@ -1,14 +1,10 @@
 <script lang="ts">
   import { getIntlLocale } from '$lib/utils/functions/intl-locale';
   import { Badge } from '@cio/ui/base/badge';
-  import type { Component, Snippet } from 'svelte';
+  import type { Snippet } from 'svelte';
   import { resolve } from '$app/paths';
   import { CourseCard } from '@cio/ui';
   import UserIcon from '@lucide/svelte/icons/user';
-  import CircleDotIcon from '@lucide/svelte/icons/circle-dot';
-  import ShieldCheckIcon from '@lucide/svelte/icons/shield-check';
-  import TrendingUpIcon from '@lucide/svelte/icons/trending-up';
-  import GlobeIcon from '@lucide/svelte/icons/globe';
   import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
 
   import { Progress } from '@cio/ui/base/progress';
@@ -17,15 +13,9 @@
 
   import { Image } from '$features/ui';
   import { t } from '$lib/utils/functions/translations';
-  import { calcCourseCost } from '$lib/utils/functions/course';
-  import getCurrencyFormatter from '$lib/utils/functions/getCurrencyFormatter';
   import { calcCourseProgress, calcProgressRate } from '$features/course/utils/functions';
-  import {
-    getStudentCourseComplianceDate,
-    getStudentCourseComplianceStatusKey,
-    getStudentCourseComplianceStatusVariant,
-    shouldShowStudentCourseComplianceStatusBadge
-  } from '$features/course/utils/compliance-utils';
+  import { isSelfEnrollmentAllowed } from '@cio/utils/functions';
+  import EnrollmentStateBadge from '$features/enrollment/components/enrollment-state-badge.svelte';
   import CardDropdown from './card-dropdown.svelte';
   import CourseCover from './course-cover.svelte';
   import CoursePublishBadge from './course-publish-badge.svelte';
@@ -56,28 +46,14 @@
     totalLessons = 0,
     totalExercises = 0,
     totalStudents = 0,
-    currency = 'USD',
-    progressRate = 45,
-    type,
-    pricingData = {
-      cost: 0,
-      discount: 0,
-      showDiscount: false
-    }
+    progressRate = 45
   } = $derived({
     id: course.id,
     slug: course.slug,
     bannerImage: course.bannerImage || '',
     title: course.title,
-    type: course.type,
     description: course.description,
     isPublished: !!course.isPublished,
-    pricingData: {
-      cost: course.cost,
-      discount: course.metadata?.discount || 0,
-      showDiscount: course.metadata?.showDiscount || false
-    },
-    currency: course.currency,
     totalLessons: course.lessonCount,
     totalExercises: (() => {
       const c = course as { exerciseCount?: number };
@@ -98,7 +74,6 @@
     totalStudents: 'totalStudents' in course ? course.totalStudents : 0
   });
 
-  let formatter = $derived(getCurrencyFormatter(currency));
   const courseTags = $derived(
     ('tags' in course && Array.isArray(course.tags) ? course.tags : []) as Array<{
       id: string;
@@ -107,42 +82,6 @@
       color?: string | null;
     }>
   );
-
-  const COURSE_TAG: Record<
-    string,
-    {
-      style: string;
-      label: string;
-      icon: Component;
-      iconStyle?: string;
-    }
-  > = {
-    ['LIVE_CLASS']: {
-      style: '',
-      label: $t('course.navItem.settings.live_class'),
-      icon: CircleDotIcon,
-      iconStyle: 'custom ui:text-danger'
-    },
-    ['SELF_PACED']: {
-      style: '',
-      label: $t('course.navItem.settings.self_paced'),
-      icon: UserIcon,
-      iconStyle: 'custom ui:text-primary'
-    },
-    ['COMPLIANCE']: {
-      style: '',
-      label: $t('course.navItem.settings.compliance'),
-      icon: ShieldCheckIcon,
-      iconStyle: 'custom ui:text-success'
-    },
-    SPECIALIZATION: {
-      style: '',
-      label: $t('specialization.course_tag'),
-      icon: TrendingUpIcon
-    }
-  };
-
-  let cost = $derived(calcCourseCost(course));
 
   const isExploreClickable = $derived(!!(isLMS && isExplore && onExploreClick));
 
@@ -171,47 +110,11 @@
   });
 
   const typeBadge = $derived(
-    type && COURSE_TAG[type]
-      ? {
-          label: COURSE_TAG[type].label,
-          icon: COURSE_TAG[type].icon,
-          iconClass: COURSE_TAG[type].iconStyle
-        }
+    !isLMS && !isOnLandingPage && isSelfEnrollmentAllowed(course.metadata)
+      ? { label: $t('training_library.self_enrollment'), icon: UserIcon, iconClass: 'custom ui:text-primary' }
       : undefined
   );
-
-  const visibilityBadge = $derived(
-    type === 'PUBLIC'
-      ? {
-          label: $t('courses.course_card.public_badge'),
-          icon: GlobeIcon,
-          iconClass: 'custom ui:text-primary size-3.5 shrink-0'
-        }
-      : undefined
-  );
-
-  const showLmsPublicCourseMenu = $derived(isLMS && type === 'PUBLIC' && !!slug?.trim() && isPublished);
-
-  const complianceStatusKey = $derived(
-    isLMS && type === 'COMPLIANCE' && !isExplore
-      ? getStudentCourseComplianceStatusKey(course as UserEnrolledCourses[number])
-      : null
-  );
-  const showComplianceStatusBadge = $derived(
-    isLMS && type === 'COMPLIANCE' && !isExplore
-      ? shouldShowStudentCourseComplianceStatusBadge(course as UserEnrolledCourses[number])
-      : false
-  );
-  const complianceStatusVariant = $derived(
-    isLMS && type === 'COMPLIANCE' && !isExplore
-      ? getStudentCourseComplianceStatusVariant(course as UserEnrolledCourses[number])
-      : 'outline'
-  );
-  const complianceDate = $derived(
-    isLMS && type === 'COMPLIANCE' && !isExplore
-      ? getStudentCourseComplianceDate(course as UserEnrolledCourses[number])
-      : null
-  );
+  const enrollment = $derived('enrollment' in course ? course.enrollment : null);
   const certificateEarnedAt = $derived(
     isCertificateView && 'certificateEarnedAt' in course ? course.certificateEarnedAt : null
   );
@@ -238,7 +141,6 @@
   {title}
   {description}
   {typeBadge}
-  {visibilityBadge}
   class="group relative"
 >
   {#snippet media()}
@@ -254,9 +156,7 @@
       {@render actions()}
     {:else if !isOnLandingPage}
       {#if !isLMS}
-        <CardDropdown {id} {title} {description} {isPublished} courseType={type} {slug} studentCount={totalStudents} />
-      {:else if showLmsPublicCourseMenu}
-        <CardDropdown {id} {title} {description} {isPublished} courseType={type} {slug} lmsPublicQuickOnly={true} />
+        <CardDropdown {id} {title} {description} {isPublished} {slug} studentCount={totalStudents} />
       {/if}
     {/if}
   {/snippet}
@@ -271,49 +171,31 @@
     {@const lessonSummary = `${totalLessons} ${$t('courses.course_card.lessons_number')} · ${pluralizeLabel($t('courses.course_card.exercise'), totalExercises)}`}
     <div class="flex w-full flex-col gap-3">
       {#if isLMS && !isExplore && !isCertificateView}
-        {#if 'learningSources' in course && course.learningSources?.length}
-          <div class="flex flex-wrap gap-1 text-xs">
-            {#each course.learningSources.filter((source) => !source.revokedAt) as source (`${source.kind}:${source.sourceId}`)}
-              <Badge variant="outline"
-                >{$t(`training_assignment.source.${source.kind}`)}{source.name ? ` · ${source.name}` : ''}</Badge
+        {#if enrollment}
+          <div class="flex flex-wrap items-center gap-1.5 text-xs">
+            <Badge variant={enrollment.kind === 'ASSIGNED' ? 'default' : 'outline'}
+              >{$t(`enrollment.kind.${enrollment.kind}`)}</Badge
+            >
+            <EnrollmentStateBadge state={enrollment.state} />
+            {#if enrollment.kind === 'ASSIGNED' && enrollment.dueDate}
+              <span class="ui:text-muted-foreground">{$t('enrollment.due')}: {formatDate(enrollment.dueDate)}</span>
+            {/if}
+            {#if enrollment.validUntil}
+              <span class="ui:text-muted-foreground"
+                >{$t('enrollment.valid_until')}: {formatDate(enrollment.validUntil)}</span
               >
-            {/each}
-            {#if course.isRequired}<Badge variant="secondary">{$t('training_assignment.required')}</Badge>{/if}
+            {/if}
           </div>
-          {#if course.learningDueDate}
-            <p class="ui:text-muted-foreground text-xs">
-              {$t('training_assignment.deadline')}: {formatDate(course.learningDueDate)}
-            </p>
-          {/if}
         {/if}
         <div class="flex items-center gap-3">
           <Progress value={progressRate} class="h-1.5 flex-1" />
           <span class="ui:text-foreground w-9 text-right text-xs font-semibold tabular-nums">{progressRate}%</span>
         </div>
-        {#if type === 'COMPLIANCE' && ((showComplianceStatusBadge && complianceStatusKey) || complianceDate?.value)}
-          <div class="flex flex-wrap items-center gap-2">
-            {#if showComplianceStatusBadge && complianceStatusKey}
-              <Badge variant={complianceStatusVariant}>{$t(complianceStatusKey)}</Badge>
-            {/if}
-            {#if complianceDate?.value}
-              <span class="ui:text-muted-foreground text-xs">
-                {$t(complianceDate.labelKey)}: {formatDate(complianceDate.value)}
-              </span>
-            {/if}
-          </div>
-        {/if}
       {/if}
 
       <div class="flex items-center justify-between gap-3 text-xs">
         {#if isOnLandingPage}
           <span class="ui:text-muted-foreground">{lessonSummary}</span>
-          <span class="font-medium">
-            {#if !cost}
-              {$t('course.navItem.landing_page.pricing_section.free')}
-            {:else}
-              {formatter.format(cost)}
-            {/if}
-          </span>
         {:else if isLMS}
           {#if isCertificateView}
             <span class="ui:text-muted-foreground">

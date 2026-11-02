@@ -45,8 +45,6 @@ export async function seedCourses({
         lessonDownload: false,
         allowSelfEnrollment: true
       },
-      cost: 0,
-      currency: 'NGN',
       isPublished: true,
       certificate: {
         isDownloadable: false,
@@ -73,8 +71,6 @@ export async function seedCourses({
         lessonDownload: false,
         allowSelfEnrollment: true
       },
-      cost: 0,
-      currency: 'NGN',
       isPublished: true,
       certificate: {
         isDownloadable: false,
@@ -101,8 +97,6 @@ export async function seedCourses({
         lessonDownload: true,
         allowSelfEnrollment: true
       },
-      cost: 0,
-      currency: 'NGN',
       isPublished: true,
       certificate: {
         isDownloadable: false,
@@ -128,8 +122,6 @@ export async function seedCourses({
         lessonDownload: false,
         allowSelfEnrollment: true
       },
-      cost: 0,
-      currency: 'NGN',
       isPublished: true,
       certificate: {
         isDownloadable: false,

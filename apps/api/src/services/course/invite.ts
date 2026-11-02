@@ -1,4 +1,3 @@
-import type { TOrganizationmember } from '@cio/db/types';
 import {
   countInviteDistinctPreviewIps,
   createCourseInvite,
@@ -15,20 +14,12 @@ import {
   selectCourseInviteAcceptBundleByTokenHash
 } from '@cio/db/queries/course/invite';
 import type { TCourseInviteListItem } from '@cio/db/queries/course/invite';
-import { createOrganizationMember, getOrganizationMemberIdByOrgAndProfile } from '@cio/db/queries/organization';
-import { addGroupMember, getGroupMemberIdByGroupAndProfile } from '@cio/db/queries/group';
-import {
-  getCourseById,
-  getCourseWithOrgData,
-  getCourseWithRelations,
-  isCourseSlugTaken,
-  updateCourseSlug
-} from '@cio/db/queries/course';
+import { getGroupMemberIdByGroupAndProfile } from '@cio/db/queries/group';
+import { getCourseById, getCourseWithOrgData, isCourseSlugTaken, updateCourseSlug } from '@cio/db/queries/course';
 
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { isSelfEnrollmentAllowed } from '@cio/utils/functions';
 import { ROLE } from '@cio/utils/constants';
-import { isCoursePaid } from '@cio/utils/validation/course';
 import type { TCreateCourseInvite } from '@cio/utils/validation/course/invite';
 import type { TNewCourseInviteAudit } from '@db/types';
 import crypto from 'node:crypto';
@@ -37,8 +28,7 @@ import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
 import {
   buildMemberSource,
   emitCourseMemberAddedWebhookEvent,
-  emitCourseWebhookEvent,
-  emitOrganizationMemberWebhookEvent
+  emitCourseWebhookEvent
 } from '@cio/core/services/webhook/emit';
 import { getCourseTeachers } from '@cio/db/queries/course/people';
 import { getProfileById } from '@cio/db/queries/auth';
@@ -46,10 +36,9 @@ import { buildEmailFromName, buildEmailBranding, type EmailBranding } from '@cio
 import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { getProfileByEmail, markUserAndProfileEmailVerified } from '@cio/db/queries/auth';
 import { generateSlug } from '@cio/utils/functions';
-import { ensureComplianceEnrollmentRecordsForProfiles } from './compliance';
-import { assertStudentCapacityOrThrow, notifyStudentMilestone } from '../organization/student-limit';
-import type { StudentMilestoneNotification } from '../organization/student-limit';
 import { getWelcomeSessionIcs } from './session-invite';
+import { selfEnroll } from './enrollment';
+import { createEnrollments, ensureLearnerMembership, findEmployeeByProfile } from '@cio/db/queries/course/enrollment';
 import { db } from '@cio/db/drizzle';
 import { trackServerEvent, SERVER_EVENTS } from '@cio/analytics';
 import type { TEventSource } from '@cio/core/services/posthog';
@@ -690,11 +679,8 @@ export async function createStudentInvite(
 }
 
 /**
- * Unified enrollment: with inviteToken validates and consumes invite; without token enrolls in free course only.
- *
- * Self-enrollment also requires the course to accept new students, and when the
- * org sets `internalEnrollmentOnly`, the user must already be an org member.
- * Invites bypass both checks — they are how non-members are let in.
+ * With `inviteToken`, validates and consumes the invite; otherwise self-enrolls the active employee behind the user.
+ * Throws 403 when the user is not an active employee of the course's organization.
  */
 export async function enrollInCourse(
   courseId: string,
@@ -710,127 +696,14 @@ export async function enrollInCourse(
     return acceptStudentInvite(body.inviteToken, user, context);
   }
 
-  const courseWithRelations = await getCourseWithRelations(courseId);
-  if (!courseWithRelations) {
+  const courseOrgData = await getCourseWithOrgData(courseId);
+  if (!courseOrgData?.orgId) {
     throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
   }
 
-  const { groupId, cost: courseCost, status, isPublished, title } = courseWithRelations;
-  const isPaidCourse = isCoursePaid(
-    courseCost,
-    courseWithRelations.metadata as { paymentEnabled?: boolean; paymentLink?: string | null } | null | undefined
-  );
-  if (isPaidCourse) {
-    throw new AppError('Paid courses require an invite or payment', ErrorCodes.VALIDATION_ERROR, 400);
-  }
+  const result = await selfEnroll(courseOrgData.orgId, courseId, { id: user.id, email: user.email });
 
-  if (!groupId) {
-    throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
-  }
-
-  const org = courseWithRelations.org;
-  if (!org) {
-    throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
-  }
-
-  if (status !== 'ACTIVE' || !isPublished) {
-    throw new AppError('This course is not available for enrollment', ErrorCodes.VALIDATION_ERROR, 400);
-  }
-
-  const courseMetadata =
-    (courseWithRelations.metadata as {
-      allowSelfEnrollment?: boolean;
-      allowNewStudent?: boolean;
-      welcomeEmailMessage?: string | null;
-    } | null) ?? null;
-  const isInternalEnrollmentOnly = org.settings?.internalEnrollmentOnly ?? false;
-
-  const orgMemberId = await getOrganizationMemberIdByOrgAndProfile(org.id, user.id);
-
-  if (!isSelfEnrollmentAllowed(courseMetadata)) {
-    throw new AppError('This course is not accepting new students', ErrorCodes.VALIDATION_ERROR, 400);
-  }
-
-  if (isInternalEnrollmentOnly && !orgMemberId) {
-    throw new AppError(
-      'This organization only allows its members to enroll. Ask an admin for an invitation.',
-      ErrorCodes.FORBIDDEN,
-      403
-    );
-  }
-
-  const normalizedEmail = user.email.toLowerCase().trim();
-
-  const existingMemberId = await getGroupMemberIdByGroupAndProfile(groupId, user.id);
-
-  if (existingMemberId) {
-    await ensureComplianceEnrollmentRecordsForProfiles([courseId], [user.id]);
-
-    return {
-      success: true,
-      alreadyJoined: true,
-      redirectTo: `/courses/${courseId}/lessons?next=true`
-    };
-  }
-
-  if (!orgMemberId) {
-    await assertStudentCapacityOrThrow(org.id, 1);
-
-    const createdOrgMember = await createOrganizationMember({
-      organizationId: org.id,
-      roleId: ROLE.STUDENT,
-      profileId: user.id,
-      email: normalizedEmail,
-      verified: true
-    });
-    await emitOrganizationMemberWebhookEvent('organization.member.added', org.id, createdOrgMember, user.id);
-  }
-
-  const [selfEnrolledMember] = await addGroupMember({
-    groupId,
-    roleId: ROLE.STUDENT,
-    profileId: user.id,
-    email: normalizedEmail
-  });
-
-  if (selfEnrolledMember) {
-    await emitCourseMemberAddedWebhookEvent(courseId, selfEnrolledMember, {
-      source: buildMemberSource('self_enroll'),
-      actorProfileId: user.id
-    });
-  }
-
-  await invalidateOrgStats(org.id);
-
-  await ensureComplianceEnrollmentRecordsForProfiles([courseId], [user.id]);
-
-  await sendStudentJoinEmails({
-    courseId,
-    courseName: title,
-    orgName: org.name,
-    organizationId: org.id,
-    org: { siteName: org.siteName, customDomain: org.customDomain, isCustomDomainVerified: org.isCustomDomainVerified },
-    branding: buildEmailBranding({ name: org.name, avatarUrl: org.avatarUrl, theme: org.theme }),
-    studentId: user.id,
-    studentEmail: normalizedEmail,
-    welcomeEmailMessage: courseMetadata?.welcomeEmailMessage
-  });
-
-  trackServerEvent({
-    eventType: SERVER_EVENTS.ENROLLMENT_COMPLETED,
-    orgId: org.id,
-    userId: user.id,
-    courseId,
-    props: { path: 'free-enrollment' }
-  });
-
-  captureLearnersEnrolled([{ groupId, profileId: user.id, roleId: ROLE.STUDENT }], 'self');
-
-  return {
-    success: true,
-    alreadyJoined: false,
-    redirectTo: `/courses/${courseId}/lessons?next=true`
-  };
+  return { success: true, ...result };
 }
 
 type InviteActivity = {
@@ -1036,8 +909,7 @@ export async function previewStudentInvite(token: string, context: TInviteReques
       allowSelfEnrollment: isSelfEnrollmentAllowed(courseMetadata),
       isPublished: data.course.isPublished,
       status: data.course.status,
-      slug: data.course.slug ?? undefined,
-      cost: data.course.cost
+      slug: data.course.slug ?? undefined
     },
     inviteContext: {
       recipientEmail,
@@ -1101,7 +973,6 @@ export async function acceptStudentInvite(token: string, user: TAuthUser, contex
         alreadyJoined: true,
         inviteId: invite.id,
         enrolledMember: null,
-        createdOrgMember: null,
         courseId: course.id,
         courseName: course.title,
         orgName: organization.name,
@@ -1110,8 +981,7 @@ export async function acceptStudentInvite(token: string, user: TAuthUser, contex
         orgCustomDomain: organization.customDomain,
         orgIsCustomDomainVerified: organization.isCustomDomainVerified,
         orgAvatarUrl: organization.avatarUrl,
-        orgTheme: organization.theme,
-        studentMilestoneNotification: null
+        orgTheme: organization.theme
       };
     }
 
@@ -1144,36 +1014,23 @@ export async function acceptStudentInvite(token: string, user: TAuthUser, contex
       throw new AppError('This invite is restricted to specific email domains', ErrorCodes.UNAUTHORIZED, 403);
     }
 
-    const orgMemberId = await getOrganizationMemberIdByOrgAndProfile(organization.id, user.id, tx);
-    let studentMilestoneNotification: StudentMilestoneNotification | null = null;
-    let createdOrgMember: TOrganizationmember | null = null;
-
-    if (!orgMemberId) {
-      studentMilestoneNotification = await assertStudentCapacityOrThrow(organization.id, 1, tx, {
-        deferNotification: true
-      });
-
-      createdOrgMember = await createOrganizationMember(
-        {
-          organizationId: organization.id,
-          roleId: ROLE.STUDENT,
-          profileId: user.id,
-          email: normalizedEmail,
-          verified: true
-        },
-        tx
-      );
+    const employee = await findEmployeeByProfile(organization.id, user.id, tx);
+    if (!employee || employee.status !== 'ACTIVE') {
+      throw new AppError('Only active employees can enroll', ErrorCodes.FORBIDDEN, 403);
     }
 
-    const [enrolledMember] = await addGroupMember(
+    const [createdEnrollment] = await createEnrollments(
       {
-        groupId: course.groupId,
-        roleId: ROLE.STUDENT,
-        profileId: user.id,
-        email: normalizedEmail
+        courseIds: [course.id],
+        employeeIds: [employee.id],
+        kind: 'ASSIGNED',
+        assignedBy: invite.createdByProfileId
       },
       tx
     );
+    const enrolledMember = createdEnrollment
+      ? await ensureLearnerMembership(course.groupId, user.id, normalizedEmail, tx)
+      : null;
 
     await markUserAndProfileEmailVerified(user.id, tx);
 
@@ -1195,8 +1052,7 @@ export async function acceptStudentInvite(token: string, user: TAuthUser, contex
     return {
       alreadyJoined: false,
       inviteId: invite.id,
-      enrolledMember: enrolledMember ?? null,
-      createdOrgMember,
+      enrolledMember,
       courseId: course.id,
       courseName: course.title,
       orgName: organization.name,
@@ -1206,7 +1062,6 @@ export async function acceptStudentInvite(token: string, user: TAuthUser, contex
       orgIsCustomDomainVerified: organization.isCustomDomainVerified,
       orgAvatarUrl: organization.avatarUrl,
       orgTheme: organization.theme,
-      studentMilestoneNotification,
       welcomeEmailMessage:
         (course.metadata as { welcomeEmailMessage?: string | null } | null)?.welcomeEmailMessage ?? null
     };
@@ -1216,15 +1071,6 @@ export async function acceptStudentInvite(token: string, user: TAuthUser, contex
     actorProfileId: user.id,
     targetEmail: normalizedEmail
   });
-
-  if (result.createdOrgMember) {
-    await emitOrganizationMemberWebhookEvent(
-      'organization.member.added',
-      result.organizationId,
-      result.createdOrgMember,
-      user.id
-    );
-  }
 
   if (result.enrolledMember) {
     await emitCourseMemberAddedWebhookEvent(result.courseId, result.enrolledMember, {
@@ -1237,14 +1083,6 @@ export async function acceptStudentInvite(token: string, user: TAuthUser, contex
   if (!result.alreadyJoined) {
     await invalidateOrgStats(result.organizationId);
   }
-
-  if (result.studentMilestoneNotification) {
-    notifyStudentMilestone(result.studentMilestoneNotification).catch((error) => {
-      console.error('notifyStudentMilestone error:', error);
-    });
-  }
-
-  await ensureComplianceEnrollmentRecordsForProfiles([result.courseId], [user.id]);
 
   if (!result.alreadyJoined) {
     await sendStudentJoinEmails({

@@ -34,16 +34,10 @@ export const ZUpdateCourseLandingPageToolInput = ZCourseLandingPageUpdate.extend
 
 export const ZPublishCourseDraftToolInput = ZCourseImportDraftPublishBase.extend({
   draftId: ZCourseImportDraftGetParam.shape.draftId
-}).refine((data) => data.type !== 'COMPLIANCE' || data.compliance !== undefined, {
-  message: 'Compliance settings are required for COMPLIANCE courses',
-  path: ['compliance']
 });
 
 export const ZPublishCourseDraftToExistingCourseToolInput = ZCourseImportDraftPublishToCourseBase.extend({
   draftId: ZCourseImportDraftGetParam.shape.draftId
-}).refine((data) => data.type !== 'COMPLIANCE' || data.compliance !== undefined, {
-  message: 'Compliance settings are required for COMPLIANCE courses',
-  path: ['compliance']
 });
 
 const createCourseDraftShape = ZCourseImportDraftCreate.shape as unknown as ZodRawShapeCompat;

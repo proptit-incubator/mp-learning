@@ -118,7 +118,7 @@ export const v1AudienceRouter = new Hono()
   .post(
     '/assign-courses',
     describeRoute({
-      description: `Assign one or more audience members to one or more courses or cohorts; ${ORG_ADMIN_RULE}.`,
+      description: `Assign one or more audience members to one or more courses; ${ORG_ADMIN_RULE}.`,
       tags: ['Audience'],
       responses: {
         200: jsonResponse(

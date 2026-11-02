@@ -1,6 +1,5 @@
 import * as z from 'zod';
 
-import { COURSE_TYPE_VALUES } from '../../constants/course-type';
 import { COURSE_TEMPLATE_SOURCES } from './course-template';
 
 // Response shapes for OpenAPI docs only; handlers don't validate against them. Timestamps are Postgres text, not strict ISO.
@@ -16,7 +15,6 @@ export const ZPublicApiCourseTemplateListItemResponse = z.object({
   id: z.string().uuid(),
   title: z.string(),
   description: z.string(),
-  type: z.enum(COURSE_TYPE_VALUES).nullable(),
   bannerImage: z.string().nullable(),
   source,
   createdAt: nullableTimestamp,
@@ -37,7 +35,6 @@ export const ZPublicApiCourseTemplateResponse = z.object({
   id: z.string().uuid(),
   title: z.string(),
   description: z.string(),
-  type: z.enum(COURSE_TYPE_VALUES).nullable(),
   bannerImage: z.string().nullable(),
   source,
   curated: z.boolean().describe('true for curated templates from the platform library'),
@@ -48,14 +45,12 @@ export const ZPublicApiCourseTemplateResponse = z.object({
   settings: z
     .object({
       certificate: z.boolean(),
-      deadline: z.string().nullable(),
       sequential: z.boolean(),
       grading: z.boolean(),
       commentsOff: z.boolean(),
       lessonDownload: z.boolean(),
       selfEnrollment: z.boolean(),
-      aiTutor: z.boolean(),
-      compliance: z.object({ months: z.number(), mandatory: z.boolean() }).nullable()
+      aiTutor: z.boolean()
     })
     .describe('The settings a course created from this template starts with'),
   outline: z

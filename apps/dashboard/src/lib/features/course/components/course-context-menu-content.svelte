@@ -10,7 +10,7 @@
     saveTemplateModal
   } from '$features/course/utils/store';
   import { isOrgAdmin, currentOrgPath } from '$lib/utils/store/org';
-  import { copyPublicCoursePageUrl, openCoursePreview } from '$features/course/utils/course-preview';
+  import { openCoursePreview } from '$features/course/utils/course-preview';
   import { currentOrgDomain } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { goAndHighlight } from '$lib/routing/go-and-highlight';
@@ -21,10 +21,7 @@
     title: string;
     description: string;
     isPublished?: boolean;
-    courseType?: string | null;
     slug?: string;
-    /** Compact menu for LMS course cards */
-    lmsPublicQuickOnly?: boolean;
     /** Include "View as student" (course header menu) */
     includeViewAsStudent?: boolean;
     onViewAsStudent?: () => void;
@@ -41,9 +38,7 @@
     title,
     description,
     isPublished = false,
-    courseType = null,
     slug = '',
-    lmsPublicQuickOnly = false,
     includeViewAsStudent = false,
     onViewAsStudent,
     includeOpen = false,
@@ -52,7 +47,6 @@
     studentCount = 0
   }: Props = $props();
 
-  const showPublicCourseLinks = $derived(isPublished && courseType === 'PUBLIC' && slug.trim().length > 0);
   const courseSettingsPath = $derived(resolve(`/courses/${id}/settings`, {}));
 
   function redirect(url: string) {
@@ -126,83 +120,65 @@
       currentOrgDomain: $currentOrgDomain
     });
   }
-
-  async function handleCopyCourseUrl() {
-    await copyPublicCoursePageUrl(slug, $currentOrgDomain);
-  }
 </script>
 
-{#if lmsPublicQuickOnly}
+{#if includeViewAsStudent}
+  <DropdownMenu.Item onclick={() => onViewAsStudent?.()}>
+    {$t('course.header.view_as_student')}
+  </DropdownMenu.Item>
+  <DropdownMenu.Separator />
+{/if}
+
+{#if isPublished}
   <DropdownMenu.Item onclick={handleViewCourseSite}>
     {$t('courses.course_card.context_menu.view_course_site')}
   </DropdownMenu.Item>
-  <DropdownMenu.Item onclick={() => void handleCopyCourseUrl()}>
-    {$t('courses.course_card.context_menu.copy_course_url')}
-  </DropdownMenu.Item>
-{:else}
-  {#if includeViewAsStudent}
-    <DropdownMenu.Item onclick={() => onViewAsStudent?.()}>
-      {$t('course.header.view_as_student')}
-    </DropdownMenu.Item>
+  {#if !hideOrgActions || includeOpen}
     <DropdownMenu.Separator />
   {/if}
-
-  {#if isPublished}
-    <DropdownMenu.Item onclick={handleViewCourseSite}>
-      {$t('courses.course_card.context_menu.view_course_site')}
-    </DropdownMenu.Item>
-    {#if showPublicCourseLinks}
-      <DropdownMenu.Item onclick={() => void handleCopyCourseUrl()}>
-        {$t('courses.course_card.context_menu.copy_course_url')}
-      </DropdownMenu.Item>
-    {/if}
-    {#if !hideOrgActions || includeOpen}
-      <DropdownMenu.Separator />
-    {/if}
-  {:else if !isTemplate}
-    <DropdownMenu.Item onclick={handlePublishCourse}>
-      {$t('courses.course_card.context_menu.publish_course')}
-    </DropdownMenu.Item>
-    {#if !hideOrgActions || includeOpen}
-      <DropdownMenu.Separator />
-    {/if}
+{:else if !isTemplate}
+  <DropdownMenu.Item onclick={handlePublishCourse}>
+    {$t('courses.course_card.context_menu.publish_course')}
+  </DropdownMenu.Item>
+  {#if !hideOrgActions || includeOpen}
+    <DropdownMenu.Separator />
   {/if}
+{/if}
 
-  {#if includeOpen}
-    <DropdownMenu.Item onclick={handleOpenCourse}>
-      {$t('courses.course_card.context_menu.open')}
+{#if includeOpen}
+  <DropdownMenu.Item onclick={handleOpenCourse}>
+    {$t('courses.course_card.context_menu.open')}
+  </DropdownMenu.Item>
+{/if}
+
+{#if !hideOrgActions}
+  {#if isTemplate && $isOrgAdmin}
+    <DropdownMenu.Item onclick={handleCreateFromTemplate}>
+      {$t('course_templates.menu.create_course')}
     </DropdownMenu.Item>
   {/if}
-
-  {#if !hideOrgActions}
-    {#if isTemplate && $isOrgAdmin}
-      <DropdownMenu.Item onclick={handleCreateFromTemplate}>
-        {$t('course_templates.menu.create_course')}
-      </DropdownMenu.Item>
-    {/if}
-    {#if !isTemplate}
-      <DropdownMenu.Item onclick={handleCloneCourse}>
-        {$t('courses.course_card.context_menu.clone')}
-      </DropdownMenu.Item>
-    {/if}
-    {#if !isTemplate && $isOrgAdmin}
-      <DropdownMenu.Item onclick={handleSaveAsTemplate}>
-        {$t('course_templates.menu.save')}
-      </DropdownMenu.Item>
-    {/if}
-    <DropdownMenu.Item onclick={handleShareCourse}>
-      {$t('courses.course_card.context_menu.share')}
+  {#if !isTemplate}
+    <DropdownMenu.Item onclick={handleCloneCourse}>
+      {$t('courses.course_card.context_menu.clone')}
     </DropdownMenu.Item>
-    {#if !isTemplate}
-      <DropdownMenu.Item onclick={handleInvite}>
-        {$t('courses.course_card.context_menu.invite')}
-      </DropdownMenu.Item>
-    {/if}
-    {#if !isTemplate || $isOrgAdmin}
-      <DropdownMenu.Separator />
-      <DropdownMenu.Item class="text-red-600" onclick={handleDeleteCourse}>
-        {$t('courses.course_card.context_menu.delete')}
-      </DropdownMenu.Item>
-    {/if}
+  {/if}
+  {#if !isTemplate && $isOrgAdmin}
+    <DropdownMenu.Item onclick={handleSaveAsTemplate}>
+      {$t('course_templates.menu.save')}
+    </DropdownMenu.Item>
+  {/if}
+  <DropdownMenu.Item onclick={handleShareCourse}>
+    {$t('courses.course_card.context_menu.share')}
+  </DropdownMenu.Item>
+  {#if !isTemplate}
+    <DropdownMenu.Item onclick={handleInvite}>
+      {$t('courses.course_card.context_menu.invite')}
+    </DropdownMenu.Item>
+  {/if}
+  {#if !isTemplate || $isOrgAdmin}
+    <DropdownMenu.Separator />
+    <DropdownMenu.Item class="text-red-600" onclick={handleDeleteCourse}>
+      {$t('courses.course_card.context_menu.delete')}
+    </DropdownMenu.Item>
   {/if}
 {/if}

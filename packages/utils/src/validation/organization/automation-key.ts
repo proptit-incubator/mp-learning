@@ -13,8 +13,6 @@ export const ZOrganizationApiKeyScope = z.enum([
   'course:tag:write',
   'course:exercise:read',
   'course:exercise:write',
-  'cohort:read',
-  'cohort:write',
   'course:member:read',
   'course:member:write',
   'course:certificate:read',

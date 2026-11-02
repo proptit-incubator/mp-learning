@@ -67,29 +67,3 @@ export async function insertCourseEmployees(
 ) {
   return client.insert(schema.groupmember).values(members).onConflictDoNothing().returning();
 }
-
-export async function assignEmployeeCourseRecords(employeeIds: string[], courseId: string, client: DbOrTxClient = db) {
-  if (!employeeIds.length) return;
-
-  const assignments = employeeIds.map((employeeId) => ({ employeeId, courseId }));
-  await client.insert(schema.employeeCourse).values(assignments).onConflictDoNothing();
-}
-
-export async function deleteEmployeeCourseAssignment(courseId: string, profileId: string, client: DbOrTxClient = db) {
-  const context = await getCourseEmployeeContext(courseId, client);
-  if (!context?.organizationId) return;
-
-  const employees = client
-    .select({ id: schema.employee.id })
-    .from(schema.employee)
-    .innerJoin(schema.organizationmember, eq(schema.employee.memberId, schema.organizationmember.id))
-    .where(
-      and(
-        eq(schema.employee.organizationId, context.organizationId),
-        eq(schema.organizationmember.profileId, profileId)
-      )
-    );
-  await client
-    .delete(schema.employeeCourse)
-    .where(and(eq(schema.employeeCourse.courseId, courseId), inArray(schema.employeeCourse.employeeId, employees)));
-}

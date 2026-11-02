@@ -2,7 +2,6 @@
   import * as Sidebar from '@cio/ui/base/sidebar';
   import * as ButtonGroup from '@cio/ui/base/button-group';
   import * as DropdownMenu from '@cio/ui/base/dropdown-menu';
-  import ExternalLinkIcon from '@lucide/svelte/icons/external-link';
   import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
   import { Button } from '@cio/ui/base/button';
   import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
@@ -18,19 +17,15 @@
   import { getActiveCourseNavKey } from '$features/course/utils/functions';
   import { toggleAiAssistant } from '$features/ai-assistant/utils/store';
   import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
-  import { openCoursePreview } from '$features/course/utils/course-preview';
   import { t } from '$lib/utils/functions/translations';
   import CourseProgressPopover from './course-progress-popover.svelte';
   import { Badge } from '@cio/ui/base/badge';
   import CoursePublishBadge from './course-publish-badge.svelte';
-  import CoursePublicBadge from './course-public-badge.svelte';
   import CourseContextMenuContent from './course-context-menu-content.svelte';
   import ViewAsStudentModal from './view-as-student-modal.svelte';
-  import ViewCourseSiteUnpublishedModal from './view-course-site-unpublished-modal.svelte';
 
   const siteName = $derived($currentOrg.siteName);
   const showCoursePublishBadge = $derived(!$isStudentExperience);
-  const isPublicCourse = $derived(courseApi.course?.type === 'PUBLIC');
   const activeNavKey = $derived(getActiveCourseNavKey(page.url.pathname, courseApi.course?.id ?? ''));
   const isPublished = $derived(courseApi.course?.isPublished ?? false);
   const lessonId = $derived(page.params.lessonId as string | undefined);
@@ -45,33 +40,12 @@
   );
 
   let viewAsStudentOpen = $state(false);
-  let viewCourseSiteUnpublishedOpen = $state(false);
 
   $effect(() => {
     if (!siteName) return;
 
     setupProgressApi.fetchSetupProgress(siteName);
   });
-
-  function handleViewCourseSite() {
-    const course = courseApi.course;
-    if (!course?.id) {
-      return;
-    }
-
-    if (course.isTemplate) return;
-
-    if (!isPublished) {
-      viewCourseSiteUnpublishedOpen = true;
-      return;
-    }
-
-    openCoursePreview({
-      courseId: course.id,
-      courseSlug: course.slug,
-      currentOrgDomain: $currentOrgDomain
-    });
-  }
 </script>
 
 <header
@@ -92,10 +66,6 @@
         <p class="truncate font-medium">
           {activeNavKey ? $t(activeNavKey) : ''}
         </p>
-
-        {#if isPublicCourse}
-          <CoursePublicBadge class="shrink-0" />
-        {/if}
 
         {#if courseApi.course?.isTemplate}
           <Badge variant="secondary">{$t('course_templates.editor.badge')}</Badge>
@@ -120,18 +90,6 @@
 
     {#if !$isStudentExperience}
       <ButtonGroup.Root>
-        {#if !courseApi.course?.isTemplate && isPublicCourse}
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={handleViewCourseSite}
-            disabled={!courseApi.course?.id}
-            aria-label={$t('course.header.view_course_site')}
-          >
-            <ExternalLinkIcon size={14} />
-            <span class="hidden sm:inline">{$t('course.header.view_course_site')}</span>
-          </Button>
-        {/if}
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
             {#snippet child({ props })}
@@ -153,7 +111,6 @@
                 title={courseApi.course.title}
                 description={courseApi.course.description}
                 isPublished={courseApi.course.isPublished ?? false}
-                courseType={courseApi.course.type}
                 slug={courseApi.course.slug ?? ''}
                 isTemplate={courseApi.course.isTemplate}
                 studentCount={courseApi.group.students.length}
@@ -174,5 +131,3 @@
   courseSlug={courseApi.course?.slug}
   currentOrgDomain={$currentOrgDomain}
 />
-
-<ViewCourseSiteUnpublishedModal bind:open={viewCourseSiteUnpublishedOpen} currentOrgDomain={$currentOrgDomain} />

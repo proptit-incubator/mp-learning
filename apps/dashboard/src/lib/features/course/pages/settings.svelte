@@ -6,13 +6,11 @@
   import { Label } from '@cio/ui/base/label';
   import { Switch } from '@cio/ui/base/switch';
   import * as RadioGroup from '@cio/ui/base/radio-group';
-  import * as Select from '@cio/ui/base/select';
   import ArrowUpRightIcon from '@lucide/svelte/icons/arrow-up-right';
   import XIcon from '@lucide/svelte/icons/x';
 
   import ReorderMaterialTabs from '$features/course/components/reorder-material-tabs.svelte';
-  import CertificateDeadlineRequiredDialog from '$features/course/components/certificate-deadline-required-dialog.svelte';
-  import { CourseTagPicker, PublicConversionSettingsCard } from '$features/course/components';
+  import { CourseTagPicker } from '$features/course/components';
   import TemplateSettingsSection from '$features/course/components/template-settings-section.svelte';
   import ReminderPicker from '$features/course/components/live-session-reminders/reminder-picker.svelte';
   import DeliveryLogSheet from '$features/course/components/live-session-reminders/delivery-log-sheet.svelte';
@@ -22,7 +20,6 @@
     reminderRowsToOffsets
   } from '$features/course/utils/live-session-reminder-utils';
   import { resolveLiveSessionReminderOffsets } from '@cio/utils/constants/live-session-reminder';
-  import { publicConversionFlow } from '$features/course/store/public-conversion.svelte';
   import { BackButton } from '@cio/ui/custom/back-button';
   import { IconButton } from '@cio/ui/custom/icon-button';
   import { TextareaField } from '@cio/ui/custom/textarea-field';
@@ -44,13 +41,12 @@
   import Copy from '@lucide/svelte/icons/copy';
   import * as Alert from '@cio/ui/base/alert';
   import LockOpenIcon from '@lucide/svelte/icons/lock-open';
-  import type { TCourseType } from '@cio/db/types';
   import type { Course } from '../utils/types';
   import { t } from '$lib/utils/functions/translations';
   import { isObject } from '$lib/utils/functions/isObject';
   import { snackbar } from '$features/ui/snackbar/store';
-  import { generateSlug, isPublishedComplianceMissingDeadline, isSelfEnrollmentAllowed } from '@cio/utils/functions';
-  import { DEFAULT_COMPLIANCE_SETTINGS } from '../utils/compliance-utils';
+  import { generateSlug, isSelfEnrollmentAllowed } from '@cio/utils/functions';
+  import { courseHasLiveSession } from '../utils/live-session';
   import { DeleteModal } from '$features/ui';
   import { contentApi, courseApi } from '$features/course/api';
   import { collectLockedContentItems } from '$features/course/utils/content-lock-utils';
@@ -72,8 +68,6 @@
 
   let isLoading = $state(false);
   let isDeleting = $state(false);
-  let openCertificateDeadlineDialog = $state(false);
-  let completionDeadlineTrigger = $state(0);
   let errors: {
     title: string | undefined;
     description: string | undefined;
@@ -148,7 +142,7 @@
   let isUnlockingAll = $state(false);
 
   const lockedContentItems = $derived(collectLockedContentItems(courseApi.course));
-  const isLiveClassCourse = $derived(courseApi.course?.type === 'LIVE_CLASS');
+  const hasLiveSession = $derived(courseHasLiveSession(courseApi.course));
   const showLockedContentNotice = $derived($settings.isPublished && lockedContentItems.length > 0);
 
   async function handleUnlockAllContent() {
@@ -186,30 +180,8 @@
   }
 
   function onPublishToggle(checked: boolean) {
-    if (!checked) {
-      $settings.isPublished = false;
-      hasUnsavedChanges = true;
-      return;
-    }
-
-    if (
-      isPublishedComplianceMissingDeadline({
-        type: $settings.type,
-        isPublished: true,
-        deadline: $settings.certificate.deadline
-      })
-    ) {
-      openCertificateDeadlineDialog = true;
-      return;
-    }
-
-    $settings.isPublished = true;
+    $settings.isPublished = checked;
     hasUnsavedChanges = true;
-  }
-
-  function goToCompletionDeadline() {
-    openCertificateDeadlineDialog = false;
-    completionDeadlineTrigger += 1;
   }
 
   export async function handleSave() {
@@ -223,10 +195,7 @@
       return;
     }
 
-    if (
-      $settings.type === 'LIVE_CLASS' &&
-      Object.keys(getReminderRowErrors($settings.liveSessionReminders)).length > 0
-    ) {
+    if (hasLiveSession && Object.keys(getReminderRowErrors($settings.liveSessionReminders)).length > 0) {
       snackbar.error('course.navItem.settings.live_session_reminders.validation.fix_errors');
       return;
     }
@@ -241,17 +210,6 @@
 
       if (!courseApi.course) return;
 
-      if (
-        isPublishedComplianceMissingDeadline({
-          type: $settings.type,
-          isPublished: $settings.isPublished,
-          deadline: $settings.certificate.deadline
-        })
-      ) {
-        openCertificateDeadlineDialog = true;
-        return;
-      }
-
       if ($settings.isPublished && !courseApi.course.slug) {
         courseApi.course.slug = generateSlug($settings.courseTitle, { appendTimestamp: true });
       }
@@ -263,7 +221,7 @@
         lessonTabsOrder: $settings.tabs,
         grading: $settings.grading,
         lessonDownload: $settings.lessonDownload,
-        allowSelfEnrollment: $settings.type !== 'COMPLIANCE' && $settings.allowSelfEnrollment,
+        allowSelfEnrollment: $settings.allowSelfEnrollment,
         allowMarkdownExport: $settings.allowMarkdownExport,
         isContentGroupingEnabled: $settings.isContentGroupingEnabled,
         progressionMode: $settings.progressionMode,
@@ -274,18 +232,11 @@
       const updatedCourse = {
         title: $settings.courseTitle,
         description: $settings.courseDescription,
-        type: $settings.type,
         bannerImage: bannerImageUrl,
         isPublished: $settings.isPublished,
         metadata: metadataPayload,
         slug: courseApi.course.slug ?? undefined,
-        compliance:
-          $settings.type === 'COMPLIANCE' ? (courseApi.course.compliance ?? DEFAULT_COMPLIANCE_SETTINGS) : undefined,
-        callout: $settings.type === 'PUBLIC' ? sanitizeCalloutForSave($settings.callout) : null,
-        certificate: {
-          ...(courseApi.course.certificate ?? {}),
-          deadline: $settings.certificate.deadline
-        }
+        recertificationMonths: $settings.recertificationMonths
       };
 
       const normalizedSelectedTagIds = normalizeTagIds(selectedTagIds);
@@ -331,10 +282,7 @@
   async function setDefault(course: Course) {
     if (!course || !Object.keys(course).length) return;
 
-    const isConversionFlowActive = publicConversionFlow.isActive && publicConversionFlow.courseId === course.id;
-
-    const allowSelfEnrollment = course.type !== 'COMPLIANCE' && isSelfEnrollmentAllowed(course.metadata);
-    const callout = normalizeCallout(course.callout);
+    const allowSelfEnrollment = isSelfEnrollmentAllowed(course.metadata);
     const reminderOffsets = resolveLiveSessionReminderOffsets(course.metadata?.liveSessionReminderOffsetsMinutes);
     const liveSessionReminders = reminderOffsets.map(createReminderRow);
 
@@ -342,9 +290,6 @@
       settings.update((current) => {
         Object.assign(current, {
           courseTitle: course.title,
-          type: isConversionFlowActive
-            ? ('PUBLIC' as TCourseType)
-            : (course.type as TCourseType) || ('SELF_PACED' as TCourseType),
           courseDescription: course.description,
           bannerImage: course.bannerImage || '',
           tabs: course.metadata?.lessonTabsOrder || $settings.tabs,
@@ -356,12 +301,9 @@
           isContentGroupingEnabled: course.metadata?.isContentGroupingEnabled ?? true,
           progressionMode: course.metadata?.progressionMode ?? 'free',
           commentsEnabled: course.metadata?.commentsEnabled ?? true,
-          callout,
           welcomeEmailMessage: course.metadata?.welcomeEmailMessage ?? '',
           liveSessionReminders,
-          certificate: {
-            deadline: course.certificate?.deadline ?? null
-          }
+          recertificationMonths: course.recertificationMonths ?? null
         });
         return current;
       });
@@ -369,7 +311,7 @@
   }
 
   function getReminderOffsetsPayload(course: Course) {
-    if ($settings.type !== 'LIVE_CLASS') return {};
+    if (!hasLiveSession) return {};
 
     const nextOffsets = reminderRowsToOffsets($settings.liveSessionReminders);
     const currentOffsets = resolveLiveSessionReminderOffsets(course.metadata?.liveSessionReminderOffsetsMinutes);
@@ -384,54 +326,11 @@
   export function handleDiscard() {
     if (!courseApi.course) return;
 
-    publicConversionFlow.cancel();
     setDefault(courseApi.course);
     selectedTagIds = [...initialTagIds];
     avatar = undefined;
     errors = { title: undefined, description: undefined };
-    delete courseApi.errors.type;
     hasUnsavedChanges = false;
-  }
-
-  function sanitizeCalloutForSave(value: typeof $settings.callout) {
-    if (!value) return null;
-
-    const title = value.title.trim();
-    const description = value.description.trim();
-    const buttonLabel = value.buttonLabel.trim();
-    const buttonUrl = value.buttonUrl.trim();
-    const animation = value.animation ?? 'waves';
-
-    if (!title && !description && !buttonLabel && !buttonUrl) return null;
-
-    return { title, description, buttonLabel, buttonUrl, animation };
-  }
-
-  function normalizeCallout(value: unknown): typeof $settings.callout {
-    if (!value || typeof value !== 'object') return null;
-
-    const candidate = value as Record<string, unknown>;
-    if (
-      typeof candidate.title !== 'string' ||
-      typeof candidate.description !== 'string' ||
-      typeof candidate.buttonLabel !== 'string' ||
-      typeof candidate.buttonUrl !== 'string'
-    ) {
-      return null;
-    }
-
-    const animation =
-      candidate.animation === 'dotted' || candidate.animation === 'none' || candidate.animation === 'waves'
-        ? candidate.animation
-        : 'waves';
-
-    return {
-      title: candidate.title,
-      description: candidate.description,
-      buttonLabel: candidate.buttonLabel,
-      buttonUrl: candidate.buttonUrl,
-      animation
-    };
   }
 
   // Initialize course from page data
@@ -447,17 +346,7 @@
     const course = courseApi.course;
     if (course?.id && initializedCourseId !== course.id) {
       initializedCourseId = course.id;
-      publicConversionFlow.restoreForCourse(course.id);
       setDefault(course);
-    }
-  });
-
-  $effect(() => {
-    if ($settings.type === 'PUBLIC' && $settings.callout === null) {
-      settings.update((prev) => ({
-        ...prev,
-        callout: { title: '', description: '', buttonLabel: '', buttonUrl: '', animation: 'waves' }
-      }));
     }
   });
 
@@ -522,20 +411,14 @@
       : undefined
   );
 
-  function isoToDatetimeLocal(iso: string | null | undefined): string {
-    if (!iso) return '';
-
-    const date = new Date(iso);
-    if (Number.isNaN(date.getTime())) return '';
-
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  function onRecertificationToggle(checked: boolean) {
+    $settings.recertificationMonths = checked ? ($settings.recertificationMonths ?? 12) : null;
+    hasUnsavedChanges = true;
   }
 
-  function onCompletionDeadlineChange(e: Event) {
-    const value = (e.currentTarget as HTMLInputElement).value;
-    $settings.certificate.deadline = value ? new Date(value).toISOString() : null;
-    delete courseApi.errors['certificate.deadline'];
+  function onRecertificationMonthsChange(event: Event) {
+    const value = Number((event.currentTarget as HTMLInputElement).value);
+    $settings.recertificationMonths = Number.isInteger(value) && value >= 1 && value <= 120 ? value : 12;
     hasUnsavedChanges = true;
   }
 </script>
@@ -543,8 +426,6 @@
 <UnsavedChanges bind:hasUnsavedChanges />
 
 <DeleteModal onDelete={handleDeleteCourse} bind:open={openDeleteModal} />
-
-<CertificateDeadlineRequiredDialog bind:open={openCertificateDeadlineDialog} onGoToDeadline={goToCompletionDeadline} />
 
 <div class="flex w-full flex-col gap-8">
   <SettingsCard id="general" title={$t('course.navItem.settings.general_card_title')}>
@@ -702,70 +583,6 @@
     </Field.Group>
   </SettingsCard>
 
-  <AttentionHighlight id="course-type" scrollBlock="center" class="scroll-mt-24">
-    <SettingsCard hash="course-type" title={$t('course.navItem.settings.type')}>
-      {#snippet description()}
-        {$t('course.navItem.settings.course_type_desc')}
-      {/snippet}
-      <Field.Group>
-        <Field.Field>
-          <Select.Root
-            type="single"
-            value={$settings.type}
-            onValueChange={(value) => {
-              if (!value) return;
-              $settings.type = value as TCourseType;
-              if (value !== 'PUBLIC') {
-                delete courseApi.errors.type;
-                courseApi.publicConversionOffenders = [];
-                publicConversionFlow.cancel();
-              }
-              hasUnsavedChanges = true;
-            }}
-          >
-            <Select.Trigger class="w-full">
-              {$t(`course.navItem.settings.${$settings.type.toLowerCase()}`)}
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Group>
-                <Select.Item value="SELF_PACED" label={$t('course.navItem.settings.self_paced')}>
-                  {$t('course.navItem.settings.self_paced')}
-                </Select.Item>
-                <Select.Item value="LIVE_CLASS" label={$t('course.navItem.settings.live_class')}>
-                  {$t('course.navItem.settings.live_class')}
-                </Select.Item>
-                <Select.Item value="COMPLIANCE" label={$t('course.navItem.settings.compliance')}>
-                  {$t('course.navItem.settings.compliance')}
-                </Select.Item>
-              </Select.Group>
-            </Select.Content>
-          </Select.Root>
-        </Field.Field>
-
-        {#if publicConversionFlow.isActive && publicConversionFlow.courseId === courseApi.course?.id && publicConversionFlow.offenders.length > 0}
-          {#if courseApi.course}
-            <PublicConversionSettingsCard
-              class="mt-4"
-              course={courseApi.course}
-              offenders={publicConversionFlow.offenders}
-              disabled={hasUnsavedChanges}
-              onCancel={() => {
-                if (courseApi.course) {
-                  $settings.type = (courseApi.course.type as TCourseType) || 'SELF_PACED';
-                  delete courseApi.errors.type;
-                  publicConversionFlow.cancel();
-                  hasUnsavedChanges = false;
-                }
-              }}
-            />
-          {/if}
-        {:else if courseApi.errors.type}
-          <p class="ui:text-destructive/90 mt-2 text-sm">{courseApi.errors.type}</p>
-        {/if}
-      </Field.Group>
-    </SettingsCard>
-  </AttentionHighlight>
-
   <AttentionHighlight
     id={ROUTE_SECTIONS[ROUTE_NAME.COURSE_SETTINGS].COMPLETION_RULES}
     scrollBlock="start"
@@ -823,36 +640,39 @@
 
         <SettingsSeparator />
 
-        <AttentionHighlight
-          id={ROUTE_SECTIONS[ROUTE_NAME.COURSE_SETTINGS].COMPLETION_DEADLINE}
-          trigger={completionDeadlineTrigger}
-          class="scroll-mt-24"
-        >
-          <Field.Field class="scroll-mt-24">
-            <Field.Label>
-              <a href="#{ROUTE_SECTIONS[ROUTE_NAME.COURSE_SETTINGS].COMPLETION_DEADLINE}" class="hover:underline">
-                {$t('course.navItem.settings.completion_deadline_label')}
-              </a>
+        <Field.Field id="recertification" orientation="horizontal" class="scroll-mt-24">
+          <Field.Content>
+            <Field.Label for="recertification-enabled">
+              <a href="#recertification" class="hover:underline">{$t('enrollment.recertification.title')}</a>
             </Field.Label>
+            <Field.Description>{$t('enrollment.recertification.description')}</Field.Description>
+          </Field.Content>
+          <Switch
+            id="recertification-enabled"
+            checked={$settings.recertificationMonths !== null}
+            onCheckedChange={onRecertificationToggle}
+          />
+        </Field.Field>
+        {#if $settings.recertificationMonths !== null}
+          <Field.Field>
+            <Field.Label for="recertification-months">{$t('enrollment.recertification.months_label')}</Field.Label>
             <Input
-              id="course-completion-deadline"
-              type="datetime-local"
-              class="w-full"
-              value={isoToDatetimeLocal($settings.certificate.deadline)}
-              onchange={onCompletionDeadlineChange}
-              disabled={areCompletionRulesLocked}
+              id="recertification-months"
+              type="number"
+              min="1"
+              max="120"
+              class="w-32"
+              value={$settings.recertificationMonths}
+              onchange={onRecertificationMonthsChange}
             />
-            <Field.Description>{$t('course.navItem.settings.completion_deadline_helper')}</Field.Description>
-            {#if courseApi.errors['certificate.deadline']}
-              <Field.Error>{courseApi.errors['certificate.deadline']}</Field.Error>
-            {/if}
+            <Field.Description>{$t('enrollment.recertification.months_helper')}</Field.Description>
           </Field.Field>
-        </AttentionHighlight>
+        {/if}
       </Field.Group>
     </SettingsCard>
   </AttentionHighlight>
 
-  {#if $settings.type === 'LIVE_CLASS' && courseApi.course?.id}
+  {#if hasLiveSession && courseApi.course?.id}
     <SettingsCard
       id="live-session-reminders"
       title={$t('course.navItem.settings.live_session_reminders.legend')}
@@ -934,105 +754,6 @@
     </Field.Group>
   </SettingsCard>
 
-  {#if $settings.type === 'PUBLIC' && $settings.callout}
-    <SettingsCard
-      id="callout"
-      title={$t('course.navItem.settings.callout.legend')}
-      description={$t('course.navItem.settings.callout.description')}
-    >
-      <Field.Group>
-        <Field.Field>
-          <Field.Label>{$t('course.navItem.settings.callout.title_label')}</Field.Label>
-          <InputField
-            bind:value={$settings.callout.title}
-            onInput={() => (hasUnsavedChanges = true)}
-            placeholder={$t('course.navItem.settings.callout.title_placeholder')}
-          />
-        </Field.Field>
-
-        <Field.Field>
-          <Field.Label>{$t('course.navItem.settings.callout.description_label')}</Field.Label>
-          <TextareaField
-            bind:value={$settings.callout.description}
-            oninput={() => (hasUnsavedChanges = true)}
-            rows={3}
-            placeholder={$t('course.navItem.settings.callout.description_placeholder')}
-          />
-        </Field.Field>
-
-        <Field.Field>
-          <Field.Label>{$t('course.navItem.settings.callout.button_label')}</Field.Label>
-          <InputField
-            bind:value={$settings.callout.buttonLabel}
-            onInput={() => (hasUnsavedChanges = true)}
-            placeholder={$t('course.navItem.settings.callout.button_label_placeholder')}
-          />
-        </Field.Field>
-
-        <Field.Field>
-          <Field.Label>{$t('course.navItem.settings.callout.button_url_label')}</Field.Label>
-          <InputField
-            bind:value={$settings.callout.buttonUrl}
-            onInput={() => (hasUnsavedChanges = true)}
-            placeholder={$t('course.navItem.settings.callout.button_url_placeholder')}
-            type="url"
-          />
-        </Field.Field>
-
-        <Field.Field>
-          <Field.Label>{$t('course.navItem.settings.callout.animation_label')}</Field.Label>
-          <Field.Description>
-            {$t('course.navItem.settings.callout.animation_description')}
-          </Field.Description>
-          <RadioGroup.Root
-            value={$settings.callout.animation ?? 'waves'}
-            onValueChange={(value) => {
-              if (!$settings.callout) return;
-              const next = value === 'dotted' || value === 'none' ? value : 'waves';
-              settings.update((prev) =>
-                prev.callout ? { ...prev, callout: { ...prev.callout, animation: next } } : prev
-              );
-              hasUnsavedChanges = true;
-            }}
-            class="mt-1 flex flex-col gap-2"
-          >
-            <Field.Field orientation="horizontal">
-              <RadioGroup.Item value="waves" id="callout-animation-waves" />
-              <Label for="callout-animation-waves">
-                {$t('course.navItem.settings.callout.animation_waves')}
-              </Label>
-            </Field.Field>
-            <Field.Field orientation="horizontal">
-              <RadioGroup.Item value="dotted" id="callout-animation-dotted" />
-              <Label for="callout-animation-dotted">
-                {$t('course.navItem.settings.callout.animation_dotted')}
-              </Label>
-            </Field.Field>
-            <Field.Field orientation="horizontal">
-              <RadioGroup.Item value="none" id="callout-animation-none" />
-              <Label for="callout-animation-none">
-                {$t('course.navItem.settings.callout.animation_none')}
-              </Label>
-            </Field.Field>
-          </RadioGroup.Root>
-        </Field.Field>
-
-        <Field.Field>
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={() => {
-              settings.update((prev) => ({ ...prev, callout: null }));
-              hasUnsavedChanges = true;
-            }}
-          >
-            {$t('course.navItem.settings.callout.clear')}
-          </Button>
-        </Field.Field>
-      </Field.Group>
-    </SettingsCard>
-  {/if}
-
   <SettingsCard id="access" title={$t('course.navItem.settings.access_card_title')}>
     <Field.Group>
       {#if !courseApi.course?.isTemplate}
@@ -1043,17 +764,12 @@
                 <a href="#self-enrollment" class="hover:underline">{$t('training_library.settings_self_enrollment')}</a>
               </Field.Label>
               <Field.Description>
-                {$t(
-                  $settings.type === 'COMPLIANCE'
-                    ? 'training_library.compliance_hint'
-                    : 'training_library.settings_self_enrollment_hint'
-                )}
+                {$t('training_library.settings_self_enrollment_hint')}
               </Field.Description>
             </Field.Content>
             <Switch
               id="allow-self-enrollment"
-              checked={$settings.type !== 'COMPLIANCE' && $settings.allowSelfEnrollment}
-              disabled={$settings.type === 'COMPLIANCE'}
+              checked={$settings.allowSelfEnrollment}
               onCheckedChange={(checked) => {
                 $settings.allowSelfEnrollment = checked;
                 hasUnsavedChanges = true;
@@ -1080,13 +796,13 @@
           </AttentionHighlight>
 
           {#if showLockedContentNotice}
-            <Alert.Root variant={isLiveClassCourse ? 'information' : 'warning'}>
+            <Alert.Root variant={hasLiveSession ? 'information' : 'warning'}>
               <LockOpenIcon />
               <Alert.Title>
                 {$t('course.navItem.settings.locked_content.title', { count: lockedContentItems.length })}
               </Alert.Title>
               <Alert.Description>
-                {isLiveClassCourse
+                {hasLiveSession
                   ? $t('course.navItem.settings.locked_content.description_live')
                   : $t('course.navItem.settings.locked_content.description')}
                 <Button

@@ -19,13 +19,11 @@ describe('internal course enrollment policy', () => {
     expect(response.status).toBe(404);
   });
 
-  it.each([
-    '/course/course-id/members',
-    '/course/course-id/members/available',
-    '/cohort/cohort-id/invites/link',
-    '/organization/org-id/employees'
-  ])('preserves %s', async (path) => {
-    const response = await app.request(path);
-    expect(response.status).toBe(200);
-  });
+  it.each(['/course/course-id/members', '/course/course-id/members/available', '/organization/org-id/employees'])(
+    'preserves %s',
+    async (path) => {
+      const response = await app.request(path);
+      expect(response.status).toBe(200);
+    }
+  );
 });

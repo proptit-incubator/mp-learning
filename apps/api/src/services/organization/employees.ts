@@ -1,4 +1,3 @@
-import { getEmployeeDirectTraining } from '@cio/db/queries/course/learning-access';
 import { createHash, randomBytes } from 'node:crypto';
 import { auth } from '@cio/db/auth';
 import { db, type DbOrTxClient } from '@cio/db/drizzle';
@@ -16,7 +15,6 @@ import {
   findEmployeeActivation,
   getEmployeeAccess,
   getEmployeeOrganizationLocale,
-  getEmployeeAssignments,
   getEmployeeAudit,
   insertEmployee,
   insertEmployeeMember,
@@ -25,7 +23,6 @@ import {
   lockEmployeeOrganization,
   revokeEmployeeActivations,
   revokeEmployeeSessions,
-  saveEmployeeAssignments,
   updateEmployee,
   updateEmployeeMember,
   updateEmployeeProfile
@@ -43,10 +40,6 @@ import type {
   UpdateEmployee
 } from '@cio/utils/validation/organization';
 import { ZActivateEmployee, ZCreateEmployee, ZUpdateEmployee } from '@cio/utils/validation/organization';
-import {
-  emitComplianceEnrollmentEvents,
-  ensureComplianceEnrollmentRecordsForProfiles
-} from '@api/services/course/compliance';
 
 function rejectEmployee(key: string, status = 400): never {
   throw new AppError(`employees.errors.${key}`, ErrorCodes.VALIDATION_ERROR, status);
@@ -75,12 +68,6 @@ async function validateEmployeeFields(
     rejectEmployee('manager');
 
   if (fields.managerId === employeeId) rejectEmployee('manager');
-
-  if (fields.courseIds.some((courseId) => !options.courses.some((course) => course.id === courseId)))
-    rejectEmployee('assignment');
-
-  if (fields.cohortIds.some((cohortId) => !options.cohorts.some((cohort) => cohort.id === cohortId)))
-    rejectEmployee('assignment');
 
   let managerId = fields.managerId;
   const visited = new Set<string>();
@@ -117,15 +104,13 @@ export async function getEmployeeDetails(orgId: string, actorId: string, employe
 
   if (!access.canManage && staff.managerId !== access.employeeId) rejectEmployee('forbidden', 403);
 
-  const assignments = await getEmployeeAssignments(employeeId);
-  const learning = await employeeLearningReport(orgId, employeeId);
+  const enrollments = await employeeLearningReport(orgId, employeeId);
   const audit = access.canManage ? await getEmployeeAudit(employeeId) : [];
-  return { employee: staff, assignments, learning, audit };
+  return { employee: staff, enrollments, audit };
 }
 
 export async function createEmployee(orgId: string, actorId: string, input: CreateEmployee) {
   const fields = ZCreateEmployee.parse(input);
-  let enrollmentRecords: Parameters<typeof emitComplianceEnrollmentEvents>[0] = [];
   const staff = await db.transaction(async (tx) => {
     await lockEmployeeOrganization(orgId, tx);
     await validateEmployeeFields(orgId, actorId, fields, undefined, tx);
@@ -163,51 +148,26 @@ export async function createEmployee(orgId: string, actorId: string, input: Crea
       activatedAt
     };
     const created = await insertEmployee(values, tx);
-    await saveEmployeeAssignments(created.id, fields.courseIds, fields.cohortIds, tx, actorId);
     if (profileId && activatedAt) {
       await updateEmployeeProfile(profileId, fields.fullname, tx);
-      enrollmentRecords = await enrollEmployeeLearning(orgId, created.id, profileId, fields.email, tx);
+      await enrollEmployee(created.id, tx);
     }
     await addEmployeeAudit(created.id, actorId, 'CREATED', '', tx);
     return created;
   });
   const delivery =
     fields.sendActivation && !staff.activatedAt ? await sendEmployeeActivation(orgId, actorId, staff.id) : null;
-  await emitComplianceEnrollmentEvents(enrollmentRecords);
   const employee = delivery ? await findEmployee(orgId, staff.id) : staff;
   return { employee: employee!, delivery };
 }
 
-async function enrollEmployeeLearning(
-  orgId: string,
-  employeeId: string,
-  profileId: string,
-  email: string,
-  client: DbOrTxClient
-) {
-  await enrollEmployee(employeeId, profileId, email, client);
-  const learning = await employeeLearningReport(orgId, employeeId, client);
-  const courseIds = [...new Set(learning.map((course) => course.courseId))];
-  const enrollment = await ensureComplianceEnrollmentRecordsForProfiles(courseIds, [profileId], client);
-  return enrollment.createdRecords;
-}
-
 export async function editEmployee(orgId: string, actorId: string, employeeId: string, input: UpdateEmployee) {
   const fields = ZUpdateEmployee.parse(input);
-  let enrollmentRecords: Parameters<typeof emitComplianceEnrollmentEvents>[0] = [];
   const result = await db.transaction(async (tx) => {
     await lockEmployeeOrganization(orgId, tx);
     const access = await validateEmployeeFields(orgId, actorId, fields, employeeId, tx);
     const staff = await findEmployee(orgId, employeeId, tx);
     if (!staff) rejectEmployee('missing', 404);
-    const directTraining = await getEmployeeDirectTraining(employeeId, orgId, tx);
-    if (
-      directTraining.some(
-        (assignment) => assignment.type === 'COMPLIANCE' && !fields.courseIds.includes(assignment.courseId)
-      )
-    ) {
-      rejectEmployee('forbidden', 403);
-    }
 
     if (access.role !== 'ADMIN' && !['EMPLOYEE', 'MANAGER'].includes(staff.role)) rejectEmployee('forbidden', 403);
 
@@ -228,16 +188,14 @@ export async function editEmployee(orgId: string, actorId: string, employeeId: s
     const updated = await updateEmployee(employeeId, values, tx);
     const roleId = membershipRole(fields.role);
     await updateEmployeeMember(staff.memberId, { roleId }, tx);
-    await saveEmployeeAssignments(employeeId, fields.courseIds, fields.cohortIds, tx, actorId);
     if (identity.member?.profileId) {
       await updateEmployeeProfile(identity.member.profileId, fields.fullname, tx);
-      enrollmentRecords = await enrollEmployeeLearning(orgId, employeeId, identity.member.profileId, staff.email, tx);
+      await enrollEmployee(employeeId, tx);
       if (staff.role !== fields.role) await revokeEmployeeSessions(identity.member.profileId, tx);
     }
     await addEmployeeAudit(employeeId, actorId, 'UPDATED', '', tx);
     return updated;
   });
-  await emitComplianceEnrollmentEvents(enrollmentRecords);
   return result;
 }
 
@@ -354,7 +312,6 @@ export async function activateEmployee(token: string, password?: string) {
   const tokenHash = hashEmployeeToken(token);
   const context = await auth.$context;
   const passwordHash = password ? await context.password.hash(password) : null;
-  let enrollmentRecords: Parameters<typeof emitComplianceEnrollmentEvents>[0] = [];
   const staff = await db.transaction(async (tx) => {
     const preview = await findEmployeeActivation(tokenHash, tx);
     if (!preview) rejectEmployee('activation');
@@ -379,17 +336,10 @@ export async function activateEmployee(token: string, password?: string) {
     const roleId = membershipRole(employeeRow.role);
     await updateEmployeeMember(employeeRow.memberId, { profileId, verified: true, status: 'ACTIVE', roleId }, tx);
     await updateEmployee(employeeRow.id, { activatedAt, status: 'ACTIVE' }, tx);
-    enrollmentRecords = await enrollEmployeeLearning(
-      employeeRow.organizationId,
-      employeeRow.id,
-      profileId,
-      employeeRow.email,
-      tx
-    );
+    await enrollEmployee(employeeRow.id, tx);
     await addEmployeeAudit(employeeRow.id, profileId, 'ACTIVATED', '', tx);
     return employeeRow;
   });
-  await emitComplianceEnrollmentEvents(enrollmentRecords);
   return { employeeCode: staff.employeeCode };
 }
 
@@ -439,12 +389,6 @@ export async function importEmployees(orgId: string, actorId: string, rows: unkn
 
       if (fields.managerId && !options.managers.some((manager) => manager.id === fields.managerId))
         rejectEmployee('manager');
-
-      if (fields.courseIds.some((id) => !options.courses.some((course) => course.id === id)))
-        rejectEmployee('assignment');
-
-      if (fields.cohortIds.some((id) => !options.cohorts.some((cohort) => cohort.id === id)))
-        rejectEmployee('assignment');
 
       if (
         conflicts.employees.some(

@@ -13,15 +13,11 @@ export const WEBHOOK_EVENT_TYPES = [
   'course.submission.status_changed',
   'lesson.completion.updated',
   'exercise.completion.updated',
-  'compliance.record.status_changed',
-  'compliance.record.waived',
   'organization.member.added',
   'organization.member.removed',
   'organization.member.updated',
   'course.published',
   'course.unpublished',
-  'cohort.member.added',
-  'cohort.member.removed',
   'lesson.session.scheduled',
   'course.payment_request.created'
 ] as const;
@@ -43,21 +39,9 @@ export const WEBHOOK_MEMBER_SOURCE_METHODS = [
   'api',
   'sso',
   'payment',
-  'admin',
-  'cohort'
+  'admin'
 ] as const;
 export type TWebhookMemberSourceMethod = (typeof WEBHOOK_MEMBER_SOURCE_METHODS)[number];
-
-export const WEBHOOK_COMPLIANCE_TRIGGERS = [
-  'enrollment',
-  'submission',
-  'expiry_scan',
-  'reminder_scan',
-  'reset',
-  'extend',
-  'waive'
-] as const;
-export type TWebhookComplianceTrigger = (typeof WEBHOOK_COMPLIANCE_TRIGGERS)[number];
 
 export const WEBHOOK_EVENT_MODES = ['all', 'selected'] as const;
 export type TWebhookEventMode = (typeof WEBHOOK_EVENT_MODES)[number];

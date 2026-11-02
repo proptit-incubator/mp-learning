@@ -11,8 +11,6 @@ export function createEmployeeDraft(): CreateEmployee {
     managerId: null,
     startDate: '',
     role: 'EMPLOYEE',
-    courseIds: [],
-    cohortIds: [],
     sendActivation: false
   };
 }
@@ -29,8 +27,6 @@ export function employeeDetailsDraft(details: EmployeeDetails): CreateEmployee {
     managerId: staff.managerId,
     startDate: staff.startDate ?? '',
     role,
-    courseIds: details.assignments.courseIds,
-    cohortIds: details.assignments.cohortIds,
     sendActivation: false
   };
 }
@@ -79,8 +75,6 @@ export function employeeImportRows(cells: unknown[][]): EmployeeImportRow[] {
         role: 'EMPLOYEE',
         managerId: null,
         managerCode: values.managerCode || '',
-        courseIds: [],
-        cohortIds: [],
         sendActivation: false
       };
     });

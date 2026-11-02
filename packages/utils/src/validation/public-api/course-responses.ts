@@ -1,6 +1,5 @@
 import * as z from 'zod';
 
-import { COURSE_TYPE_VALUES } from '../../constants/course-type';
 import { COURSE_PROGRESSION_MODES } from '../../functions/course-progression';
 import { ZCourseImportDraftPayload } from '../course-import/course-import';
 
@@ -83,29 +82,9 @@ const ZCourseCertificate = z
         idFormat: z.string().optional()
       })
       .optional(),
-    deadline: z.string().nullable().optional(),
     emailMessage: z.string().nullable().optional()
   })
   .catchall(z.unknown());
-
-const ZCourseCompliance = z
-  .object({
-    retakeIntervalMonths: z.number(),
-    gracePeriodDays: z.number().optional(),
-    reminderDaysBefore: z.array(z.number()).optional(),
-    isMandatory: z.boolean().optional(),
-    framework: z.enum(['HIPAA', 'OSHA', 'SOX', 'GDPR', 'PCI_DSS', 'FERPA', 'ISO', 'CUSTOM']).nullable().optional(),
-    maxRetakeAttempts: z.number().nullable().optional()
-  })
-  .catchall(z.unknown());
-
-const ZCourseCallout = z.object({
-  title: z.string(),
-  description: z.string(),
-  buttonLabel: z.string(),
-  buttonUrl: z.string(),
-  animation: z.enum(['waves', 'dotted', 'none']).optional()
-});
 
 export const ZPublicApiCourseResponse = z.object({
   id: z.string().uuid(),
@@ -122,16 +101,12 @@ export const ZPublicApiCourseResponse = z.object({
   logo: z.string().describe('Deprecated; use bannerImage'),
   slug: z.string().nullable(),
   metadata: ZCourseMetadata,
-  cost: z.number().nullable(),
-  currency: z.string(),
   bannerImage: z.string().nullable(),
   isPublished: z.boolean().nullable(),
   displayOrder: z.number().nullable(),
   certificate: ZCourseCertificate.nullable(),
-  compliance: ZCourseCompliance.nullable(),
   status: z.string().describe('ACTIVE, or DELETED once the course is deleted'),
-  type: z.enum(COURSE_TYPE_VALUES).nullable(),
-  callout: ZCourseCallout.nullable()
+  recertificationMonths: z.number().int().nullable()
 });
 
 export const ZPublicApiCourseListItemResponse = ZPublicApiCourseResponse.extend({
@@ -250,21 +225,6 @@ export const ZPublicApiCreateCourseResponse = z.object({
   course: ZPublicApiCourseResponse,
   groupId: z.string().uuid(),
   memberId: z.string().uuid().describe("The key creator's course member id; they are added as a tutor")
-});
-
-export const ZPublicApiCourseConversionOffenderResponse = z.object({
-  questionId: z.union([z.number(), z.string()]),
-  questionTitle: z.string(),
-  exerciseId: z.string(),
-  exerciseTitle: z.string(),
-  typeId: z.number()
-});
-
-export const ZPublicApiUpdateCourseEnvelope = z.object({
-  conversionBlocked: z
-    .array(ZPublicApiCourseConversionOffenderResponse)
-    .optional()
-    .describe('Set when a type change was skipped because these questions cannot be auto-graded')
 });
 
 export const ZPublicApiCourseStructureResponse = z.object({

@@ -196,7 +196,7 @@
                     src={communityApi.question.authorAvatarUrl}
                     alt={communityApi.question?.authorFullname
                       ? communityApi.question.authorFullname
-                      : $t('cohorts.newsfeed.user_avatar_alt')}
+                      : $t('common.user_avatar_alt')}
                   />
                 {/if}
                 <Avatar.Fallback>

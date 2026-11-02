@@ -292,7 +292,7 @@ export const inviteRouter = new Hono()
   )
   /**
    * GET /invite/r/:token/preview
-   * Server-only preview for resource share links (course, cohort, ...).
+   * Server-only preview for course share links.
    */
   .get(
     '/r/:token/preview',

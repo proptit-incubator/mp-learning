@@ -2,7 +2,6 @@ import {
   selectCountryBreakdown,
   selectCourseDailyRange,
   selectOrgDailyRange,
-  selectPopularCourseTypes,
   selectTopCoursesByViews
 } from '@cio/db/queries/analytics';
 import { DASH_ANALYTICS_TTL_SECONDS, dashAnalyticsKey } from '@api/utils/redis/key-generators';
@@ -29,14 +28,6 @@ export type CourseFunnel = {
     conversionFromPrev: number | null;
   }>;
 };
-
-export type PopularTypes = Array<{
-  type: string;
-  enrollments: number;
-  views: number;
-  completions: number;
-  courseCount: number;
-}>;
 
 export type TopCoursesByViews = Array<{
   courseId: string;
@@ -174,28 +165,6 @@ export async function getCourseFunnel(
     });
 
   const result: CourseFunnel = { steps };
-  await writeCache(key, result);
-  return result;
-}
-
-export async function getPopularTypes(orgId: string, days: number, bustCache = false): Promise<PopularTypes> {
-  const key = dashAnalyticsKey('popular-types', orgId, days);
-  if (!bustCache) {
-    const cached = await readCache<PopularTypes>(key);
-    if (cached) return cached;
-  }
-
-  const { fromDate, toDate } = computeRange(days);
-  const rows = await selectPopularCourseTypes(orgId, fromDate, toDate);
-  const result: PopularTypes = rows
-    .filter((row) => row.type)
-    .map((row) => ({
-      type: row.type as string,
-      enrollments: row.enrollments,
-      views: row.views,
-      completions: row.completions,
-      courseCount: row.courseCount
-    }));
   await writeCache(key, result);
   return result;
 }

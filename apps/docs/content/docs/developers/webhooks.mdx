@@ -37,15 +37,11 @@ Leave the secret blank to have ClassroomIO generate one. Every delivery is signe
 | `course.submission.status_changed` | A submission status changes, for example when it is graded |
 | `lesson.completion.updated` | A lesson is marked complete or reset |
 | `exercise.completion.updated` | An exercise is completed, meeting any passing grade the exercise requires, or reset |
-| `compliance.record.status_changed` | A student's compliance status changes |
-| `compliance.record.waived` | A compliance requirement is waived |
 | `organization.member.added` | A person joins the organization |
 | `organization.member.removed` | A person is removed from the organization |
 | `organization.member.updated` | A person's role or status changes |
 | `course.published` | A course is published |
 | `course.unpublished` | A course is unpublished |
-| `cohort.member.added` | A person is added to a cohort |
-| `cohort.member.removed` | A person is removed from a cohort |
 | `lesson.session.scheduled` | A live session is scheduled or moved |
 | `course.payment_request.created` | A student asks to pay for a paid course |
 
@@ -91,7 +87,7 @@ Every event uses the same envelope. The shape of `data` depends on the event typ
 
 ## Event reference
 
-Every event uses the envelope shown above. This section lists the `data` object for each event. Fields are always present; a field that does not apply is `null`. Alongside each ID, events carry readable details: `student` and `actor` (`id`, `name`, `email`, `externalId`), `course` (`id`, `title`, `slug`, `type`, `isPublished`, `cost`, `currency`, `tags`), a `status` label next to `statusId` (and `previousStatus` next to `previousStatusId`), `exercise` and `lesson` (`id`, `title`), and a `role` label next to `roleId`, and `links` with a staff `dashboard` URL and a `student` URL where the event has a page. `externalId` is the person's id in your identity provider when they signed in through your organization's SSO, otherwise `null`. These details are a snapshot read when the event is recorded, moments after it happens, so a later rename does not change an event you already received. A detail is `null` when the record no longer exists, for example after a course is deleted. IDs are UUIDs and timestamps are ISO 8601 in UTC.
+Every event uses the envelope shown above. This section lists the `data` object for each event. Fields are always present; a field that does not apply is `null`. Alongside each ID, events carry readable details: `student` and `actor` (`id`, `name`, `email`, `externalId`), `course` (`id`, `title`, `slug`, `isPublished`, `tags`), a `status` label next to `statusId` (and `previousStatus` next to `previousStatusId`), `exercise` and `lesson` (`id`, `title`), and a `role` label next to `roleId`, and `links` with a staff `dashboard` URL and a `student` URL where the event has a page. `externalId` is the person's id in your identity provider when they signed in through your organization's SSO, otherwise `null`. These details are a snapshot read when the event is recorded, moments after it happens, so a later rename does not change an event you already received. A detail is `null` when the record no longer exists, for example after a course is deleted. IDs are UUIDs and timestamps are ISO 8601 in UTC.
 
 ### Team invites
 
@@ -199,10 +195,7 @@ A student invite is created.
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -244,10 +237,7 @@ A student accepts an invite and enrolls.
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -289,10 +279,7 @@ A student invite is revoked.
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -335,10 +322,7 @@ A member is added to a course, by an admin or by accepting an invite.
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -355,8 +339,6 @@ A member is added to a course, by an admin or by accepting an invite.
     "method": "invite",
     "inviteId": "000000e1-0000-4000-8000-0000000000e1",
     "inviteLinkId": null,
-    "cohortId": null,
-    "programId": null,
     "apiKeyId": null
   },
   "actorProfileId": null,
@@ -368,7 +350,7 @@ A member is added to a course, by an admin or by accepting an invite.
 }
 ```
 
-`memberId` is the course membership id. `profileId` is `null` until a pending member signs up. `enrolledAt` is when the membership was created. `source.method` is `invite`, `invite_link`, `self_enroll`, `import`, `api`, `sso`, `payment`, `admin` or `cohort`, and the other `source` fields hold the matching id or `null`. `actor` is the admin or tutor who added the member, or `null` when the student joined by themselves. `roleId` is `1` for admin, `2` for tutor, `3` for student.
+`memberId` is the course membership id. `profileId` is `null` until a pending member signs up. `enrolledAt` is when the membership was created. `source.method` is `invite`, `invite_link`, `self_enroll`, `import`, `api`, `sso`, `payment` or `admin`, and the other `source` fields hold the matching id or `null`. `actor` is the admin or tutor who added the member, or `null` when the student joined by themselves. `roleId` is `1` for admin, `2` for tutor, `3` for student.
 
 #### `course.member.removed`
 
@@ -385,10 +367,7 @@ A member is removed from a course. `progressAtRemoval` is the student's progress
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -425,7 +404,7 @@ A member is removed from a course. `progressAtRemoval` is the student's progress
 
 #### `course.completed`
 
-A student completes a course, including after any certificate deadline has passed. Sent once per student, whether or not certificates are enabled for the organization. For compliance courses it is sent once per compliance cycle, when the cycle is completed.
+A student completes a course. Sent once per completion cycle, whether or not certificates are enabled for the organization. For a course with recertification, a new cycle starts when the previous completion expires.
 
 ```json
 {
@@ -437,10 +416,7 @@ A student completes a course, including after any certificate deadline has passe
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -454,8 +430,6 @@ A student completes a course, including after any certificate deadline has passe
   "enrolledAt": "2026-10-01T09:00:00.000Z",
   "startedAt": null,
   "score": null,
-  "attempts": null,
-  "timeSpentMinutes": null,
   "progress": {
     "lessonsCompleted": 10,
     "lessonsTotal": 10,
@@ -463,7 +437,13 @@ A student completes a course, including after any certificate deadline has passe
     "exercisesTotal": 2,
     "percent": 100
   },
-  "compliance": null,
+  "completionRecord": {
+    "cycleNumber": 1,
+    "startedAt": null,
+    "completedAt": "2026-10-13T12:15:30.000Z",
+    "validUntil": null,
+    "score": null
+  },
   "links": {
     "dashboard": "https://app.classroomio.com/courses/000000c1-0000-4000-8000-0000000000c1/people",
     "student": "https://acme.myclassroomio.com/courses/000000c1-0000-4000-8000-0000000000c1"
@@ -471,7 +451,7 @@ A student completes a course, including after any certificate deadline has passe
 }
 ```
 
-`progress` is the student's progress through the course. `startedAt`, `score`, `attempts` and `timeSpentMinutes` come from the compliance record and are `null` for courses without compliance cycles. For compliance courses, `compliance` holds the cycle, the due date, when the certification stays valid until, and whether the student finished late.
+`progress` is the student's progress through the course. `completionRecord` holds the completion cycle, when it started and was completed, when it stays valid until (`null` when the course has no recertification period) and the score. `startedAt` and `score` repeat the record's values.
 
 #### `course.certificate.issued`
 
@@ -487,10 +467,7 @@ A certificate is earned. Sent right after `course.completed`, and only when cert
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -504,8 +481,6 @@ A certificate is earned. Sent right after `course.completed`, and only when cert
   "enrolledAt": "2026-10-01T09:00:00.000Z",
   "startedAt": null,
   "score": null,
-  "attempts": null,
-  "timeSpentMinutes": null,
   "progress": {
     "lessonsCompleted": 10,
     "lessonsTotal": 10,
@@ -513,7 +488,13 @@ A certificate is earned. Sent right after `course.completed`, and only when cert
     "exercisesTotal": 2,
     "percent": 100
   },
-  "compliance": null,
+  "completionRecord": {
+    "cycleNumber": 1,
+    "startedAt": null,
+    "completedAt": "2026-10-13T12:15:30.000Z",
+    "validUntil": null,
+    "score": null
+  },
   "certificate": {
     "id": null,
     "displayId": "N° 0042",
@@ -530,7 +511,7 @@ A certificate is earned. Sent right after `course.completed`, and only when cert
 }
 ```
 
-`certificate.displayId` is the id printed on the certificate. `certificate.id` is the stored certificate for compliance courses and `null` for other courses, which do not store one. `expiresAt` and `cycleNumber` are set for compliance courses. `downloadUrl` opens the student's certificate page and needs them to be signed in.
+`certificate.displayId` is the id printed on the certificate. `certificate.id`, `expiresAt` and `cycleNumber` are `null` because certificates are not stored. `downloadUrl` opens the student's certificate page and needs them to be signed in.
 
 ### Submissions
 
@@ -553,10 +534,7 @@ An exercise submission is created.
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -614,10 +592,7 @@ A submission status or grading state changes, for example when it is graded.
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -681,10 +656,7 @@ A lesson is marked complete, or reset when an admin resets a student's progress.
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -733,10 +705,7 @@ An exercise is completed, meeting any passing grade it requires, or reset by an 
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -772,99 +741,6 @@ An exercise is completed, meeting any passing grade it requires, or reset by an 
 ```
 
 `memberId` is the course membership id of the student. `score` and `passed` come from the student's latest submission. `courseProgress` is the student's progress through the whole course after this change.
-
-### Compliance
-
-#### `compliance.record.status_changed`
-
-A student's compliance status for a course cycle changes. States are `not_started`, `in_progress`, `compliant`, `expiring_soon`, `in_grace_period`, `non_compliant` and `waived`.
-
-```json
-{
-  "courseId": "000000c1-0000-4000-8000-0000000000c1",
-  "recordId": "000000a1-0000-4000-8000-0000000000a1",
-  "memberId": "000000d1-0000-4000-8000-0000000000d1",
-  "profileId": "000000b1-0000-4000-8000-0000000000b1",
-  "cycleNumber": 2,
-  "actorProfileId": null,
-  "status": "in_grace_period",
-  "previousStatus": "expiring_soon",
-  "trigger": "expiry_scan",
-  "dueDate": "2026-10-31T00:00:00.000Z",
-  "validUntil": null,
-  "course": {
-    "id": "000000c1-0000-4000-8000-0000000000c1",
-    "title": "Intro to Data Science",
-    "slug": "intro-to-data-science",
-    "type": "COMPLIANCE",
-    "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
-    "tags": [
-      "data"
-    ]
-  },
-  "student": {
-    "id": "000000b1-0000-4000-8000-0000000000b1",
-    "name": "Alex Johnson",
-    "email": "student@example.com",
-    "externalId": "EMP-10482"
-  },
-  "actor": null,
-  "links": {
-    "dashboard": "https://app.classroomio.com/courses/000000c1-0000-4000-8000-0000000000c1/compliance",
-    "student": "https://acme.myclassroomio.com/courses/000000c1-0000-4000-8000-0000000000c1"
-  }
-}
-```
-
-`previousStatus` is `null` for a new record. `trigger` is `enrollment`, `submission`, `expiry_scan`, `reminder_scan`, `reset`, `extend` or `waive`. `actor` is set when an admin or tutor caused the change.
-
-
-#### `compliance.record.waived`
-
-A compliance requirement is waived for a student.
-
-```json
-{
-  "courseId": "000000c1-0000-4000-8000-0000000000c1",
-  "recordId": "000000a1-0000-4000-8000-0000000000a1",
-  "memberId": "000000d1-0000-4000-8000-0000000000d1",
-  "profileId": "000000b1-0000-4000-8000-0000000000b1",
-  "cycleNumber": 2,
-  "actorProfileId": "000000b2-0000-4000-8000-0000000000b2",
-  "reason": "Medical leave",
-  "waiverExpiresAt": "2027-01-31T00:00:00.000Z",
-  "course": {
-    "id": "000000c1-0000-4000-8000-0000000000c1",
-    "title": "Intro to Data Science",
-    "slug": "intro-to-data-science",
-    "type": "COMPLIANCE",
-    "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
-    "tags": [
-      "data"
-    ]
-  },
-  "student": {
-    "id": "000000b1-0000-4000-8000-0000000000b1",
-    "name": "Alex Johnson",
-    "email": "student@example.com",
-    "externalId": "EMP-10482"
-  },
-  "actor": {
-    "id": "000000b2-0000-4000-8000-0000000000b2",
-    "name": "Sam Rivera",
-    "email": "sam@example.com",
-    "externalId": null
-  },
-  "links": {
-    "dashboard": "https://app.classroomio.com/courses/000000c1-0000-4000-8000-0000000000c1/compliance",
-    "student": "https://acme.myclassroomio.com/courses/000000c1-0000-4000-8000-0000000000c1"
-  }
-}
-```
 
 ### Organization members
 
@@ -990,10 +866,7 @@ A course is published.
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -1023,10 +896,7 @@ A course is unpublished.
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": false,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -1058,10 +928,7 @@ A student asks to pay for a paid course. `student.id` is set only when the reque
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 49,
-    "currency": "USD",
     "tags": [
       "data"
     ]
@@ -1075,83 +942,6 @@ A student asks to pay for a paid course. `student.id` is set only when the reque
   "links": {
     "dashboard": "https://app.classroomio.com/courses/000000c1-0000-4000-8000-0000000000c1/people",
     "student": "https://acme.myclassroomio.com/courses/000000c1-0000-4000-8000-0000000000c1"
-  }
-}
-```
-
-### Cohorts
-
-#### `cohort.member.added`
-
-A person is added to a cohort.
-
-```json
-{
-  "cohortId": "000000a5-0000-4000-8000-0000000000a5",
-  "memberId": "000000d1-0000-4000-8000-0000000000d1",
-  "profileId": "000000b1-0000-4000-8000-0000000000b1",
-  "email": "student@example.com",
-  "roleId": 3,
-  "actorProfileId": "000000b2-0000-4000-8000-0000000000b2",
-  "cohort": {
-    "id": "000000a5-0000-4000-8000-0000000000a5",
-    "name": "Fall 2026"
-  },
-  "student": {
-    "id": "000000b1-0000-4000-8000-0000000000b1",
-    "name": "Alex Johnson",
-    "email": "student@example.com",
-    "externalId": "EMP-10482"
-  },
-  "role": "student",
-  "actor": {
-    "id": "000000b2-0000-4000-8000-0000000000b2",
-    "name": "Sam Rivera",
-    "email": "sam@example.com",
-    "externalId": null
-  },
-  "links": {
-    "dashboard": "https://app.classroomio.com/cohorts/000000a5-0000-4000-8000-0000000000a5",
-    "student": "https://acme.myclassroomio.com/cohorts/000000a5-0000-4000-8000-0000000000a5"
-  }
-}
-```
-
-`memberId` is the cohort membership id.
-
-
-#### `cohort.member.removed`
-
-A person is removed from a cohort.
-
-```json
-{
-  "cohortId": "000000a5-0000-4000-8000-0000000000a5",
-  "memberId": "000000d1-0000-4000-8000-0000000000d1",
-  "profileId": "000000b1-0000-4000-8000-0000000000b1",
-  "email": "student@example.com",
-  "roleId": 3,
-  "actorProfileId": "000000b2-0000-4000-8000-0000000000b2",
-  "cohort": {
-    "id": "000000a5-0000-4000-8000-0000000000a5",
-    "name": "Fall 2026"
-  },
-  "student": {
-    "id": "000000b1-0000-4000-8000-0000000000b1",
-    "name": "Alex Johnson",
-    "email": "student@example.com",
-    "externalId": "EMP-10482"
-  },
-  "role": "student",
-  "actor": {
-    "id": "000000b2-0000-4000-8000-0000000000b2",
-    "name": "Sam Rivera",
-    "email": "sam@example.com",
-    "externalId": null
-  },
-  "links": {
-    "dashboard": "https://app.classroomio.com/cohorts/000000a5-0000-4000-8000-0000000000a5",
-    "student": "https://acme.myclassroomio.com/cohorts/000000a5-0000-4000-8000-0000000000a5"
   }
 }
 ```
@@ -1174,10 +964,7 @@ A live session is scheduled or moved, or its call link changes.
     "id": "000000c1-0000-4000-8000-0000000000c1",
     "title": "Intro to Data Science",
     "slug": "intro-to-data-science",
-    "type": "SELF_PACED",
     "isPublished": true,
-    "cost": 0,
-    "currency": "USD",
     "tags": [
       "data"
     ]

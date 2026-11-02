@@ -1,5 +1,4 @@
-import type { TCourseCompletionRecord, TGroupmember, TOrganizationmember } from '@cio/db/types';
-import type { TCohortMember } from '@cio/db/queries/cohort';
+import type { TGroupmember, TOrganizationmember } from '@cio/db/types';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import {
   claimPendingOrganizationInvite,
@@ -25,15 +24,11 @@ import {
   updateOrganizationMemberById
 } from '@cio/db/queries/organization';
 import { getCourseGroupIds } from '@cio/db/queries/course';
-import { enrollUsersInCourseGroups } from '@cio/db/queries/group';
+import { addGroupMembers, getExistingGroupMembers } from '@cio/db/queries/group';
+import { createEnrollments, findEmployeeByProfile } from '@cio/db/queries/course/enrollment';
 import { scheduleCourseRoleReconcile } from '@cio/core/services/organization/course-roles';
 import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
-import {
-  emitCohortMemberWebhookEvent,
-  emitOrganizationMemberWebhookEvent,
-  emitWebhookEvent
-} from '@cio/core/services/webhook/emit';
-import { addCohortMember, getCourseIdsByCohortIds, getExistingCohortMembers } from '@cio/db/queries/cohort';
+import { emitOrganizationMemberWebhookEvent, emitWebhookEvent } from '@cio/core/services/webhook/emit';
 
 import { ROLE } from '@cio/utils/constants';
 import type { TNewOrganizationInviteAudit } from '@db/types';
@@ -42,11 +37,10 @@ import { db, type DbOrTxClient } from '@cio/db/drizzle';
 import { assertStudentCapacityOrThrow, notifyStudentMilestone } from './student-limit';
 import type { StudentMilestoneNotification } from './student-limit';
 import { getAppBaseUrl } from '@cio/core/config/dashboard-url';
-import { parseCourseIdsFromInviteMetadata, parseCohortIdsFromInviteMetadata } from '@api/utils/org';
+import { parseCourseIdsFromInviteMetadata } from '@api/utils/org';
 import { getProfileById, markUserAndProfileEmailVerified } from '@cio/db/queries/auth/profile';
 import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { buildEmailBranding, buildEmailFromName, sanitizeEmailSubject } from '@cio/email';
-import { emitComplianceEnrollmentEvents, ensureComplianceEnrollmentRecordsForProfiles } from '../course/compliance';
 import { captureLearnersEnrolled } from '@api/services/product-events';
 
 type OrganizationInviteStatus = 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'ACCEPTED';
@@ -265,101 +259,66 @@ export async function recordOrganizationInviteAudits(rows: TNewOrganizationInvit
 }
 
 type TInviteEnrollment = {
-  enrolledMembers: TGroupmember[];
-  complianceRecords: TCourseCompletionRecord[];
-  cohortMembers: TCohortMember[];
+  enrolledMembers: Array<Pick<TGroupmember, 'groupId' | 'profileId' | 'roleId'>>;
 };
-
-async function emitInviteEnrollmentEvents(
-  organizationId: string,
-  actorProfileId: string,
-  enrollment: TInviteEnrollment
-) {
-  await emitComplianceEnrollmentEvents(enrollment.complianceRecords);
-
-  for (const cohortMember of enrollment.cohortMembers) {
-    await emitCohortMemberWebhookEvent(
-      'cohort.member.added',
-      organizationId,
-      cohortMember.cohortId,
-      cohortMember,
-      actorProfileId
-    );
-  }
-}
 
 async function enrollOrganizationInviteUser(
   tx: DbOrTxClient,
   params: {
+    organizationId: string;
     courseIds: string[];
-    cohortIds: string[];
     profileId: string;
     email: string;
     roleId: number;
+    actorProfileId: string | null;
   }
 ): Promise<TInviteEnrollment> {
-  const enrolledMembers: TGroupmember[] = [];
-  const complianceRecords: TCourseCompletionRecord[] = [];
-  const cohortMembers: TCohortMember[] = [];
-
-  if (params.courseIds.length > 0) {
-    const courseGroupMappings = await getCourseGroupIds(params.courseIds, tx);
-    const courseGroupIds = courseGroupMappings.map((mapping) => mapping.groupId).filter(Boolean) as string[];
-
-    const courseMembers = await enrollUsersInCourseGroups(
-      courseGroupIds,
-      [{ profileId: params.profileId, email: params.email }],
-      params.roleId,
-      tx
-    );
-    enrolledMembers.push(...courseMembers);
-    const enrollment = await ensureComplianceEnrollmentRecordsForProfiles(params.courseIds, [params.profileId], tx);
-    complianceRecords.push(...enrollment.createdRecords);
+  if (params.courseIds.length === 0) {
+    return { enrolledMembers: [] };
   }
 
-  if (params.cohortIds.length > 0) {
-    const existingCohortMemberships = await getExistingCohortMembers(
-      params.cohortIds.map((cohortId) => ({ cohortId, profileId: params.profileId })),
+  const courseGroupMappings = await getCourseGroupIds(params.courseIds, tx);
+  const groupIdByCourseId = new Map(
+    courseGroupMappings.flatMap((mapping) => (mapping.groupId ? [[mapping.courseId, mapping.groupId] as const] : []))
+  );
+
+  if (params.roleId === ROLE.STUDENT) {
+    const employee = await findEmployeeByProfile(params.organizationId, params.profileId, tx);
+    if (!employee) {
+      return { enrolledMembers: [] };
+    }
+
+    const created = await createEnrollments(
+      {
+        courseIds: params.courseIds,
+        employeeIds: [employee.id],
+        kind: 'ASSIGNED',
+        assignedBy: params.actorProfileId
+      },
       tx
     );
-    const cohortIdsToInsert = params.cohortIds.filter(
-      (cohortId) => !existingCohortMemberships.has(`${cohortId}:${params.profileId}`)
-    );
 
-    for (const cohortId of cohortIdsToInsert) {
-      const cohortMember = await addCohortMember(
-        {
-          cohortId,
-          roleId: params.roleId,
-          profileId: params.profileId,
-          email: params.email
-        },
-        tx
-      );
-      cohortMembers.push(cohortMember);
-    }
-
-    const cohortCourseIds = await getCourseIdsByCohortIds(params.cohortIds, tx);
-    const courseIdsToEnroll = cohortCourseIds.filter((courseId) => !params.courseIds.includes(courseId));
-
-    if (courseIdsToEnroll.length > 0) {
-      const cohortCourseGroups = await getCourseGroupIds(courseIdsToEnroll, tx);
-      const cohortGroupIds = cohortCourseGroups.map((mapping) => mapping.groupId).filter(Boolean) as string[];
-
-      const cohortCourseMembers = await enrollUsersInCourseGroups(
-        cohortGroupIds,
-        [{ profileId: params.profileId, email: params.email }],
-        params.roleId,
-        tx,
-        'CONTEXT'
-      );
-      enrolledMembers.push(...cohortCourseMembers);
-      const enrollment = await ensureComplianceEnrollmentRecordsForProfiles(courseIdsToEnroll, [params.profileId], tx);
-      complianceRecords.push(...enrollment.createdRecords);
-    }
+    return {
+      enrolledMembers: created.flatMap((row) => {
+        const groupId = groupIdByCourseId.get(row.courseId);
+        return groupId ? [{ groupId, profileId: params.profileId, roleId: ROLE.STUDENT }] : [];
+      })
+    };
   }
 
-  return { enrolledMembers, complianceRecords, cohortMembers };
+  const groupIds = [...new Set(groupIdByCourseId.values())];
+  const existing = await getExistingGroupMembers(
+    groupIds.map((groupId) => ({ groupId, profileId: params.profileId })),
+    tx
+  );
+  const enrolledMembers = await addGroupMembers(
+    groupIds
+      .filter((groupId) => !existing.has(`${groupId}:${params.profileId}`))
+      .map((groupId) => ({ groupId, profileId: params.profileId, email: params.email, roleId: params.roleId })),
+    tx
+  );
+
+  return { enrolledMembers };
 }
 
 type TeamInviteResult = {
@@ -613,11 +572,12 @@ export async function acceptOrganizationInvite(token: string, user: TAuthUser, c
     await markUserAndProfileEmailVerified(user.id, tx);
 
     const enrollment = await enrollOrganizationInviteUser(tx, {
+      organizationId: row.invite.organizationId,
       courseIds: parseCourseIdsFromInviteMetadata(row.invite.metadata),
-      cohortIds: parseCohortIdsFromInviteMetadata(row.invite.metadata),
       profileId: user.id,
       email: normalizedEmail,
-      roleId: row.invite.roleId
+      roleId: row.invite.roleId,
+      actorProfileId: row.invite.createdByProfileId ?? null
     });
 
     return {
@@ -639,8 +599,6 @@ export async function acceptOrganizationInvite(token: string, user: TAuthUser, c
       user.id
     );
   }
-
-  await emitInviteEnrollmentEvents(result.organization.id, user.id, result.enrollment);
 
   // Must run after commit: the reconcile reads the org role outside this transaction.
   if (!result.alreadyAccepted) {
@@ -923,11 +881,12 @@ export async function acceptOrganizationInviteById(
     await markUserAndProfileEmailVerified(user.id, tx);
 
     const enrollment = await enrollOrganizationInviteUser(tx, {
+      organizationId: row.invite.organizationId,
       courseIds: parseCourseIdsFromInviteMetadata(row.invite.metadata),
-      cohortIds: parseCohortIdsFromInviteMetadata(row.invite.metadata),
       profileId: user.id,
       email: normalizedEmail,
-      roleId: row.invite.roleId
+      roleId: row.invite.roleId,
+      actorProfileId: row.invite.createdByProfileId ?? null
     });
 
     return {
@@ -949,8 +908,6 @@ export async function acceptOrganizationInviteById(
       user.id
     );
   }
-
-  await emitInviteEnrollmentEvents(result.invite.organizationId, user.id, result.enrollment);
 
   if (!result.alreadyAccepted) {
     // Must run after commit: the reconcile reads the org role outside this transaction.

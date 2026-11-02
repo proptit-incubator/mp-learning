@@ -205,7 +205,7 @@ export async function previewInviteLink(token: string): Promise<InviteLinkPrevie
  * Joins the authenticated user to the link's resource. The link is never consumed
  * and joining is idempotent. Org membership, the resource re-check, and the
  * enrollment write all commit in one transaction; only best-effort side effects
- * (compliance backfill, cache invalidation, email) run after it commits.
+ * (webhooks, cache invalidation, analytics) run after it commits.
  */
 export async function acceptInviteLink(token: string, user: TAuthUser, context: TInviteRequestContext = {}) {
   if (!user.id || !user.email) {

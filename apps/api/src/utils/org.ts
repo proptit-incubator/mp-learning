@@ -29,8 +29,3 @@ function parseInviteIds(metadata: unknown, keys: string[]): string[] {
 export function parseCourseIdsFromInviteMetadata(metadata: unknown): string[] {
   return parseInviteIds(metadata, ['courseIds', 'course_ids']);
 }
-
-/** Normalize JSONB organization-invite metadata for cohort ids (legacy `programIds` supported). */
-export function parseCohortIdsFromInviteMetadata(metadata: unknown): string[] {
-  return parseInviteIds(metadata, ['cohortIds', 'cohort_ids', 'programIds', 'program_ids']);
-}

@@ -136,7 +136,6 @@
     return courseApi.course?.content != null;
   });
   const lessonSlug = $derived(lessonApi.lesson?.slug ?? '');
-  const isPublicCourse = $derived(courseApi.course?.type === 'PUBLIC');
   const isLiveSessionLesson = $derived(Boolean(lessonApi.lesson?.callUrl && lessonApi.lesson?.lessonAt));
   const lessonSessionPhase = $derived(
     lessonApi.lesson?.id === lessonId ? getLiveSessionPhase(lessonApi.lesson, $liveSessionClock) : null
@@ -325,8 +324,7 @@
         slideUrl: lessonApi.lesson.slideUrl || undefined,
         slides: lessonApi.lesson.slides || [],
         videos: lessonApi.lesson.videos || [],
-        documents: lessonApi.lesson.documents || [],
-        slug: isPublicCourse && lessonApi.lesson.slug ? lessonApi.lesson.slug : undefined
+        documents: lessonApi.lesson.documents || []
       }),
       saveOrUpdateTranslation(lessonApi.currentLocale, lessonId, versionIntent)
     ]);
@@ -492,7 +490,6 @@
       onToggleLock={handleToggleLessonLock}
       onDeleteLesson={handleDeleteLesson}
       slug={lessonSlug}
-      showSlugEditor={isPublicCourse}
       slugError={lessonApi.errors.slug}
       onSlugChange={handleLessonSlugChange}
     />

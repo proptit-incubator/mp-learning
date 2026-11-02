@@ -1,9 +1,7 @@
 <script lang="ts">
-  import { getIntlLocale } from '$lib/utils/functions/intl-locale';
   import { page } from '$app/state';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { Badge } from '@cio/ui/base/badge';
   import Plus from '@lucide/svelte/icons/plus';
   import * as Sidebar from '@cio/ui/base/sidebar';
   import { BackButton } from '@cio/ui';
@@ -18,7 +16,6 @@
   import MegaphoneIcon from '@lucide/svelte/icons/megaphone';
   import UsersRoundIcon from '@lucide/svelte/icons/users-round';
   import SettingsIcon from '@lucide/svelte/icons/settings';
-  import ShieldCheckIcon from '@lucide/svelte/icons/shield-check';
   import InboxIcon from '@lucide/svelte/icons/inbox';
   import { ContentType } from '@cio/utils/constants/content';
   import { contentCreateStoreUtils, contentEditingStore } from '$features/course/components/content/store';
@@ -28,7 +25,8 @@
   import ContentCountBadges from '../content-count-badges.svelte';
 
   import { NAV_IDS } from './constants';
-  import { complianceApi, courseApi } from '$features/course/api';
+  import { courseApi } from '$features/course/api';
+  import { courseHasLiveSession } from '$features/course/utils/live-session';
   import { t } from '$lib/utils/functions/translations';
   import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
   import { currentOrg, currentOrgPath } from '$lib/utils/store/org';
@@ -75,10 +73,7 @@
   });
   const showContentCount = $derived(sidebar.open && !sidebar.isMobile && contentCount.total > 0);
   const isContentTreeExpanded = $derived(!contentTreeCollapsed);
-  const studentComplianceRecord = $derived(complianceApi.learnerHistory?.currentRecord ?? null);
-  const showComplianceBanner = $derived(
-    isStudent && courseApi.course?.type === 'COMPLIANCE' && (sidebar.open || sidebar.isMobile)
-  );
+  const hasLiveSession = $derived(courseHasLiveSession(courseApi.course));
 
   const navItems = $derived(
     [
@@ -124,8 +119,7 @@
         url: getNavItemRoute(id, 'attendance'),
         isActive: currentPath === getNavItemRoute(id, 'attendance'),
         show() {
-          if (courseApi.course?.type !== 'LIVE_CLASS') return false;
-          return true;
+          return hasLiveSession;
         },
         icon: getNavIcon(NAV_IDS.ATTENDANCE)
       },
@@ -152,16 +146,6 @@
           return isStudent ? ($currentOrg.customization?.['course']?.['grading'] ?? false) : true;
         },
         icon: getNavIcon(NAV_IDS.MARKS)
-      },
-      {
-        id: NAV_IDS.COMPLIANCE,
-        title: $t('course.navItems.nav_compliance'),
-        url: getNavItemRoute(id, 'compliance'),
-        isActive: currentPath === getNavItemRoute(id, 'compliance'),
-        show() {
-          return courseApi.course?.type === 'COMPLIANCE';
-        },
-        icon: getNavIcon(NAV_IDS.COMPLIANCE)
       },
       {
         id: NAV_IDS.PEOPLE,
@@ -208,14 +192,6 @@
     contentTreeCollapsed = false;
   });
 
-  $effect(() => {
-    if (!isStudent || courseApi.course?.type !== 'COMPLIANCE' || !courseApi.course?.id || !$profile.id) {
-      return;
-    }
-
-    void complianceApi.ensureLearnerHistory(courseApi.course.id, $profile.id);
-  });
-
   function handleContentNavClick() {
     contentTreeCollapsed = false;
   }
@@ -240,7 +216,6 @@
       [NAV_IDS.ATTENDANCE]: CalendarCheckIcon,
       [NAV_IDS.SUBMISSIONS]: InboxIcon,
       [NAV_IDS.MARKS]: ClipboardCheckIcon,
-      [NAV_IDS.COMPLIANCE]: ShieldCheckIcon,
       [NAV_IDS.PEOPLE]: UsersRoundIcon,
       [NAV_IDS.ANALYTICS]: ChartColumnIcon,
       [NAV_IDS.CERTIFICATES]: AwardIcon,
@@ -265,8 +240,7 @@
             NAV_IDS.SUBMISSIONS,
             NAV_IDS.MARKS,
             NAV_IDS.CERTIFICATES,
-            NAV_IDS.ANALYTICS,
-            NAV_IDS.COMPLIANCE
+            NAV_IDS.ANALYTICS
           ].includes(item.id)
         )
       },
@@ -276,74 +250,10 @@
       }
     ].filter((group) => group.items.length)
   );
-
-  function getStatusVariant(status: string | null | undefined) {
-    if (status === 'compliant') {
-      return 'success';
-    }
-
-    if (status === 'expiring_soon' || status === 'in_progress' || status === 'in_grace_period') {
-      return 'warning';
-    }
-
-    if (status === 'non_compliant') {
-      return 'destructive';
-    }
-
-    if (status === 'waived') {
-      return 'secondary';
-    }
-
-    return 'outline';
-  }
-
-  function formatDate(value: string | null | undefined) {
-    if (!value) {
-      return '';
-    }
-
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return '';
-    }
-
-    return new Intl.DateTimeFormat(getIntlLocale(), {
-      dateStyle: 'medium'
-    }).format(date);
-  }
 </script>
 
 <Sidebar.Group class="pt-0!">
   <BackButton href={resolve(coursesListPath, {})} label={$t('org_navigation.exit_course')} class="px-2! py-2!" />
-
-  {#if showComplianceBanner}
-    <div class="ui:bg-info-soft ui:text-info-foreground mx-2 mb-3 rounded-lg border p-3">
-      <div class="flex items-center justify-between gap-2">
-        <p class="text-xs font-semibold tracking-wide uppercase">
-          {$t('course.sidebar.compliance.title')}
-        </p>
-        {#if studentComplianceRecord?.status}
-          <Badge variant={getStatusVariant(studentComplianceRecord.status)}>
-            {$t(`course.navItem.compliance.status.${studentComplianceRecord.status}`)}
-          </Badge>
-        {/if}
-      </div>
-
-      <div class="mt-2 space-y-1 text-xs">
-        {#if studentComplianceRecord?.dueDate}
-          <p>
-            {$t('course.sidebar.compliance.due_date')}: {formatDate(studentComplianceRecord.dueDate)}
-          </p>
-        {/if}
-
-        {#if studentComplianceRecord?.validUntil}
-          <p>
-            {$t('course.sidebar.compliance.valid_until')}: {formatDate(studentComplianceRecord.validUntil)}
-          </p>
-        {/if}
-      </div>
-    </div>
-  {/if}
 
   {#each navGroups as group (group.title)}
     <Sidebar.GroupLabel>{$t(group.title)}</Sidebar.GroupLabel>

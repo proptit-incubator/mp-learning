@@ -12,20 +12,10 @@ export const ZPublicApiCourseParam = z.object({
 });
 export type TPublicApiCourseParam = z.infer<typeof ZPublicApiCourseParam>;
 
-export const ZPublicApiCreateCourse = ZCourseCreateBase.omit({
-  organizationId: true
-}).refine((data) => data.type !== 'COMPLIANCE' || data.compliance !== undefined, {
-  message: 'Compliance settings are required for COMPLIANCE courses',
-  path: ['compliance']
-});
+export const ZPublicApiCreateCourse = ZCourseCreateBase.omit({ organizationId: true });
 export type TPublicApiCreateCourse = z.infer<typeof ZPublicApiCreateCourse>;
 
-export const ZPublicApiUpdateCourse = ZCourseUpdateBase.omit({
-  tagIds: true
-}).refine((data) => data.type !== 'COMPLIANCE' || data.compliance !== undefined, {
-  message: 'Compliance settings are required when changing a course to COMPLIANCE',
-  path: ['compliance']
-});
+export const ZPublicApiUpdateCourse = ZCourseUpdateBase.omit({ tagIds: true });
 export type TPublicApiUpdateCourse = z.infer<typeof ZPublicApiUpdateCourse>;
 
 export const ZPublicApiUpdateCourseStructure = z.object({

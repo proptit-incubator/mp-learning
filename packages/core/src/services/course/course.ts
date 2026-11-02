@@ -1,4 +1,3 @@
-import { getEmployeeAccess } from '@cio/db/queries/organization';
 import { AppError, ErrorCodes } from '@cio/utils/errors';
 import { sanitizeHtml, sanitizeOptionalHtml, sanitizeUnknownStrings } from '../../utils/sanitize-html';
 import {
@@ -16,8 +15,6 @@ import {
   addGroupMember,
   createGroup,
   getCourseOrgAdminAccess,
-  getCourseProgramAccess,
-  getCourseCohortAccess,
   getGroupMemberIdByCourseAndProfile,
   insertGroupMembersOnConflictDoNothing
 } from '@cio/db/queries/group';
@@ -32,18 +29,10 @@ import { getStudentCourseProgressImpactCounts } from '@cio/db/queries/course/res
 import { getCourseGroupId } from '@cio/db/queries/course/people';
 
 import { ContentType, ROLE, resolveLiveSessionReminderOffsets } from '@cio/utils/constants';
-import {
-  isPublishedComplianceMissingDeadline,
-  resolveCourseCertificateDeadline,
-  isSelfEnrollmentAllowed
-} from '@cio/utils/functions';
+import { isSelfEnrollmentAllowed } from '@cio/utils/functions';
 import type { TCourse } from '@cio/db/types';
 import type { DbOrTxClient } from '@cio/db/drizzle';
-import {
-  validatePaidCourseState,
-  NonAutoGradableQuestionOffender,
-  type TCourseCreate
-} from '@cio/utils/validation/course';
+import { isCoursePaid, validatePaidCourseState, type TCourseCreate } from '@cio/utils/validation/course';
 import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
 import { and, eq } from 'drizzle-orm';
@@ -61,7 +50,6 @@ import { invalidateOrgStats } from '../../utils/redis/org-stats-cache';
 import { captureCourseEvent, captureServerEvent, type TEventSource } from '../posthog';
 import { annotateCourseContentWithProgression } from './progression';
 import { buildCourseContent, calcPercentageWithRounding, DEFAULT_CONTENT_GROUPING, type CourseContent } from './utils';
-import { getPublicConversionOffenders } from './public-course-guard';
 
 function resolvePublishChange(before: boolean | null, after: boolean | null): 'published' | 'unpublished' | null {
   if (Boolean(before) === Boolean(after)) return null;
@@ -71,7 +59,6 @@ function resolvePublishChange(before: boolean | null, after: boolean | null): 'p
 
 export interface UpdateCourseResult {
   course: TCourse;
-  conversionOffenders?: NonAutoGradableQuestionOffender[] | null;
   publishedNow: boolean;
   publishChange?: 'published' | 'unpublished' | null;
 }
@@ -90,56 +77,6 @@ async function isStudentLimitReached(orgId: string): Promise<boolean> {
 
   const currentCount = await countActiveStudents(orgId);
   return currentCount + 1 > limit;
-}
-
-export async function ensureProgramCourseAccess(courseId: string, profileId: string) {
-  const access =
-    (await getCourseProgramAccess(courseId, profileId)) ?? (await getCourseCohortAccess(courseId, profileId));
-  if (!access) {
-    return false;
-  }
-
-  const organizationId = access.organizationId;
-  if (!organizationId) {
-    return false;
-  }
-
-  const internalAccess = await getEmployeeAccess(organizationId, profileId);
-  if (!internalAccess) return false;
-
-  const normalizedEmail = access.profileEmail?.trim() || undefined;
-
-  if (access.roleId === ROLE.STUDENT) {
-    const existingMemberId = await getOrganizationMemberIdByOrgAndProfile(organizationId, profileId);
-    if (!existingMemberId && (await isStudentLimitReached(organizationId))) {
-      throw new AppError(
-        'This organization has reached its student limit on the Free plan',
-        ErrorCodes.UPGRADE_REQUIRED,
-        403
-      );
-    }
-  }
-
-  await db.transaction(async (tx) => {
-    await insertGroupMembersOnConflictDoNothing(
-      [
-        {
-          learningAccessManaged: true,
-          groupId: access.courseGroupId,
-          roleId: access.roleId,
-          profileId,
-          email: normalizedEmail ?? undefined
-        }
-      ],
-      tx
-    );
-  });
-
-  if (access.roleId === ROLE.STUDENT) {
-    await invalidateOrgStats(organizationId);
-  }
-
-  return true;
 }
 
 /**
@@ -315,9 +252,8 @@ export async function createCourse(
         {
           title: data.title,
           description,
-          type: data.type,
           groupId: newGroup.id,
-          compliance: data.compliance ? sanitizeUnknownStrings(data.compliance) : undefined
+          recertificationMonths: data.recertificationMonths ?? null
         },
         tx
       );
@@ -365,7 +301,6 @@ export async function createCourse(
       orgId: data.organizationId,
       properties: {
         course_id: result.course.id,
-        course_type: result.course.type,
         is_published: !!result.course.isPublished,
         source
       }
@@ -399,14 +334,6 @@ export async function updateCourse(
   try {
     const [existingCourse] = await getCourseById(courseId, dbClient);
 
-    const effectiveCost = data.cost !== undefined ? data.cost : (existingCourse?.cost ?? 0);
-    const effectivePaymentLink =
-      data.metadata?.paymentLink !== undefined ? data.metadata.paymentLink : existingCourse?.metadata?.paymentLink;
-
-    if (Number(effectiveCost) > 0 && !effectivePaymentLink?.trim()) {
-      throw new AppError('Paid courses require a payment link', ErrorCodes.VALIDATION_ERROR, 400);
-    }
-
     const existingMetadata = existingCourse?.metadata;
     const mergedMetadata = data.metadata ? { ...existingMetadata, ...omitUndefinedValues(data.metadata) } : undefined;
 
@@ -428,28 +355,10 @@ export async function updateCourse(
       throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
     }
 
-    if (data.cost !== undefined || data.metadata !== undefined) {
-      const nextCost = data.cost === undefined ? (currentCourse.cost ?? 0) : (data.cost ?? 0);
-      const nextMetadata = sanitizedData.metadata ?? currentCourse.metadata;
-      const paidCourseIssue = validatePaidCourseState(nextCost, nextMetadata)[0];
+    if (data.metadata !== undefined) {
+      const paidCourseIssue = validatePaidCourseState(sanitizedData.metadata ?? currentCourse.metadata)[0];
       if (paidCourseIssue) {
         throw new AppError(paidCourseIssue.message, ErrorCodes.VALIDATION_ERROR, 400);
-      }
-    }
-
-    let conversionOffenders: NonAutoGradableQuestionOffender[] | null = null;
-
-    if (data.type !== undefined) {
-      const offenders = await getPublicConversionOffenders({
-        courseId,
-        currentType: currentCourse.type ?? null,
-        nextType: data.type,
-        dbClient
-      });
-
-      if (offenders.length > 0) {
-        conversionOffenders = offenders;
-        delete sanitizedData.type;
       }
     }
 
@@ -457,34 +366,12 @@ export async function updateCourse(
       throw new AppError('Templates cannot be published', ErrorCodes.VALIDATION_ERROR, 400);
     }
 
-    const nextType = sanitizedData.type ?? currentCourse.type;
     if (data.metadata) {
       const allowSelfEnrollment =
-        nextType === 'COMPLIANCE'
-          ? false
-          : (data.metadata.allowSelfEnrollment ??
-            data.metadata.allowNewStudent ??
-            isSelfEnrollmentAllowed(currentCourse.metadata));
+        data.metadata.allowSelfEnrollment ??
+        data.metadata.allowNewStudent ??
+        isSelfEnrollmentAllowed(currentCourse.metadata);
       sanitizedData.metadata = { ...sanitizedData.metadata, allowSelfEnrollment };
-    } else if (nextType === 'COMPLIANCE') {
-      sanitizedData.metadata = { ...currentCourse.metadata, allowSelfEnrollment: false };
-    }
-    const nextIsPublished = data.isPublished ?? currentCourse.isPublished;
-    const nextDeadline = resolveCourseCertificateDeadline(currentCourse.certificate?.deadline, data.certificate);
-
-    if (
-      isPublishedComplianceMissingDeadline({
-        type: nextType,
-        isPublished: nextIsPublished,
-        deadline: nextDeadline
-      })
-    ) {
-      throw new AppError(
-        'Compliance courses require a completion deadline before they can be published',
-        ErrorCodes.COMPLIANCE_DEADLINE_REQUIRED,
-        400,
-        'certificate.deadline'
-      );
     }
 
     const updated = await updateCourseQuery(courseId, sanitizeUnknownStrings(sanitizedData), dbClient);
@@ -506,7 +393,6 @@ export async function updateCourse(
 
     return {
       course: updated,
-      conversionOffenders,
       publishedNow: !currentCourse.isPublished && !!updated.isPublished,
       publishChange
     };
@@ -523,16 +409,14 @@ export async function updateCourse(
 }
 
 export function captureCoursePublished(
-  course: Pick<TCourse, 'id' | 'type' | 'cost'>,
+  course: Pick<TCourse, 'id' | 'metadata'>,
   profileId: string | null | undefined,
   source: TEventSource
 ): void {
-  const isPaid = Number(course.cost ?? 0) > 0;
-
   captureCourseEvent(course.id, {
     event: 'course_published',
     distinctId: profileId,
-    properties: { course_type: course.type, is_paid: isPaid, source }
+    properties: { is_paid: isCoursePaid(course.metadata), source }
   });
 }
 

@@ -23,9 +23,7 @@
             ? 'training_library.enrolled'
             : course.hasAccess
               ? 'training_library.available_to_you'
-              : course.canSelfEnroll
-                ? 'training_library.self_enrollment'
-                : 'training_library.assigned_only'
+              : 'training_library.self_enrollment'
         )}</Badge
       >
     </div>

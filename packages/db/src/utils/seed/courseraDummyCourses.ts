@@ -1,4 +1,3 @@
-import { COURSE_TYPE_VALUES, type TCourseType } from '@cio/utils/constants/course-type';
 import { course, courseSection, db, group, groupmember, inArray, lesson } from '@db/drizzle';
 import type { TNewCourse, TNewCourseSection, TNewGroup, TNewGroupmember, TNewLesson } from '@db/types';
 
@@ -32,10 +31,6 @@ function lessonIndex(courseIndex: number, sectionOrder: number, lessonOrder: num
     (sectionOrder - 1) * LESSONS_PER_SECTION +
     lessonOrder
   );
-}
-
-function dummyCourseType(courseIndex: number): TCourseType {
-  return COURSE_TYPE_VALUES[(courseIndex - 1) % COURSE_TYPE_VALUES.length];
 }
 
 function dummyCourseTitle(courseIndex: number) {
@@ -145,15 +140,12 @@ export async function seedCourseraDummyCourses({
         lessonDownload: false,
         allowSelfEnrollment: true
       },
-      cost: 0,
-      currency: 'USD',
       isPublished: courseIndex % 3 !== 0,
       certificate: {
         isDownloadable: false,
         theme: 'professional'
       },
       status: 'ACTIVE',
-      type: dummyCourseType(courseIndex),
       createdAt: dummyCreatedAt(courseIndex),
       updatedAt: dummyCreatedAt(courseIndex)
     }));

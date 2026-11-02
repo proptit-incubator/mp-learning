@@ -10,7 +10,6 @@ export type ResolvedReportTarget = {
   authorProfileId: string | null;
   snapshot: TContentReportSnapshot;
   courseId?: string | null;
-  cohortId?: string | null;
 };
 
 function parseNumericId(value: string): number | null {
@@ -139,87 +138,6 @@ async function resolveCourseNewsfeedComment(targetId: string): Promise<ResolvedR
       authorName: row.authorName ?? null,
       surface: 'course_newsfeed_comment',
       url: `/courses/${row.courseId}/newsfeed`
-    })
-  };
-}
-
-async function resolveCohortNewsfeedPost(targetId: string): Promise<ResolvedReportTarget | null> {
-  const [row] = await db
-    .select({
-      id: schema.cohortNewsfeed.id,
-      content: schema.cohortNewsfeed.content,
-      cohortId: schema.cohortNewsfeed.cohortId,
-      organizationId: schema.cohort.organizationId,
-      authorProfileId: schema.profile.id,
-      authorName: schema.profile.fullname
-    })
-    .from(schema.cohortNewsfeed)
-    .innerJoin(schema.cohort, eq(schema.cohortNewsfeed.cohortId, schema.cohort.id))
-    .leftJoin(schema.cohortMember, eq(schema.cohortNewsfeed.authorId, schema.cohortMember.id))
-    .leftJoin(schema.profile, eq(schema.cohortMember.profileId, schema.profile.id))
-    .where(eq(schema.cohortNewsfeed.id, targetId))
-    .limit(1);
-
-  if (!row?.organizationId) {
-    return null;
-  }
-
-  return {
-    targetType: 'cohort_newsfeed_post',
-    targetId: String(row.id),
-    organizationId: row.organizationId,
-    authorProfileId: row.authorProfileId ?? null,
-    cohortId: row.cohortId,
-    snapshot: buildSnapshot({
-      text: row.content,
-      authorId: row.authorProfileId ?? null,
-      authorName: row.authorName ?? null,
-      surface: 'cohort_newsfeed',
-      url: row.cohortId ? `/cohorts/${row.cohortId}/newsfeed` : null
-    })
-  };
-}
-
-async function resolveCohortNewsfeedComment(targetId: string): Promise<ResolvedReportTarget | null> {
-  const commentId = parseNumericId(targetId);
-
-  if (commentId === null) {
-    return null;
-  }
-
-  const [row] = await db
-    .select({
-      id: schema.cohortNewsfeedComment.id,
-      content: schema.cohortNewsfeedComment.content,
-      cohortId: schema.cohortNewsfeed.cohortId,
-      organizationId: schema.cohort.organizationId,
-      authorProfileId: schema.profile.id,
-      authorName: schema.profile.fullname
-    })
-    .from(schema.cohortNewsfeedComment)
-    .innerJoin(schema.cohortNewsfeed, eq(schema.cohortNewsfeedComment.cohortNewsfeedId, schema.cohortNewsfeed.id))
-    .innerJoin(schema.cohort, eq(schema.cohortNewsfeed.cohortId, schema.cohort.id))
-    .leftJoin(schema.cohortMember, eq(schema.cohortNewsfeedComment.authorId, schema.cohortMember.id))
-    .leftJoin(schema.profile, eq(schema.cohortMember.profileId, schema.profile.id))
-    .where(eq(schema.cohortNewsfeedComment.id, commentId))
-    .limit(1);
-
-  if (!row?.organizationId) {
-    return null;
-  }
-
-  return {
-    targetType: 'cohort_newsfeed_comment',
-    targetId: String(row.id),
-    organizationId: row.organizationId,
-    authorProfileId: row.authorProfileId ?? null,
-    cohortId: row.cohortId,
-    snapshot: buildSnapshot({
-      text: row.content,
-      authorId: row.authorProfileId ?? null,
-      authorName: row.authorName ?? null,
-      surface: 'cohort_newsfeed_comment',
-      url: row.cohortId ? `/cohorts/${row.cohortId}/newsfeed` : null
     })
   };
 }
@@ -396,10 +314,6 @@ export async function resolveReportTarget(
         return resolveCourseNewsfeedPost(targetId);
       case 'course_newsfeed_comment':
         return resolveCourseNewsfeedComment(targetId);
-      case 'cohort_newsfeed_post':
-        return resolveCohortNewsfeedPost(targetId);
-      case 'cohort_newsfeed_comment':
-        return resolveCohortNewsfeedComment(targetId);
       case 'community_question':
         return resolveCommunityQuestion(targetId);
       case 'community_answer':

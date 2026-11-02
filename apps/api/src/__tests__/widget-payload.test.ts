@@ -114,40 +114,32 @@ describe('getWidgetEmbedCode', () => {
   });
 });
 
-describe('formatCourseForWidget price', () => {
-  const baseCourse = {
+describe('formatCourseForWidget', () => {
+  const course = {
     id: 'course-1',
     slug: 'my-course',
     title: 'My Course',
     description: 'A course',
     bannerImage: null,
     isPublished: true,
-    currency: 'USD',
     lessonCount: 10,
     exerciseCount: 5,
-    type: 'PUBLIC',
-    createdAt: new Date().toISOString()
-  };
+    createdAt: '2026-10-01T00:00:00.000Z'
+  } as unknown as Parameters<typeof formatCourseForWidget>[0];
 
-  function format(overrides: Record<string, unknown>) {
-    const course = { ...baseCourse, ...overrides } as unknown as Parameters<typeof formatCourseForWidget>[0];
-    return formatCourseForWidget(course, []);
-  }
+  it('maps the course without any price', () => {
+    const formatted = formatCourseForWidget(course, []);
 
-  it('renders the price for a paid course', () => {
-    expect(format({ cost: 100, metadata: { paymentEnabled: true } }).price).toBe('USD 100');
-  });
-
-  it('renders the price when paymentEnabled is absent but the cost is positive', () => {
-    expect(format({ cost: 100, metadata: {} }).price).toBe('USD 100');
-  });
-
-  it('renders Free for a free course', () => {
-    expect(format({ cost: 0, metadata: { paymentEnabled: false } }).price).toBe('Free');
-    expect(format({ cost: 0, metadata: {} }).price).toBe('Free');
-  });
-
-  it('renders Free when a paid course has a zero cost (state blocked by API validation)', () => {
-    expect(format({ cost: 0, metadata: { paymentEnabled: true } }).price).toBe('Free');
+    expect(formatted).toMatchObject({
+      id: 'course-1',
+      slug: 'my-course',
+      title: 'My Course',
+      isPublished: true,
+      lessonCount: 10,
+      exerciseCount: 5,
+      createdAt: '2026-10-01T00:00:00.000Z',
+      tags: []
+    });
+    expect(formatted).not.toHaveProperty('price');
   });
 });

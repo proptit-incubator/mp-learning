@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   getActiveOrganizationPlan: vi.fn(),
   claimMemberCertificateEarned: vi.fn(),
   claimMemberCompleted: vi.fn(),
+  recordCourseCompletion: vi.fn(),
   emitWebhookEvent: vi.fn(),
   getLessonById: vi.fn(),
   getLessonCompletion: vi.fn(),
@@ -34,6 +35,9 @@ vi.mock('@cio/db/queries/course/course', () => ({
 vi.mock('@cio/db/queries/course/people', () => ({
   claimMemberCertificateEarned: mocks.claimMemberCertificateEarned,
   claimMemberCompleted: mocks.claimMemberCompleted
+}));
+vi.mock('@cio/db/queries/course/enrollment', () => ({
+  recordCourseCompletion: mocks.recordCourseCompletion
 }));
 vi.mock('@cio/db/queries/organization', () => ({ getActiveOrganizationPlan: mocks.getActiveOrganizationPlan }));
 vi.mock('@cio/db/queries/lesson', () => ({
@@ -63,14 +67,14 @@ describe('course_published', () => {
   });
 
   it('reports publishedNow only when the course goes from unpublished to published', async () => {
-    mocks.getCourseById.mockResolvedValue([{ id: 'course-1', isPublished: false, cost: 0 }]);
+    mocks.getCourseById.mockResolvedValue([{ id: 'course-1', isPublished: false }]);
     mocks.updateCourseQuery.mockResolvedValue({ id: 'course-1', isPublished: true });
 
     await expect(updateCourse('course-1', { isPublished: true })).resolves.toMatchObject({ publishedNow: true });
   });
 
   it('does not report publishedNow when an already-published course is saved again', async () => {
-    mocks.getCourseById.mockResolvedValue([{ id: 'course-1', isPublished: true, cost: 0 }]);
+    mocks.getCourseById.mockResolvedValue([{ id: 'course-1', isPublished: true }]);
     mocks.updateCourseQuery.mockResolvedValue({ id: 'course-1', isPublished: true });
 
     await expect(updateCourse('course-1', { isPublished: true, title: 'New' })).resolves.toMatchObject({
@@ -125,7 +129,7 @@ describe('course_completed', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.getCourseCertificationRow.mockResolvedValue({ orgId: 'org-1', type: 'SELF_PACED', certificate: {} });
+    mocks.getCourseCertificationRow.mockResolvedValue({ orgId: 'org-1', certificate: {}, recertificationMonths: null });
     mocks.claimMemberCertificateEarned.mockResolvedValue(true);
     mocks.claimMemberCompleted.mockResolvedValue(true);
   });
@@ -140,7 +144,7 @@ describe('course_completed', () => {
       event: 'course_completed',
       distinctId: 'student-1',
       orgId: 'org-1',
-      properties: { course_id: 'course-1', course_type: 'SELF_PACED' }
+      properties: { course_id: 'course-1' }
     });
   });
 

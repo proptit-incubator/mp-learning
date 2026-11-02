@@ -27,7 +27,6 @@ class WidgetEditorStore {
   editingName = $state(false);
   courseSearch = $state('');
   filterPublished = $state<FilterPublished>('all');
-  filterCourseType = $state('all');
   filterTagSlugs = $state<string[]>([]);
 
   // ── sync guard ─────────────────────────────────────────────────────────────
@@ -75,15 +74,12 @@ class WidgetEditorStore {
     const predicate = buildCourseFilterPredicate({
       courseSearch: this.courseSearch,
       filterPublished: this.filterPublished,
-      filterCourseType: this.filterCourseType,
       filterTagSlugs: this.filterTagSlugs
     });
     return this.detail.availableCourses.filter(predicate);
   });
 
-  readonly activeFilterCount = $derived(
-    (this.filterPublished !== 'all' ? 1 : 0) + (this.filterCourseType !== 'all' ? 1 : 0) + this.filterTagSlugs.length
-  );
+  readonly activeFilterCount = $derived((this.filterPublished !== 'all' ? 1 : 0) + this.filterTagSlugs.length);
 
   /**
    * Field-keyed validation errors from the last save attempt, keyed by Zod path
@@ -170,7 +166,6 @@ class WidgetEditorStore {
 
   clearFilters() {
     this.filterPublished = 'all';
-    this.filterCourseType = 'all';
     this.filterTagSlugs = [];
   }
 

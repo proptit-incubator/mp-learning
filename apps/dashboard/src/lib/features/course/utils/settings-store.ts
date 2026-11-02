@@ -1,6 +1,4 @@
-import type { TCourseType } from '@cio/db/types';
 import type { CourseProgressionMode } from '@cio/utils/functions/course-progression';
-import type { TCourseCallout } from '@cio/utils/validation/course';
 import { writable } from 'svelte/store';
 
 import type { LiveSessionReminderRow } from './types';
@@ -10,7 +8,6 @@ export type CourseSettings = {
   courseTitle: string;
   courseDescription: string;
   grading: boolean;
-  type: TCourseType;
   allowSelfEnrollment: boolean;
   tabs: { id: number; name: string }[];
   lessonDownload: boolean;
@@ -19,12 +16,9 @@ export type CourseSettings = {
   isContentGroupingEnabled: boolean;
   progressionMode: CourseProgressionMode;
   commentsEnabled: boolean;
-  callout: TCourseCallout | null;
   welcomeEmailMessage: string;
   liveSessionReminders: LiveSessionReminderRow[];
-  certificate: {
-    deadline: string | null;
-  };
+  recertificationMonths: number | null;
 };
 
 export function createCourseSettings() {
@@ -33,8 +27,7 @@ export function createCourseSettings() {
     courseTitle: '',
     courseDescription: '',
     grading: false,
-    type: 'SELF_PACED' as TCourseType,
-    allowSelfEnrollment: false,
+    allowSelfEnrollment: true,
     tabs: [
       { id: 3, name: 'course.navItem.lessons.materials.tabs.video.title' },
       { id: 1, name: 'course.navItem.lessons.materials.tabs.note.title' },
@@ -47,11 +40,8 @@ export function createCourseSettings() {
     isContentGroupingEnabled: true,
     progressionMode: 'free',
     commentsEnabled: true,
-    callout: null,
     welcomeEmailMessage: '',
     liveSessionReminders: [],
-    certificate: {
-      deadline: null
-    }
+    recertificationMonths: null
   });
 }

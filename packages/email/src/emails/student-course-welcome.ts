@@ -17,6 +17,8 @@ export const studentCourseWelcomeEmail = defineEmail({
     courseName: z.string().min(1),
     loginUrl: z.string().min(1),
     customMessage: z.string().optional(),
+    dueDate: z.string().optional(),
+    batchLabel: z.string().optional(),
     branding: ZEmailBranding
   }),
   render: (fields, context) => {
@@ -25,7 +27,13 @@ export const studentCourseWelcomeEmail = defineEmail({
 
     return renderStudentEmail({
       id: 'studentCourseWelcome',
-      values: { org_name: fields.orgName, course_name: fields.courseName },
+      values: {
+        org_name: fields.orgName,
+        course_name: fields.courseName,
+        due_date: fields.dueDate,
+        batch_label: fields.batchLabel
+      },
+      optionalValues: ['due_date', 'batch_label'],
       trustedHtml: { course_message: fields.customMessage },
       actionUrl: fields.loginUrl,
       branding: fields.branding,

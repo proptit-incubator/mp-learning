@@ -31,7 +31,6 @@ import {
 import { touchCourseUpdatedAt } from '@cio/db/queries/course';
 import { resolveItemSlug } from '../course/slug';
 import { claimItemOrder } from '../course/root-order';
-import { guardNonAutoGradableQuestionsForCourseType } from '../course/public-course-guard';
 
 import { db } from '@cio/db/drizzle';
 import type { DbOrTxClient } from '@cio/db/drizzle';
@@ -218,11 +217,6 @@ export async function resolveExerciseCourseId(exercise: TExercise): Promise<stri
 }
 
 async function prepareExerciseRow(sanitizedData: TExerciseCreate) {
-  await guardNonAutoGradableQuestionsForCourseType({
-    courseId: sanitizedData.courseId,
-    questionTypeIds: (sanitizedData.questions ?? []).map((question) => question.questionTypeId)
-  });
-
   const slug = await resolveItemSlug({
     courseId: sanitizedData.courseId,
     title: sanitizedData.title,
@@ -403,15 +397,6 @@ export async function updateExerciseService(
     validateSectionQuestionAssignments(sanitizedData);
 
     const existing = await getExerciseById(exerciseId);
-
-    if (existing?.courseId) {
-      await guardNonAutoGradableQuestionsForCourseType({
-        courseId: existing.courseId,
-        questionTypeIds: (sanitizedData.questions ?? [])
-          .filter((question) => !('deletedAt' in question && question.deletedAt))
-          .map((question) => question.questionTypeId)
-      });
-    }
 
     if (sanitizedData.slug !== undefined && existing?.courseId) {
       sanitizedData.slug = await resolveItemSlug({
@@ -961,11 +946,6 @@ export async function createExerciseFromTemplate(
     };
 
     const { questions } = template.questionnaire!;
-
-    await guardNonAutoGradableQuestionsForCourseType({
-      courseId,
-      questionTypeIds: (questions ?? []).map((question) => question.question_type.id)
-    });
 
     const exerciseRow = await prepareExerciseRow(sanitizeExercisePayload(exerciseData));
 

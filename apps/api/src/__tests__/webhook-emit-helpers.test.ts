@@ -35,7 +35,6 @@ vi.mock('@cio/core/services/webhook/endpoint-cache', () => ({
 
 import {
   buildMemberSource,
-  emitCohortMemberWebhookEvent,
   emitCoursePublishWebhookEvent,
   emitCourseMemberAddedWebhookEvent,
   emitCourseMemberRemovedWebhookEvent,
@@ -79,12 +78,10 @@ describe('webhook emit helpers', () => {
   });
 
   it('builds a source with every id empty unless given', () => {
-    expect(buildMemberSource('cohort', { cohortId: 'cohort-1' })).toEqual({
-      method: 'cohort',
+    expect(buildMemberSource('invite_link', { inviteLinkId: 'link-1' })).toEqual({
+      method: 'invite_link',
       inviteId: null,
-      inviteLinkId: null,
-      cohortId: 'cohort-1',
-      programId: null,
+      inviteLinkId: 'link-1',
       apiKeyId: null
     });
   });
@@ -144,21 +141,6 @@ describe('webhook emit helpers', () => {
 
     expect(type).toBe('organization.member.updated');
     expect(data).toMatchObject({ changes: { roleId: { from: 3, to: 2 } }, status: null });
-    expectValidInput(type, data);
-  });
-
-  it('emits cohort member events for the cohort organization', async () => {
-    await emitCohortMemberWebhookEvent(
-      'cohort.member.removed',
-      orgId,
-      'cohort-1',
-      { id: 'cm-1', profileId: null, email: 'a@b.co', roleId: 3 },
-      'actor-1'
-    );
-    const { type, data } = await recorded();
-
-    expect(type).toBe('cohort.member.removed');
-    expect(data).toMatchObject({ cohortId: 'cohort-1', memberId: 'cm-1' });
     expectValidInput(type, data);
   });
 

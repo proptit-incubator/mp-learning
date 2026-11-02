@@ -37,12 +37,9 @@
     isFiltering?: boolean;
     hasActiveFilters?: boolean;
     publishedStatus?: 'all' | 'published' | 'unpublished';
-    courseType?: string;
-    courseTypeOptions?: { value: string; label: string }[];
     onToggleTag?: (tagSlug: string, checked: boolean) => void;
     onClearFilters?: () => void | Promise<void>;
     onPublishedStatusChange?: (status: 'all' | 'published' | 'unpublished') => void;
-    onCourseTypeChange?: (type: string) => void;
   }
 
   let {
@@ -54,12 +51,9 @@
     isFiltering = false,
     hasActiveFilters: hasActiveFiltersOverride = undefined,
     publishedStatus = $bindable('all'),
-    courseType = $bindable('all'),
-    courseTypeOptions = [],
     onToggleTag = () => {},
     onClearFilters = () => {},
-    onPublishedStatusChange,
-    onCourseTypeChange
+    onPublishedStatusChange
   }: Props = $props();
 
   const translatedSortOptions = $derived(
@@ -72,8 +66,7 @@
       : sortKey !== DEFAULT_COURSE_SORT ||
           selectedOrder !== DEFAULT_SORT_ORDER ||
           selectedTags.length > 0 ||
-          publishedStatus !== 'all' ||
-          courseType !== 'all'
+          publishedStatus !== 'all'
   );
 
   function isTagSelected(tagSlug: string) {
@@ -83,11 +76,6 @@
   function setPublishedStatus(status: 'all' | 'published' | 'unpublished') {
     publishedStatus = status;
     onPublishedStatusChange?.(status);
-  }
-
-  function setCourseType(type: string) {
-    courseType = type;
-    onCourseTypeChange?.(type);
   }
 </script>
 
@@ -126,28 +114,6 @@
           >
         </div>
       </div>
-
-      {#if courseTypeOptions.length > 0}
-        <div class="space-y-2">
-          <p class="ui:text-muted-foreground text-xs font-semibold uppercase">{$t('widgets.filter.course_type')}</p>
-          <div class="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant={courseType === 'all' ? 'secondary' : 'outline'}
-              onclick={() => setCourseType('all')}>{$t('widgets.filter.all')}</Button
-            >
-            {#each courseTypeOptions as opt (opt.value)}
-              <Button
-                type="button"
-                size="sm"
-                variant={courseType === opt.value ? 'secondary' : 'outline'}
-                onclick={() => setCourseType(opt.value)}>{opt.label}</Button
-              >
-            {/each}
-          </div>
-        </div>
-      {/if}
 
       {#if tagGroups.length > 0}
         <div class="space-y-2">
@@ -190,7 +156,7 @@
             {/each}
           </div>
         </div>
-      {:else if tagGroups.length === 0 && courseTypeOptions.length === 0 && publishedStatus === undefined}
+      {:else if tagGroups.length === 0 && publishedStatus === undefined}
         <p class="ui:text-muted-foreground text-sm">{$t('courses.tag_filters.empty_tags')}</p>
       {/if}
     </div>

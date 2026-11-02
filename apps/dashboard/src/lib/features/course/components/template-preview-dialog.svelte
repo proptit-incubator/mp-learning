@@ -8,7 +8,7 @@
   import { Badge } from '@cio/ui/base/badge';
   import { DEFAULT_COURSE_BANNER_IMAGE } from '@cio/ui';
   import { courseTemplateApi } from '$features/course/api';
-  import { templatePreviewSettingRows, templateTypeBadge } from '$features/course/utils/template-display';
+  import { templatePreviewSettingRows } from '$features/course/utils/template-display';
   import { t } from '$lib/utils/functions/translations';
   import { currentOrg, isOrgAdmin } from '$lib/utils/store/org';
   import { goto } from '$app/navigation';
@@ -28,7 +28,6 @@
 
   const open = $derived(Boolean(templateId));
   const preview = $derived(courseTemplateApi.preview);
-  const typeBadge = $derived(templateTypeBadge(preview?.type, $t));
   const settingRows = $derived(preview ? templatePreviewSettingRows(preview.settings, $t) : []);
 
   $effect(() => {
@@ -112,13 +111,6 @@
         <div class="flex min-h-0 flex-col">
           <div class="min-h-0 flex-1 overflow-auto p-5">
             <div class="mb-2 flex flex-wrap items-center gap-2">
-              {#if typeBadge}
-                {@const Icon = typeBadge.icon}
-                <Badge variant="secondary">
-                  <Icon class="size-3" />
-                  {typeBadge.label}
-                </Badge>
-              {/if}
               <span class="ui:text-muted-foreground text-xs">
                 {preview.curated || preview.global
                   ? $t('course_templates.card.curated')

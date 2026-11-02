@@ -33,6 +33,6 @@ describe('employee list imports', () => {
       ['MP001', 'Employee', 'employee@example.com', 'ADMIN', 'all']
     ]);
     expect(rows[0].role).toBe('EMPLOYEE');
-    expect(rows[0].courseIds).toEqual([]);
+    expect(rows[0]).not.toHaveProperty('courseIds');
   });
 });

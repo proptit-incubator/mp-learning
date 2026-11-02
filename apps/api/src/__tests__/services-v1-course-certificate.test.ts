@@ -26,7 +26,6 @@ vi.mock('@cio/db/queries/course/people', () => ({
 }));
 
 vi.mock('@cio/core/services/course/course', () => ({
-  ensureProgramCourseAccess: vi.fn(),
   updateCourse: vi.fn()
 }));
 
@@ -55,7 +54,7 @@ import { getCourseOrganizationId } from '@cio/db/queries/tag';
 import { isCourseTeamMemberOrOrgAdmin, isUserCourseMemberOrOrgAdmin } from '@cio/db/queries/group';
 import { getCourseById, getCourseByIdForUpdate } from '@cio/db/queries/course/course';
 import { getCourseMember, getPaginatedCourseMembers } from '@cio/db/queries/course/people';
-import { ensureProgramCourseAccess, updateCourse } from '@cio/core/services/course/course';
+import { updateCourse } from '@cio/core/services/course/course';
 import { assembleCertificateRender } from '@api/services/course/certificate';
 import { assertCertificatesEnabled } from '@api/services/course/certificate-plan';
 import { AppError, ErrorCodes } from '@api/utils/errors';
@@ -98,8 +97,6 @@ const storedCertificate = {
 const storedCourse = {
   id: COURSE_ID,
   status: 'ACTIVE',
-  type: 'SELF_PACED',
-  compliance: null,
   certificate: storedCertificate
 };
 
@@ -107,7 +104,6 @@ const effectiveStored = {
   isDownloadable: true,
   theme: 'classique',
   design: { ...storedDesign, descriptionOverride: undefined },
-  deadline: null,
   emailMessage: 'Well done'
 };
 
@@ -137,7 +133,6 @@ describe('services/v1/courses/certificates', () => {
     vi.mocked(getCourseOrganizationId).mockResolvedValue(ORG_ID);
     vi.mocked(isCourseTeamMemberOrOrgAdmin).mockResolvedValue(true);
     vi.mocked(isUserCourseMemberOrOrgAdmin).mockResolvedValue(true);
-    vi.mocked(ensureProgramCourseAccess).mockResolvedValue(false);
     mockCourse(storedCourse);
     vi.mocked(getCourseByIdForUpdate).mockResolvedValue([storedCourse] as unknown as TGetCourseByIdResult);
     vi.mocked(updateCourse).mockImplementation(
@@ -195,13 +190,6 @@ describe('services/v1/courses/certificates', () => {
   describe('member vs team authorization', () => {
     it('lets a course member who is not on the team read the settings, like courseMemberMiddleware', async () => {
       vi.mocked(isCourseTeamMemberOrOrgAdmin).mockResolvedValue(false);
-
-      await expect(getPublicApiCourseCertificateService(ORG_ID, ACTOR_ID, params)).resolves.toEqual(effectiveStored);
-    });
-
-    it('lets program access read the settings, like courseMemberMiddleware', async () => {
-      vi.mocked(isUserCourseMemberOrOrgAdmin).mockResolvedValue(false);
-      vi.mocked(ensureProgramCourseAccess).mockResolvedValue(true);
 
       await expect(getPublicApiCourseCertificateService(ORG_ID, ACTOR_ID, params)).resolves.toEqual(effectiveStored);
     });
@@ -267,7 +255,6 @@ describe('services/v1/courses/certificates', () => {
         isDownloadable: false,
         theme: DEFAULT_CERTIFICATE_DESIGN.templateId,
         design: { ...DEFAULT_CERTIFICATE_DESIGN, descriptionOverride: undefined },
-        deadline: null,
         emailMessage: null
       });
       expect(toEffectiveCertificateSettings(course({}))).toEqual(toEffectiveCertificateSettings(course(null)));
@@ -331,17 +318,17 @@ describe('services/v1/courses/certificates', () => {
 
     it('clears a nullable field when null is sent', async () => {
       vi.mocked(getCourseByIdForUpdate).mockResolvedValue([
-        { ...storedCourse, certificate: { ...storedCertificate, deadline: '2026-12-31T23:59:59Z' } }
+        { ...storedCourse, certificate: storedCertificate }
       ] as unknown as TGetCourseByIdResult);
 
-      const result = await updatePublicApiCourseCertificateService(ORG_ID, ACTOR_ID, params, { deadline: null });
+      const result = await updatePublicApiCourseCertificateService(ORG_ID, ACTOR_ID, params, { emailMessage: null });
 
       expect(updateCourse).toHaveBeenCalledWith(
         COURSE_ID,
-        { certificate: { ...storedCertificate, deadline: null } },
+        { certificate: { ...storedCertificate, emailMessage: null } },
         fakeTx
       );
-      expect(result.deadline).toBeNull();
+      expect(result.emailMessage).toBeNull();
     });
 
     it('replaces the design and sets theme to the new templateId, like the dashboard editor', async () => {

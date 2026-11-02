@@ -22,47 +22,89 @@ import { getUserCourseAnalytics } from '@cio/core/services/course/course';
 import { handleError } from '@api/utils/errors';
 import { zValidator } from '@hono/zod-validator';
 import { enrollExistingCourseEmployees, listAvailableCourseEmployees } from '@api/services/course/employees';
-import { ZAssignCourseTraining, ZRevokeCourseSource } from '@cio/utils/validation/course/training-assignment';
 import {
-  assignCourseTraining,
-  cancelCourseSource,
-  listCourseLearningSources
-} from '@api/services/course/training-assignment';
+  ZAssignCourseLearners,
+  ZCourseEnrollmentParam,
+  ZUpdateEnrollmentDueDate,
+  ZWaiveEnrollment
+} from '@cio/utils/validation/course/enrollment';
+import {
+  assignCourseLearners,
+  changeEnrollmentDueDate,
+  listCourseEnrollments,
+  revokeEnrollment,
+  waiveEnrollment
+} from '@api/services/course/enrollment';
 
 export const membersRouter = new Hono()
-  .get('/learning-sources', courseTeamMemberMiddleware, zValidator('param', ZCourseMembersParam), async (c) => {
+  .get('/enrollments', courseTeamMemberMiddleware, zValidator('param', ZCourseMembersParam), async (c) => {
     try {
-      const data = await listCourseLearningSources(c.req.valid('param').courseId, c.get('user')!.id);
+      const data = await listCourseEnrollments(c.req.valid('param').courseId, c.get('user')!.id);
       return c.json({ success: true, data });
     } catch (error) {
-      return handleError(c, error, 'Failed to list learning sources');
+      return handleError(c, error, 'Failed to list enrollments');
     }
   })
   .post(
-    '/training-assignments',
+    '/enrollments',
     courseTeamMemberMiddleware,
     zValidator('param', ZCourseMembersParam),
-    zValidator('json', ZAssignCourseTraining),
+    zValidator('json', ZAssignCourseLearners),
     async (c) => {
       try {
-        const data = await assignCourseTraining(c.req.valid('param').courseId, c.get('user')!.id, c.req.valid('json'));
+        const data = await assignCourseLearners(c.req.valid('param').courseId, c.get('user')!.id, c.req.valid('json'));
         return c.json({ success: true, data });
       } catch (error) {
-        return handleError(c, error, 'Failed to assign training');
+        return handleError(c, error, 'Failed to assign course');
+      }
+    }
+  )
+  .patch(
+    '/enrollments/:enrollmentId',
+    courseTeamMemberMiddleware,
+    zValidator('param', ZCourseEnrollmentParam),
+    zValidator('json', ZUpdateEnrollmentDueDate),
+    async (c) => {
+      try {
+        const { courseId, enrollmentId } = c.req.valid('param');
+        const data = await changeEnrollmentDueDate(
+          courseId,
+          enrollmentId,
+          c.get('user')!.id,
+          c.req.valid('json').dueDate
+        );
+        return c.json({ success: true, data });
+      } catch (error) {
+        return handleError(c, error, 'Failed to update due date');
+      }
+    }
+  )
+  .post(
+    '/enrollments/:enrollmentId/waive',
+    courseTeamMemberMiddleware,
+    zValidator('param', ZCourseEnrollmentParam),
+    zValidator('json', ZWaiveEnrollment),
+    async (c) => {
+      try {
+        const { courseId, enrollmentId } = c.req.valid('param');
+        const data = await waiveEnrollment(courseId, enrollmentId, c.get('user')!.id, c.req.valid('json'));
+        return c.json({ success: true, data });
+      } catch (error) {
+        return handleError(c, error, 'Failed to waive enrollment');
       }
     }
   )
   .delete(
-    '/learning-sources/:sourceId',
+    '/enrollments/:enrollmentId',
     courseTeamMemberMiddleware,
-    zValidator('param', ZRevokeCourseSource),
+    zValidator('param', ZCourseEnrollmentParam),
     async (c) => {
       try {
-        const { courseId, sourceId } = c.req.valid('param');
-        const data = await cancelCourseSource(courseId, sourceId, c.get('user')!.id);
+        const { courseId, enrollmentId } = c.req.valid('param');
+        const data = await revokeEnrollment(courseId, enrollmentId, c.get('user')!.id);
         return c.json({ success: true, data });
       } catch (error) {
-        return handleError(c, error, 'Failed to cancel enrollment source');
+        return handleError(c, error, 'Failed to revoke enrollment');
       }
     }
   )

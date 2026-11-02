@@ -39,18 +39,7 @@ export async function notifyCourseExerciseService(courseId: string, exerciseId: 
     isCustomDomainVerified: orgData.orgIsCustomDomainVerified
   });
 
-  // PUBLIC courses are taken on the anonymous slug-based org-site route;
-  // every other type uses the authenticated id-based LMS route.
-  let quizUrl: string;
-  if (course.type === 'PUBLIC') {
-    if (!course.slug || !exercise.slug) {
-      throw new AppError('Public course/exercise is missing a slug to link to', ErrorCodes.VALIDATION_ERROR, 400);
-    }
-
-    quizUrl = `${baseUrl}/course/${course.slug}/lesson/${exercise.slug}`;
-  } else {
-    quizUrl = `${baseUrl}/courses/${courseId}/exercises/${exerciseId}`;
-  }
+  const quizUrl = `${baseUrl}/courses/${courseId}/exercises/${exerciseId}`;
 
   const orgName = orgData.orgName || 'ClassroomIO';
 

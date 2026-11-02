@@ -3,8 +3,6 @@ import * as z from 'zod';
 export const CONTENT_REPORT_TARGET_TYPES = [
   'course_newsfeed_post',
   'course_newsfeed_comment',
-  'cohort_newsfeed_post',
-  'cohort_newsfeed_comment',
   'community_question',
   'community_answer',
   'lesson_comment',

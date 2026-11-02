@@ -4,7 +4,6 @@ import type { TOrganizationApiKeyScope } from '@cio/utils/validation/organizatio
 import { ErrorCodes } from '@api/utils/errors';
 import { organizationApiKeyHasScopes } from '@api/services/organization/automation-key';
 
-const COHORT_PATH = /^(?:\/public-api\/v1)?\/cohorts(?:\/|$)/;
 const COURSE_STUDENT_PATH = /^(?:\/public-api\/v1)?\/courses\/[^/]+\/members\/[^/]+\/(?:lessons|exercises)(?:\/|$)/;
 const COURSE_MEMBER_PATH = /^(?:\/public-api\/v1)?\/courses\/[^/]+\/(?:members|invites)(?:\/|$)/;
 const COURSE_CERTIFICATE_PATH = /^(?:\/public-api\/v1)?\/courses\/[^/]+\/certificates?(?:\/|$)/;
@@ -21,10 +20,6 @@ const MEDIA_PATH = /^(?:\/public-api\/v1)?\/assets(?:\/|$)/;
 
 export function getPublicApiRouteScope(method: string, path: string): TOrganizationApiKeyScope | null {
   const isRead = method === 'GET' || method === 'HEAD';
-
-  if (COHORT_PATH.test(path)) {
-    return isRead ? 'cohort:read' : 'cohort:write';
-  }
 
   if (AUDIENCE_PATH.test(path)) {
     return isRead ? 'audience:read' : 'audience:write';
