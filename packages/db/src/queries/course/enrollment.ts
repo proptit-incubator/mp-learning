@@ -1,6 +1,7 @@
 import { and, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import { db, type DbOrTxClient } from '@db/drizzle';
 import * as schema from '@db/schema';
+import { chunk } from '@cio/utils/functions/array';
 
 export type EnrollmentKind = 'ASSIGNED' | 'SELF';
 export type EnrollmentStatus = 'ACTIVE' | 'WAIVED' | 'REVOKED';
@@ -146,6 +147,9 @@ export type CreateEnrollmentsInput = {
  * Inserts one enrollment per (course, employee) that has no live row of the same kind.
  * Returns the rows actually created; existing live enrollments are left untouched.
  */
+// Postgres accepts at most 65,535 bind parameters per statement; each enrollment row binds seven.
+const ENROLLMENT_INSERT_BATCH_SIZE = 1000;
+
 export async function createEnrollments(input: CreateEnrollmentsInput, client: DbOrTxClient = db) {
   if (!input.courseIds.length || !input.employeeIds.length) return [];
 
@@ -160,7 +164,11 @@ export async function createEnrollments(input: CreateEnrollmentsInput, client: D
       message: input.kind === 'ASSIGNED' ? (input.message ?? '') : ''
     }))
   );
-  const created = await client.insert(schema.courseEnrollment).values(values).onConflictDoNothing().returning();
+  const created: Array<typeof schema.courseEnrollment.$inferSelect> = [];
+  for (const batch of chunk(values, ENROLLMENT_INSERT_BATCH_SIZE)) {
+    const inserted = await client.insert(schema.courseEnrollment).values(batch).onConflictDoNothing().returning();
+    created.push(...inserted);
+  }
   if (created.length) {
     await materializeEnrollmentMemberships(
       {

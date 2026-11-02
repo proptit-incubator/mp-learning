@@ -20,7 +20,7 @@ import type { DbOrTxClient } from '@cio/db/drizzle';
 import { getCourseWithOrgData } from '@cio/db/queries/course';
 import * as schema from '@cio/db/schema';
 import { and, eq, inArray } from 'drizzle-orm';
-import { isSelfEnrollmentAllowed } from '@cio/utils/functions';
+import { chunk, isSelfEnrollmentAllowed } from '@cio/utils/functions';
 import type { TAssignCourses, TAssignmentPreview, TWaiveEnrollment } from '@cio/utils/validation/course/enrollment';
 import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
 import { buildMemberSource, emitCourseMemberAddedWebhookEvent } from '@cio/core/services/webhook/emit';
@@ -58,6 +58,8 @@ async function loadGroupMember(groupId: string, profileId: string, client: DbOrT
   return (row as TGroupmember | undefined) ?? null;
 }
 
+const EMAIL_ENQUEUE_CONCURRENCY = 25;
+
 function formatDueDate(dueDate: string | null | undefined) {
   if (!dueDate) return undefined;
 
@@ -93,25 +95,27 @@ async function sendAssignmentEmails(
   const loginUrl = new URL(`/courses/${courseId}`, baseUrl).href;
   const from = buildEmailFromName(course.orgName || 'MP Learning');
   const customMessage = options.message ? escapeHtml(options.message).replaceAll('\n', '<br>') : undefined;
-  await Promise.all(
-    recipients.map((recipient) =>
-      enqueueTransactionalEmail('studentCourseWelcome', {
-        to: recipient.email,
-        from,
-        fields: {
-          orgName: course.orgName || 'MP Transformation',
-          courseName: course.courseTitle || '',
-          loginUrl,
-          customMessage,
-          dueDate: formatDueDate(options.dueDate),
-          batchLabel: options.batchLabel ?? undefined,
-          branding
-        },
-        idempotencyKey: `course-assignment:${recipient.enrollmentId}`,
-        preference: { organizationId, recipientProfileId: recipient.profileId ?? undefined }
-      })
-    )
-  );
+  for (const batch of chunk(recipients, EMAIL_ENQUEUE_CONCURRENCY)) {
+    await Promise.all(
+      batch.map((recipient) =>
+        enqueueTransactionalEmail('studentCourseWelcome', {
+          to: recipient.email,
+          from,
+          fields: {
+            orgName: course.orgName || 'MP Transformation',
+            courseName: course.courseTitle || '',
+            loginUrl,
+            customMessage,
+            dueDate: formatDueDate(options.dueDate),
+            batchLabel: options.batchLabel ?? undefined,
+            branding
+          },
+          idempotencyKey: `course-assignment:${recipient.enrollmentId}`,
+          preference: { organizationId, recipientProfileId: recipient.profileId ?? undefined }
+        })
+      )
+    );
+  }
 }
 
 async function loadRecipients(enrollmentIds: string[]): Promise<AssignedEmployeeNotification[]> {
