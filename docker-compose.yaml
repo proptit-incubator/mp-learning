@@ -2,6 +2,7 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: cio-postgres
+    restart: unless-stopped
     # Bound to localhost only so host tools (pnpm api:dev, db:setup) can reach it
     # without exposing the database to the LAN.
     ports:
@@ -28,6 +29,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: cio-redis
+    restart: unless-stopped
     # Bound to localhost only (see postgres note above).
     ports:
       - '127.0.0.1:6379:6379'
@@ -45,6 +47,7 @@ services:
   storage:
     image: chrislusf/seaweedfs:4.48
     container_name: cio-storage
+    restart: unless-stopped
     entrypoint:
       - /bin/sh
       - -c

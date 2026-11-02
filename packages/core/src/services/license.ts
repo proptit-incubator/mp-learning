@@ -8,6 +8,8 @@ export type LicenseStatus = {
 };
 
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const LICENSE_API_TIMEOUT_MS = 5000;
+const UNLICENSED: LicenseStatus = { valid: false, features: [] };
 let cachedStatus: LicenseStatus | null = null;
 let cacheExpiry = 0;
 
@@ -27,6 +29,7 @@ function isSelfHosted(): boolean {
 async function fetchLicenseFromApi(): Promise<LicenseStatus> {
   const url = 'https://enterprise-api.classroomio.dev';
   const key = env.LICENSE_KEY?.trim();
+  if (!key) return UNLICENSED;
 
   try {
     const response = await fetch(url, {
@@ -34,12 +37,13 @@ async function fetchLicenseFromApi(): Promise<LicenseStatus> {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ licenseKey: key })
+      body: JSON.stringify({ licenseKey: key }),
+      signal: AbortSignal.timeout(LICENSE_API_TIMEOUT_MS)
     });
 
     if (!response.ok) {
       console.error('License API error:', response.status, await response.text());
-      return { valid: false, features: [] };
+      return UNLICENSED;
     }
 
     const data = (await response.json()) as { valid?: boolean; features?: string[]; expiresAt?: string };
@@ -50,7 +54,7 @@ async function fetchLicenseFromApi(): Promise<LicenseStatus> {
     };
   } catch (error) {
     console.error('License verification failed:', error);
-    return { valid: false, features: [] };
+    return UNLICENSED;
   }
 }
 
