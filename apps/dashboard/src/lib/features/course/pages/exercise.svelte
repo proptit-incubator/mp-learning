@@ -457,6 +457,8 @@
         sections: shouldSyncSections ? sectionsPayload : undefined,
         sectionDisplayMode: $questionnaire.sectionDisplayMode,
         allowMultipleAttempts,
+        maxAttempts: allowMultipleAttempts ? ($questionnaire.maxAttempts ?? null) : null,
+        answerVisibility: $questionnaire.answerVisibility ?? 'after_completion',
         completionPolicy,
         passThreshold
       });

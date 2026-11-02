@@ -423,6 +423,8 @@ async function cloneCourseWithClient(
             order: exercise.order,
             isUnlocked: exercise.isUnlocked,
             allowMultipleAttempts: exercise.allowMultipleAttempts,
+            maxAttempts: exercise.maxAttempts,
+            answerVisibility: exercise.answerVisibility,
             completionPolicy: exercise.completionPolicy,
             passThreshold: exercise.passThreshold,
             slug: exercise.slug,

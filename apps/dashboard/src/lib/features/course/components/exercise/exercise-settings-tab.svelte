@@ -9,6 +9,7 @@
   import { t } from '$lib/utils/functions/translations';
   import { snackbar } from '$features/ui/snackbar/store';
   import * as Select from '@cio/ui/base/select';
+  import { EXERCISE_ANSWER_VISIBILITIES } from '@cio/utils/validation/exercise';
 
   type Props = {
     exerciseId: string;
@@ -33,6 +34,8 @@
 
     await exerciseApi.update(courseApi.course.id, exerciseId, {
       allowMultipleAttempts,
+      maxAttempts: allowMultipleAttempts ? ($questionnaire.maxAttempts ?? null) : null,
+      answerVisibility: $questionnaire.answerVisibility ?? 'after_completion',
       completionPolicy,
       passThreshold
     });
@@ -61,6 +64,54 @@
         questionnaire.update((q) => ({ ...q, allowMultipleAttempts: checked }));
       }}
     />
+  </div>
+
+  {#if $questionnaire.allowMultipleAttempts}
+    <div class="rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
+      <NumberField
+        integer
+        allowEmpty
+        min={1}
+        max={100}
+        label={$t('course.navItem.lessons.exercises.all_exercises.settings_max_attempts')}
+        placeholder={$t('course.navItem.lessons.exercises.all_exercises.settings_max_attempts_unlimited')}
+        helperMessage={$t('course.navItem.lessons.exercises.all_exercises.settings_max_attempts_helper')}
+        value={$questionnaire.maxAttempts ?? null}
+        onValueChange={(next) => {
+          questionnaire.update((state) => ({ ...state, maxAttempts: next }));
+        }}
+      />
+    </div>
+  {/if}
+
+  <div class="rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">
+    <Label class="mb-2 block text-sm font-medium dark:text-gray-100">
+      {$t('course.navItem.lessons.exercises.all_exercises.settings_answer_visibility')}
+    </Label>
+    <Select.Root
+      type="single"
+      value={$questionnaire.answerVisibility ?? 'after_completion'}
+      onValueChange={(value) => {
+        const visibility = EXERCISE_ANSWER_VISIBILITIES.find((option) => option === value);
+        if (visibility) questionnaire.update((state) => ({ ...state, answerVisibility: visibility }));
+      }}
+    >
+      <Select.Trigger class="w-full">
+        {$t(
+          `course.navItem.lessons.exercises.all_exercises.settings_answer_visibility_${$questionnaire.answerVisibility ?? 'after_completion'}`
+        )}
+      </Select.Trigger>
+      <Select.Content>
+        {#each EXERCISE_ANSWER_VISIBILITIES as visibility (visibility)}
+          <Select.Item value={visibility}>
+            {$t(`course.navItem.lessons.exercises.all_exercises.settings_answer_visibility_${visibility}`)}
+          </Select.Item>
+        {/each}
+      </Select.Content>
+    </Select.Root>
+    <p class="ui:text-muted-foreground mt-2 text-sm">
+      {$t('course.navItem.lessons.exercises.all_exercises.settings_answer_visibility_helper')}
+    </p>
   </div>
 
   <div class="rounded-lg border border-neutral-200 p-4 dark:border-neutral-700">

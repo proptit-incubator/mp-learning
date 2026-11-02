@@ -50,6 +50,7 @@
   import { getExerciseQuestionLabels } from './question-labels';
   import { getExerciseSectionDisplayTitle } from '$features/course/utils/exercise-section-utils';
   import { shouldCompleteExerciseFromSubmission } from '$features/course/utils/exercise-progression-utils';
+  import { refreshExercisePageData } from '$features/course/utils/exercise-page-utils';
   import axios from 'axios';
   import { IconButton } from '@cio/ui/custom/icon-button';
   import ChevronLeftIcon from '@lucide/svelte/icons/chevron-left';
@@ -105,6 +106,9 @@
     );
     return [...loadedSubmissions, ...newSubmissions];
   });
+
+  const attemptLimit = $derived($questionnaire.allowMultipleAttempts ? ($questionnaire.maxAttempts ?? null) : 1);
+  const canRetake = $derived(attemptLimit === null || submissionList.length < attemptLimit);
 
   /** Attempt currently shown: -1 means "latest" (e.g. right after submitting). */
   const viewedAttemptIndex = $derived(selectedTryIndex >= 0 ? selectedTryIndex : submissionList.length - 1);
@@ -206,6 +210,7 @@
       });
 
       courseApi.updateContentItem(exerciseId, ContentType.Exercise, { isComplete: shouldMarkComplete });
+      if ($questionnaire.answersRevealed === false) void refreshExercisePageData(courseApi.course.id, exerciseId);
 
       if (shouldMarkComplete) {
         toggleConfetti();
@@ -757,7 +762,7 @@
   }
 
   function tryAgain() {
-    if (!$questionnaire.allowMultipleAttempts) return;
+    if (!canRetake) return;
     localStorage.removeItem(`autosave-exercise-${exerciseId}`);
     selectedTryIndex = -1;
     skipHydrateFromSubmissions = true;
@@ -965,7 +970,7 @@
                               )}
                         </p>
                       </div>
-                      {#if $questionnaire.allowMultipleAttempts && !didCurrentAttemptPass}
+                      {#if canRetake && !didCurrentAttemptPass}
                         <Button type="button" variant="outline" onclick={tryAgain} class="shrink-0">
                           {$t('course.navItem.lessons.exercises.all_exercises.view_mode.try_again')}
                         </Button>
@@ -1034,18 +1039,41 @@
           </div>
         {/if}
 
-        <Preview
-          questions={[...$questionnaire.questions].sort(
-            (leftQuestion, rightQuestion) => leftQuestion.order - rightQuestion.order
-          )}
-          sections={$questionnaire.sections}
-          questionnaireMetaData={$questionnaireMetaData}
-          grades={$questionnaireMetaData.grades}
-          disableGrading={true}
-        />
+        {#if $questionnaire.answersRevealed !== false}
+          <Preview
+            questions={[...$questionnaire.questions].sort(
+              (leftQuestion, rightQuestion) => leftQuestion.order - rightQuestion.order
+            )}
+            sections={$questionnaire.sections}
+            questionnaireMetaData={$questionnaireMetaData}
+            grades={$questionnaireMetaData.grades}
+            disableGrading={true}
+          />
+        {:else}
+          <Alert.Root variant="information" class="w-full!" data-testid="exercise-answers-hidden">
+            <Alert.Title
+              >{$t('course.navItem.lessons.exercises.all_exercises.view_mode.answers_hidden_title')}</Alert.Title
+            >
+            <Alert.Description>
+              {$t(
+                $questionnaire.answerVisibility === 'never'
+                  ? 'course.navItem.lessons.exercises.all_exercises.view_mode.answers_hidden_never'
+                  : 'course.navItem.lessons.exercises.all_exercises.view_mode.answers_hidden_until_done'
+              )}
+            </Alert.Description>
+          </Alert.Root>
+        {/if}
+        {#if attemptLimit !== null && $questionnaire.allowMultipleAttempts}
+          <p class="ui:text-muted-foreground mt-3 text-sm" data-testid="exercise-attempts-left">
+            {$t('course.navItem.lessons.exercises.all_exercises.view_mode.attempts_left', {
+              left: Math.max(0, attemptLimit - submissionList.length),
+              total: attemptLimit
+            })}
+          </p>
+        {/if}
 
         <RoleBasedSecurity allowedRoles={[3]}>
-          {#if $questionnaire.allowMultipleAttempts && !shouldShowPassedCompletionResult}
+          {#if canRetake && !shouldShowPassedCompletionResult}
             <div class="mt-4">
               <Button type="button" variant="secondary" onclick={tryAgain}>
                 {$t('course.navItem.lessons.exercises.all_exercises.view_mode.try_again')}

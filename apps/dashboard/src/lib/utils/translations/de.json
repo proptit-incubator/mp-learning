@@ -1905,7 +1905,11 @@
               "instructions": "Anweisungen",
               "close_instructions": "Anweisungen schließen",
               "show_more": "Mehr anzeigen",
-              "show_less": "Weniger anzeigen"
+              "show_less": "Weniger anzeigen",
+              "answers_hidden_title": "Answers are hidden",
+              "answers_hidden_until_done": "The detailed review appears once you pass or use all your attempts.",
+              "answers_hidden_never": "Your trainer has chosen not to show the correct answers for this exercise.",
+              "attempts_left": "{left} of {total} attempts left"
             },
             "edit_mode": {
               "delete_modal": "Übung löschen",
@@ -2339,7 +2343,15 @@
               "save_continue": "Speichern und fortfahren",
               "question_fallback": "Frage {number}",
               "zero_points_field": "Für den bestandenen Abschluss ist mindestens ein Punkt erforderlich."
-            }
+            },
+            "settings_max_attempts": "Maximum attempts",
+            "settings_max_attempts_unlimited": "Unlimited",
+            "settings_max_attempts_helper": "Leave empty for unlimited retakes.",
+            "settings_answer_visibility": "Show correct answers",
+            "settings_answer_visibility_never": "Never",
+            "settings_answer_visibility_after_completion": "When the learner is done (passed or out of attempts)",
+            "settings_answer_visibility_after_submit": "Right after each submission",
+            "settings_answer_visibility_helper": "Until then, learners see their score but not which answers were correct."
           },
           "new_exercise_modal": {
             "heading": "Neue Übung",

@@ -21,3 +21,4 @@ export * from './video-recording-settings';
 export * from './true-false-answer-key';
 export * from './thumbs-question';
 export * from './agent-question-type-guide';
+export * from './answer-key-redaction';

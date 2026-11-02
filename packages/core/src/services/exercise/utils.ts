@@ -111,6 +111,8 @@ export function buildExerciseUpdateFields(data: TExerciseUpdate): Partial<TExerc
   if (data.allowMultipleAttempts !== undefined) exerciseUpdate.allowMultipleAttempts = data.allowMultipleAttempts;
   if (data.completionPolicy !== undefined) exerciseUpdate.completionPolicy = data.completionPolicy;
   if (data.passThreshold !== undefined) exerciseUpdate.passThreshold = data.passThreshold;
+  if (data.maxAttempts !== undefined) exerciseUpdate.maxAttempts = data.maxAttempts;
+  if (data.answerVisibility !== undefined) exerciseUpdate.answerVisibility = data.answerVisibility;
   if (data.sectionDisplayMode !== undefined) exerciseUpdate.sectionDisplayMode = data.sectionDisplayMode;
   if (data.slug !== undefined) exerciseUpdate.slug = data.slug;
   return exerciseUpdate;

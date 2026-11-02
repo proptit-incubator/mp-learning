@@ -269,6 +269,25 @@ export async function getAnsweredQuestionIds(questionIds: number[], dbClient: Db
 }
 
 /** Holds a per-student lock on the exercise until the transaction ends. */
+/** Number of submissions a member has made for an exercise. */
+export async function countSubmissionAttempts(
+  exerciseId: string,
+  submittedBy: string,
+  dbClient: DbOrTxClient = db
+): Promise<number> {
+  try {
+    const [result] = await dbClient
+      .select({ total: count() })
+      .from(schema.submission)
+      .where(and(eq(schema.submission.exerciseId, exerciseId), eq(schema.submission.submittedBy, submittedBy)));
+
+    return result?.total ?? 0;
+  } catch (error) {
+    console.error('countSubmissionAttempts error:', error);
+    throw new Error('Failed to count submission attempts');
+  }
+}
+
 export async function lockSubmissionAttempt(exerciseId: string, submittedBy: string, dbClient: DbOrTxClient) {
   try {
     await dbClient.execute(sql`select pg_advisory_xact_lock(hashtext(${`submission:${exerciseId}:${submittedBy}`}))`);

@@ -15,6 +15,7 @@ vi.mock('@cio/db/queries/submission', () => ({
   hasSubmission: vi.fn(),
   insertQuestionAnswersBatch: vi.fn(),
   lockSubmissionAttempt: vi.fn(),
+  countSubmissionAttempts: vi.fn(),
   updateQuestionAnswer: vi.fn(),
   updateSubmission: vi.fn(),
   updateSubmissionGrades: vi.fn()
@@ -45,6 +46,7 @@ vi.mock('@api/services/course/compliance', () => ({ syncComplianceProgressFromSu
 vi.mock('@api/services/course/completion', () => ({ evaluateCourseCertification: vi.fn() }));
 
 import {
+  countSubmissionAttempts,
   createSubmission,
   hasSubmission,
   insertQuestionAnswersBatch,
@@ -62,8 +64,15 @@ const strict = { strict: true, allowUploads: false };
 type TestQuestion = { id: number; questionTypeId: number; settings?: Record<string, unknown>; optionIds?: number[] };
 
 const mockExercise = (allowMultipleAttempts: boolean, ...questions: TestQuestion[]) =>
+  mockExerciseWithLimit(allowMultipleAttempts, null, ...questions);
+
+const mockExerciseWithLimit = (
+  allowMultipleAttempts: boolean,
+  maxAttempts: number | null,
+  ...questions: TestQuestion[]
+) =>
   vi.mocked(getExerciseWithRelationsOptimized).mockResolvedValue({
-    exercise: { allowMultipleAttempts },
+    exercise: { allowMultipleAttempts, maxAttempts },
     questions: questions.map(({ optionIds = [], ...question }) => ({
       ...question,
       title: `Question ${question.id}`,
@@ -87,6 +96,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(getCourseById).mockResolvedValue([{ id: COURSE_ID }] as never);
   vi.mocked(hasSubmission).mockResolvedValue(false);
+  vi.mocked(countSubmissionAttempts).mockResolvedValue(0);
   vi.mocked(createSubmission).mockResolvedValue({ id: 'submission-1', submittedBy: MEMBER_ID } as never);
   vi.mocked(insertQuestionAnswersBatch).mockResolvedValue([]);
   mockExercise(false, { id: 7, questionTypeId: 1, optionIds: [70, 71] });
@@ -97,7 +107,7 @@ describe('createSubmissionService one-attempt exercises', () => {
     await submitAnswers([{ questionId: 7, optionId: 70 }]);
 
     expect(lockSubmissionAttempt).toHaveBeenCalledWith(EXERCISE_ID, MEMBER_ID, TX);
-    expect(hasSubmission).toHaveBeenCalledWith(EXERCISE_ID, MEMBER_ID, TX);
+    expect(countSubmissionAttempts).toHaveBeenCalledWith(EXERCISE_ID, MEMBER_ID, TX);
     expect(createSubmission).toHaveBeenCalledWith(expect.objectContaining({ exerciseId: EXERCISE_ID }), TX);
     expect(insertQuestionAnswersBatch).toHaveBeenCalledWith(
       [expect.objectContaining({ submissionId: 'submission-1', questionId: 7 })],
@@ -106,18 +116,27 @@ describe('createSubmissionService one-attempt exercises', () => {
   });
 
   it('returns 409 for a second attempt and saves nothing', async () => {
-    vi.mocked(hasSubmission).mockResolvedValue(true);
+    vi.mocked(countSubmissionAttempts).mockResolvedValue(1);
 
     await expect(submitAnswers([{ questionId: 7, optionId: 70 }])).rejects.toMatchObject({ statusCode: 409 });
     expectNothingSaved();
   });
 
-  it('skips the lock and the check when the exercise allows multiple attempts', async () => {
+  it('skips the lock and the check when the exercise allows unlimited attempts', async () => {
     mockExercise(true, { id: 7, questionTypeId: 1, optionIds: [70] });
-    vi.mocked(hasSubmission).mockResolvedValue(true);
+    vi.mocked(countSubmissionAttempts).mockResolvedValue(12);
 
     await expect(submitAnswers([{ questionId: 7, optionId: 70 }])).resolves.toMatchObject({ id: 'submission-1' });
     expect(lockSubmissionAttempt).not.toHaveBeenCalled();
+  });
+
+  it('accepts attempts up to the maximum and refuses the next one', async () => {
+    mockExerciseWithLimit(true, 3, { id: 7, questionTypeId: 1, optionIds: [70] });
+    vi.mocked(countSubmissionAttempts).mockResolvedValueOnce(2).mockResolvedValueOnce(3);
+
+    await expect(submitAnswers([{ questionId: 7, optionId: 70 }])).resolves.toMatchObject({ id: 'submission-1' });
+    await expect(submitAnswers([{ questionId: 7, optionId: 70 }])).rejects.toMatchObject({ statusCode: 409 });
+    expect(createSubmission).toHaveBeenCalledTimes(1);
   });
 });
 

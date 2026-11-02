@@ -3194,7 +3194,11 @@
               "show_less": "Thu gọn",
               "back": "Quay lại",
               "begin_section": "Bắt đầu phần",
-              "complete_section": "Hoàn thành phần"
+              "complete_section": "Hoàn thành phần",
+              "answers_hidden_title": "Đáp án đang được ẩn",
+              "answers_hidden_until_done": "Phần chấm chi tiết sẽ hiện khi bạn đạt hoặc đã dùng hết lượt làm bài.",
+              "answers_hidden_never": "Người phụ trách khóa học không hiển thị đáp án cho bài tập này.",
+              "attempts_left": "Còn {left}/{total} lượt làm bài"
             },
             "analytics": {
               "summary": {
@@ -3552,7 +3556,15 @@
                   "max_characters_placeholder": "Số ký tự tối đa"
                 }
               }
-            }
+            },
+            "settings_max_attempts": "Số lần làm tối đa",
+            "settings_max_attempts_unlimited": "Không giới hạn",
+            "settings_max_attempts_helper": "Để trống nếu không giới hạn số lần làm lại.",
+            "settings_answer_visibility": "Hiện đáp án đúng",
+            "settings_answer_visibility_never": "Không bao giờ",
+            "settings_answer_visibility_after_completion": "Khi học viên đã xong (đạt hoặc hết lượt làm)",
+            "settings_answer_visibility_after_submit": "Ngay sau mỗi lần nộp",
+            "settings_answer_visibility_helper": "Trước đó, học viên chỉ thấy điểm, không thấy câu nào đúng hay sai."
           }
         },
         "disabled": "Tính năng đã bị tắt",

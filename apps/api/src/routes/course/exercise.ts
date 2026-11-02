@@ -47,6 +47,7 @@ import { courseTeamMemberOrAutomationKeyMiddleware } from '@api/middlewares/cour
 import { courseContentScopeMiddleware } from '@api/middlewares/course-content-scope';
 import { assertMcpAutomationUsageAllowed, recordMcpAutomationUsage } from '@api/services/organization/automation-usage';
 import { createSubmissionService, listExerciseSubmissionsOverview } from '@api/services/submission';
+import { prepareExerciseForViewer } from '@api/services/exercise/learner-view';
 import {
   assertContentRefsInCourse,
   assertEnrolledStudentContentAccess,
@@ -157,7 +158,11 @@ export const exerciseRouter = new Hono()
           });
         }
 
-        const exercise = await getExercise(exerciseId, undefined, user?.id);
+        const storedExercise = await getExercise(exerciseId, undefined, user?.id);
+        const exercise =
+          user?.id && !automationKey
+            ? await prepareExerciseForViewer(storedExercise, c.req.param('courseId')!, user.id)
+            : { ...storedExercise, attemptsUsed: 0, attemptsRemaining: null, answersRevealed: true };
 
         if (automationKey?.type === 'mcp') {
           await recordMcpAutomationUsage(automationKey, 'get_course_exercise', {

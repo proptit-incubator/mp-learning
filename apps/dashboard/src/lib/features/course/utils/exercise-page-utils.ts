@@ -105,6 +105,9 @@ export function hydrateExercisePageData(exercise: Exercise, exerciseId: string) 
     sectionDisplayMode: exercise.sectionDisplayMode ?? 'one_question',
     totalSubmissions: 0,
     allowMultipleAttempts: !!exercise.allowMultipleAttempts,
+    maxAttempts: exercise.maxAttempts ?? null,
+    answerVisibility: exercise.answerVisibility ?? 'after_completion',
+    answersRevealed: exercise.answersRevealed ?? true,
     completionPolicy: (exercise.completionPolicy as 'submitted' | 'passed' | undefined) ?? 'submitted',
     passThreshold: exercise.passThreshold ?? 100,
     slug: exercise.slug ?? ''

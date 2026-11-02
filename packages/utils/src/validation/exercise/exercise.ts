@@ -230,6 +230,9 @@ export const ZExerciseCreate = z.object({
 });
 export type TExerciseCreate = z.infer<typeof ZExerciseCreate>;
 
+export const EXERCISE_ANSWER_VISIBILITIES = ['never', 'after_completion', 'after_submit'] as const;
+export type ExerciseAnswerVisibility = (typeof EXERCISE_ANSWER_VISIBILITIES)[number];
+
 export const ZExerciseUpdate = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
@@ -244,7 +247,9 @@ export const ZExerciseUpdate = z.object({
   sections: z.array(ZExerciseSection).optional(),
   sectionDisplayMode: z.enum(['one_question', 'all_questions']).optional(),
   completionPolicy: z.enum(['submitted', 'passed']).optional(),
-  passThreshold: z.number().int().min(0).max(100).optional()
+  passThreshold: z.number().int().min(0).max(100).optional(),
+  maxAttempts: z.number().int().min(1).max(100).nullable().optional(),
+  answerVisibility: z.enum(EXERCISE_ANSWER_VISIBILITIES).optional()
 });
 export type TExerciseUpdate = z.infer<typeof ZExerciseUpdate>;
 

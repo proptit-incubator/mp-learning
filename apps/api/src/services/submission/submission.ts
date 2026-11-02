@@ -31,6 +31,7 @@ import {
   hasSubmission,
   insertQuestionAnswersBatch,
   lockSubmissionAttempt,
+  countSubmissionAttempts,
   updateQuestionAnswer,
   updateSubmission,
   updateSubmissionGrades
@@ -825,11 +826,13 @@ export async function createSubmissionService(
       : [];
 
     const created = await db.transaction(async (tx) => {
-      if (!exerciseWithRelations.exercise.allowMultipleAttempts) {
+      const { allowMultipleAttempts, maxAttempts } = exerciseWithRelations.exercise;
+      const attemptLimit = allowMultipleAttempts ? maxAttempts : 1;
+      if (attemptLimit !== null) {
         await lockSubmissionAttempt(exerciseId, submittedBy, tx);
 
-        if (await hasSubmission(exerciseId, submittedBy, tx)) {
-          throw new AppError('This exercise allows only one submission', ErrorCodes.CONFLICT, 409);
+        if ((await countSubmissionAttempts(exerciseId, submittedBy, tx)) >= attemptLimit) {
+          throw new AppError('No attempts left for this exercise', ErrorCodes.CONFLICT, 409);
         }
       }
 

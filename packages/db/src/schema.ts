@@ -1351,6 +1351,11 @@ export const exercise = pgTable(
     isUnlocked: boolean('is_unlocked').default(true),
     dueBy: timestamp('due_by', { mode: 'string' }),
     allowMultipleAttempts: boolean('allow_multiple_attempts').default(false).notNull(),
+    maxAttempts: integer('max_attempts'),
+    answerVisibility: varchar('answer_visibility', { length: 24 })
+      .$type<'never' | 'after_completion' | 'after_submit'>()
+      .default('after_completion')
+      .notNull(),
     sectionDisplayMode: varchar('section_display_mode').default('one_question'),
     completionPolicy: varchar('completion_policy').default('submitted').notNull(),
     passThreshold: integer('pass_threshold'),

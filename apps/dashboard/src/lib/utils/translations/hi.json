@@ -1905,7 +1905,11 @@
               "instructions": "अनुदेश",
               "close_instructions": "निर्देश बंद करें",
               "show_more": "और दिखाएँ",
-              "show_less": "कम दिखाओ"
+              "show_less": "कम दिखाओ",
+              "answers_hidden_title": "Answers are hidden",
+              "answers_hidden_until_done": "The detailed review appears once you pass or use all your attempts.",
+              "answers_hidden_never": "Your trainer has chosen not to show the correct answers for this exercise.",
+              "attempts_left": "{left} of {total} attempts left"
             },
             "edit_mode": {
               "delete_modal": "व्यायाम हटाएँ",
@@ -2339,7 +2343,15 @@
               "save_continue": "सहेजें और जारी रखें",
               "question_fallback": "प्रश्न {number}",
               "zero_points_field": "उत्तीर्ण पूर्णता के लिए कम से कम एक अंक उपलब्ध होना आवश्यक है।"
-            }
+            },
+            "settings_max_attempts": "Maximum attempts",
+            "settings_max_attempts_unlimited": "Unlimited",
+            "settings_max_attempts_helper": "Leave empty for unlimited retakes.",
+            "settings_answer_visibility": "Show correct answers",
+            "settings_answer_visibility_never": "Never",
+            "settings_answer_visibility_after_completion": "When the learner is done (passed or out of attempts)",
+            "settings_answer_visibility_after_submit": "Right after each submission",
+            "settings_answer_visibility_helper": "Until then, learners see their score but not which answers were correct."
           },
           "new_exercise_modal": {
             "heading": "नया व्यायाम",

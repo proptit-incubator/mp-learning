@@ -1905,7 +1905,11 @@
               "instructions": "Instrukcje",
               "close_instructions": "Zamknij instrukcje",
               "show_more": "Pokaż więcej",
-              "show_less": "Pokaż mniej"
+              "show_less": "Pokaż mniej",
+              "answers_hidden_title": "Answers are hidden",
+              "answers_hidden_until_done": "The detailed review appears once you pass or use all your attempts.",
+              "answers_hidden_never": "Your trainer has chosen not to show the correct answers for this exercise.",
+              "attempts_left": "{left} of {total} attempts left"
             },
             "edit_mode": {
               "delete_modal": "Usuń ćwiczenie",
@@ -2339,7 +2343,15 @@
               "save_continue": "Zapisz i kontynuuj",
               "question_fallback": "Pytanie {number}",
               "zero_points_field": "Zaliczenie pozytywne wymaga posiadania co najmniej jednego punktu."
-            }
+            },
+            "settings_max_attempts": "Maximum attempts",
+            "settings_max_attempts_unlimited": "Unlimited",
+            "settings_max_attempts_helper": "Leave empty for unlimited retakes.",
+            "settings_answer_visibility": "Show correct answers",
+            "settings_answer_visibility_never": "Never",
+            "settings_answer_visibility_after_completion": "When the learner is done (passed or out of attempts)",
+            "settings_answer_visibility_after_submit": "Right after each submission",
+            "settings_answer_visibility_helper": "Until then, learners see their score but not which answers were correct."
           },
           "new_exercise_modal": {
             "heading": "Nowe ćwiczenie",

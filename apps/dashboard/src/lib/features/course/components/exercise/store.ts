@@ -1,4 +1,5 @@
 import { DEFAULT_QUESTION_TYPE, QUESTION_TEMPLATE } from '$features/ui/question/constants';
+import type { ExerciseAnswerVisibility } from '@cio/utils/validation/exercise';
 import type {
   AnswerData,
   ExerciseSectionAfterBehavior,
@@ -70,6 +71,9 @@ export interface QuestionnaireState {
   sectionDisplayMode: ExerciseSectionDisplayMode;
   totalSubmissions: number;
   allowMultipleAttempts?: boolean;
+  maxAttempts?: number | null;
+  answerVisibility?: ExerciseAnswerVisibility;
+  answersRevealed?: boolean;
   completionPolicy?: 'submitted' | 'passed';
   passThreshold?: number | null;
   slug?: string | null;
@@ -105,6 +109,9 @@ export const questionnaire: Writable<QuestionnaireState> = writable({
   sectionDisplayMode: 'one_question',
   totalSubmissions: 0,
   allowMultipleAttempts: false,
+  maxAttempts: null,
+  answerVisibility: 'after_completion',
+  answersRevealed: true,
   completionPolicy: 'submitted',
   passThreshold: 100,
   slug: ''
