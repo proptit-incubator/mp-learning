@@ -37,6 +37,8 @@ docker compose logs --tail 100 api dashboard jobs
 
 API tự chạy migration và seed dữ liệu tham chiếu khi khởi động. Không chạy seed demo trên production. Không đổi tên database/volume của hệ thống đang có dữ liệu.
 
+Sao lưu, khôi phục và cập nhật phiên bản: xem `docs/mp-van-hanh.md`. Không dùng `./classroomio.sh upgrade`.
+
 ## Chứng chỉ và file PDF
 
 Chứng chỉ (PDF/PNG) và file PDF khóa học được dựng bằng Chromium cài sẵn trong image API, không gọi dịch vụ bên ngoài. Image cài `chromium`, `fonts-noto-core` và bộ font tự host trong `docker/fonts` (Be Vietnam Pro, Noto Serif Display, Cormorant, Archivo, Playfair Display, Space Grotesk, JetBrains Mono — đều có bộ ký tự tiếng Việt, giấy phép OFL). Khi chạy API ngoài Docker, đặt `CHROMIUM_EXECUTABLE_PATH` trỏ tới Chrome/Chromium trên máy.

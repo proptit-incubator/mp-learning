@@ -782,111 +782,13 @@ cmd_logs() {
 }
 
 cmd_backup() {
-  local ts backup_dir db_user db_name
-  ts="$(date +%Y%m%d-%H%M%S)"
-  backup_dir="${ROOT_DIR}/backups"
-  mkdir -p "${backup_dir}"
-
-  db_user="$(get_env_value POSTGRES_USER)"
-  db_user="${db_user:-postgres}"
-  db_name="$(get_env_value POSTGRES_DB)"
-  db_name="${db_name:-classroomio}"
-
-  echo "Backing up Postgres database '${db_name}'..."
-  local db_file="${backup_dir}/classroomio-db-${ts}.sql.gz"
-  # pg_dump failure must fail the backup (and abort an upgrade) — don't let gzip's
-  # exit code mask it.
-  if ! compose exec -T postgres pg_dump -U "${db_user}" "${db_name}" | gzip > "${db_file}"; then
-    rm -f "${db_file}"
-    echo "Error: Postgres backup failed. Is the stack running? (./classroomio.sh start)"
-    return 1
-  fi
-  echo "  -> ${db_file}"
-
-  # Volume names are derived from the compose project name — same variable the -p flag
-  # uses, so a project rename can't silently desync the backup target.
-  local label volume storage_file found_volume=false
-  # Git Bash (MSYS) rewrites container paths like /data into Windows paths; disable
-  # conversion for the docker run below and pre-convert the host dir with cygpath.
-  # On Linux/macOS cygpath doesn't exist and the fallback keeps the path as-is.
-  local backup_dir_host
-  backup_dir_host="$(cygpath -w "${backup_dir}" 2>/dev/null || printf '%s' "${backup_dir}")"
-  for label in storage minio; do
-    volume="${PROJECT_NAME}_${label}-data"
-    if [[ "${label}" == "minio" ]]; then
-      volume="$(find_legacy_minio_data)"
-    elif ! docker volume inspect "${volume}" >/dev/null 2>&1; then
-      volume=""
-    fi
-    if [[ -z "${volume}" ]]; then
-      continue
-    fi
-    found_volume=true
-    echo "Backing up object-storage volume '${volume}'..."
-    storage_file="classroomio-${label}-${ts}.tar.gz"
-    if ! MSYS_NO_PATHCONV=1 docker run --rm \
-      -v "${volume}:/data:ro" \
-      -v "${backup_dir_host}:/backup" \
-      alpine tar czf "/backup/${storage_file}" -C /data .; then
-      echo "Error: object-storage volume backup failed."
-      return 1
-    fi
-    echo "  -> ${backup_dir}/${storage_file}"
-  done
-  if [[ "${found_volume}" != "true" ]]; then
-    # Not an error: --no-storage installs use external storage and have no local volume.
-    echo "No bundled object-storage volume found — skipping object-storage backup."
-    echo "  (Using external S3/R2? Back that up with your provider's tools.)"
-  fi
-
-  echo "Backup complete: ${backup_dir}"
-  echo "Copy backups off this machine — a server failure takes local backups with it."
+  "${ROOT_DIR}/scripts/mp-backup.sh" backup
 }
 
 cmd_upgrade() {
-  prepare_env_and_secrets
-  echo "Upgrading ClassroomIO..."
-  echo
-  echo "Step 1/3: backing up before touching images..."
-  cmd_backup
-
-  echo
-  if [[ "${USE_IMAGES}" == "true" ]]; then
-    # CIO_VERSION only selects a published image tag — meaningless for --build,
-    # which always builds whatever is in the local checkout.
-    local current_version
-    current_version="$(get_env_value CIO_VERSION)"
-    echo "Step 2/3: current CIO_VERSION is '${current_version:-unset}'."
-    if [[ -t 0 ]]; then
-      read -r -p "Enter a new version tag to pin (or press Enter to keep the current one): " new_version
-      if [[ -n "${new_version}" ]]; then
-        upsert_env_value CIO_VERSION "${new_version}"
-        echo "Set CIO_VERSION=${new_version} in .env"
-      fi
-    fi
-    warn_if_unpinned_version
-  else
-    echo "Step 2/3: building from source — CIO_VERSION doesn't apply."
-  fi
-
-  # After the version prompt, so the app-image check sees the version actually chosen.
-  migrate_legacy_storage_if_needed
-
-  if [[ "${USE_IMAGES}" == "true" ]]; then
-    echo "Step 3/3: pulling images and restarting..."
-    compose pull
-    compose up -d
-  else
-    echo "Step 3/3: rebuilding from source and restarting..."
-    compose up --build -d
-  fi
-  compose ps
-  wait_for_endpoints
-  echo
-  echo "Upgrade complete."
-  if [[ "${USE_IMAGES}" == "true" ]]; then
-    echo "Roll back by setting CIO_VERSION back in .env and running: ./classroomio.sh upgrade"
-  fi
+  # MP Learning builds its images from this checkout; the upstream images would replace it.
+  echo "Error: upgrade pulls upstream ClassroomIO images. Follow docs/mp-van-hanh.md to update MP Learning."
+  return 1
 }
 
 cmd_migrate_storage() {
