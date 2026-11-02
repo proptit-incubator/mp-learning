@@ -353,6 +353,8 @@ export async function getLearnerEnrollmentSummaries(profileId: string, courseIds
   );
 }
 
+const ASSIGNABLE_EMPLOYEE_STATUSES = ['DRAFT', 'INVITED', 'ACTIVE'];
+
 export type EmployeeTargetFilter = {
   employeeIds?: string[];
   departments?: string[];
@@ -368,7 +370,7 @@ export async function resolveEmployeeIds(
 ) {
   const conditions: SQL[] = [
     eq(schema.employee.organizationId, organizationId),
-    inArray(schema.employee.status, ['DRAFT', 'INVITED', 'ACTIVE'])
+    inArray(schema.employee.status, ASSIGNABLE_EMPLOYEE_STATUSES)
   ];
   const selectors: SQL[] = [];
   if (filter.employeeIds?.length) selectors.push(inArray(schema.employee.id, filter.employeeIds));
@@ -386,11 +388,49 @@ export async function resolveEmployeeIds(
 }
 
 export async function listEmployeeFacets(organizationId: string, client: DbOrTxClient = db) {
-  const rows = await client.execute<{ department: string; job_title: string }>(sql`select distinct department, job_title
-    from employee where organization_id = ${organizationId} and status <> 'LEFT'`);
-  const departments = [...new Set(rows.map((row) => row.department).filter(Boolean))].sort();
-  const jobTitles = [...new Set(rows.map((row) => row.job_title).filter(Boolean))].sort();
-  return { departments, jobTitles };
+  const rows = await client.execute<{ department: string; job_title: string }>(sql`select department, job_title
+    from employee where organization_id = ${organizationId}
+      and ${inArray(sql`status`, ASSIGNABLE_EMPLOYEE_STATUSES)}`);
+  const departmentCounts: Record<string, number> = {};
+  const jobTitleCounts: Record<string, number> = {};
+  for (const row of rows) {
+    if (row.department) departmentCounts[row.department] = (departmentCounts[row.department] ?? 0) + 1;
+    if (row.job_title) jobTitleCounts[row.job_title] = (jobTitleCounts[row.job_title] ?? 0) + 1;
+  }
+  const departments = Object.keys(departmentCounts).sort((left, right) => left.localeCompare(right, 'vi'));
+  const jobTitles = Object.keys(jobTitleCounts).sort((left, right) => left.localeCompare(right, 'vi'));
+  return { departments, jobTitles, departmentCounts, jobTitleCounts, assignableEmployees: rows.length };
+}
+
+/** Employees who already hold a live assignment for every one of the courses. */
+export async function listFullyAssignedEmployeeIds(courseIds: string[], client: DbOrTxClient = db) {
+  if (!courseIds.length) return [];
+
+  const rows = await client.execute<{ employee_id: string }>(sql`select employee_id from course_enrollment
+    where kind = 'ASSIGNED' and status <> 'REVOKED' and ${inArray(sql`course_id`, courseIds)}
+    group by employee_id having count(distinct course_id) = ${courseIds.length}`);
+  return rows.map((row) => row.employee_id);
+}
+
+/** How an assignment would land: distinct recipients, new rows to create and rows that already exist. */
+export async function previewEnrollmentTargets(
+  organizationId: string,
+  courseIds: string[],
+  filter: EmployeeTargetFilter,
+  client: DbOrTxClient = db
+) {
+  const employeeIds = await resolveEmployeeIds(organizationId, filter, client);
+  const [existing] = employeeIds.length
+    ? await client.execute<{ count: number }>(sql`select count(*)::int as count from course_enrollment
+        where kind = 'ASSIGNED' and status <> 'REVOKED' and ${inArray(sql`course_id`, courseIds)}
+          and ${inArray(sql`employee_id`, employeeIds)}`)
+    : [{ count: 0 }];
+  const existingAssignments = Number(existing?.count ?? 0);
+  return {
+    recipients: employeeIds.length,
+    existingAssignments,
+    newAssignments: employeeIds.length * courseIds.length - existingAssignments
+  };
 }
 
 export async function findEmployeeByProfile(organizationId: string, profileId: string, client: DbOrTxClient = db) {

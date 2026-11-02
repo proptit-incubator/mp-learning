@@ -4,6 +4,8 @@ import {
   findEmployeeByProfile,
   getEnrollmentById,
   listCourseEnrollments as listCourseEnrollmentRows,
+  listFullyAssignedEmployeeIds,
+  previewEnrollmentTargets,
   resolveEmployeeIds,
   revokeEnrollment as revokeEnrollmentRow,
   updateEnrollmentDueDate,
@@ -19,7 +21,7 @@ import { getCourseWithOrgData } from '@cio/db/queries/course';
 import * as schema from '@cio/db/schema';
 import { and, eq, inArray } from 'drizzle-orm';
 import { isSelfEnrollmentAllowed } from '@cio/utils/functions';
-import type { TAssignCourses, TWaiveEnrollment } from '@cio/utils/validation/course/enrollment';
+import type { TAssignCourses, TAssignmentPreview, TWaiveEnrollment } from '@cio/utils/validation/course/enrollment';
 import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
 import { buildMemberSource, emitCourseMemberAddedWebhookEvent } from '@cio/core/services/webhook/emit';
 import { buildEmailBranding, buildEmailFromName, escapeHtml } from '@cio/email';
@@ -160,6 +162,19 @@ async function emitAssignmentEffects(
   for (const outcome of outcomes) {
     if (outcome.status === 'rejected') console.error('Course assignment follow-up failed', outcome.reason);
   }
+}
+
+/** Counts who an assignment would reach and lists employees who already hold every selected course. */
+export async function previewAssignment(organizationId: string, actorId: string, input: TAssignmentPreview) {
+  await requireOrgTrainingManager(organizationId, actorId);
+  const [preview, assignedEmployeeIds] = await Promise.all([
+    previewEnrollmentTargets(organizationId, input.courseIds, {
+      employeeIds: input.employeeIds,
+      ...(input.filter ?? {})
+    }),
+    listFullyAssignedEmployeeIds(input.courseIds)
+  ]);
+  return { ...preview, assignedEmployeeIds };
 }
 
 /** Assigns one or more courses to employees picked directly or by department / job title / everyone. */

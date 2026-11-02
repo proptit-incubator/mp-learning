@@ -17,6 +17,7 @@ export const ZAssignCourses = z.object({
 });
 
 export const ZAssignCourseLearners = ZAssignCourses.omit({ courseIds: true });
+export const ZAssignmentPreview = ZAssignCourses.pick({ courseIds: true, employeeIds: true, filter: true });
 
 export const ZUpdateEnrollmentDueDate = z.object({
   dueDate: z.iso.datetime({ offset: true }).nullable()
@@ -43,3 +44,4 @@ export type TAssignCourses = z.infer<typeof ZAssignCourses>;
 export type TAssignCourseLearners = z.infer<typeof ZAssignCourseLearners>;
 export type TUpdateEnrollmentDueDate = z.infer<typeof ZUpdateEnrollmentDueDate>;
 export type TWaiveEnrollment = z.infer<typeof ZWaiveEnrollment>;
+export type TAssignmentPreview = z.infer<typeof ZAssignmentPreview>;

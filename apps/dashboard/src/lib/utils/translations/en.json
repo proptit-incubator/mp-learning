@@ -6473,10 +6473,8 @@
     "employees": "Employees",
     "pick_courses": "Search published courses",
     "pick_employees": "Search employees",
-    "all_employees": "All active employees",
     "filter_department": "By department",
     "filter_job_title": "By job title",
-    "selected_count": "{count} selected",
     "due_date": "Due date",
     "due": "Due",
     "batch_label": "Training batch",
@@ -6523,6 +6521,42 @@
       "months_label": "Valid for (months)",
       "months_helper": "Learners are reminded 30 days before it expires and get 30 days to retake.",
       "every": "Retake every {months} months"
-    }
+    },
+    "assign_subtitle_course": "Choose who should complete \"{course}\". People who already have it are skipped.",
+    "assign_subtitle_people": "Choose courses for {people}. Existing progress is kept.",
+    "pick_courses_title": "Choose courses",
+    "recipients": "Who should take this course?",
+    "mode": {
+      "individual": "Pick people",
+      "groups": "By group",
+      "everyone": "Everyone"
+    },
+    "select_visible": "Select all shown",
+    "clear_visible": "Unselect shown",
+    "clear": "Clear",
+    "selected_people": "{count} people selected",
+    "already_assigned": "Already assigned",
+    "groups_hint": "Anyone matching at least one selected department or job title will be assigned.",
+    "everyone_title": "All {count} employees",
+    "everyone_hint": "Includes employees who have not activated their account yet. They see the course once they sign in.",
+    "due_presets": {
+      "none": "No due date",
+      "week": "1 week",
+      "two_weeks": "2 weeks",
+      "month": "1 month",
+      "custom": "Pick a date"
+    },
+    "due_on": "Due by end of {date}",
+    "due_none_hint": "Learners can finish at their own pace.",
+    "batch_hint": "Optional. Groups this assignment so you can filter reports by it later.",
+    "message_placeholder": "e.g. Please finish before the quarterly audit.",
+    "summary_pick_course": "Choose at least one course",
+    "summary_pick_people": "Choose who should take it",
+    "summary": "{people} people · {courses} courses",
+    "summary_existing": "{count} already assigned, will be skipped",
+    "submit_count": "Assign to {count} people",
+    "no_courses": "No published courses found",
+    "no_employees": "No active employees match your search",
+    "people_count": "{count} people"
   }
 }

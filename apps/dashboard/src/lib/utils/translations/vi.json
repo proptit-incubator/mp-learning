@@ -6513,10 +6513,8 @@
     "employees": "Nhân viên",
     "pick_courses": "Tìm khóa học đã xuất bản",
     "pick_employees": "Tìm nhân viên",
-    "all_employees": "Tất cả nhân viên đang hoạt động",
     "filter_department": "Theo phòng ban",
     "filter_job_title": "Theo chức danh",
-    "selected_count": "Đã chọn {count}",
     "due_date": "Hạn hoàn thành",
     "due": "Hạn",
     "batch_label": "Đợt đào tạo",
@@ -6563,6 +6561,42 @@
       "months_label": "Hiệu lực (tháng)",
       "months_helper": "Người học được nhắc 30 ngày trước khi hết hiệu lực và có 30 ngày để học lại.",
       "every": "Học lại mỗi {months} tháng"
-    }
+    },
+    "assign_subtitle_course": "Chọn những người cần hoàn thành \"{course}\". Người đã được giao sẽ được bỏ qua.",
+    "assign_subtitle_people": "Chọn khoá học cho {people}. Tiến độ đã có được giữ nguyên.",
+    "pick_courses_title": "Chọn khoá học",
+    "recipients": "Ai cần học khoá này?",
+    "mode": {
+      "individual": "Chọn từng người",
+      "groups": "Theo nhóm",
+      "everyone": "Tất cả"
+    },
+    "select_visible": "Chọn tất cả",
+    "clear_visible": "Bỏ chọn tất cả",
+    "clear": "Bỏ chọn",
+    "selected_people": "Đã chọn {count} người",
+    "already_assigned": "Đã được giao",
+    "groups_hint": "Nhân viên thuộc ít nhất một phòng ban hoặc chức danh đã chọn sẽ được giao.",
+    "everyone_title": "Toàn bộ {count} nhân viên",
+    "everyone_hint": "Gồm cả nhân viên chưa kích hoạt tài khoản. Họ sẽ thấy khoá học khi đăng nhập.",
+    "due_presets": {
+      "none": "Không hạn",
+      "week": "1 tuần",
+      "two_weeks": "2 tuần",
+      "month": "1 tháng",
+      "custom": "Chọn ngày"
+    },
+    "due_on": "Hạn chót: hết {date}",
+    "due_none_hint": "Học viên tự sắp xếp thời gian hoàn thành.",
+    "batch_hint": "Không bắt buộc. Dùng để gom nhóm và lọc báo cáo theo đợt.",
+    "message_placeholder": "VD: Vui lòng hoàn thành trước đợt kiểm tra quý.",
+    "summary_pick_course": "Chọn ít nhất một khoá học",
+    "summary_pick_people": "Chọn người cần học",
+    "summary": "{people} người · {courses} khoá học",
+    "summary_existing": "{count} lượt đã giao trước đó sẽ được bỏ qua",
+    "submit_count": "Giao cho {count} người",
+    "no_courses": "Không tìm thấy khoá học đã xuất bản",
+    "no_employees": "Không có nhân viên đang hoạt động phù hợp",
+    "people_count": "{count} người"
   }
 }

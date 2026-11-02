@@ -13,6 +13,9 @@ export type AssignableEmployee = Extract<
   InferResponseType<ListEmployeesRequest>,
   { success: true }
 >['data']['rows'][number];
+type PreviewRequest = (typeof classroomio.employees.assignments)['preview']['$post'];
+export type AssignmentPreviewPayload = InferRequestType<PreviewRequest>['json'];
+export type AssignmentPreview = Extract<InferResponseType<PreviewRequest>, { success: true }>['data'];
 type ListCoursesRequest = typeof classroomio.organization.courses.$get;
 export type AssignableCourse = Extract<InferResponseType<ListCoursesRequest>, { success: true }>['data'][number];
 
@@ -23,7 +26,10 @@ export class EnrollmentApi extends BaseApiWithErrors {
   isSearchingEmployees = $state(false);
   isSearchingCourses = $state(false);
   lastResult = $state<AssignCoursesResult | null>(null);
+  preview = $state<AssignmentPreview | null>(null);
+  isPreviewing = $state(false);
   #employeeRequest = 0;
+  #previewRequest = 0;
   #courseRequest = 0;
 
   async loadFacets() {
@@ -36,7 +42,9 @@ export class EnrollmentApi extends BaseApiWithErrors {
     const requestId = ++this.#employeeRequest;
     this.isSearchingEmployees = true;
     try {
-      const response = await classroomio.employees.$get({ query: { search, page: '1', status: 'ACTIVE' } });
+      const response = await classroomio.employees.$get({
+        query: { search, page: '1', limit: '100', status: 'ACTIVE' }
+      });
       const body = await response.json();
       if (requestId === this.#employeeRequest && body.success) this.employees = body.data.rows;
     } finally {
@@ -55,6 +63,20 @@ export class EnrollmentApi extends BaseApiWithErrors {
       if (requestId === this.#courseRequest && body.success) this.courses = body.data;
     } finally {
       if (requestId === this.#courseRequest) this.isSearchingCourses = false;
+    }
+  }
+
+  async loadPreview(payload: AssignmentPreviewPayload) {
+    const requestId = ++this.#previewRequest;
+    this.isPreviewing = true;
+    try {
+      const response = await classroomio.employees.assignments.preview.$post({ json: payload });
+      const body = await response.json();
+      if (requestId === this.#previewRequest && body.success) this.preview = body.data;
+    } catch (error) {
+      console.error('Assignment preview failed', error);
+    } finally {
+      if (requestId === this.#previewRequest) this.isPreviewing = false;
     }
   }
 
