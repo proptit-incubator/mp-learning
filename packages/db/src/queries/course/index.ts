@@ -8,6 +8,7 @@ export * from './template-assets';
 export * from './enrollment';
 export * from './exercise-results';
 export * from './content';
+export * from './content-scope';
 export * from './progression';
 export * from './content-batch';
 export * from './people';

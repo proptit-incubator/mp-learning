@@ -26,6 +26,7 @@ import { Hono } from '@api/utils/hono';
 import { authMiddleware } from '@api/middlewares/auth';
 import { courseMemberMiddleware } from '@api/middlewares/course-member';
 import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member';
+import { courseContentScopeMiddleware } from '@api/middlewares/course-content-scope';
 import { ensureCourseGroupMemberId } from '@cio/core/services/course/course';
 import { handleError } from '@api/utils/errors';
 import { newsfeedCommentAuthorOnlyMiddleware } from '@api/middlewares/newsfeed-comment-author-only';
@@ -45,16 +46,23 @@ export const newsfeedRouter = new Hono()
       return handleError(c, error, 'Failed to list newsfeed');
     }
   })
-  .get('/:feedId', authMiddleware, courseMemberMiddleware, zValidator('param', ZNewsfeedGetParam), async (c) => {
-    try {
-      const { feedId } = c.req.valid('param');
-      const feed = await getNewsfeedItem(feedId);
+  .get(
+    '/:feedId',
+    authMiddleware,
+    courseMemberMiddleware,
+    courseContentScopeMiddleware,
+    zValidator('param', ZNewsfeedGetParam),
+    async (c) => {
+      try {
+        const { feedId } = c.req.valid('param');
+        const feed = await getNewsfeedItem(feedId);
 
-      return c.json({ success: true, data: feed }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to fetch newsfeed item');
+        return c.json({ success: true, data: feed }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to fetch newsfeed item');
+      }
     }
-  })
+  )
   .post('/', authMiddleware, courseTeamMemberMiddleware, zValidator('json', ZNewsfeedCreate), async (c) => {
     try {
       const user = c.get('user')!;
@@ -77,6 +85,7 @@ export const newsfeedRouter = new Hono()
     '/:feedId',
     authMiddleware,
     courseTeamMemberMiddleware,
+    courseContentScopeMiddleware,
     zValidator('param', ZNewsfeedGetParam),
     zValidator('json', ZNewsfeedUpdate),
     async (c) => {
@@ -96,6 +105,7 @@ export const newsfeedRouter = new Hono()
     '/:feedId/react',
     authMiddleware,
     courseMemberMiddleware,
+    courseContentScopeMiddleware,
     zValidator('param', ZNewsfeedGetParam),
     zValidator('json', ZNewsfeedReactionUpdate),
     async (c) => {
@@ -111,21 +121,29 @@ export const newsfeedRouter = new Hono()
       }
     }
   )
-  .delete('/:feedId', authMiddleware, courseTeamMemberMiddleware, zValidator('param', ZNewsfeedGetParam), async (c) => {
-    try {
-      const { feedId } = c.req.valid('param');
-      const feed = await deleteNewsfeedService(feedId);
+  .delete(
+    '/:feedId',
+    authMiddleware,
+    courseTeamMemberMiddleware,
+    courseContentScopeMiddleware,
+    zValidator('param', ZNewsfeedGetParam),
+    async (c) => {
+      try {
+        const { feedId } = c.req.valid('param');
+        const feed = await deleteNewsfeedService(feedId);
 
-      return c.json({ success: true, data: feed }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to delete newsfeed');
+        return c.json({ success: true, data: feed }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to delete newsfeed');
+      }
     }
-  })
+  )
   // Newsfeed Comment routes
   .get(
     '/:feedId/comments',
     authMiddleware,
     courseMemberMiddleware,
+    courseContentScopeMiddleware,
     zValidator('param', ZNewsfeedGetParam),
     zValidator('query', ZNewsfeedCommentThreadQuery),
     async (c) => {
@@ -152,6 +170,7 @@ export const newsfeedRouter = new Hono()
     '/:feedId/comment',
     authMiddleware,
     courseMemberMiddleware,
+    courseContentScopeMiddleware,
     zValidator('param', ZNewsfeedGetParam),
     zValidator('json', ZNewsfeedCommentCreate),
     async (c) => {

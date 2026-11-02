@@ -421,6 +421,23 @@ export async function getLessonCommentById(commentId: number): Promise<TLessonCo
   }
 }
 
+export async function getLessonCommentOwnership(
+  commentId: number
+): Promise<{ courseId: string; authorGroupMemberId: string | null } | null> {
+  try {
+    const [row] = await db
+      .select({ courseId: schema.lesson.courseId, authorGroupMemberId: schema.lessonComment.groupmemberId })
+      .from(schema.lessonComment)
+      .innerJoin(schema.lesson, eq(schema.lessonComment.lessonId, schema.lesson.id))
+      .where(eq(schema.lessonComment.id, commentId))
+      .limit(1);
+    return row ?? null;
+  } catch (error) {
+    console.error('getLessonCommentOwnership error:', error);
+    throw new Error(`Failed to get lesson comment ownership "${commentId}"`);
+  }
+}
+
 export async function updateLessonComment(commentId: number, comment: string): Promise<TLessonComment | null> {
   try {
     const [updated] = await db

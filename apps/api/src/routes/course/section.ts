@@ -1,6 +1,8 @@
 import { Hono } from '@api/utils/hono';
 import { authMiddleware } from '@api/middlewares/auth';
-import { courseMemberMiddleware } from '@api/middlewares/course-member';
+import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member';
+import { courseContentScopeMiddleware } from '@api/middlewares/course-content-scope';
+import { assertContentRefsInCourse } from '@api/services/course/access';
 import { handleError } from '@api/utils/errors';
 import {
   createCourseSection,
@@ -19,7 +21,7 @@ import {
 import { zValidator } from '@hono/zod-validator';
 
 export const sectionRouter = new Hono()
-  .post('/', authMiddleware, courseMemberMiddleware, zValidator('json', ZCourseSectionCreate), async (c) => {
+  .post('/', authMiddleware, courseTeamMemberMiddleware, zValidator('json', ZCourseSectionCreate), async (c) => {
     try {
       const courseId = c.req.param('courseId')!;
       const data = c.req.valid('json');
@@ -34,7 +36,7 @@ export const sectionRouter = new Hono()
   .post(
     '/promote-ungrouped',
     authMiddleware,
-    courseMemberMiddleware,
+    courseTeamMemberMiddleware,
     zValidator('json', ZCourseSectionPromoteUngrouped),
     async (c) => {
       try {
@@ -52,7 +54,8 @@ export const sectionRouter = new Hono()
   .put(
     '/:sectionId',
     authMiddleware,
-    courseMemberMiddleware,
+    courseTeamMemberMiddleware,
+    courseContentScopeMiddleware,
     zValidator('param', ZCourseSectionGetParam),
     zValidator('json', ZCourseSectionUpdate),
     async (c) => {
@@ -71,7 +74,8 @@ export const sectionRouter = new Hono()
   .delete(
     '/:sectionId',
     authMiddleware,
-    courseMemberMiddleware,
+    courseTeamMemberMiddleware,
+    courseContentScopeMiddleware,
     zValidator('param', ZCourseSectionGetParam),
     async (c) => {
       try {
@@ -84,14 +88,23 @@ export const sectionRouter = new Hono()
       }
     }
   )
-  .post('/reorder', authMiddleware, courseMemberMiddleware, zValidator('json', ZCourseSectionReorder), async (c) => {
-    try {
-      const { sections } = c.req.valid('json');
+  .post(
+    '/reorder',
+    authMiddleware,
+    courseTeamMemberMiddleware,
+    zValidator('json', ZCourseSectionReorder),
+    async (c) => {
+      try {
+        const courseId = c.req.param('courseId')!;
+        const { sections } = c.req.valid('json');
+        const sectionIds = sections.map((section) => section.id);
 
-      const updated = await reorderCourseSections(sections);
+        await assertContentRefsInCourse(courseId, { sectionIds });
+        const updated = await reorderCourseSections(sections);
 
-      return c.json({ success: true, data: updated }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to reorder course sections');
+        return c.json({ success: true, data: updated }, 200);
+      } catch (error) {
+        return handleError(c, error, 'Failed to reorder course sections');
+      }
     }
-  });
+  );

@@ -2,6 +2,7 @@ import { ContentType, ROLE } from '@cio/utils/constants';
 import { assertStudentCanAccessContent } from '@cio/core/services/course/progression';
 import { getCourseById, getCourseProgress } from '@cio/db/queries/course/course';
 import { getCourseContentItems } from '@cio/db/queries/course/content';
+import { areCourseContentRefsInCourse, type TCourseContentRefs } from '@cio/db/queries/course/content-scope';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 
 const DEFAULT_CONTENT_GROUPING = true;
@@ -25,6 +26,16 @@ export async function assertEnrolledStudentCourseAccess(params: {
 
   if (progress.roleId === ROLE.STUDENT && !course.isPublished) {
     throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
+  }
+}
+
+/**
+ * Throws 404 unless every referenced lesson, section, exercise, newsfeed item and group member belongs to `courseId`.
+ */
+export async function assertContentRefsInCourse(courseId: string, refs: TCourseContentRefs): Promise<void> {
+  const isInCourse = await areCourseContentRefsInCourse(courseId, refs);
+  if (!isInCourse) {
+    throw new AppError('Content not found in this course', ErrorCodes.NOT_FOUND, 404);
   }
 }
 

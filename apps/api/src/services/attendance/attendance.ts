@@ -1,4 +1,5 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
+import { assertContentRefsInCourse } from '@api/services/course/access';
 import { getAttendanceByCourseId, getAttendanceByStudentAndLesson, upsertAttendance } from '@cio/db/queries/attendance';
 import type { TGroupAttendance, TNewGroupAttendance } from '@cio/db/types';
 import type { TAttendanceUpsert } from '@cio/utils/validation/attendance';
@@ -22,14 +23,15 @@ export async function listAttendance(courseId: string, lessonId?: string): Promi
 }
 
 /**
- * Creates or updates an attendance record
- * @param data Attendance data
- * @returns Created or updated attendance record
+ * Creates or updates an attendance record of `courseId`. The body's courseId is ignored.
+ * Throws 404 when the lesson or student does not belong to the course.
  */
-export async function upsertAttendanceService(data: TAttendanceUpsert): Promise<TGroupAttendance> {
+export async function upsertAttendanceService(courseId: string, data: TAttendanceUpsert): Promise<TGroupAttendance> {
+  await assertContentRefsInCourse(courseId, { lessonIds: [data.lessonId], groupMemberIds: [data.studentId] });
+
   try {
     const attendanceData: TNewGroupAttendance = {
-      courseId: data.courseId,
+      courseId,
       lessonId: data.lessonId,
       studentId: data.studentId,
       isPresent: data.isPresent
