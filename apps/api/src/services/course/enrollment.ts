@@ -30,12 +30,14 @@ import { captureLearnersEnrolled } from '@api/services/product-events';
 import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 
+/** Course team members, org admins and HR may manage a course's enrollments. Throws 403 otherwise. */
 async function requireTrainingManager(courseId: string, actorId: string) {
   const context = await getCourseEmployeeContext(courseId);
-  const allowed = await isCourseTeamMemberOrOrgAdmin(courseId, actorId);
-  if (!context?.organizationId || !context.groupId || !allowed) {
-    throw new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403);
-  }
+  if (!context?.organizationId || !context.groupId) throw new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403);
+
+  const isCourseTeam = await isCourseTeamMemberOrOrgAdmin(courseId, actorId);
+  const access = isCourseTeam ? null : await getEmployeeAccess(context.organizationId, actorId);
+  if (!isCourseTeam && !access?.canManage) throw new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403);
 
   return context as typeof context & { organizationId: string; groupId: string };
 }
@@ -192,10 +194,6 @@ export async function assignCourses(organizationId: string, actorId: string, inp
       courses.some((course) => course.status !== 'ACTIVE' || course.isTemplate)
     ) {
       throw new AppError('Course unavailable', ErrorCodes.VALIDATION_ERROR, 400, 'courseIds');
-    }
-    for (const course of courses) {
-      const allowed = await isCourseTeamMemberOrOrgAdmin(course.id, actorId, transaction);
-      if (!allowed) throw new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403);
     }
 
     const employeeIds = await resolveEmployeeIds(

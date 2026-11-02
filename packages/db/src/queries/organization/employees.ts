@@ -97,6 +97,29 @@ export async function getEmployeeAccess(orgId: string, profileId: string, client
   return { role, employeeId: staff?.id ?? null, canManage: role === 'ADMIN' || role === 'HR' };
 }
 
+/** Subquery of every employee id below `managerEmployeeId` in the reporting line, at any depth. */
+export function reportingLineSql(managerEmployeeId: string) {
+  return sql`(
+    WITH RECURSIVE reports AS (
+      SELECT id FROM employee WHERE manager_id = ${managerEmployeeId}
+      UNION
+      SELECT child.id FROM employee child JOIN reports parent ON child.manager_id = parent.id
+    )
+    SELECT id FROM reports
+  )`;
+}
+
+export async function isInReportingLine(managerEmployeeId: string, employeeId: string, client: DbOrTxClient = db) {
+  const [row] = await client
+    .select({ id: schema.employee.id })
+    .from(schema.employee)
+    .where(
+      and(eq(schema.employee.id, employeeId), sql`${schema.employee.id} IN ${reportingLineSql(managerEmployeeId)}`)
+    )
+    .limit(1);
+  return Boolean(row);
+}
+
 export async function listEmployees(
   orgId: string,
   query: EmployeeListQuery,
@@ -111,7 +134,7 @@ export async function listEmployees(
     query.profileId
       ? sql`${schema.employee.memberId} in (select id from organizationmember where profile_id = ${query.profileId} and organization_id = ${orgId})`
       : undefined,
-    managerId ? eq(schema.employee.managerId, managerId) : undefined,
+    managerId ? sql`${schema.employee.id} IN ${reportingLineSql(managerId)}` : undefined,
     query.department ? ilike(schema.employee.department, `%${query.department}%`) : undefined,
     query.jobTitle ? ilike(schema.employee.jobTitle, `%${query.jobTitle}%`) : undefined,
     query.status ? eq(schema.employee.status, query.status) : undefined,

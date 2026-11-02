@@ -17,6 +17,7 @@ import {
 
 import { Hono } from '@api/utils/hono';
 import { ZCourseUserAnalyticsParam, ZCourseUserAnalyticsQuery } from '@cio/utils/validation/course';
+import { authMiddleware } from '@api/middlewares/auth';
 import { courseTeamMemberMiddleware } from '@api/middlewares/course-team-member';
 import { getUserCourseAnalytics } from '@cio/core/services/course/course';
 import { handleError } from '@api/utils/errors';
@@ -37,7 +38,7 @@ import {
 } from '@api/services/course/enrollment';
 
 export const membersRouter = new Hono()
-  .get('/enrollments', courseTeamMemberMiddleware, zValidator('param', ZCourseMembersParam), async (c) => {
+  .get('/enrollments', authMiddleware, zValidator('param', ZCourseMembersParam), async (c) => {
     try {
       const data = await listCourseEnrollments(c.req.valid('param').courseId, c.get('user')!.id);
       return c.json({ success: true, data });
@@ -47,7 +48,7 @@ export const membersRouter = new Hono()
   })
   .post(
     '/enrollments',
-    courseTeamMemberMiddleware,
+    authMiddleware,
     zValidator('param', ZCourseMembersParam),
     zValidator('json', ZAssignCourseLearners),
     async (c) => {
@@ -61,7 +62,7 @@ export const membersRouter = new Hono()
   )
   .patch(
     '/enrollments/:enrollmentId',
-    courseTeamMemberMiddleware,
+    authMiddleware,
     zValidator('param', ZCourseEnrollmentParam),
     zValidator('json', ZUpdateEnrollmentDueDate),
     async (c) => {
@@ -81,7 +82,7 @@ export const membersRouter = new Hono()
   )
   .post(
     '/enrollments/:enrollmentId/waive',
-    courseTeamMemberMiddleware,
+    authMiddleware,
     zValidator('param', ZCourseEnrollmentParam),
     zValidator('json', ZWaiveEnrollment),
     async (c) => {
@@ -94,20 +95,15 @@ export const membersRouter = new Hono()
       }
     }
   )
-  .delete(
-    '/enrollments/:enrollmentId',
-    courseTeamMemberMiddleware,
-    zValidator('param', ZCourseEnrollmentParam),
-    async (c) => {
-      try {
-        const { courseId, enrollmentId } = c.req.valid('param');
-        const data = await revokeEnrollment(courseId, enrollmentId, c.get('user')!.id);
-        return c.json({ success: true, data });
-      } catch (error) {
-        return handleError(c, error, 'Failed to revoke enrollment');
-      }
+  .delete('/enrollments/:enrollmentId', authMiddleware, zValidator('param', ZCourseEnrollmentParam), async (c) => {
+    try {
+      const { courseId, enrollmentId } = c.req.valid('param');
+      const data = await revokeEnrollment(courseId, enrollmentId, c.get('user')!.id);
+      return c.json({ success: true, data });
+    } catch (error) {
+      return handleError(c, error, 'Failed to revoke enrollment');
     }
-  )
+  })
   .get(
     '/available',
     courseTeamMemberMiddleware,

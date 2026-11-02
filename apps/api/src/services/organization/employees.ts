@@ -14,6 +14,7 @@ import {
   findEmployeeAccount,
   findEmployeeActivation,
   getEmployeeAccess,
+  isInReportingLine,
   getEmployeeOrganizationLocale,
   getEmployeeAudit,
   insertEmployee,
@@ -102,7 +103,8 @@ export async function getEmployeeDetails(orgId: string, actorId: string, employe
   const staff = await findEmployee(orgId, employeeId);
   if (!staff) rejectEmployee('missing', 404);
 
-  if (!access.canManage && staff.managerId !== access.employeeId) rejectEmployee('forbidden', 403);
+  const isReport = access.employeeId ? await isInReportingLine(access.employeeId, employeeId) : false;
+  if (!access.canManage && !isReport) rejectEmployee('forbidden', 403);
 
   const enrollments = await employeeLearningReport(orgId, employeeId);
   const audit = access.canManage ? await getEmployeeAudit(employeeId) : [];

@@ -6282,7 +6282,11 @@
     "overdue": "Overdue required training",
     "overdue_description": "Incomplete mandatory assignments past their due date",
     "assignment_states": "Course assignment status",
-    "assignment_definition": "सक्रिय अनिवार्य आवश्यकता वाली प्रत्येक कर्मचारी–पाठ्यक्रम जोड़ी एक बार गिनी जाती है। स्वयं चुने और अनुशंसित पाठ्यक्रम शामिल नहीं हैं; विकल्प वाले लक्ष्य अलग ट्रैक होते हैं।",
+    "assignment_definition": "Each active assignment of a course to an employee counts once. Self-enrolled learning is not included.",
+    "scope": {
+      "courses": "Showing only the courses you teach and their learners.",
+      "reports": "Showing only employees in your reporting line, including indirect reports."
+    },
     "completed": "Completed",
     "in_progress": "In progress",
     "not_started": "Not started",

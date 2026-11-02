@@ -6282,7 +6282,11 @@
     "overdue": "Overdue required training",
     "overdue_description": "Incomplete mandatory assignments past their due date",
     "assignment_states": "Course assignment status",
-    "assignment_definition": "Chaque couple salarié–cours avec une obligation active compte une fois. Les choix personnels et recommandations sont exclus ; les objectifs de sélection sont suivis séparément.",
+    "assignment_definition": "Each active assignment of a course to an employee counts once. Self-enrolled learning is not included.",
+    "scope": {
+      "courses": "Showing only the courses you teach and their learners.",
+      "reports": "Showing only employees in your reporting line, including indirect reports."
+    },
     "completed": "Completed",
     "in_progress": "In progress",
     "not_started": "Not started",

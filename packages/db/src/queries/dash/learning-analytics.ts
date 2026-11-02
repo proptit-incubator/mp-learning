@@ -1,6 +1,13 @@
 import { db, type DbOrTxClient } from '@db/drizzle';
 import { sql } from 'drizzle-orm';
+import { ROLE } from '@cio/utils/constants';
 import { enrollmentStateSql, type EnrollmentState } from '../course/enrollment';
+import { reportingLineSql } from '../organization/employees';
+
+export type LearningAnalyticsScope =
+  | { kind: 'organization' }
+  | { kind: 'courses'; teamProfileId: string }
+  | { kind: 'reports'; managerEmployeeId: string };
 
 export type LearningStateCounts = Record<EnrollmentState, number>;
 
@@ -73,19 +80,48 @@ const STATE_COUNT_COLUMNS = sql`
   COUNT(*) FILTER (WHERE ls.state = 'expired')::int AS expired,
   COUNT(*) FILTER (WHERE ls.state = 'waived')::int AS waived`;
 
-/** Active courses of the org, active employees, and their live ASSIGNED enrollments with computed state. */
-function learningPopulation(orgId: string) {
+function teamCourseSql(courseAlias: string, teamProfileId: string) {
+  return sql`EXISTS (
+    SELECT 1 FROM groupmember tm
+    WHERE tm.group_id = ${sql.raw(courseAlias)}.group_id AND tm.profile_id = ${teamProfileId}
+      AND tm.role_id IN (${ROLE.ADMIN}, ${ROLE.TUTOR})
+  )`;
+}
+
+function scopedCourseFilter(scope: LearningAnalyticsScope) {
+  return scope.kind === 'courses' ? sql`AND ${teamCourseSql('c', scope.teamProfileId)}` : sql``;
+}
+
+function scopedEmployeeFilter(scope: LearningAnalyticsScope) {
+  if (scope.kind === 'reports') return sql`AND e.id IN ${reportingLineSql(scope.managerEmployeeId)}`;
+  if (scope.kind === 'courses') {
+    return sql`AND e.id IN (
+      SELECT ce.employee_id FROM course_enrollment ce JOIN course tc ON tc.id = ce.course_id
+      WHERE ce.status <> 'REVOKED' AND ${teamCourseSql('tc', scope.teamProfileId)}
+    )`;
+  }
+
+  return sql``;
+}
+
+/**
+ * Active courses, active employees and their live ASSIGNED enrollments with computed state, narrowed to `scope`:
+ * the whole org, the courses a tutor teaches, or a manager's reporting line.
+ */
+function learningPopulation(orgId: string, scope: LearningAnalyticsScope) {
   return sql`
     active_courses AS (
       SELECT c.id, c.title, c.is_published, c.group_id, c.recertification_months
       FROM course c JOIN "group" g ON g.id = c.group_id
       WHERE g.organization_id = ${orgId} AND c.status = 'ACTIVE' AND c.is_template = false
+        ${scopedCourseFilter(scope)}
     ),
     employees AS (
       SELECT e.id AS employee_id, om.profile_id, e.fullname, e.employee_code, e.department, e.job_title, p.avatar_url
       FROM employee e JOIN organizationmember om ON om.id = e.member_id
       LEFT JOIN profile p ON p.id = om.profile_id
       WHERE e.organization_id = ${orgId} AND e.status = 'ACTIVE' AND om.status = 'ACTIVE'
+        ${scopedEmployeeFilter(scope)}
     ),
     enrollments AS (
       SELECT ce.id AS enrollment_id, ce.course_id, ce.employee_id, ce.due_date, ce.batch_label, emp.profile_id,
@@ -99,8 +135,12 @@ function learningPopulation(orgId: string) {
   `;
 }
 
-export async function getLearningAnalyticsSnapshot(orgId: string, dbClient: DbOrTxClient = db) {
-  const population = learningPopulation(orgId);
+export async function getLearningAnalyticsSnapshot(
+  orgId: string,
+  scope: LearningAnalyticsScope,
+  dbClient: DbOrTxClient = db
+) {
+  const population = learningPopulation(orgId, scope);
   const rows = await dbClient.execute<LearningSnapshot>(sql`
     WITH ${population},
     lesson_totals AS (
@@ -195,8 +235,13 @@ export async function getLearningAnalyticsSnapshot(orgId: string, dbClient: DbOr
   return snapshot;
 }
 
-export async function getLearningAnalyticsActivity(orgId: string, days: number, dbClient: DbOrTxClient = db) {
-  const population = learningPopulation(orgId);
+export async function getLearningAnalyticsActivity(
+  orgId: string,
+  scope: LearningAnalyticsScope,
+  days: number,
+  dbClient: DbOrTxClient = db
+) {
+  const population = learningPopulation(orgId, scope);
   const rows = await dbClient.execute<LearningActivity>(sql`
     WITH ${population},
     learners AS (

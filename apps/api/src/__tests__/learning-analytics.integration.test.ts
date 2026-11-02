@@ -6,6 +6,8 @@ import * as schema from '@cio/db/schema';
 import { eq } from 'drizzle-orm';
 import { getLearningAnalyticsActivity, getLearningAnalyticsSnapshot } from '@cio/db/queries/dash/learning-analytics';
 
+const ORGANIZATION_SCOPE = { kind: 'organization' } as const;
+
 type TestTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 async function withRollback(run: (transaction: TestTransaction) => Promise<void>) {
@@ -90,7 +92,7 @@ async function createCourse(
 
 describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning analytics database', () => {
   it('isolates organizations and returns an empty report for an empty population', async () => {
-    const snapshot = await getLearningAnalyticsSnapshot(randomUUID());
+    const snapshot = await getLearningAnalyticsSnapshot(randomUUID(), ORGANIZATION_SCOPE);
     expect(snapshot.employees).toBe(0);
     expect(snapshot.assignments).toBe(0);
     expect(snapshot.courses).toEqual([]);
@@ -112,7 +114,7 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
       await transaction
         .insert(schema.lessonCompletion)
         .values({ lessonId: lessons[0].id, profileId, isComplete: true });
-      const pending = await getLearningAnalyticsSnapshot(organizationId, transaction);
+      const pending = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
       expect(pending).toMatchObject({
         employees: 2,
         enrolledEmployees: 1,
@@ -134,7 +136,7 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
         },
         transaction
       );
-      const completed = await getLearningAnalyticsSnapshot(organizationId, transaction);
+      const completed = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
       expect(completed.completed).toBe(1);
       expect(completed.rows[0]).toMatchObject({ state: 'completed', progress: 100 });
     });
@@ -154,21 +156,21 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
         completedAt: '2024-01-01T00:00:00.000Z',
         validUntil: '2025-01-01T00:00:00.000Z'
       });
-      const report = await getLearningAnalyticsSnapshot(organizationId, transaction);
+      const report = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
       expect(report).toMatchObject({ overdue: 1, expired: 1, completed: 0 });
 
       await transaction
         .update(schema.courseEnrollment)
         .set({ status: 'WAIVED', waiverReason: 'Certified elsewhere' })
         .where(eq(schema.courseEnrollment.id, overdue.enrollmentId));
-      const waived = await getLearningAnalyticsSnapshot(organizationId, transaction);
+      const waived = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
       expect(waived).toMatchObject({ overdue: 0, waived: 1 });
 
       await transaction
         .update(schema.employee)
         .set({ status: 'SUSPENDED' })
         .where(eq(schema.employee.organizationId, organizationId));
-      const inactive = await getLearningAnalyticsSnapshot(organizationId, transaction);
+      const inactive = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
       expect(inactive.employees).toBe(0);
       expect(inactive.assignments).toBe(0);
     });
@@ -209,14 +211,14 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
         { exerciseId: exercise.id, submittedBy: memberId, createdAt: inside },
         { exerciseId: exercise.id, submittedBy: memberId, createdAt: inside }
       ]);
-      const activity = await getLearningAnalyticsActivity(organizationId, 7, transaction);
+      const activity = await getLearningAnalyticsActivity(organizationId, ORGANIZATION_SCOPE, 7, transaction);
       expect(activity.activeLearners).toBe(1);
       expect(activity.lessonsCompleted).toBe(1);
       expect(activity.submissions).toBe(2);
       expect(activity.daily).toHaveLength(7);
       expect(activity.daily[0].lessons).toBe(1);
       expect(activity.daily[0].submissions).toBe(2);
-      const longerPeriod = await getLearningAnalyticsActivity(organizationId, 30, transaction);
+      const longerPeriod = await getLearningAnalyticsActivity(organizationId, ORGANIZATION_SCOPE, 30, transaction);
       expect(longerPeriod.lessonsCompleted).toBe(2);
     });
   });

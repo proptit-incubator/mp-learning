@@ -6262,7 +6262,11 @@
     "overdue": "Overdue required training",
     "overdue_description": "Incomplete mandatory assignments past their due date",
     "assignment_states": "Course assignment status",
-    "assignment_definition": "Etkin zorunluluğu olan her çalışan–kurs çifti bir kez sayılır. Kişisel seçimler ve öneriler hariçtir; seçim hedefleri ayrı izlenir.",
+    "assignment_definition": "Each active assignment of a course to an employee counts once. Self-enrolled learning is not included.",
+    "scope": {
+      "courses": "Showing only the courses you teach and their learners.",
+      "reports": "Showing only employees in your reporting line, including indirect reports."
+    },
     "completed": "Completed",
     "in_progress": "In progress",
     "not_started": "Not started",

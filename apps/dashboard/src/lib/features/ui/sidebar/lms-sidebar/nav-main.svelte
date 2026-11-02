@@ -7,6 +7,7 @@
   import { employeesApi } from '$features/employees/api/employees.svelte';
   import { untrack } from 'svelte';
   import UsersRoundIcon from '@lucide/svelte/icons/users-round';
+  import ChartColumnIcon from '@lucide/svelte/icons/chart-column';
 
   $effect(() => {
     const orgId = $currentOrg.id;
@@ -16,6 +17,8 @@
       void employeesApi.loadAccess(orgId);
     });
   });
+
+  const canSeeTeamLearning = $derived(employeesApi.access?.canManage || employeesApi.access?.role === 'MANAGER');
 
   const items = $derived(
     getLmsNavigationItems($currentOrg, $t, page.url.pathname).filter((item) => !item.hideFromSidebar)
@@ -40,12 +43,24 @@
         </Sidebar.MenuButton>
       </Sidebar.MenuItem>
     {/each}
-    {#if employeesApi.access?.canManage || employeesApi.access?.role === 'MANAGER'}
+    {#if canSeeTeamLearning}
       <Sidebar.MenuItem>
         <Sidebar.MenuButton tooltipContent={$t('employees.title')} isActive={page.url.pathname === '/lms/employees'}>
           {#snippet child({ props })}
             <a href="/lms/employees" {...props} data-testid="employee-navigation"
               ><UsersRoundIcon size={17} /><span>{$t('employees.title')}</span></a
+            >
+          {/snippet}
+        </Sidebar.MenuButton>
+      </Sidebar.MenuItem>
+      <Sidebar.MenuItem>
+        <Sidebar.MenuButton
+          tooltipContent={$t('learning_analytics.title')}
+          isActive={page.url.pathname === '/lms/analytics'}
+        >
+          {#snippet child({ props })}
+            <a href="/lms/analytics" {...props} data-testid="learning-report-navigation"
+              ><ChartColumnIcon size={17} /><span>{$t('learning_analytics.title')}</span></a
             >
           {/snippet}
         </Sidebar.MenuButton>

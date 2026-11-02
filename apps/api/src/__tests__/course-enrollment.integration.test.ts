@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+const ORGANIZATION_SCOPE = { kind: 'organization' } as const;
+
 const mocks = vi.hoisted(() => ({ email: vi.fn(), emit: vi.fn() }));
 vi.mock('@api/services/jobs', () => ({ enqueueTransactionalEmail: mocks.email }));
 vi.mock('@cio/core/utils/redis/org-stats-cache', () => ({ invalidateOrgStats: vi.fn() }));
@@ -272,7 +274,7 @@ integration('course enrollment on isolated PostgreSQL', () => {
       message: '',
       sendEmail: false
     });
-    const snapshot = await analytics.getLearningAnalyticsSnapshot(organizationId);
+    const snapshot = await analytics.getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE);
     expect(snapshot).toMatchObject({ assignments: 1, not_started: 1, enrolledEmployees: 1 });
     expect(snapshot.batches).toEqual([expect.objectContaining({ batchLabel: 'Q4', assigned: 1 })]);
 
@@ -284,5 +286,118 @@ integration('course enrollment on isolated PostgreSQL', () => {
       .from(database.groupmember)
       .where(database.eq(database.groupmember.profileId, learnerId));
     expect(members).toHaveLength(1);
+  });
+
+  describe('training roles', () => {
+    async function createStaff(role: 'HR' | 'MANAGER', managerId: string | null = null) {
+      const profileId = randomUUID();
+      await createProfile(profileId);
+      const staff = await createEmployee(profileId, { role, managerId });
+      return { profileId, employeeId: staff.employee.id };
+    }
+
+    async function createLearner(overrides: Partial<typeof database.employee.$inferInsert> = {}) {
+      const profileId = randomUUID();
+      await createProfile(profileId);
+      return createEmployee(profileId, overrides);
+    }
+
+    it('lets HR assign courses and manage the assignment without joining the course team', async () => {
+      const course = await createCourse();
+      const hr = await createStaff('HR');
+
+      const result = await service.assignCourses(organizationId, hr.profileId, {
+        courseIds: [course.id],
+        employeeIds: [employeeId],
+        message: '',
+        sendEmail: false
+      });
+      const [row] = await enrollment.listCourseEnrollments(course.id);
+      const updated = await service.changeEnrollmentDueDate(
+        course.id,
+        row.id,
+        hr.profileId,
+        '2031-01-01T00:00:00.000Z'
+      );
+
+      expect(result.assigned).toBe(1);
+      expect(updated).toBeTruthy();
+    });
+
+    it('keeps managers and plain employees from assigning or managing assignments', async () => {
+      const course = await createCourse();
+      const manager = await createStaff('MANAGER');
+      await service.assignCourses(organizationId, actorId, {
+        courseIds: [course.id],
+        employeeIds: [employeeId],
+        message: '',
+        sendEmail: false
+      });
+      const [row] = await enrollment.listCourseEnrollments(course.id);
+      const input = { courseIds: [course.id], employeeIds: [employeeId], message: '', sendEmail: false };
+
+      await expect(service.assignCourses(organizationId, manager.profileId, input)).rejects.toMatchObject({
+        statusCode: 403
+      });
+      await expect(service.revokeEnrollment(course.id, row.id, learnerId)).rejects.toMatchObject({ statusCode: 403 });
+    });
+
+    it('limits a manager report to their whole reporting line', async () => {
+      const course = await createCourse();
+      const manager = await createStaff('MANAGER');
+      const lead = await createLearner({ managerId: manager.employeeId });
+      const outsider = await createLearner();
+      await database.db
+        .update(database.employee)
+        .set({ managerId: lead.employee.id })
+        .where(database.eq(database.employee.id, employeeId));
+      await service.assignCourses(organizationId, actorId, {
+        courseIds: [course.id],
+        employeeIds: [employeeId, outsider.employee.id],
+        message: '',
+        sendEmail: false
+      });
+
+      const snapshot = await analytics.getLearningAnalyticsSnapshot(organizationId, {
+        kind: 'reports',
+        managerEmployeeId: manager.employeeId
+      });
+      const reportedEmployees = snapshot.rows.map((row) => row.employeeId);
+
+      expect(snapshot.employees).toBe(2);
+      expect(reportedEmployees).toEqual([employeeId]);
+    });
+
+    it('limits a tutor report to the courses they teach and their learners', async () => {
+      const taught = await createCourse({ title: 'Taught' });
+      const other = await createCourse({ title: 'Other' });
+      const outsider = await createLearner();
+      const tutorId = randomUUID();
+      await createProfile(tutorId);
+      await database.db
+        .insert(database.groupmember)
+        .values({ groupId: taught.groupId!, profileId: tutorId, roleId: 2 });
+      await service.assignCourses(organizationId, actorId, {
+        courseIds: [taught.id],
+        employeeIds: [employeeId],
+        message: '',
+        sendEmail: false
+      });
+      await service.assignCourses(organizationId, actorId, {
+        courseIds: [other.id],
+        employeeIds: [outsider.employee.id],
+        message: '',
+        sendEmail: false
+      });
+
+      const snapshot = await analytics.getLearningAnalyticsSnapshot(organizationId, {
+        kind: 'courses',
+        teamProfileId: tutorId
+      });
+
+      expect(snapshot.courses.map((course) => course.id)).toEqual([taught.id]);
+      expect(snapshot.employees).toBe(1);
+      expect(snapshot.rows.map((row) => row.employeeId)).toEqual([employeeId]);
+    });
   });
 });

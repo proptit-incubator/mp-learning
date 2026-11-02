@@ -2,7 +2,7 @@
 
 ## Cấp tài khoản
 
-Quản trị mở **Nhân viên** trong khu vực quản trị. HR/L&D và quản lý bộ phận mở **Nhân viên** trong khu vực học tập. HR/L&D quản lý nhân viên thông thường và quản lý bộ phận; chỉ quản trị hệ thống được cấp hoặc thay đổi quyền HR/L&D, giảng viên và quản trị.
+Quản trị mở **Nhân viên** trong khu vực quản trị. HR/L&D và quản lý bộ phận mở **Nhân viên** và **Phân tích đào tạo** trong khu vực học tập. HR/L&D quản lý nhân viên thông thường và quản lý bộ phận; chỉ quản trị hệ thống được cấp hoặc thay đổi quyền HR/L&D, giảng viên và quản trị.
 
 Chọn **Thêm nhân viên**, nhập mã nhân viên, họ tên, email, phòng ban, chức danh, ngày vào làm và quản lý trực tiếp. Chọn khóa học/chương trình nếu cần. **Lưu nháp** không gửi email. **Tạo và gửi kích hoạt** cấp hồ sơ và gửi liên kết để nhân viên tự đặt mật khẩu.
 
@@ -31,9 +31,9 @@ Chạy **Kiểm tra danh sách** trước khi xác nhận. Dòng sai định d�
 | Vai trò | Phạm vi |
 | --- | --- |
 | Quản trị hệ thống | Quản lý toàn tổ chức, cấu hình và cấp quyền cao |
-| HR/L&D | Tạo/sửa, giao đào tạo và quản lý vòng đời nhân viên thông thường/quản lý bộ phận |
-| Quản lý bộ phận | Chỉ xem danh sách và kết quả của nhân viên có quan hệ quản lý trực tiếp |
-| Giảng viên | Giữ quyền quản lý khóa học được phân công; không có quyền quản trị nhân viên |
+| HR/L&D | Tạo/sửa, giao đào tạo, đổi hạn/miễn/thu hồi lượt giao, xem **Phân tích đào tạo** toàn tổ chức và quản lý vòng đời nhân viên thông thường/quản lý bộ phận |
+| Quản lý bộ phận | Chỉ xem danh sách, kết quả và **Phân tích đào tạo** của nhân viên thuộc quyền quản lý, kể cả cấp dưới gián tiếp |
+| Giảng viên | Soạn nội dung, đổi hạn/miễn/thu hồi lượt giao và xem phân tích của khóa học được phân công; không giao khóa mới và không có quyền quản trị nhân viên |
 | Nhân viên | Học tập trong phạm vi được giao |
 
 Trạng thái tài khoản gồm **Chưa gửi kích hoạt**, **Chờ kích hoạt**, **Đang hoạt động**, **Tạm khóa**, **Đã nghỉ việc**. Khôi phục tài khoản chưa kích hoạt không bỏ qua việc xác nhận email. Người dùng không được tự khóa hoặc tự thay vai trò; phải duy trì ít nhất một quản trị hoạt động.
@@ -44,7 +44,7 @@ Khóa tài khoản giữ lại bài nộp, kết quả học, chứng chỉ và 
 
 ## Giao đào tạo và báo cáo
 
-Nhân viên tham gia khóa học theo đúng hai cách: **Được giao** (HR/L&D/giảng viên giao, luôn phải hoàn thành, có thể có hạn và nhãn đợt đào tạo) hoặc **Tự đăng ký** từ Thư viện đào tạo. Mỗi lượt tham gia là một dòng `course_enrollment` gắn với nhân viên, nên có thể giao cho nhân viên chưa kích hoạt; khi họ kích hoạt, tư cách học viên của khóa được tạo trong cùng transaction. Có thể giao trước khóa chưa xuất bản. Học viên chỉ thấy khóa đã xuất bản.
+Nhân viên tham gia khóa học theo đúng hai cách: **Được giao** (quản trị hoặc HR/L&D giao, luôn phải hoàn thành, có thể có hạn và nhãn đợt đào tạo) hoặc **Tự đăng ký** từ Thư viện đào tạo. Mỗi lượt tham gia là một dòng `course_enrollment` gắn với nhân viên, nên có thể giao cho nhân viên chưa kích hoạt; khi họ kích hoạt, tư cách học viên của khóa được tạo trong cùng transaction. Có thể giao trước khóa chưa xuất bản. Học viên chỉ thấy khóa đã xuất bản.
 
 Chi tiết nhân viên có bảng **Khóa học được giao** với trạng thái tính toán: Chưa bắt đầu, Đang học, Hoàn thành, Quá hạn, Hết hiệu lực, Miễn. Xuất danh sách áp dụng bộ lọc và phạm vi quyền đang có.
 
@@ -78,7 +78,7 @@ Triển khai cần chạy migration `0045_single_course_model.sql` bằng quy tr
 
 ## Course enrollment and employee emails
 
-Course members can only be selected from active employees of the same organization. Search supports employee code, name, and email. New accounts must be created and activated in Employees. Instructors can assign learners; organization administrators assign existing employees with ADMIN or TUTOR roles as instructors.
+Course members can only be selected from active employees of the same organization. Search supports employee code, name, and email. New accounts must be created and activated in Employees. Administrators and HR assign learners; course instructors adjust due dates, waive or revoke assignments of their courses; organization administrators assign existing employees with ADMIN or TUTOR roles as instructors.
 
 Course invitation creation and old course invitation links are retired, including acceptance of previously generated course share links. Course access notifications use the editable course access template and include the due date and training batch when set.
 
