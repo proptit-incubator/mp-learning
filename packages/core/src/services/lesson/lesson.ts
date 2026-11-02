@@ -33,6 +33,7 @@ import { enrichLessonWithPresignedUrls } from '../../utils/lesson-media';
 import { resolveWatchEnforcedAssetIds } from '../../utils/lesson-watch-enforcement';
 import { resolveItemSlug } from '../course/slug';
 import { claimItemOrder } from '../course/root-order';
+import { assertNoSubmittedWork } from '../course/content';
 import { emitCourseWebhookEvent } from '../webhook/emit';
 import { captureCourseEvent } from '../posthog';
 
@@ -235,9 +236,14 @@ export async function updateLessonService(
  * @param lessonId Lesson ID
  * @returns Deleted lesson
  */
-export async function deleteLessonService(lessonId: string): Promise<TLesson> {
+/**
+ * Deletes a lesson. Unless `force` is set, throws 409 when learners submitted work for its exercises.
+ */
+export async function deleteLessonService(lessonId: string, options: { force?: boolean } = {}): Promise<TLesson> {
   try {
     const deleted = await db.transaction(async (tx) => {
+      if (!options.force) await assertNoSubmittedWork([lessonId], [], tx);
+
       const lesson = await deleteLesson(lessonId, tx);
       if (!lesson) {
         return null;

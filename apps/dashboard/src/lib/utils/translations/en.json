@@ -5411,7 +5411,8 @@
       "error": {
         "try_later": "Something's not right - Please try later",
         "exercise_not_complete": "Complete all exercises to mark as complete"
-      }
+      },
+      "content_has_submissions": "This cannot be deleted because learners have submitted work here. Keep it to preserve their graded results."
     },
     "marks": {
       "error": "Error fetching marks"

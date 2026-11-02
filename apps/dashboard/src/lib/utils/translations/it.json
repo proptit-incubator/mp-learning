@@ -5400,7 +5400,8 @@
       "error": {
         "try_later": "Qualcosa non va: riprova più tardi",
         "exercise_not_complete": "Completa tutti gli esercizi per contrassegnarli come completati"
-      }
+      },
+      "content_has_submissions": "This cannot be deleted because learners have submitted work here. Keep it to preserve their graded results."
     },
     "marks": {
       "error": "Errore durante il recupero dei contrassegni"

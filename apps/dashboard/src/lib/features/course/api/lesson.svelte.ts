@@ -1,3 +1,4 @@
+import { isSubmittedWorkConflict } from '../utils/content-delete-utils';
 import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
 import { courseApi } from './course.svelte';
 import { toggleConfetti } from '$features/ui/confetti/store';
@@ -260,7 +261,9 @@ export class LessonApi extends BaseApiWithErrors {
         }
       },
       onError: (result) => {
-        if (typeof result === 'string') {
+        if (isSubmittedWorkConflict(result)) {
+          snackbar.error('snackbar.lessons.content_has_submissions');
+        } else if (typeof result === 'string') {
           snackbar.error('snackbar.lessons.lesson_delete_failed');
         }
       }

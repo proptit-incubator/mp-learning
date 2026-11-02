@@ -274,7 +274,8 @@
         "complete_download": "Загрузка завершена",
         "version_restored": "Версия успешно восстановлена"
       },
-      "section_deleted": "Раздел курса успешно удален"
+      "section_deleted": "Раздел курса успешно удален",
+      "content_has_submissions": "This cannot be deleted because learners have submitted work here. Keep it to preserve their graded results."
     },
     "attendance": {
       "error": {

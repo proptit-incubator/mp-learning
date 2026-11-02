@@ -260,10 +260,25 @@ export type CourseContentDeleteResult = {
  * Deletes a section's content (and the section) or the given lessons and exercises in one transaction, and returns what
  * was deleted. Without `force`, throws 409 when any of it holds exercise submissions or lesson completions.
  */
+/** The error returned when deleting content would also delete learners' submitted work. */
+export function submittedWorkConflict(submissions: number): AppError {
+  return new AppError(
+    `Learners have submitted ${submissions} answers here. Deleting it would delete their graded work`,
+    ErrorCodes.CONFLICT,
+    409
+  );
+}
+
+/** Throws 409 when learners submitted work for the given exercises or the exercises of the given lessons. */
+export async function assertNoSubmittedWork(lessonIds: string[], exerciseIds: string[], client: DbOrTxClient = db) {
+  const work = await countContentStudentWork(lessonIds, exerciseIds, client);
+  if (work.submissions > 0) throw submittedWorkConflict(work.submissions);
+}
+
 export async function deleteCourseContent(
   courseId: string,
   payload: TCourseContentDelete,
-  options: { force: boolean } = { force: true }
+  options: { force: boolean } = { force: false }
 ): Promise<CourseContentDeleteResult> {
   try {
     const sectionId = payload.sectionId;
@@ -291,13 +306,7 @@ export async function deleteCourseContent(
 
     const studentWork = await db.transaction(async (tx) => {
       const work = await countContentStudentWork(lessonIds, exerciseIds, tx);
-      if (!options.force && work.submissions + work.lessonCompletions > 0) {
-        throw new AppError(
-          `Students have work here (${work.submissions} submissions, ${work.lessonCompletions} lesson completions). Pass force=true to delete it with their work`,
-          ErrorCodes.CONFLICT,
-          409
-        );
-      }
+      if (!options.force && work.submissions > 0) throw submittedWorkConflict(work.submissions);
 
       for (const item of itemsToDelete) {
         if (item.type === ContentType.Lesson) {

@@ -274,7 +274,8 @@
         "complete_download": "Download abgeschlossen",
         "version_restored": "Version erfolgreich wiederhergestellt"
       },
-      "section_deleted": "Kursabschnitt erfolgreich gelöscht"
+      "section_deleted": "Kursabschnitt erfolgreich gelöscht",
+      "content_has_submissions": "This cannot be deleted because learners have submitted work here. Keep it to preserve their graded results."
     },
     "attendance": {
       "error": {

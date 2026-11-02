@@ -244,7 +244,7 @@ async function resetCourseContentForDraftRetry(courseId: string) {
   }
 
   for (const lesson of lessons) {
-    await deleteLessonService(lesson.id);
+    await deleteLessonService(lesson.id, { force: true });
   }
 
   for (const section of sections) {
@@ -1347,7 +1347,7 @@ export async function publishCourseImportDraftToExistingCourseService(
           continue;
         }
 
-        await deleteLessonService(existingLesson.id);
+        await deleteLessonService(existingLesson.id, { force: true });
         deletedLessons += 1;
       }
 

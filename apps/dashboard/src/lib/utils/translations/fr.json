@@ -274,7 +274,8 @@
         "complete_download": "Téléchargement terminé",
         "version_restored": "Version restaurée avec succès"
       },
-      "section_deleted": "Section de cours supprimée avec succès"
+      "section_deleted": "Section de cours supprimée avec succès",
+      "content_has_submissions": "This cannot be deleted because learners have submitted work here. Keep it to preserve their graded results."
     },
     "attendance": {
       "error": {

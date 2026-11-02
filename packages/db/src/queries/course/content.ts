@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm';
 
 import { ContentType } from '@cio/utils/constants';
 import * as schema from '@db/schema';
-import { count, db, eq, inArray, sql as drizzleSql, type DbOrTxClient } from '@db/drizzle';
+import { count, db, eq, inArray, or, sql as drizzleSql, type DbOrTxClient } from '@db/drizzle';
 import { isExerciseCompletedSql } from './progression';
 
 export type CourseContentItemRow = {
@@ -176,12 +176,17 @@ export async function countContentStudentWork(
   dbClient: DbOrTxClient = db
 ): Promise<{ submissions: number; lessonCompletions: number }> {
   try {
+    const exerciseFilters = [
+      ...(exerciseIds.length > 0 ? [inArray(schema.exercise.id, exerciseIds)] : []),
+      ...(lessonIds.length > 0 ? [inArray(schema.exercise.lessonId, lessonIds)] : [])
+    ];
     const [submissionRow] =
-      exerciseIds.length > 0
+      exerciseFilters.length > 0
         ? await dbClient
             .select({ total: count() })
             .from(schema.submission)
-            .where(inArray(schema.submission.exerciseId, exerciseIds))
+            .innerJoin(schema.exercise, eq(schema.exercise.id, schema.submission.exerciseId))
+            .where(or(...exerciseFilters))
         : [{ total: 0 }];
     const [completionRow] =
       lessonIds.length > 0

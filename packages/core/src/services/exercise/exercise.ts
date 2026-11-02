@@ -31,6 +31,7 @@ import {
 import { touchCourseUpdatedAt } from '@cio/db/queries/course';
 import { resolveItemSlug } from '../course/slug';
 import { claimItemOrder } from '../course/root-order';
+import { assertNoSubmittedWork } from '../course/content';
 
 import { db } from '@cio/db/drizzle';
 import type { DbOrTxClient } from '@cio/db/drizzle';
@@ -847,7 +848,14 @@ export async function deleteExerciseService(exerciseId: string): Promise<TExerci
   }
 }
 
-export async function deleteExerciseForCourseService(courseId: string, exerciseId: string): Promise<TExercise> {
+/**
+ * Deletes an exercise of a course. Unless `force` is set, throws 409 when learners submitted work for it.
+ */
+export async function deleteExerciseForCourseService(
+  courseId: string,
+  exerciseId: string,
+  options: { force?: boolean } = {}
+): Promise<TExercise> {
   try {
     const exercise = await getExerciseById(exerciseId);
     if (!exercise) {
@@ -858,6 +866,8 @@ export async function deleteExerciseForCourseService(courseId: string, exerciseI
     if (exerciseCourseId !== courseId) {
       throw new AppError('Exercise does not belong to this course', ErrorCodes.EXERCISE_NOT_FOUND, 404);
     }
+
+    if (!options.force) await assertNoSubmittedWork([], [exerciseId]);
 
     const deleted = await deleteExercise(exerciseId);
     if (!deleted) {

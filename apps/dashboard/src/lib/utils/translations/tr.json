@@ -5410,7 +5410,8 @@
       "error": {
         "try_later": "Bir şeyler doğru değil - Lütfen deneyin daha sonra",
         "exercise_not_complete": "Tamamlandı olarak işaretlemek için tüm alıştırmaları tamamlayın"
-      }
+      },
+      "content_has_submissions": "This cannot be deleted because learners have submitted work here. Keep it to preserve their graded results."
     },
     "marks": {
       "error": "İşaretler alınırken hata oluştu"

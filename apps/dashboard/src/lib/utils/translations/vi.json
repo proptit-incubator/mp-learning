@@ -5451,7 +5451,8 @@
       "error": {
         "try_later": "Có lỗi xảy ra. Vui lòng thử lại sau",
         "exercise_not_complete": "Hãy hoàn thành tất cả bài tập để đánh dấu hoàn thành"
-      }
+      },
+      "content_has_submissions": "Không thể xóa vì học viên đã nộp bài ở đây. Hãy giữ lại nội dung để không mất kết quả đã chấm."
     },
     "marks": {
       "error": "Lỗi khi tải điểm"

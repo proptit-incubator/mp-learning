@@ -1,3 +1,4 @@
+import { isSubmittedWorkConflict } from '../utils/content-delete-utils';
 import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
 import { snackbar } from '$features/ui/snackbar/store';
 import type {
@@ -64,6 +65,11 @@ export class ContentApi extends BaseApiWithErrors {
         this.errors = {};
       },
       onError: (error) => {
+        if (isSubmittedWorkConflict(error)) {
+          snackbar.error('snackbar.lessons.content_has_submissions');
+          return;
+        }
+
         const errorMessage = typeof error === 'string' ? error : (error as any)?.error;
         snackbar.error(errorMessage || 'snackbar.course_api.content_delete_failed');
       }

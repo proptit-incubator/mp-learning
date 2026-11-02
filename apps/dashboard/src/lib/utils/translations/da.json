@@ -274,7 +274,8 @@
         "complete_download": "Download fuldført",
         "version_restored": "Version blev gendannet"
       },
-      "section_deleted": "Kursusafsnittet blev slettet"
+      "section_deleted": "Kursusafsnittet blev slettet",
+      "content_has_submissions": "This cannot be deleted because learners have submitted work here. Keep it to preserve their graded results."
     },
     "attendance": {
       "error": {

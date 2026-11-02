@@ -1,3 +1,4 @@
+import { isSubmittedWorkConflict } from '../utils/content-delete-utils';
 import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
 import type {
   CreateExerciseFromTemplateRequest,
@@ -245,7 +246,9 @@ export class ExerciseApi extends BaseApiWithErrors {
         }
       },
       onError: (result) => {
-        if (typeof result === 'string') {
+        if (isSubmittedWorkConflict(result)) {
+          snackbar.error('snackbar.lessons.content_has_submissions');
+        } else if (typeof result === 'string') {
           snackbar.error('snackbar.course_api.exercise_delete_failed');
         }
       }
