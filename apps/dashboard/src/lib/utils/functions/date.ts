@@ -1,9 +1,9 @@
 import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
+import { get } from 'svelte/store';
+import { locale, supportedLocale } from '$lib/utils/functions/translations';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 
-dayjs.extend(relativeTime);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -38,8 +38,22 @@ export function instantToZonedWallClock(iso: string | null | undefined, timeZone
   return dayjs(iso).tz(timeZone).format('YYYY-MM-DDTHH:mm');
 }
 
+const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ['year', 365 * 24 * 60 * 60],
+  ['month', 30 * 24 * 60 * 60],
+  ['week', 7 * 24 * 60 * 60],
+  ['day', 24 * 60 * 60],
+  ['hour', 60 * 60],
+  ['minute', 60]
+];
+
+/** How long ago `date` was, in the interface language ("3 ngày trước", "3 days ago"). */
 export const calDateDiff = (date: string | number | Date): string => {
-  return dayjs(date).fromNow(true) + ` ago`;
+  const seconds = Math.max(0, (Date.now() - new Date(date).getTime()) / 1000);
+  const format = new Intl.RelativeTimeFormat(supportedLocale(get(locale)), { numeric: 'auto' });
+  const [unit, size] = RELATIVE_UNITS.find(([, length]) => seconds >= length) ?? ['second', 1];
+
+  return format.format(-Math.floor(seconds / size), unit);
 };
 
 export const getGreeting = () => {

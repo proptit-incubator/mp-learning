@@ -154,7 +154,7 @@
       <p class="text-center text-xs text-gray-500">
         {$t('settings.profile.profile_picture.file_size')}
         {maxFileSizeInMb}MB<br />
-        {$t('settings.profile.profile_picture.accepted')}: jpeg, jpg, png, webp
+        {$t('settings.profile.profile_picture.accepted')} jpeg, jpg, png, webp
       </p>
       {#if errorMessage}
         <p class="text-sm text-red-500">{errorMessage}</p>

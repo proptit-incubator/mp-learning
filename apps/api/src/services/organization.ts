@@ -550,14 +550,7 @@ async function assertAuthSettingsEntitlement(orgId: string, data: Partial<TOrgan
 
 export async function updateOrg(orgId: string, data: Partial<TOrganization>) {
   try {
-    const allowedSettings = new Set([
-      'customization',
-      'settings',
-      'disableSignup',
-      'disableSignupMessage',
-      'disableEmailPassword',
-      'disableGoogleAuth'
-    ]);
+    const allowedSettings = new Set(['customization', 'settings', 'disableSignup', 'disableSignupMessage']);
     if (Object.keys(data).some((field) => !allowedSettings.has(field))) {
       throw new AppError(
         'MP Learning identity and deployment settings are managed by the system',

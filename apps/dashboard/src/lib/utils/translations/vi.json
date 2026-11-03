@@ -156,10 +156,6 @@
     "no": "Không",
     "yes": "Có"
   },
-  "onboarding": {
-    "other_required": "Vui lòng mô tả thêm",
-    "ai_required": "Vui lòng chọn một trợ lý AI"
-  },
   "welcome_modal": {
     "we_at": "Tại",
     "small_team": "học tập là một phần của cách chúng ta cùng phát triển. MP Learning tập trung mọi khóa đào tạo và chứng chỉ nội bộ vào một nơi để bạn chỉ cần tập trung nâng cao năng lực.",
@@ -294,7 +290,7 @@
     },
     "emails": {
       "page_title": "Mẫu email",
-      "language_note": "Email nhân viên sử dụng ngôn ngữ bắt buộc của tổ chức. Nếu chưa đặt ngôn ngữ bắt buộc, email được gửi bằng tiếng Anh.",
+      "language_note": "Email gửi nhân viên dùng ngôn ngữ của tổ chức. Nếu chưa đặt ngôn ngữ bắt buộc, email được gửi bằng tiếng Việt.",
       "heading": "Mẫu email cho nhân viên",
       "description": "Tùy chỉnh email kích hoạt tài khoản, cấp quyền khóa học và các thông báo học tập. Nội dung đã lưu được dùng khi gửi email cho nhân viên.",
       "paid_plan_note": "Tùy chỉnh nội dung và ngôn ngữ email nhân viên.",
@@ -475,35 +471,11 @@
       }
     },
     "auth": {
-      "page_subtitle": "Quản lý đăng ký, đăng nhập, SSO và truy cập bằng token cho tổ chức này.",
-      "title": "Xác thực",
       "login": {
         "email_password_disabled": "Đăng nhập bằng email/mật khẩu đã bị tắt. Vui lòng dùng SSO.",
         "email_password_disabled_message": "Đăng nhập bằng email/mật khẩu đã bị tắt cho tổ chức này.",
         "signup_disabled_error": "Tổ chức này đã tắt đăng ký. Vui lòng liên hệ quản trị viên."
-      },
-      "general": {
-        "heading": "Cài đặt xác thực",
-        "disable_email_password": {
-          "label": "Tắt đăng nhập bằng email/mật khẩu",
-          "description": "Yêu cầu người dùng đăng nhập bằng SSO hoặc tài khoản mạng xã hội."
-        },
-        "disable_google_auth": {
-          "label": "Tắt đăng nhập Google",
-          "description": "Không cho phép người dùng đăng nhập bằng tài khoản Google."
-        }
       }
-    },
-    "integrations": {
-      "page_subtitle": "Kết nối Telegram để nhận thông báo khi có sự kiện quan trọng.",
-      "heading": "Telegram",
-      "sub_heading": "Kết nối tài khoản với Telegram để nhận thông báo về mọi thay đổi trong ứng dụng.",
-      "step_authenticate": "Bước 1: Xác thực tài khoản qua bot Telegram.",
-      "open_bot_button": "Mở bot",
-      "step_chatId": "Bước 2: Nhập Chat ID mà bot cung cấp cho bạn.",
-      "connect_button": "Kết nối",
-      "success_message": "Đã kết nối thành công",
-      "disconnect": "Ngắt kết nối"
     },
     "ai": {
       "title": "AI",
@@ -795,35 +767,6 @@
     }
   },
   "components": {
-    "quiz": {
-      "title": "Trắc nghiệm",
-      "second": "Giây",
-      "answer": "Đáp án",
-      "question_delete": "Xóa câu hỏi",
-      "add_more": "+ Thêm đáp án",
-      "remove_last": "- Xóa đáp án cuối",
-      "quiz_delete": "Xóa bài trắc nghiệm",
-      "delete_question": "Bạn có chắc muốn xóa câu hỏi này?",
-      "delete_quiz": "Bạn có chắc muốn xóa bài trắc nghiệm này?",
-      "lose_content": "Nội dung sẽ bị mất và bạn không thể hoàn tác thao tác này.",
-      "delete": "Xóa",
-      "update": "Cập nhật",
-      "create": "Tạo",
-      "a_quiz": "bài trắc nghiệm",
-      "quiz_title": "Tên bài trắc nghiệm",
-      "placeholder": "Nhập tên bài trắc nghiệm",
-      "save": "Lưu thay đổi",
-      "continue": "Tiếp tục",
-      "rename": "Đổi tên",
-      "updated": "Cập nhật",
-      "start": "Bắt đầu trắc nghiệm",
-      "start_typing": "Nhập câu hỏi của bạn",
-      "required_field": "Vui lòng điền trường này",
-      "type_answer": "Nhập đáp án",
-      "label": "Vui lòng nhập nhãn",
-      "no_quizz": "Chưa có bài trắc nghiệm nào",
-      "interactive": "Tạo bài trắc nghiệm tương tác có bảng xếp hạng cho học viên."
-    },
     "settings": {
       "customize_lms": {
         "language": {
@@ -1051,7 +994,6 @@
       "exit_course": "Thoát khóa học"
     },
     "sidebar": {
-      "back_to_course": "Quay lại khóa học",
       "content_count": {
         "lessons": "{count} bài học",
         "exercises": "{count} bài tập"
@@ -1098,15 +1040,8 @@
       }
     },
     "header": {
-      "preview": "Xem trước khóa học",
       "preview_missing_slug": "Hãy tạo và lưu slug khóa học trước khi xem trước.",
       "view_as_student": "Xem dưới góc nhìn học viên"
-    },
-    "view_course_site": {
-      "unpublished_title": "Xuất bản khóa học",
-      "unpublished_description": "Bạn cần xuất bản khóa học này trước khi xem trang khóa học",
-      "cancel": "Hủy",
-      "publish_course": "Xuất bản khóa học"
     },
     "view_as_student": {
       "title": "Thao tác này sẽ chuyển bạn đến giao diện học viên.",
@@ -2267,91 +2202,7 @@
         "view": "Xem",
         "delete_profile": "Xóa hồ sơ",
         "invite_modal": {
-          "title": "Mời thành viên",
-          "go_to": "hãy vào cài đặt tổ chức",
-          "invite_students": "Thêm học viên",
-          "student_limit_reached": "Tổ chức đã đạt giới hạn số học viên. Liên hệ quản trị viên để mời thêm.",
-          "via_link": "Bạn có thể mời học viên qua liên kết mời",
-          "via_qr": "Bạn có thể mời học viên qua mã QR",
-          "download_qr": "Tải xuống mã QR",
-          "qr_downloading_snackbar": "Đã tạo mã QR, vui lòng chờ tải xuống",
-          "copy_link": "Sao chép liên kết",
-          "success": "Đã sao chép",
-          "finish": "Hoàn tất",
-          "loading": "Đang tải...",
-          "student_invite_settings": "Cài đặt lời mời học viên",
-          "student_invite_settings_description": "Chọn thời hạn hiệu lực của lời mời và số học viên được dùng.",
-          "preset": "Thiết lập sẵn",
-          "expires_at": "Hết hạn lúc",
-          "max_uses": "Số lượt dùng tối đa",
-          "presets": {
-            "one_time_24h": "Dùng một lần (24 giờ)",
-            "multi_use_7d": "Dùng nhiều lần (7 ngày)",
-            "multi_use_30d": "Dùng nhiều lần (30 ngày)",
-            "custom": "Tùy chỉnh"
-          },
-          "quick_invite_link": "Liên kết mời nhanh",
-          "quick_invite_link_description": "Tạo liên kết bảo mật và chia sẻ bằng cách sao chép hoặc mã QR.",
-          "regenerate_link": "Tạo lại liên kết",
-          "share_via_qr": "Chia sẻ qua mã QR",
-          "qr_placeholder": "Tạo liên kết để hiển thị mã QR",
-          "direct_email_bulk": "Mời qua email / Mời hàng loạt",
-          "direct_email_description": "Dán các địa chỉ email, cách nhau bằng dấu phẩy, dấu cách hoặc xuống dòng. Mỗi email sẽ nhận một lời mời bảo mật riêng.",
-          "recipient_emails": "Email người nhận",
-          "recipient_emails_placeholder": "student1@example.com, student2@example.com",
-          "send_invite_emails": "Gửi email mời ngay",
-          "create_email_invites": "Tạo lời mời qua email",
-          "existing_students_title": "Thêm học viên có sẵn trong tổ chức",
-          "existing_students_description": "Chọn học viên đã có trong tổ chức và cấp quyền truy cập trực tiếp vào khóa học này.",
-          "existing_students_search": "Tìm học viên trong tổ chức",
-          "loading_existing_students": "Đang tải học viên trong tổ chức...",
-          "no_existing_students": "Không có học viên nào trong tổ chức để thêm.",
-          "no_matching_existing_students": "Không có học viên nào khớp với tìm kiếm.",
-          "notify_existing_students": "Gửi email thông báo quyền truy cập",
-          "grant_access": "Cấp quyền truy cập",
-          "grant_access_modal": {
-            "title": "Cấp quyền cho học viên",
-            "description": "Cấp cho {email} quyền truy cập khóa học này. Hệ thống sẽ gửi email mời tham gia tổ chức và ghi danh vào khóa học.",
-            "cancel": "Hủy",
-            "send_invite": "Gửi lời mời"
-          },
-          "invite_new_students_title": "Mời học viên mới",
-          "invite_new_students_description": "Mời người mới vào tổ chức và gán sẵn vào khóa học này. Họ sẽ tạo tài khoản, chấp nhận lời mời và được cấp quyền truy cập.",
-          "invite_new_students": "Mời học viên",
-          "existing_invites": "Lời mời đã tạo",
-          "refresh": "Làm mới",
-          "loading_invites": "Đang tải lời mời...",
-          "no_invites_yet": "Chưa có lời mời nào.",
-          "created": "Ngày tạo",
-          "expires": "Hết hạn",
-          "uses": "Lượt dùng",
-          "remaining": "còn lại",
-          "opened": "Đã mở",
-          "joined": "Đã tham gia",
-          "email_sent": "Đã gửi email",
-          "email_failed": "Gửi email thất bại",
-          "copy_metadata": "Sao chép thông tin",
-          "revoke": "Thu hồi",
-          "view_audit": "Xem nhật ký",
-          "hide_audit": "Ẩn nhật ký",
-          "no_audit_events": "Chưa có hoạt động nào được ghi nhận.",
-          "audit_at": "Thời gian",
-          "audit_email": "Email",
-          "audit_actor": "Người thực hiện",
-          "audit_ip": "IP",
-          "scan_qr": "Quét mã QR",
-          "platform_brand": "MP Learning",
-          "snackbar_invite_link_copied": "Đã sao chép liên kết mời",
-          "snackbar_invite_link_regenerated": "Đã tạo liên kết mời mới",
-          "snackbar_failed_generate_link": "Không tạo được liên kết mời",
-          "snackbar_add_one_recipient": "Hãy nhập ít nhất một email người nhận",
-          "snackbar_failed_create_email_invites": "Không tạo được lời mời qua email",
-          "snackbar_invite_revoked": "Đã thu hồi lời mời",
-          "snackbar_failed_revoke_invite": "Không thu hồi được lời mời",
-          "snackbar_failed_load_audit": "Không tải được nhật ký lời mời",
-          "snackbar_metadata_copied": "Đã sao chép thông tin lời mời",
-          "snackbar_email_invites_success": "Đã tạo {count} lời mời. Đã gửi {sent}, thất bại {failed}. Bỏ qua {duplicates} email trùng.",
-          "select_at_least_one_student": "Hãy chọn ít nhất một học viên"
+          "student_limit_reached": "Tổ chức đã đạt giới hạn số học viên. Liên hệ quản trị viên để mời thêm."
         },
         "delete_confirmation": {
           "title": "Xóa",
@@ -2385,27 +2236,6 @@
           "student": "Học viên",
           "filter": "Lọc"
         },
-        "teams": {
-          "add": "Thêm",
-          "add_team": "Thêm thành viên nhóm hoặc cộng tác viên vào tổ chức để cùng làm việc",
-          "placeholder": "user1@domain.com, user2@domain.com",
-          "send_invite": "Gửi lời mời",
-          "members": "Thành viên",
-          "invite_sent": "Đã gửi lời mời",
-          "you": "Bạn",
-          "remove": "Gỡ",
-          "change_role": {
-            "label": "Vai trò của {email}",
-            "title": "Đổi vai trò",
-            "description": "Đổi vai trò của {email} từ {currentRole} sang {nextRole}?",
-            "cancel": "Hủy",
-            "approve": "Xác nhận"
-          },
-          "link_invite": {
-            "copy_invite_link": "Sao chép liên kết mời",
-            "select_role": "Chọn vai trò"
-          }
-        },
         "filter": {
           "title": "Lọc thành viên",
           "role": "Vai trò",
@@ -2425,15 +2255,6 @@
           "90d": "90 ngày",
           "180d": "180 ngày",
           "never": "Chưa bao giờ"
-        },
-        "views": {
-          "all": "Tất cả thành viên",
-          "not_started": "Chưa bắt đầu",
-          "in_progress": "Đang học",
-          "completed": "Đã hoàn thành",
-          "never_logged_in": "Chưa từng đăng nhập",
-          "awaiting_certificate": "Chờ cấp chứng chỉ",
-          "custom": "Bộ lọc tùy chỉnh"
         }
       },
       "certificates": {
@@ -2509,108 +2330,11 @@
         }
       },
       "landing_page": {
-        "editor": {
-          "title": {
-            "header": "Đầu trang",
-            "requirement": "Yêu cầu",
-            "description": "Mô tả",
-            "goals": "Mục tiêu",
-            "reviews": "Đánh giá",
-            "instructor": "Giảng viên",
-            "pricing": "Giá",
-            "certificate": "Chứng chỉ",
-            "curriculum": "Chương trình học",
-            "chips": "Kỹ năng & công cụ",
-            "navigation": "Điều hướng",
-            "footer": "Chân trang",
-            "skills": "Kỹ năng bạn sẽ đạt được",
-            "tools": "Công cụ bạn sẽ học"
-          },
-          "skills_help": "Nhấn Enter để thêm. Các mục này hiển thị dạng nhãn bên dưới chương trình học.",
-          "tools_help": "Nhấn Enter để thêm. Các mục này hiển thị dạng nhãn bên dưới chương trình học.",
-          "skills_placeholder": "VD: Phân tích dữ liệu",
-          "tools_placeholder": "VD: Figma",
-          "remove": "Xóa",
-          "save": "Lưu",
-          "page_builder": "Trình tạo trang",
-          "display_section": "Hiển thị mục này",
-          "header_form": {
-            "title": "Tiêu đề",
-            "description": "Mô tả",
-            "short_video": "Video ngắn",
-            "replace_cover": "Ảnh bìa",
-            "replace": "Thay thế",
-            "remove": "Xóa",
-            "no_cover": "Chưa có ảnh bìa",
-            "helper": "Nhập liên kết video YouTube"
-          },
-          "reviews_form": {
-            "add_reviews": "Thêm đánh giá",
-            "fullname": "Họ và tên",
-            "description": "Nội dung",
-            "rating": "Điểm đánh giá",
-            "validations": {
-              "name": {
-                "min_char": "Tên quá ngắn, tối thiểu 5 ký tự"
-              },
-              "avatar_url": {
-                "message": "Hãy tải lên một ảnh"
-              },
-              "rating": {
-                "message": "Điểm đánh giá phải từ 1-5"
-              },
-              "description": {
-                "min_char": "Nội dung quá ngắn, tối thiểu 5 ký tự"
-              }
-            },
-            "validation_error": "Có đánh giá chưa hợp lệ. Hãy mở từng đánh giá và sửa tên, ảnh đại diện, điểm và nội dung trước khi lưu."
-          },
-          "certificate_form": {
-            "upload_template": "Mẫu chứng chỉ"
-          },
-          "instructor_form": {
-            "upload": "Logo giảng viên",
-            "name": "Tên giảng viên",
-            "name_placeholder": "Tên công ty của bạn",
-            "role": "Chức danh giảng viên",
-            "about": "Giới thiệu giảng viên",
-            "about_placeholder": "Đôi nét về giảng viên",
-            "total": "Tổng số khóa học"
-          }
-        },
-        "pricing_section": {
-          "free": "Miễn phí",
-          "not_accepting": "Khóa học này hiện không nhận học viên mới.",
-          "enroll": "Ghi danh ngay",
-          "buy": "Mua ngay"
-        },
         "enroll_page": {
-          "requires_payment_or_invite": "Bạn cần thanh toán hoặc được mời để truy cập khóa học này.",
-          "back_to_course": "Quay lại khóa học",
-          "join_course": "Tham gia khóa học",
-          "enrolled_success": "Bạn đã ghi danh vào khóa học này.",
-          "enrolled_verify_email": "Bạn đã ghi danh! Hãy xác minh email để truy cập khóa học.",
           "student_limit_reached": "{orgName} đã đạt giới hạn số học viên. Vui lòng liên hệ quản trị viên tổ chức.",
-          "members_only": "Chỉ thành viên của tổ chức mới được ghi danh. Hãy đề nghị quản trị viên gửi lời mời.",
-          "course_unavailable": "Khóa học này hiện không mở đăng ký.",
-          "invite_used_up": "Lời mời này đã hết lượt sử dụng."
+          "members_only": "Chỉ thành viên của tổ chức mới được ghi danh. Hãy đề nghị quản trị viên gửi lời mời."
         },
-        "course_content": "Nội dung khóa học",
-        "lessons": "bài học",
-        "exercises": "bài tập",
-        "start_course": "Bắt đầu học",
-        "requirement": "Yêu cầu",
-        "description": "Mô tả khóa học",
-        "learn": "Bạn sẽ học được gì",
-        "certificate": "Chứng chỉ",
-        "reviews": "Đánh giá",
-        "view_less": "Thu gọn",
-        "view_all": "Xem tất cả",
-        "email": "Email của bạn",
-        "explore": "Thư viện đào tạo",
-        "find": "Tìm khóa học phù hợp với vai trò và công việc của bạn",
-        "find_course": "Tìm khóa học...",
-        "instructor": "Giảng viên"
+        "requirement": "Yêu cầu"
       },
       "settings": {
         "heading": "Cài đặt",
@@ -2834,12 +2558,6 @@
       "body": "Rất tiếc, bạn không có quyền truy cập khóa học này.",
       "button": "Về trang chủ"
     },
-    "employee_enrollment": {
-      "search": "Tìm theo mã nhân viên, tên hoặc email",
-      "empty": "Không tìm thấy nhân viên đang hoạt động phù hợp.",
-      "manage_hint": "Tạo và kích hoạt tài khoản mới tại tab Nhân viên.",
-      "notify": "Gửi email thông báo quyền truy cập khóa học"
-    },
     "analytics_empty": {
       "exercises_submitted": "Đã nộp {submitted}/{total} bài tập"
     },
@@ -2847,17 +2565,11 @@
       "banner_alt": "Ảnh bìa khóa học"
     },
     "certificate_reports": {
-      "certificates_issued": "Chứng chỉ đã cấp",
-      "date_issued": "Ngày cấp",
-      "personalized": "Cá nhân hóa",
-      "preview_recipient": "Nguyễn Văn A",
-      "student_name": "Tên nhân viên"
+      "preview_recipient": "Nguyễn Văn A"
     },
     "common_labels": {
       "anonymous": "Ẩn danh",
-      "logo_alt": "Logo",
       "open_menu": "Mở menu",
-      "qr_code_alt": "Mã QR",
       "unknown_user": "Người dùng không xác định"
     },
     "issue_certificate": {
@@ -3445,16 +3157,11 @@
         "content_grouping_enabled": "Đã bật nhóm nội dung theo chương",
         "content_grouping_disabled": "Đã tắt nhóm nội dung theo chương",
         "saved": "Đã lưu",
-        "successful_integration": "Đã tích hợp thành công",
-        "successful_deletion": "Đã xóa tích hợp",
         "update_successful": "Đã cập nhật"
       },
       "error": {
-        "not_right": "Có lỗi xảy ra. Vui lòng thử lại sau",
         "title": "Tiêu đề không được để trống",
-        "description": "Mô tả không được để trống",
-        "failed_integration": "Tích hợp không thành công, vui lòng thử lại sau",
-        "failed_deletion": "Xóa không thành công, vui lòng thử lại sau"
+        "description": "Mô tả không được để trống"
       }
     },
     "course": {
@@ -4181,8 +3888,7 @@
     "switch_to_admin": "Mở trang quản trị đào tạo",
     "settings": {
       "system": "Cài đặt hệ thống",
-      "preferences": "Cấu hình đào tạo",
-      "access_policy": "Quyền truy cập do MP Transformation quản lý. Nhân viên sử dụng tài khoản do HR cấp hoặc lời mời được phê duyệt."
+      "preferences": "Cấu hình đào tạo"
     },
     "access": {
       "title": "Chưa được cấp quyền truy cập",
@@ -4190,7 +3896,6 @@
     }
   },
   "page_titles": {
-    "integrations": "Tích hợp",
     "ask_community": "Đặt câu hỏi",
     "question": "Câu hỏi",
     "community": "Cộng đồng",
@@ -4206,7 +3911,6 @@
     "courses": "Khóa học",
     "home": "Trang chủ",
     "course": "Khóa học",
-    "quiz": "Trắc nghiệm",
     "join_platform": "Tham gia MP Learning",
     "forgot_password": "Quên mật khẩu"
   },
@@ -4443,7 +4147,7 @@
       "generic": "Không thể hoàn tất thao tác. Kiểm tra thông tin và thử lại.",
       "forbidden": "Bạn không có quyền truy cập các hồ sơ nhân viên này.",
       "manager": "Chọn quản lý đang hoạt động trong tổ chức. Không được tạo quan hệ quản lý vòng tròn.",
-      "assignment": "Khóa học hoặc chương trình đã chọn không khả dụng trong tổ chức.",
+      "assignment": "Khóa học đã chọn không khả dụng trong tổ chức.",
       "missing": "Không tìm thấy nhân viên.",
       "existing_role": "Email đã thuộc thành viên có vai trò khác. Vui lòng kiểm tra quyền hiện có.",
       "existing_account": "Tài khoản đã tồn tại hoặc bị khóa. Kiểm tra thành viên hiện có trước khi nhập.",
@@ -4503,10 +4207,6 @@
     "settings_self_enrollment_hint": "Khóa đã xuất bản sẽ xuất hiện trong thư viện khi bật tùy chọn này. Tắt không thu hồi quyền người đã đăng ký.",
     "enrolled_success": "Đăng ký khóa học thành công.",
     "assigned_only_hint": "Khóa học này do bộ phận đào tạo phân công. Liên hệ HR hoặc L&D để được cấp quyền học."
-  },
-  "training_assignment": {
-    "learners": "Người học",
-    "staff": "Đội ngũ giảng dạy"
   },
   "enrollment": {
     "assign_title": "Giao khóa học",
@@ -4700,41 +4400,6 @@
       "meta_description": "Không xác nhận được email",
       "support_body": "Xin chào, tôi không xác nhận được email (lỗi: {type}). Nhờ anh/chị hỗ trợ.",
       "support_subject": "Hỗ trợ xác nhận email MP Learning"
-    }
-  },
-  "quiz": {
-    "card": {
-      "image_alt": "Ảnh bìa trò chơi",
-      "question_count": "{count} câu hỏi"
-    },
-    "editor": {
-      "add_question": "Thêm câu hỏi",
-      "back": "Quay lại",
-      "choose_theme": "Chọn giao diện",
-      "preview": "Xem trước",
-      "question_number": "Câu {number}",
-      "question_type": "Loại câu hỏi",
-      "select_correct_answer": "Chọn đáp án đúng",
-      "select_time_limit": "Chọn thời gian",
-      "settings": "Cài đặt",
-      "time_limit": "Thời gian",
-      "type_boolean": "Đúng / Sai",
-      "type_multichoice": "Nhiều lựa chọn"
-    },
-    "errors": {
-      "create_failed": "Không tạo được trò chơi.",
-      "delete_failed": "Không xóa được trò chơi.",
-      "fetch_failed": "Không tải được trò chơi.",
-      "list_failed": "Không tải được danh sách trò chơi.",
-      "update_failed": "Không lưu được trò chơi."
-    },
-    "list": {
-      "create": "Tạo trò chơi",
-      "heading": "Trò chơi"
-    },
-    "play": {
-      "exit_preview": "Thoát xem trước",
-      "no_question": "Chưa có câu hỏi"
     }
   }
 }

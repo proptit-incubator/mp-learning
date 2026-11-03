@@ -156,10 +156,6 @@
     "no": "No",
     "yes": "Yes"
   },
-  "onboarding": {
-    "other_required": "Please tell us more",
-    "ai_required": "Please select an AI assistant"
-  },
   "welcome_modal": {
     "we_at": "At",
     "small_team": "learning is part of how we grow together. MP Learning brings every internal course, class and certificate into one place so you can focus on building skills.",
@@ -294,7 +290,7 @@
     },
     "emails": {
       "page_title": "Email templates",
-      "language_note": "Employee emails use the organization’s enforced language. Otherwise, emails are sent in English.",
+      "language_note": "Employee emails use the organization's language. When no language is enforced, emails are sent in Vietnamese.",
       "heading": "Employee email templates",
       "description": "Customize account activation, course access and learning notifications. Saved templates are used when emailing employees.",
       "paid_plan_note": "Customize employee email content and language.",
@@ -475,35 +471,11 @@
       }
     },
     "auth": {
-      "page_subtitle": "Control sign-up, login, SSO, and token-based access for this org.",
-      "title": "Authentication",
       "login": {
         "email_password_disabled": "Email/password login is disabled. Please use SSO.",
         "email_password_disabled_message": "Email/password login is disabled for this organization.",
         "signup_disabled_error": "Signup is disabled for this organization. Please contact your administrator."
-      },
-      "general": {
-        "heading": "Authentication Settings",
-        "disable_email_password": {
-          "label": "Disable Email/Password Login",
-          "description": "Require users to sign in with SSO or social providers."
-        },
-        "disable_google_auth": {
-          "label": "Disable Google Auth",
-          "description": "Prevent users from signing in with Google accounts."
-        }
       }
-    },
-    "integrations": {
-      "page_subtitle": "Connect Telegram to get notified when important things happen.",
-      "heading": "Telegram",
-      "sub_heading": "Connect your account to telegram to get notified of any change within the application.",
-      "step_authenticate": "Step 1: Authenticate your account via the MP Learning bot.",
-      "open_bot_button": "Open Bot",
-      "step_chatId": "Step 2: Enter the Chat ID given to you by the bot.",
-      "connect_button": "Connect",
-      "success_message": "Integration Successful",
-      "disconnect": "Disconnect"
     },
     "ai": {
       "title": "AI",
@@ -795,35 +767,6 @@
     }
   },
   "components": {
-    "quiz": {
-      "title": "Quizzes",
-      "second": "Second(s)",
-      "answer": "Answer(s)",
-      "question_delete": "Delete Question",
-      "add_more": "+ Add more answers",
-      "remove_last": "- Remove last answer",
-      "quiz_delete": "Delete Quiz",
-      "delete_question": "Are you sure you want to delete this question?",
-      "delete_quiz": "Are you sure you want to delete this quiz?",
-      "lose_content": "You will lose your content and this action can’t be undone.",
-      "delete": "Delete",
-      "update": "Update",
-      "create": "Create",
-      "a_quiz": "a Quiz",
-      "quiz_title": "Quiz Title",
-      "placeholder": "Your quiz title",
-      "save": "Save Change",
-      "continue": "Continue",
-      "rename": "Rename",
-      "updated": "Updated",
-      "start": "Start Quiz",
-      "start_typing": "Start typing your question",
-      "required_field": "This field is required",
-      "type_answer": "Type answer",
-      "label": "Please enter a label",
-      "no_quizz": "No Quiz Created",
-      "interactive": "Create interactive quizzes with scoreboard for your students."
-    },
     "settings": {
       "customize_lms": {
         "language": {
@@ -1051,7 +994,6 @@
       "exit_course": "Exit course"
     },
     "sidebar": {
-      "back_to_course": "Back to course",
       "content_count": {
         "lessons": "{count} lessons",
         "exercises": "{count} exercises"
@@ -1098,15 +1040,8 @@
       }
     },
     "header": {
-      "preview": "Preview course",
       "preview_missing_slug": "Generate and save a course slug before previewing.",
       "view_as_student": "View as student"
-    },
-    "view_course_site": {
-      "unpublished_title": "Publish your course",
-      "unpublished_description": "You should publish this course before you can see the site",
-      "cancel": "Cancel",
-      "publish_course": "Publish Course"
     },
     "view_as_student": {
       "title": "This will redirect you to the Student LMS.",
@@ -2267,91 +2202,7 @@
         "view": "View",
         "delete_profile": "Delete profile",
         "invite_modal": {
-          "title": "Invite people",
-          "go_to": "go to organization settings",
-          "invite_students": "Add Students",
-          "student_limit_reached": "You've reached your plan's student limit. Upgrade to invite more students.",
-          "via_link": "You can invite students via an invite link",
-          "via_qr": "You can invite students via QR",
-          "download_qr": "Download QR code",
-          "qr_downloading_snackbar": "QR code generated successfully, please wait while it downloads",
-          "copy_link": "Copy link",
-          "success": "Copied Successfully",
-          "finish": "Finish",
-          "loading": "Loading...",
-          "student_invite_settings": "Student Invite Settings",
-          "student_invite_settings_description": "Choose how long the invite works and how many students can use it.",
-          "preset": "Preset",
-          "expires_at": "Expires At",
-          "max_uses": "Max Uses",
-          "presets": {
-            "one_time_24h": "One-time (24h)",
-            "multi_use_7d": "Multi-use (7 days)",
-            "multi_use_30d": "Multi-use (30 days)",
-            "custom": "Custom"
-          },
-          "quick_invite_link": "Quick Invite Link",
-          "quick_invite_link_description": "Create a secure link and share by copy or QR.",
-          "regenerate_link": "Regenerate Link",
-          "share_via_qr": "Share via QR",
-          "qr_placeholder": "Generate link to show QR",
-          "direct_email_bulk": "Direct Email / Bulk Invite",
-          "direct_email_description": "Paste email addresses separated by comma, space, or new line. A unique secure invite is created per email.",
-          "recipient_emails": "Recipient Emails",
-          "recipient_emails_placeholder": "student1@example.com, student2@example.com",
-          "send_invite_emails": "Send invite emails immediately",
-          "create_email_invites": "Create Email Invites",
-          "existing_students_title": "Add existing org students",
-          "existing_students_description": "Choose students already in this organization and grant them direct access to this course.",
-          "existing_students_search": "Search organization students",
-          "loading_existing_students": "Loading organization students...",
-          "no_existing_students": "No organization students are available to add.",
-          "no_matching_existing_students": "No organization students match your search.",
-          "notify_existing_students": "Send course access email",
-          "grant_access": "Grant Access",
-          "grant_access_modal": {
-            "title": "Give student access",
-            "description": "Give {email} access to this course. We'll send them an invite email to join your organization and enroll in this course.",
-            "cancel": "Cancel",
-            "send_invite": "Send invite"
-          },
-          "invite_new_students_title": "Invite new students",
-          "invite_new_students_description": "Invite new people into your organization and pre-assign them to this course. They will create an account, accept the invite, and get access.",
-          "invite_new_students": "Invite Students",
-          "existing_invites": "Existing Invites",
-          "refresh": "Refresh",
-          "loading_invites": "Loading invites...",
-          "no_invites_yet": "No invites created yet.",
-          "created": "Created",
-          "expires": "Expires",
-          "uses": "Uses",
-          "remaining": "remaining",
-          "opened": "Opened",
-          "joined": "Joined",
-          "email_sent": "Email sent",
-          "email_failed": "Email failed",
-          "copy_metadata": "Copy Metadata",
-          "revoke": "Revoke",
-          "view_audit": "View Audit",
-          "hide_audit": "Hide Audit",
-          "no_audit_events": "No audit events.",
-          "audit_at": "At",
-          "audit_email": "Email",
-          "audit_actor": "Actor",
-          "audit_ip": "IP",
-          "scan_qr": "Scan QR",
-          "platform_brand": "MP Learning",
-          "snackbar_invite_link_copied": "Invite link copied",
-          "snackbar_invite_link_regenerated": "A new invite link has been generated",
-          "snackbar_failed_generate_link": "Failed to generate invite link",
-          "snackbar_add_one_recipient": "Add at least one recipient email",
-          "snackbar_failed_create_email_invites": "Failed to create email invites",
-          "snackbar_invite_revoked": "Invite revoked",
-          "snackbar_failed_revoke_invite": "Failed to revoke invite",
-          "snackbar_failed_load_audit": "Failed to load invite audit",
-          "snackbar_metadata_copied": "Invite metadata copied",
-          "snackbar_email_invites_success": "Created {count} invite(s). Sent {sent}, failed {failed}. Skipped {duplicates} duplicate(s).",
-          "select_at_least_one_student": "Select at least one existing student"
+          "student_limit_reached": "You've reached your plan's student limit. Upgrade to invite more students."
         },
         "delete_confirmation": {
           "title": "Delete",
@@ -2385,27 +2236,6 @@
           "student": "Student",
           "filter": "Filter"
         },
-        "teams": {
-          "add": "Add",
-          "add_team": "Add your team mates or collaborators to your organization. Start working together",
-          "placeholder": "user1@domain.com, user2@domain.com",
-          "send_invite": "Send Invite",
-          "members": "Members",
-          "invite_sent": "Invite Sent",
-          "you": "You",
-          "remove": "Remove",
-          "change_role": {
-            "label": "Role for {email}",
-            "title": "Change role",
-            "description": "Change {email} from {currentRole} to {nextRole}?",
-            "cancel": "Cancel",
-            "approve": "Approve"
-          },
-          "link_invite": {
-            "copy_invite_link": "Copy invite link",
-            "select_role": "Select a role"
-          }
-        },
         "filter": {
           "title": "Filter people",
           "role": "Role",
@@ -2425,15 +2255,6 @@
           "90d": "90 days",
           "180d": "180 days",
           "never": "Never"
-        },
-        "views": {
-          "all": "All people",
-          "not_started": "Not started",
-          "in_progress": "In progress",
-          "completed": "Completed",
-          "never_logged_in": "Never logged in",
-          "awaiting_certificate": "Awaiting certificate",
-          "custom": "Custom filters"
         }
       },
       "certificates": {
@@ -2509,108 +2330,11 @@
         }
       },
       "landing_page": {
-        "editor": {
-          "title": {
-            "header": "Header",
-            "requirement": "Requirement",
-            "description": "Description",
-            "goals": "Goals",
-            "reviews": "Reviews",
-            "instructor": "Instructor",
-            "pricing": "Pricing",
-            "certificate": "Certificate",
-            "curriculum": "Curriculum",
-            "chips": "Skills & Tools",
-            "navigation": "Navigation",
-            "footer": "Footer",
-            "skills": "Skills you'll gain",
-            "tools": "Tools you'll learn"
-          },
-          "skills_help": "Press Enter to add. These appear as chips below the curriculum.",
-          "tools_help": "Press Enter to add. These appear as chips below the curriculum.",
-          "skills_placeholder": "e.g. Data Analysis",
-          "tools_placeholder": "e.g. Figma",
-          "remove": "Remove",
-          "save": "Save",
-          "page_builder": "Page Builder",
-          "display_section": "Display section",
-          "header_form": {
-            "title": "Title",
-            "description": "Description",
-            "short_video": "Short Video",
-            "replace_cover": "Cover image",
-            "replace": "Replace",
-            "remove": "Remove",
-            "no_cover": "No cover image set",
-            "helper": "Enter a link to a youtube video"
-          },
-          "reviews_form": {
-            "add_reviews": "Add Reviews",
-            "fullname": "Full Name",
-            "description": "Description",
-            "rating": "Rating",
-            "validations": {
-              "name": {
-                "min_char": "Name is too short, min of 5 character"
-              },
-              "avatar_url": {
-                "message": "Upload an image"
-              },
-              "rating": {
-                "message": "Rating must be from 1-5"
-              },
-              "description": {
-                "min_char": "'Description is too short, min of 5 characters"
-              }
-            },
-            "validation_error": "One or more reviews are invalid. Open each review and fix its name, avatar, rating and description before saving."
-          },
-          "certificate_form": {
-            "upload_template": "Certificate template"
-          },
-          "instructor_form": {
-            "upload": "Instructor Logo",
-            "name": "Instructor name",
-            "name_placeholder": "Your company name",
-            "role": "Instructor Role",
-            "about": "About Instructor",
-            "about_placeholder": "A short background about the instructure",
-            "total": "Total number of courses"
-          }
-        },
-        "pricing_section": {
-          "free": "Free",
-          "not_accepting": "This course is currently not accepting new students.",
-          "enroll": "Enroll Now",
-          "buy": "Buy Now"
-        },
         "enroll_page": {
-          "requires_payment_or_invite": "You need to pay for this course or be invited to get access.",
-          "back_to_course": "Back to course",
-          "join_course": "Join Course",
-          "enrolled_success": "You're enrolled in this course.",
-          "enrolled_verify_email": "You're enrolled! Verify your email to access this course.",
           "student_limit_reached": "{orgName} has reached its student capacity. Please contact your organization administrator.",
-          "members_only": "Only members of this organization can enroll. Ask an administrator for an invitation.",
-          "course_unavailable": "This course is not open for enrollment.",
-          "invite_used_up": "This invitation has been used up."
+          "members_only": "Only members of this organization can enroll. Ask an administrator for an invitation."
         },
-        "course_content": "Course content",
-        "lessons": "lessons",
-        "exercises": "exercises",
-        "start_course": "Start Course",
-        "requirement": "Requirement",
-        "description": "Course Description",
-        "learn": "What you'll learn",
-        "certificate": "Certificate",
-        "reviews": "Reviews",
-        "view_less": "View Less",
-        "view_all": "View All",
-        "email": "Your Email",
-        "explore": "Training library",
-        "find": "Find courses that fit your role and work",
-        "find_course": "Find a course...",
-        "instructor": "Instructor"
+        "requirement": "Requirement"
       },
       "settings": {
         "heading": "Settings",
@@ -2834,12 +2558,6 @@
       "body": "Unfortunately you don't have access to this course.",
       "button": "Go home"
     },
-    "employee_enrollment": {
-      "search": "Search by employee code, name or email",
-      "empty": "No matching active employees.",
-      "manage_hint": "Create and activate new accounts in the Employees tab.",
-      "notify": "Send a course access notification by email"
-    },
     "analytics_empty": {
       "exercises_submitted": "{submitted} of {total} exercises submitted"
     },
@@ -2847,17 +2565,11 @@
       "banner_alt": "Course banner"
     },
     "certificate_reports": {
-      "certificates_issued": "Certificates issued",
-      "date_issued": "Date issued",
-      "personalized": "Personalized",
-      "preview_recipient": "Alex Nguyen",
-      "student_name": "Employee name"
+      "preview_recipient": "Alex Nguyen"
     },
     "common_labels": {
       "anonymous": "Anonymous",
-      "logo_alt": "Logo",
       "open_menu": "Open menu",
-      "qr_code_alt": "QR code",
       "unknown_user": "Unknown user"
     },
     "issue_certificate": {
@@ -3445,16 +3157,11 @@
         "content_grouping_enabled": "Content grouping enabled",
         "content_grouping_disabled": "Content grouping disabled",
         "saved": "Saved successfully",
-        "successful_integration": "Integration successful",
-        "successful_deletion": "Integration deleted",
         "update_successful": "Update successful"
       },
       "error": {
-        "not_right": "Something's not right - Please try later",
         "title": "title cannot be empty",
-        "description": "description cannot be empty",
-        "failed_integration": "Integration Failed, please try again later",
-        "failed_deletion": "Deletion Failed, please try again later"
+        "description": "description cannot be empty"
       }
     },
     "course": {
@@ -4181,8 +3888,7 @@
     "switch_to_admin": "Open training admin",
     "settings": {
       "system": "System settings",
-      "preferences": "Learning preferences",
-      "access_policy": "Access is managed by MP Transformation. Employees use accounts provisioned by HR or an approved invitation."
+      "preferences": "Learning preferences"
     },
     "access": {
       "title": "Access not granted",
@@ -4190,7 +3896,6 @@
     }
   },
   "page_titles": {
-    "integrations": "Integrations",
     "ask_community": "Ask the community",
     "question": "Question",
     "community": "Community",
@@ -4206,7 +3911,6 @@
     "courses": "Courses",
     "home": "Home",
     "course": "Course",
-    "quiz": "Quiz",
     "join_platform": "Join MP Learning",
     "forgot_password": "Forgot password"
   },
@@ -4443,7 +4147,7 @@
       "generic": "Unable to complete the action. Review the details and try again.",
       "forbidden": "You do not have permission to access these employee records.",
       "manager": "Choose an active manager in this organization. Circular reporting relationships are not allowed.",
-      "assignment": "A selected course or program is unavailable in this organization.",
+      "assignment": "The selected course is not available in this organization.",
       "missing": "Employee not found.",
       "existing_role": "This email belongs to an existing member with a different role. Review their permissions first.",
       "existing_account": "This account already exists or is inactive. Review the existing member before importing.",
@@ -4503,10 +4207,6 @@
     "settings_self_enrollment_hint": "Published courses with this option enabled appear in the training library. Disabling it preserves existing enrollments.",
     "enrolled_success": "You have enrolled successfully.",
     "assigned_only_hint": "This course is assigned by the training team. Contact HR or L&D for access."
-  },
-  "training_assignment": {
-    "learners": "Learners",
-    "staff": "Teaching team"
   },
   "enrollment": {
     "assign_title": "Assign courses",
@@ -4700,41 +4400,6 @@
       "meta_description": "Email verification failed",
       "support_body": "Hello, I could not verify my email (error: {type}). Please help.",
       "support_subject": "MP Learning email verification help"
-    }
-  },
-  "quiz": {
-    "card": {
-      "image_alt": "Quiz cover",
-      "question_count": "{count} questions"
-    },
-    "editor": {
-      "add_question": "Add question",
-      "back": "Back",
-      "choose_theme": "Choose a theme",
-      "preview": "Preview",
-      "question_number": "Question {number}",
-      "question_type": "Question type",
-      "select_correct_answer": "Select the correct answer",
-      "select_time_limit": "Select a time limit",
-      "settings": "Settings",
-      "time_limit": "Time limit",
-      "type_boolean": "True / False",
-      "type_multichoice": "Multiple choice"
-    },
-    "errors": {
-      "create_failed": "Could not create the quiz.",
-      "delete_failed": "Could not delete the quiz.",
-      "fetch_failed": "Could not load the quiz.",
-      "list_failed": "Could not load the quizzes.",
-      "update_failed": "Could not save the quiz."
-    },
-    "list": {
-      "create": "Create quiz",
-      "heading": "Quizzes"
-    },
-    "play": {
-      "exit_preview": "Exit preview",
-      "no_question": "No question yet"
     }
   }
 }

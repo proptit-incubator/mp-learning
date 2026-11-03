@@ -190,18 +190,6 @@ export const baseNavConfig: NavItemConfig[] = [
       {
         path: 'ai-tutor',
         titleKey: 'settings.tabs.ai_tutor_tab'
-      },
-      {
-        path: 'auth',
-        titleKey: 'settings.tabs.auth_tab'
-      },
-      {
-        path: 'auth/sso',
-        titleKey: 'settings.tabs.sso_tab'
-      },
-      {
-        path: 'auth/token-auth',
-        titleKey: 'settings.tabs.token_auth_tab'
       }
     ]
   }

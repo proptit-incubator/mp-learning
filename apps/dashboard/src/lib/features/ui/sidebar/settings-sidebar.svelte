@@ -10,7 +10,6 @@
   import BellIcon from '@lucide/svelte/icons/bell';
   import BotIcon from '@lucide/svelte/icons/bot';
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
-  import KeyRoundIcon from '@lucide/svelte/icons/key-round';
   import MailIcon from '@lucide/svelte/icons/mail';
   import PaletteIcon from '@lucide/svelte/icons/palette';
   import UserRoundIcon from '@lucide/svelte/icons/user-round';
@@ -34,8 +33,7 @@
       label: 'settings.sidebar.extensions',
       items: [
         ...($aiConfigured ? [{ key: 'settings.tabs.ai_tab', path: '/settings/ai', icon: SparklesIcon }] : []),
-        ...($aiEnabled ? [{ key: 'settings.tabs.ai_tutor_tab', path: '/settings/ai-tutor', icon: BotIcon }] : []),
-        { key: 'settings.tabs.auth_tab', path: '/settings/auth', icon: KeyRoundIcon }
+        ...($aiEnabled ? [{ key: 'settings.tabs.ai_tutor_tab', path: '/settings/ai-tutor', icon: BotIcon }] : [])
       ]
     }
   ]);
@@ -61,7 +59,7 @@
     <Search compact placeholder={$t('settings.sidebar.search')} />
   </Sidebar.Header>
   <Sidebar.Content>
-    {#each groups.filter((group) => group.label === 'settings.sidebar.personal' || $isOrgAdmin) as group (group.label)}
+    {#each groups.filter((group) => group.items.length > 0 && (group.label === 'settings.sidebar.personal' || $isOrgAdmin)) as group (group.label)}
       <Sidebar.Group class="py-1!">
         <Sidebar.GroupLabel>{$t(group.label)}</Sidebar.GroupLabel>
         <Sidebar.Menu class="gap-0.5">
@@ -69,9 +67,7 @@
             {@const href = `${currentPath}${item.path}`}
             {@const Icon = item.icon}
             <Sidebar.MenuItem>
-              <Sidebar.MenuButton
-                isActive={isActive(page.url.pathname, href, undefined, item.path !== '/settings/auth')}
-              >
+              <Sidebar.MenuButton isActive={isActive(page.url.pathname, href, undefined, true)}>
                 {#snippet child({ props })}
                   <a {href} {...props}>
                     <Icon size={17} strokeWidth={1.75} class="custom" />

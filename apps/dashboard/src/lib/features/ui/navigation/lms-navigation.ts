@@ -100,10 +100,6 @@ export const baseNavConfig: NavItemConfig[] = [
       {
         path: 'notifications',
         titleKey: 'settings.tabs.notifications_tab'
-      },
-      {
-        path: 'integrations',
-        titleKey: 'settings.tabs.integrations_tab'
       }
     ]
   }
