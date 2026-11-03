@@ -3,6 +3,7 @@
   import { Button } from '@cio/ui/base/button';
   import { t } from '$lib/utils/functions/translations';
   import { BRAND } from '$lib/utils/constants/brand';
+  import { user } from '$lib/utils/store/user';
 </script>
 
 <svelte:head>
@@ -15,5 +16,9 @@
   <img src={BRAND.logo} alt={BRAND.name} class="w-72 max-w-full rounded-lg bg-white p-4" />
   <h1 class="text-5xl font-semibold">{page.status}</h1>
   <p class="ui:text-muted-foreground">{$t('mp_learning.internal')}</p>
-  <Button href="/login">{$t('login.login')}</Button>
+  {#if $user.isLoggedIn}
+    <Button href="/lms">{$t('course.not_permitted.button')}</Button>
+  {:else}
+    <Button href="/login">{$t('login.login')}</Button>
+  {/if}
 </main>

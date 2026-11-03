@@ -318,4 +318,16 @@ integration('course library on isolated PostgreSQL', () => {
     expect(result.data).toHaveLength(2);
     expect(result.data.every((course) => course.title.includes('%_'))).toBe(true);
   });
+
+  it('finds courses without typing Vietnamese accents, in the title or the description', async () => {
+    await createCourse({ title: 'An toàn thông tin' });
+    await createCourse({ title: 'Kỹ năng mềm', description: 'Giao tiếp và đàm phán' });
+    await createCourse({ title: 'Other course' });
+
+    const byTitle = await services.listCourseLibrary(organizationId, profileId, { search: 'an toan' });
+    const byDescription = await services.listCourseLibrary(organizationId, profileId, { search: 'DAM PHAN' });
+
+    expect(byTitle.data.map((course) => course.title)).toEqual(['An toàn thông tin']);
+    expect(byDescription.data.map((course) => course.title)).toEqual(['Kỹ năng mềm']);
+  });
 });

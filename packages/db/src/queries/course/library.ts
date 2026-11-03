@@ -1,9 +1,10 @@
-import { and, asc, count, desc, eq, ilike, not, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, not, or, sql, type SQL } from 'drizzle-orm';
 import { db, type DbOrTxClient } from '@db/drizzle';
 import * as schema from '@db/schema';
 import { learnerAccessSql } from './enrollment';
 import { ROLE } from '@cio/utils/constants';
 import { isSelfEnrollmentAllowed, resolveCourseBannerImage } from '@cio/utils/functions';
+import { foldVietnamese, VIETNAMESE_ACCENTED, VIETNAMESE_PLAIN } from '@cio/utils/functions/vietnamese';
 
 export function courseLearningMembershipSql(profileId: string) {
   return learnerAccessSql(sql`${schema.course.id}`, profileId);
@@ -40,7 +41,10 @@ export async function getCourseLibrary(
   const membership = courseLearningMembershipSql(profileId);
   const access = courseLibraryAccessSql(profileId);
   const visibility = courseLibraryVisibilitySql();
-  const searchPattern = options.search ? `%${options.search.replace(/[\\%_]/g, '\\$&')}%` : undefined;
+  const search = options.search ? foldVietnamese(options.search.trim()) : '';
+  const searchPattern = search ? `%${search.replace(/[\\%_]/g, '\\$&')}%` : undefined;
+  const folded = (column: SQL) =>
+    sql`lower(translate(coalesce(${column}, ''), ${VIETNAMESE_ACCENTED}, ${VIETNAMESE_PLAIN}))`;
   const conditions = and(
     eq(schema.group.organizationId, organizationId),
     eq(schema.course.status, 'ACTIVE'),
@@ -48,7 +52,12 @@ export async function getCourseLibrary(
     eq(schema.course.isTemplate, false),
     or(visibility, membership),
     options.courseId ? eq(schema.course.id, options.courseId) : undefined,
-    searchPattern ? ilike(schema.course.title, searchPattern) : undefined,
+    searchPattern
+      ? or(
+          sql`${folded(sql`${schema.course.title}`)} like ${searchPattern}`,
+          sql`${folded(sql`${schema.course.description}`)} like ${searchPattern}`
+        )
+      : undefined,
     options.recommended ? not(access) : undefined
   );
   const lessonCount = sql<number>`(select count(*) from ${schema.lesson} as library_lesson
