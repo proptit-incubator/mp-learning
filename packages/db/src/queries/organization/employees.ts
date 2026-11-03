@@ -9,8 +9,13 @@ import { employeeLearningMemberIds } from './audience';
 function employeeProfiles(client: DbOrTxClient) {
   const employeeColumns = getTableColumns(schema.employee);
   return client
-    .select({ ...employeeColumns, avatarUrl: schema.profile.avatarUrl })
+    .select({
+      ...employeeColumns,
+      department: sql<string>`coalesce(${schema.department.name}, '')`,
+      avatarUrl: schema.profile.avatarUrl
+    })
     .from(schema.employee)
+    .leftJoin(schema.department, eq(schema.employee.departmentId, schema.department.id))
     .leftJoin(schema.organizationmember, eq(schema.employee.memberId, schema.organizationmember.id))
     .leftJoin(schema.profile, eq(schema.organizationmember.profileId, schema.profile.id));
 }
@@ -194,7 +199,7 @@ export async function listEmployees(
       ? sql`${schema.employee.memberId} in (select id from organizationmember where profile_id = ${query.profileId} and organization_id = ${orgId})`
       : undefined,
     managerId ? sql`${schema.employee.id} IN ${reportingLineSql(managerId)}` : undefined,
-    query.department ? ilike(schema.employee.department, `%${query.department}%`) : undefined,
+    query.department ? ilike(schema.department.name, `%${query.department}%`) : undefined,
     query.jobTitle ? ilike(schema.employee.jobTitle, `%${query.jobTitle}%`) : undefined,
     query.status ? eq(schema.employee.status, query.status) : undefined,
     query.search
@@ -210,7 +215,11 @@ export async function listEmployees(
     .orderBy(asc(schema.employee.employeeCode))
     .limit(query.limit)
     .offset((query.page - 1) * query.limit);
-  const [total] = await client.select({ value: count() }).from(schema.employee).where(filters);
+  const [total] = await client
+    .select({ value: count() })
+    .from(schema.employee)
+    .leftJoin(schema.department, eq(schema.employee.departmentId, schema.department.id))
+    .where(filters);
   return { rows, total: total?.value ?? 0, page: query.page, limit: query.limit };
 }
 

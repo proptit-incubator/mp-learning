@@ -760,4 +760,31 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
   afterAll(async () => {
     vi.restoreAllMocks();
   });
+
+  it('stores one department per name whatever the spacing or case and merges a department renamed onto another', async () => {
+    const departments = await import('@api/services/organization/departments');
+    const first = await draft({ department: '  Kế   toán ' });
+    const second = await draft({ department: 'KẾ TOÁN' });
+    const typo = await draft({ department: 'Ke toan' });
+
+    expect(first.employee.department).toBe('Kế toán');
+    expect(second.employee.departmentId).toBe(first.employee.departmentId);
+    expect(typo.employee.departmentId).not.toBe(first.employee.departmentId);
+
+    const merged = await departments.renameOrMergeDepartment(
+      organizationId,
+      administratorId,
+      typo.employee.departmentId!,
+      {
+        name: 'kế toán'
+      }
+    );
+    expect(merged).toEqual({ id: first.employee.departmentId, merged: true });
+    const moved = await queries.findEmployee(organizationId, typo.employee.id);
+    expect(moved?.department).toBe('Kế toán');
+
+    await expect(
+      departments.removeDepartment(organizationId, administratorId, first.employee.departmentId!)
+    ).rejects.toMatchObject({ statusCode: 409 });
+  });
 });

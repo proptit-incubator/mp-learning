@@ -6323,8 +6323,22 @@
       "all_courses": "All courses",
       "all_batches": "All batches",
       "empty": "No assignments match",
-      "truncated": "Showing the first 200 of {count} rows. Export to see all."
-    }
+      "total": "{count} assignments"
+    },
+    "departments": {
+      "all": "All departments",
+      "none": "No department",
+      "title": "By department",
+      "note": "Completion of the assignments of active employees in each department. Select a department to see it alone.",
+      "columns": {
+        "employees": "Employees",
+        "assignments": "Assignments",
+        "overdue": "Overdue",
+        "not_started": "Not started",
+        "completion": "Completed"
+      }
+    },
+    "my_team_title": "My team report"
   },
   "employees": {
     "title": "Employees",
@@ -6465,7 +6479,23 @@
     "unassigned": "Not assigned",
     "empty_hint": "Add your first employee or adjust the filters to find the people you need.",
     "page_label": "Page {page} of {pages}",
-    "job_title": "Job title"
+    "job_title": "Job title",
+    "departments": {
+      "title": "Departments",
+      "description": "One department list shared by employees, assignments and reports. Names are normalized on entry, so case and spacing differences are the same department.",
+      "empty": "No departments yet",
+      "active_employees": "Active / total",
+      "save": "Save",
+      "delete": "Delete department",
+      "merge_hint": "Renaming a department to another department's name merges them. Only departments without employees can be deleted.",
+      "renamed": "Department renamed",
+      "merged": "Merged into the department with that name",
+      "deleted": "Department deleted",
+      "errors": {
+        "missing": "Department not found",
+        "not_empty": "This department still has employees"
+      }
+    }
   },
   "training_library": {
     "enrolled": "Enrolled",

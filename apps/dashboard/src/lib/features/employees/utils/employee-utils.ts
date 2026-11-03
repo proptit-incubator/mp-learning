@@ -44,7 +44,7 @@ export function employeeErrorKey(error: unknown): string {
     error &&
     'error' in error &&
     typeof error.error === 'string' &&
-    /^employees\.errors\.[a-z_]+$/.test(error.error)
+    /^employees\.(departments\.)?errors\.[a-z_]+$/.test(error.error)
   )
     return error.error;
 

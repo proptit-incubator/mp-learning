@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 import {
   getLearningAnalyticsActivity,
   getLearningAnalyticsSnapshot,
+  getLearningAssignments,
   getRecentLearningCompletions
 } from '@cio/db/queries/dash/learning-analytics';
 import { listEmployeeEnrollments } from '@cio/db/queries/course/enrollment';
@@ -102,7 +103,7 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
     expect(snapshot.assignments).toBe(0);
     expect(snapshot.courses).toEqual([]);
     expect(snapshot.attention).toEqual([]);
-    expect(snapshot.rows).toEqual([]);
+    expect(snapshot.departments).toEqual([]);
   });
 
   it('reports progress from content and completion from recorded completion cycles', async () => {
@@ -119,7 +120,7 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
       await transaction
         .insert(schema.lessonCompletion)
         .values({ lessonId: lessons[0].id, profileId, isComplete: true });
-      const pending = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
+      const pending = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, {}, transaction);
       expect(pending).toMatchObject({
         employees: 2,
         enrolledEmployees: 1,
@@ -141,9 +142,17 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
         },
         transaction
       );
-      const completed = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
+      const completed = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, {}, transaction);
       expect(completed.completed).toBe(1);
-      expect(completed.rows[0]).toMatchObject({ state: 'completed', progress: 100 });
+      const page = await getLearningAssignments(
+        organizationId,
+        ORGANIZATION_SCOPE,
+        {},
+        { page: 1, limit: 25 },
+        transaction
+      );
+      expect(page.total).toBe(1);
+      expect(page.rows[0]).toMatchObject({ state: 'completed', progress: 100 });
     });
   });
 
@@ -163,14 +172,14 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
         .values({ exerciseId: exercise.id, submittedBy: memberId, courseId, total: 5, gradingState: 'completed' })
         .returning();
 
-      const failed = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
+      const failed = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, {}, transaction);
       expect(failed.courses[0].progress).toBe(0);
       expect(
         ((await listEmployeeEnrollments(employeeId, transaction))[0] as { progressPercent?: number }).progressPercent
       ).toBe(0);
 
       await transaction.update(schema.submission).set({ total: 9 }).where(eq(schema.submission.id, submission.id));
-      const passed = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
+      const passed = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, {}, transaction);
       expect(passed.courses[0].progress).toBe(100);
       expect(
         ((await listEmployeeEnrollments(employeeId, transaction))[0] as { progressPercent?: number }).progressPercent
@@ -203,6 +212,99 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
     });
   });
 
+  it('breaks the report down by department and narrows it to one department', async () => {
+    await withRollback(async (transaction) => {
+      const { organizationId, employeeId } = await createPopulation(transaction);
+      const [department] = await transaction
+        .insert(schema.department)
+        .values({ organizationId, name: 'Kế toán', nameKey: 'kế toán' })
+        .returning();
+      await transaction
+        .update(schema.employee)
+        .set({ departmentId: department.id })
+        .where(eq(schema.employee.id, employeeId));
+      await createCourse(transaction, organizationId, employeeId);
+
+      const snapshot = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, {}, transaction);
+      expect(snapshot.departments).toEqual([
+        expect.objectContaining({ departmentId: department.id, department: 'Kế toán', employees: 1, assigned: 1 }),
+        expect.objectContaining({ departmentId: null, department: '', employees: 1, assigned: 0 })
+      ]);
+
+      const accounting = await getLearningAnalyticsSnapshot(
+        organizationId,
+        ORGANIZATION_SCOPE,
+        { departmentId: department.id },
+        transaction
+      );
+      expect(accounting).toMatchObject({ employees: 1, assignments: 1 });
+      const unassigned = await getLearningAnalyticsSnapshot(
+        organizationId,
+        ORGANIZATION_SCOPE,
+        { departmentId: 'none' },
+        transaction
+      );
+      expect(unassigned).toMatchObject({ employees: 1, assignments: 0 });
+    });
+  });
+
+  it('pages and filters assignments on the server', async () => {
+    await withRollback(async (transaction) => {
+      const { organizationId, employeeId } = await createPopulation(transaction);
+      const first = await createCourse(transaction, organizationId, employeeId);
+      await createCourse(transaction, organizationId, employeeId, { batchLabel: 'Q4' });
+
+      const page = await getLearningAssignments(
+        organizationId,
+        ORGANIZATION_SCOPE,
+        {},
+        { page: 1, limit: 1 },
+        transaction
+      );
+      expect(page).toMatchObject({ total: 2, page: 1, limit: 1 });
+      expect(page.rows).toHaveLength(1);
+
+      const second = await getLearningAssignments(
+        organizationId,
+        ORGANIZATION_SCOPE,
+        {},
+        { page: 2, limit: 1 },
+        transaction
+      );
+      expect(second.rows[0].enrollmentId).not.toBe(page.rows[0].enrollmentId);
+
+      const byCourse = await getLearningAssignments(
+        organizationId,
+        ORGANIZATION_SCOPE,
+        {},
+        { courseId: first.courseId, page: 1, limit: 25 },
+        transaction
+      );
+      expect(byCourse.rows.map((row) => row.courseId)).toEqual([first.courseId]);
+      const byBatch = await getLearningAssignments(
+        organizationId,
+        ORGANIZATION_SCOPE,
+        {},
+        { batchLabel: 'Q4', state: 'not_started', page: 1, limit: 25 },
+        transaction
+      );
+      expect(byBatch.total).toBe(1);
+
+      await transaction
+        .update(schema.employee)
+        .set({ fullname: 'Nguyễn Văn Đức' })
+        .where(eq(schema.employee.id, employeeId));
+      const bySearch = await getLearningAssignments(
+        organizationId,
+        ORGANIZATION_SCOPE,
+        {},
+        { search: 'nguyen van duc', page: 1, limit: 25 },
+        transaction
+      );
+      expect(bySearch.total).toBe(2);
+    });
+  });
+
   it('distinguishes overdue, expired and waived assignments and excludes inactive employees', async () => {
     await withRollback(async (transaction) => {
       const { organizationId, profileId, employeeId } = await createPopulation(transaction);
@@ -217,21 +319,21 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
         completedAt: '2024-01-01T00:00:00.000Z',
         validUntil: '2025-01-01T00:00:00.000Z'
       });
-      const report = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
+      const report = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, {}, transaction);
       expect(report).toMatchObject({ overdue: 1, expired: 1, completed: 0 });
 
       await transaction
         .update(schema.courseEnrollment)
         .set({ status: 'WAIVED', waiverReason: 'Certified elsewhere' })
         .where(eq(schema.courseEnrollment.id, overdue.enrollmentId));
-      const waived = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
+      const waived = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, {}, transaction);
       expect(waived).toMatchObject({ overdue: 0, waived: 1 });
 
       await transaction
         .update(schema.employee)
         .set({ status: 'SUSPENDED' })
         .where(eq(schema.employee.organizationId, organizationId));
-      const inactive = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
+      const inactive = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, {}, transaction);
       expect(inactive.employees).toBe(0);
       expect(inactive.assignments).toBe(0);
     });
@@ -272,14 +374,14 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
         { exerciseId: exercise.id, submittedBy: memberId, createdAt: inside },
         { exerciseId: exercise.id, submittedBy: memberId, createdAt: inside }
       ]);
-      const activity = await getLearningAnalyticsActivity(organizationId, ORGANIZATION_SCOPE, 7, transaction);
+      const activity = await getLearningAnalyticsActivity(organizationId, ORGANIZATION_SCOPE, 7, {}, transaction);
       expect(activity.activeLearners).toBe(1);
       expect(activity.lessonsCompleted).toBe(1);
       expect(activity.submissions).toBe(2);
       expect(activity.daily).toHaveLength(7);
       expect(activity.daily[0].lessons).toBe(1);
       expect(activity.daily[0].submissions).toBe(2);
-      const longerPeriod = await getLearningAnalyticsActivity(organizationId, ORGANIZATION_SCOPE, 30, transaction);
+      const longerPeriod = await getLearningAnalyticsActivity(organizationId, ORGANIZATION_SCOPE, 30, {}, transaction);
       expect(longerPeriod.lessonsCompleted).toBe(2);
     });
   });

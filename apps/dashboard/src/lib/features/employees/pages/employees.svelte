@@ -35,6 +35,8 @@
   import { Skeleton } from '@cio/ui/base/skeleton';
   import { UserAvatar } from '@cio/ui/custom/user-avatar';
   import BookPlusIcon from '@lucide/svelte/icons/book-plus';
+  import Building2Icon from '@lucide/svelte/icons/building-2';
+  import DepartmentsDialog from '../components/departments-dialog.svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import { AssignCoursesModal, EnrollmentStateBadge } from '$features/enrollment';
 
@@ -87,6 +89,7 @@
   });
   const canGrantRoles = $derived(api.roster?.access.canGrantRoles ?? false);
   const canManagePeople = $derived(api.roster?.access.canManagePeople ?? false);
+  let departmentsOpen = $state(false);
   const canAssign = $derived(api.roster?.access.canAssignTraining ?? false);
 
   function canChangeEmployee(staff: { roles: readonly string[] }) {
@@ -181,6 +184,9 @@
           ><DownloadIcon size={16} />{$t('employees.export')}</Button
         >
         {#if canManagePeople}
+          <Button variant="outline" onclick={() => (departmentsOpen = true)} testId="employee-departments"
+            ><Building2Icon size={16} />{$t('employees.departments.title')}</Button
+          >
           <Button variant="outline" onclick={openImport} disabled={api.isLoading}
             ><UploadIcon size={16} />{$t('employees.import')}</Button
           >
@@ -437,6 +443,8 @@
   </Page.Body>
 </Page.Root>
 
+<DepartmentsDialog bind:open={departmentsOpen} onChanged={() => void api.load()} />
+
 <Dialog.Root bind:open={api.editorOpen}>
   <Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
     <Dialog.Header
@@ -484,9 +492,12 @@
           <Field.Field
             ><Field.Label for="employee-department">{$t('employees.department')}</Field.Label><Input
               id="employee-department"
+              list="employee-department-options"
               bind:value={api.fields.department}
               maxlength={150}
-            /></Field.Field
+            /><datalist id="employee-department-options"
+              >{#each api.options?.departments ?? [] as name (name)}<option value={name}></option>{/each}</datalist
+            ></Field.Field
           >
           <Field.Field
             ><Field.Label for="employee-job">{$t('employees.job')}</Field.Label><Input

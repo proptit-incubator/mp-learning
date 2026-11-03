@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Hono } from '@api/utils/hono';
 import { learningAnalyticsRouter } from '@api/routes/dash/learning-analytics';
-import { getLearningAnalytics } from '@api/services/learning-analytics';
+import { getLearningAnalytics, getLearningAssignmentsPage } from '@api/services/learning-analytics';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 
-vi.mock('@api/services/learning-analytics', () => ({ getLearningAnalytics: vi.fn() }));
+vi.mock('@api/services/learning-analytics', () => ({
+  getLearningAnalytics: vi.fn(),
+  getLearningAssignmentsPage: vi.fn()
+}));
 
 const organizationId = '00000000-0000-4000-8000-000000000001';
 
@@ -30,7 +33,7 @@ describe('internal training analytics route', () => {
     });
     expect(response.status).toBe(200);
     expect(response.headers.get('cache-control')).toBe('private, no-store');
-    expect(getLearningAnalytics).toHaveBeenCalledWith(organizationId, 'test-user', 7);
+    expect(getLearningAnalytics).toHaveBeenCalledWith(organizationId, 'test-user', 7, { departmentId: undefined });
   });
 
   it('passes through the service refusal for actors without a reporting scope', async () => {
@@ -51,5 +54,35 @@ describe('internal training analytics route', () => {
     });
     expect(invalid.status).toBe(400);
     expect(getLearningAnalytics).not.toHaveBeenCalled();
+  });
+
+  it('passes the department filter to the report', async () => {
+    vi.mocked(getLearningAnalytics).mockResolvedValue({ days: 30 } as never);
+    const departmentId = '00000000-0000-4000-8000-000000000002';
+    await makeApp(true).request(`/learning-analytics?departmentId=${departmentId}`, {
+      headers: { 'cio-org-id': organizationId }
+    });
+    expect(getLearningAnalytics).toHaveBeenCalledWith(organizationId, 'test-user', 30, { departmentId });
+  });
+
+  it('serves one validated page of assignments', async () => {
+    vi.mocked(getLearningAssignmentsPage).mockResolvedValue({ rows: [], total: 0, page: 2, limit: 25 } as never);
+    const response = await makeApp(true).request(
+      '/learning-analytics/assignments?page=2&state=overdue&departmentId=none&search=an',
+      { headers: { 'cio-org-id': organizationId } }
+    );
+    expect(response.status).toBe(200);
+    expect(getLearningAssignmentsPage).toHaveBeenCalledWith(organizationId, 'test-user', {
+      page: 2,
+      limit: 25,
+      state: 'overdue',
+      departmentId: 'none',
+      search: 'an'
+    });
+
+    const invalid = await makeApp(true).request('/learning-analytics/assignments?limit=5000&state=late', {
+      headers: { 'cio-org-id': organizationId }
+    });
+    expect(invalid.status).toBe(400);
   });
 });

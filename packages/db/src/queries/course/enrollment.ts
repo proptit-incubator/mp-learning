@@ -262,18 +262,19 @@ export type CourseEnrollmentRow = {
 };
 
 const enrollmentRowSelect = sql`ce.id, ce.course_id "courseId", ce.employee_id "employeeId", om.profile_id "profileId",
-  e.employee_code "employeeCode", e.fullname, e.email, e.department, e.job_title "jobTitle", pr.avatar_url "avatarUrl",
+  e.employee_code "employeeCode", e.fullname, e.email, coalesce(dep.name, '') department, e.job_title "jobTitle", pr.avatar_url "avatarUrl",
   ce.kind, ce.status, ${enrollmentStateSql('ce')} state, ce.assigned_by "assignedBy", actor.fullname "assignedByName",
   ce.due_date "dueDate", ce.batch_label "batchLabel", ce.message, ce.waiver_reason "waiverReason",
   ce.waiver_expires_at "waiverExpiresAt", ${enrollmentValidUntilSql('ce')} "validUntil", ce.created_at "createdAt"`;
 
 const enrollmentRowFrom = sql`from course_enrollment ce
   join employee e on e.id = ce.employee_id
+  left join department dep on dep.id = e.department_id
   join organizationmember om on om.id = e.member_id
   left join profile pr on pr.id = om.profile_id
   left join profile actor on actor.id = ce.assigned_by`;
 
-function normalizeEnrollmentRow(row: CourseEnrollmentRow): CourseEnrollmentRow {
+function normalizeEnrollmentRow<Row extends CourseEnrollmentRow>(row: Row): Row {
   const iso = (value: string | null) => (value ? new Date(value).toISOString() : null);
   return {
     ...row,
@@ -384,7 +385,15 @@ export async function resolveEmployeeIds(
   ];
   const selectors: SQL[] = [];
   if (filter.employeeIds?.length) selectors.push(inArray(schema.employee.id, filter.employeeIds));
-  if (filter.departments?.length) selectors.push(inArray(schema.employee.department, filter.departments));
+  if (filter.departments?.length) {
+    const departments = client
+      .select({ id: schema.department.id })
+      .from(schema.department)
+      .where(
+        and(eq(schema.department.organizationId, organizationId), inArray(schema.department.name, filter.departments))
+      );
+    selectors.push(inArray(schema.employee.departmentId, departments));
+  }
   if (filter.jobTitles?.length) selectors.push(inArray(schema.employee.jobTitle, filter.jobTitles));
   if (!filter.all) {
     if (!selectors.length) return [];
@@ -398,9 +407,11 @@ export async function resolveEmployeeIds(
 }
 
 export async function listEmployeeFacets(organizationId: string, client: DbOrTxClient = db) {
-  const rows = await client.execute<{ department: string; job_title: string }>(sql`select department, job_title
-    from employee where organization_id = ${organizationId}
-      and ${inArray(sql`status`, ASSIGNABLE_EMPLOYEE_STATUSES)}`);
+  const rows = await client.execute<{ department: string; job_title: string }>(sql`select
+      coalesce(d.name, '') department, e.job_title
+    from employee e left join department d on d.id = e.department_id
+    where e.organization_id = ${organizationId}
+      and ${inArray(sql`e.status`, ASSIGNABLE_EMPLOYEE_STATUSES)}`);
   const departmentCounts: Record<string, number> = {};
   const jobTitleCounts: Record<string, number> = {};
   for (const row of rows) {

@@ -1,5 +1,10 @@
-import { getLearningAnalyticsActivity, getLearningAnalyticsSnapshot } from '@cio/db/queries/dash';
-import type { LearningAnalyticsScope } from '@cio/db/queries/dash/learning-analytics';
+import {
+  getLearningAnalyticsActivity,
+  getLearningAnalyticsSnapshot,
+  getLearningAssignments
+} from '@cio/db/queries/dash';
+import type { LearningAnalyticsFilter, LearningAnalyticsScope } from '@cio/db/queries/dash/learning-analytics';
+import type { LearningAssignmentsQuery } from '@cio/utils/validation/dash';
 import { getEmployeeAccess } from '@cio/db/queries/organization';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 
@@ -18,16 +23,37 @@ export async function resolveLearningAnalyticsScope(orgId: string, actorId: stri
   throw new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403);
 }
 
-export async function getLearningAnalytics(orgId: string, actorId: string, days: 7 | 30 | 90) {
+export async function getLearningAnalytics(
+  orgId: string,
+  actorId: string,
+  days: 7 | 30 | 90,
+  filter: LearningAnalyticsFilter = {}
+) {
   const scope = await resolveLearningAnalyticsScope(orgId, actorId);
   const [snapshot, activity] = await Promise.all([
-    getLearningAnalyticsSnapshot(orgId, scope),
-    getLearningAnalyticsActivity(orgId, scope, days)
+    getLearningAnalyticsSnapshot(orgId, scope, filter),
+    getLearningAnalyticsActivity(orgId, scope, days, filter)
   ]);
   const completionRate =
     snapshot.assignments > 0 ? Math.round((snapshot.completed / snapshot.assignments) * 100) : null;
   const unassignedEmployees = snapshot.employees - snapshot.enrolledEmployees;
   const generatedAt = new Date().toISOString();
 
-  return { snapshot, activity, completionRate, unassignedEmployees, generatedAt, days, scope: scope.kind };
+  return {
+    snapshot,
+    activity,
+    completionRate,
+    unassignedEmployees,
+    generatedAt,
+    days,
+    scope: scope.kind,
+    departmentId: filter.departmentId ?? null
+  };
+}
+
+/** One page of the assignments behind the report, in the viewer's scope. */
+export async function getLearningAssignmentsPage(orgId: string, actorId: string, query: LearningAssignmentsQuery) {
+  const scope = await resolveLearningAnalyticsScope(orgId, actorId);
+  const { departmentId, ...assignmentQuery } = query;
+  return getLearningAssignments(orgId, scope, { departmentId }, assignmentQuery);
 }

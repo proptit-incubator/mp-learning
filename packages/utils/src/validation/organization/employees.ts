@@ -63,3 +63,6 @@ export type UpdateEmployee = z.infer<typeof ZUpdateEmployee>;
 export type EmployeeListQuery = z.infer<typeof ZEmployeeList>;
 export type EmployeeRole = (typeof EMPLOYEE_ROLES)[number];
 export type EmployeeStatus = (typeof EMPLOYEE_STATUSES)[number];
+export const ZRenameDepartment = z.object({ name: z.string().trim().min(1).max(150) });
+export type RenameDepartment = z.infer<typeof ZRenameDepartment>;
+export const ZDepartmentParam = z.object({ departmentId: z.uuid() });

@@ -12,8 +12,11 @@ import {
   ZEmployeeStatus,
   ZEmployeeToken,
   ZImportEmployees,
+  ZDepartmentParam,
+  ZRenameDepartment,
   ZUpdateEmployee
 } from '@cio/utils/validation/organization';
+import { getDepartments, removeDepartment, renameOrMergeDepartment } from '@api/services/organization/departments';
 import { ZAssignCourses, ZAssignmentPreview } from '@cio/utils/validation/course/enrollment';
 import { assignCourses, previewAssignment } from '@api/services/course/enrollment';
 import {
@@ -70,6 +73,44 @@ export const employeesRouter = new Hono()
   .get('/options', async (context) => {
     try {
       const data = await getEmployeeOptions(context.req.header('cio-org-id') ?? '', context.get('user')!.id);
+      return context.json({ success: true as const, data });
+    } catch (error) {
+      return handleError(context, error, 'employees.errors.generic');
+    }
+  })
+  .get('/departments', async (context) => {
+    try {
+      const data = await getDepartments(context.req.header('cio-org-id') ?? '', context.get('user')!.id);
+      return context.json({ success: true as const, data });
+    } catch (error) {
+      return handleError(context, error, 'employees.errors.generic');
+    }
+  })
+  .patch(
+    '/departments/:departmentId',
+    zValidator('param', ZDepartmentParam),
+    zValidator('json', ZRenameDepartment),
+    async (context) => {
+      try {
+        const data = await renameOrMergeDepartment(
+          context.req.header('cio-org-id') ?? '',
+          context.get('user')!.id,
+          context.req.valid('param').departmentId,
+          context.req.valid('json')
+        );
+        return context.json({ success: true as const, data });
+      } catch (error) {
+        return handleError(context, error, 'employees.errors.generic');
+      }
+    }
+  )
+  .delete('/departments/:departmentId', zValidator('param', ZDepartmentParam), async (context) => {
+    try {
+      const data = await removeDepartment(
+        context.req.header('cio-org-id') ?? '',
+        context.get('user')!.id,
+        context.req.valid('param').departmentId
+      );
       return context.json({ success: true as const, data });
     } catch (error) {
       return handleError(context, error, 'employees.errors.generic');

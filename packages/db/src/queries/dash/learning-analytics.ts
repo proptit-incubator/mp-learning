@@ -1,5 +1,6 @@
 import { db, type DbOrTxClient } from '@db/drizzle';
-import { sql } from 'drizzle-orm';
+import { sql, type SQL } from 'drizzle-orm';
+import { foldVietnamese, VIETNAMESE_ACCENTED, VIETNAMESE_PLAIN } from '@cio/utils/functions/vietnamese';
 import { ROLE } from '@cio/utils/constants';
 import { enrollmentStateSql, type EnrollmentState } from '../course/enrollment';
 import { submissionMeetsCompletionPolicySql } from '../course/progression';
@@ -56,6 +57,25 @@ export type LearningAssignmentRow = {
   validUntil: string | null;
 };
 
+export type LearningDepartmentReport = LearningStateCounts & {
+  departmentId: string | null;
+  department: string;
+  employees: number;
+  assigned: number;
+};
+
+/** Narrows a report to one department; `none` selects employees without a department. */
+export type LearningAnalyticsFilter = { departmentId?: string | null };
+
+export type LearningAssignmentQuery = {
+  courseId?: string;
+  batchLabel?: string;
+  state?: EnrollmentState;
+  search?: string;
+  page: number;
+  limit: number;
+};
+
 export type LearningSnapshot = LearningStateCounts & {
   employees: number;
   enrolledEmployees: number;
@@ -63,7 +83,7 @@ export type LearningSnapshot = LearningStateCounts & {
   courses: LearningCourseReport[];
   attention: LearningEmployeeReport[];
   batches: LearningBatchReport[];
-  rows: LearningAssignmentRow[];
+  departments: LearningDepartmentReport[];
 };
 
 export type LearningActivity = {
@@ -106,10 +126,16 @@ function scopedEmployeeFilter(scope: LearningAnalyticsScope) {
 }
 
 /**
- * Active courses, active employees and their live ASSIGNED enrollments with computed state, narrowed to `scope`:
- * the whole org, the courses a tutor teaches, or a manager's reporting line.
+ * Active courses, active employees and their live ASSIGNED enrollments with computed state, narrowed to `scope`
+ * (the whole org, the courses a tutor teaches, or a manager's reporting line) and to `filter`.
  */
-function learningPopulation(orgId: string, scope: LearningAnalyticsScope) {
+function departmentFilter(filter: LearningAnalyticsFilter) {
+  if (!filter.departmentId) return sql``;
+  if (filter.departmentId === 'none') return sql`AND e.department_id IS NULL`;
+  return sql`AND e.department_id = ${filter.departmentId}`;
+}
+
+function learningPopulation(orgId: string, scope: LearningAnalyticsScope, filter: LearningAnalyticsFilter = {}) {
   return sql`
     active_courses AS (
       SELECT c.id, c.title, c.is_published, c.group_id, c.recertification_months
@@ -118,11 +144,14 @@ function learningPopulation(orgId: string, scope: LearningAnalyticsScope) {
         ${scopedCourseFilter(scope)}
     ),
     employees AS (
-      SELECT e.id AS employee_id, om.profile_id, e.fullname, e.employee_code, e.department, e.job_title, p.avatar_url
+      SELECT e.id AS employee_id, om.profile_id, e.fullname, e.employee_code, e.department_id,
+        COALESCE(d.name, '') AS department, e.job_title, p.avatar_url
       FROM employee e JOIN organizationmember om ON om.id = e.member_id
+      LEFT JOIN department d ON d.id = e.department_id
       LEFT JOIN profile p ON p.id = om.profile_id
       WHERE e.organization_id = ${orgId} AND e.status = 'ACTIVE' AND om.status = 'ACTIVE'
         ${scopedEmployeeFilter(scope)}
+        ${departmentFilter(filter)}
     ),
     enrollments AS (
       SELECT ce.id AS enrollment_id, ce.course_id, ce.employee_id, ce.due_date, ce.batch_label, emp.profile_id,
@@ -136,14 +165,9 @@ function learningPopulation(orgId: string, scope: LearningAnalyticsScope) {
   `;
 }
 
-export async function getLearningAnalyticsSnapshot(
-  orgId: string,
-  scope: LearningAnalyticsScope,
-  dbClient: DbOrTxClient = db
-) {
-  const population = learningPopulation(orgId, scope);
-  const rows = await dbClient.execute<LearningSnapshot>(sql`
-    WITH ${population},
+/** Content progress and latest completion cycle for each enrollment of the population, as `learning_state`. */
+function learningStateCtes() {
+  return sql`
     lesson_totals AS (
       SELECT l.course_id, COUNT(*)::int AS total FROM lesson l
       JOIN active_courses ac ON ac.id = l.course_id GROUP BY l.course_id
@@ -183,7 +207,20 @@ export async function getLearningAnalyticsSnapshot(
         WHERE course_id = en.course_id AND profile_id = en.profile_id
         ORDER BY cycle_number DESC LIMIT 1
       ) latest ON true
-    ),
+    )
+  `;
+}
+
+export async function getLearningAnalyticsSnapshot(
+  orgId: string,
+  scope: LearningAnalyticsScope,
+  filter: LearningAnalyticsFilter = {},
+  dbClient: DbOrTxClient = db
+) {
+  const population = learningPopulation(orgId, scope, filter);
+  const rows = await dbClient.execute<LearningSnapshot>(sql`
+    WITH ${population},
+    ${learningStateCtes()},
     course_metrics AS (
       SELECT ac.id, ac.title, ac.is_published AS "isPublished", ac.recertification_months AS "recertificationMonths",
         COUNT(ls.course_id)::int AS assigned, ${STATE_COUNT_COLUMNS},
@@ -206,15 +243,11 @@ export async function getLearningAnalyticsSnapshot(
         ${STATE_COUNT_COLUMNS}
       FROM learning_state ls WHERE ls.batch_label IS NOT NULL GROUP BY ls.batch_label
     ),
-    assignment_rows AS (
-      SELECT ls.enrollment_id AS "enrollmentId", ls.course_id AS "courseId", ac.title AS "courseTitle",
-        ls.employee_id AS "employeeId", ls.profile_id AS "profileId", emp.fullname, emp.employee_code AS "employeeCode",
-        emp.department, emp.job_title AS "jobTitle", ls.batch_label AS "batchLabel", ls.due_date AS "dueDate", ls.state,
-        CASE WHEN ls.state IN ('completed', 'waived') THEN 100
-          WHEN ls.total_items > 0 THEN LEAST(100, ROUND(ls.completed_items * 100.0 / ls.total_items)) ELSE 0 END::int AS progress,
-        ls.completed_at AS "completedAt", ls.valid_until AS "validUntil"
-      FROM learning_state ls JOIN active_courses ac ON ac.id = ls.course_id
-      JOIN employees emp ON emp.employee_id = ls.employee_id
+    department_metrics AS (
+      SELECT emp.department_id AS "departmentId", emp.department, COUNT(DISTINCT emp.employee_id)::int AS employees,
+        COUNT(ls.course_id)::int AS assigned, ${STATE_COUNT_COLUMNS}
+      FROM employees emp LEFT JOIN learning_state ls ON ls.employee_id = emp.employee_id
+      GROUP BY emp.department_id, emp.department
     )
     SELECT (SELECT COUNT(*)::int FROM employees) AS employees,
       (SELECT COUNT(DISTINCT employee_id)::int FROM enrollments) AS "enrolledEmployees",
@@ -226,9 +259,8 @@ export async function getLearningAnalyticsSnapshot(
         ORDER BY overdue DESC, expired DESC, (assigned = 0) DESC, not_started DESC, fullname, id LIMIT 5
       ) attention), '[]'::json) AS attention,
       COALESCE((SELECT json_agg(bm ORDER BY bm."batchLabel") FROM batch_metrics bm), '[]'::json) AS batches,
-      COALESCE((SELECT json_agg(ar ORDER BY
-        CASE ar.state WHEN 'overdue' THEN 0 WHEN 'expired' THEN 1 WHEN 'not_started' THEN 2 WHEN 'in_progress' THEN 3 WHEN 'completed' THEN 4 ELSE 5 END,
-        ar."dueDate" NULLS LAST, ar.fullname) FROM assignment_rows ar), '[]'::json) AS rows
+      COALESCE((SELECT json_agg(dm ORDER BY dm."departmentId" IS NULL, dm.department) FROM department_metrics dm), '[]'::json)
+        AS departments
     FROM learning_state ls
   `);
   const snapshot = rows[0];
@@ -237,13 +269,66 @@ export async function getLearningAnalyticsSnapshot(
   return snapshot;
 }
 
+const ASSIGNMENT_STATE_ORDER = sql`CASE ls.state WHEN 'overdue' THEN 0 WHEN 'expired' THEN 1 WHEN 'not_started' THEN 2
+  WHEN 'in_progress' THEN 3 WHEN 'completed' THEN 4 ELSE 5 END`;
+
+/** One page of assignments in the report population, most urgent first, with the number that match `query`. */
+export async function getLearningAssignments(
+  orgId: string,
+  scope: LearningAnalyticsScope,
+  filter: LearningAnalyticsFilter,
+  query: LearningAssignmentQuery,
+  dbClient: DbOrTxClient = db
+) {
+  const population = learningPopulation(orgId, scope, filter);
+  const search = query.search ? foldVietnamese(query.search.trim()) : '';
+  const folded = (column: SQL) => sql`lower(translate(${column}, ${VIETNAMESE_ACCENTED}, ${VIETNAMESE_PLAIN}))`;
+  const conditions = [
+    query.courseId ? sql`ls.course_id = ${query.courseId}` : null,
+    query.batchLabel ? sql`ls.batch_label = ${query.batchLabel}` : null,
+    query.state ? sql`ls.state = ${query.state}` : null,
+    search
+      ? sql`(${folded(sql`emp.fullname`)} LIKE ${`%${search}%`} OR lower(emp.employee_code) LIKE ${`%${search}%`}
+          OR ${folded(sql`emp.department`)} LIKE ${`%${search}%`} OR ${folded(sql`ac.title`)} LIKE ${`%${search}%`})`
+      : null
+  ].filter((condition): condition is NonNullable<typeof condition> => condition !== null);
+  const where = conditions.length ? sql`WHERE ${sql.join(conditions, sql` AND `)}` : sql``;
+  const rows = await dbClient.execute<LearningAssignmentRow & { total: number }>(sql`
+    WITH ${population},
+    ${learningStateCtes()}
+    SELECT ls.enrollment_id AS "enrollmentId", ls.course_id AS "courseId", ac.title AS "courseTitle",
+      ls.employee_id AS "employeeId", ls.profile_id AS "profileId", emp.fullname, emp.employee_code AS "employeeCode",
+      emp.department, emp.job_title AS "jobTitle", ls.batch_label AS "batchLabel", ls.due_date AS "dueDate", ls.state,
+      CASE WHEN ls.state IN ('completed', 'waived') THEN 100
+        WHEN ls.total_items > 0 THEN LEAST(100, ROUND(ls.completed_items * 100.0 / ls.total_items)) ELSE 0 END::int AS progress,
+      ls.completed_at AS "completedAt", ls.valid_until AS "validUntil", COUNT(*) OVER ()::int AS total
+    FROM learning_state ls JOIN active_courses ac ON ac.id = ls.course_id
+    JOIN employees emp ON emp.employee_id = ls.employee_id
+    ${where}
+    ORDER BY ${ASSIGNMENT_STATE_ORDER}, ls.due_date NULLS LAST, emp.fullname, ls.enrollment_id
+    LIMIT ${query.limit} OFFSET ${(query.page - 1) * query.limit}
+  `);
+  const list = [...rows] as Array<LearningAssignmentRow & { total: number }>;
+
+  return {
+    rows: list.map(({ total, ...row }) => {
+      void total;
+      return row;
+    }),
+    total: list[0]?.total ?? 0,
+    page: query.page,
+    limit: query.limit
+  };
+}
+
 export async function getLearningAnalyticsActivity(
   orgId: string,
   scope: LearningAnalyticsScope,
   days: number,
+  filter: LearningAnalyticsFilter = {},
   dbClient: DbOrTxClient = db
 ) {
-  const population = learningPopulation(orgId, scope);
+  const population = learningPopulation(orgId, scope, filter);
   const rows = await dbClient.execute<LearningActivity>(sql`
     WITH ${population},
     learners AS (

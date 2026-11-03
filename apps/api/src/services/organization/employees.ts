@@ -26,7 +26,8 @@ import {
   revokeEmployeeSessions,
   updateEmployee,
   updateEmployeeMember,
-  updateEmployeeProfile
+  updateEmployeeProfile,
+  resolveDepartmentId
 } from '@cio/db/queries/organization';
 import { markUserAndProfileEmailVerified } from '@cio/db/queries/auth';
 import { sendEmail, buildEmailBranding, buildEmailFromName } from '@cio/email';
@@ -150,7 +151,7 @@ export async function createEmployee(orgId: string, actorId: string, input: Crea
       employeeCode: fields.employeeCode,
       fullname: fields.fullname,
       email: fields.email,
-      department: fields.department,
+      departmentId: await resolveDepartmentId(orgId, fields.department, tx),
       jobTitle: fields.jobTitle,
       managerId: fields.managerId,
       roles: fields.roles,
@@ -168,7 +169,7 @@ export async function createEmployee(orgId: string, actorId: string, input: Crea
   });
   const delivery =
     fields.sendActivation && !staff.activatedAt ? await sendEmployeeActivation(orgId, actorId, staff.id) : null;
-  const employee = delivery ? await findEmployee(orgId, staff.id) : staff;
+  const employee = await findEmployee(orgId, staff.id);
   return { employee: employee!, delivery };
 }
 
@@ -191,7 +192,7 @@ export async function editEmployee(orgId: string, actorId: string, employeeId: s
 
     const values = {
       fullname: fields.fullname,
-      department: fields.department,
+      departmentId: await resolveDepartmentId(orgId, fields.department, tx),
       jobTitle: fields.jobTitle,
       managerId: fields.managerId,
       roles: fields.roles,
@@ -206,9 +207,9 @@ export async function editEmployee(orgId: string, actorId: string, employeeId: s
       if (rolesChanged) await revokeEmployeeSessions(identity.member.profileId, tx);
     }
     await addEmployeeAudit(employeeId, actorId, 'UPDATED', '', tx);
-    return updated;
+    return findEmployee(orgId, updated.id, tx);
   });
-  return result;
+  return result!;
 }
 
 export async function setEmployeeStatus(
@@ -242,7 +243,7 @@ export async function setEmployeeStatus(
     if (identity.member?.profileId) await revokeEmployeeSessions(identity.member.profileId, tx);
     const action = nextStatus === 'DRAFT' ? 'RESTORED_DRAFT' : nextStatus;
     await addEmployeeAudit(employeeId, actorId, action, reason, tx);
-    return updated;
+    return findEmployee(orgId, updated.id, tx);
   });
 }
 

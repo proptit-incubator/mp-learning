@@ -2,6 +2,7 @@ import type { ExportDocument } from '@cio/utils/export';
 import type {
   LearningAssignmentRow,
   LearningCourseFilter,
+  LearningDepartment,
   LearningReportCourse,
   LearningReportDay,
   LearningState
@@ -64,30 +65,9 @@ export function buildLearningExport(
   };
 }
 
-export type AssignmentRowFilter = {
-  courseId: string;
-  batchLabel: string;
-  state: LearningState | 'all';
-  search: string;
-};
-
-export function filterAssignmentRows(rows: LearningAssignmentRow[], filter: AssignmentRowFilter) {
-  const normalize = (value: string) =>
-    value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/gi, 'd')
-      .toLocaleLowerCase('vi')
-      .trim();
-  const search = normalize(filter.search);
-  return rows.filter((row) => {
-    if (filter.courseId && row.courseId !== filter.courseId) return false;
-    if (filter.batchLabel && row.batchLabel !== filter.batchLabel) return false;
-    if (filter.state !== 'all' && row.state !== filter.state) return false;
-    if (!search) return true;
-
-    return normalize(`${row.fullname} ${row.employeeCode} ${row.department}`).includes(search);
-  });
+/** Share of a department's assignments that are completed, or null when nothing is assigned there. */
+export function departmentCompletionRate(department: Pick<LearningDepartment, 'assigned' | 'completed'>) {
+  return department.assigned > 0 ? Math.round((department.completed / department.assigned) * 100) : null;
 }
 
 export function buildAssignmentExport(

@@ -40,7 +40,7 @@ describe('training report definitions', () => {
       courses: [],
       attention: [],
       batches: [],
-      rows: []
+      departments: []
     });
     vi.mocked(getLearningAnalyticsActivity).mockResolvedValue({
       activeLearners: 1,
@@ -56,8 +56,8 @@ describe('training report definitions', () => {
     expect(shortReport.completionRate).toBe(25);
     expect(longReport.completionRate).toBe(25);
     expect(shortReport.unassignedEmployees).toBe(2);
-    expect(getLearningAnalyticsActivity).toHaveBeenCalledWith('org-1', ORGANIZATION_SCOPE, 7);
-    expect(getLearningAnalyticsActivity).toHaveBeenCalledWith('org-1', ORGANIZATION_SCOPE, 90);
+    expect(getLearningAnalyticsActivity).toHaveBeenCalledWith('org-1', ORGANIZATION_SCOPE, 7, {});
+    expect(getLearningAnalyticsActivity).toHaveBeenCalledWith('org-1', ORGANIZATION_SCOPE, 90, {});
   });
 
   it('reports no completion rate when no learning is assigned', async () => {
@@ -74,7 +74,7 @@ describe('training report definitions', () => {
       courses: [],
       attention: [],
       batches: [],
-      rows: []
+      departments: []
     });
     const report = await getLearningAnalytics('org-1', 'actor-1', 30);
     expect(report.completionRate).toBeNull();
@@ -98,8 +98,8 @@ describe('training report definitions', () => {
 
     const report = await getLearningAnalytics('org-1', 'actor-1', 30);
 
-    expect(getLearningAnalyticsSnapshot).toHaveBeenCalledWith('org-1', scope);
-    expect(getLearningAnalyticsActivity).toHaveBeenCalledWith('org-1', scope, 30);
+    expect(getLearningAnalyticsSnapshot).toHaveBeenCalledWith('org-1', scope, {});
+    expect(getLearningAnalyticsActivity).toHaveBeenCalledWith('org-1', scope, 30, {});
     expect(report.scope).toBe(scope.kind);
   });
 

@@ -25,6 +25,9 @@
   const canSeeLearningReport = $derived(
     Boolean(access && (access.canViewOrgReports || access.isManager || access.teachesCourses))
   );
+  const learningReportTitle = $derived(
+    access?.isManager && !access.canViewOrgReports ? 'learning_analytics.my_team_title' : 'learning_analytics.title'
+  );
 
   const items = $derived(
     getLmsNavigationItems($currentOrg, $t, page.url.pathname).filter((item) => !item.hideFromSidebar)
@@ -62,13 +65,10 @@
     {/if}
     {#if canSeeLearningReport}
       <Sidebar.MenuItem>
-        <Sidebar.MenuButton
-          tooltipContent={$t('learning_analytics.title')}
-          isActive={page.url.pathname === '/lms/analytics'}
-        >
+        <Sidebar.MenuButton tooltipContent={$t(learningReportTitle)} isActive={page.url.pathname === '/lms/analytics'}>
           {#snippet child({ props })}
             <a href="/lms/analytics" {...props} data-testid="learning-report-navigation"
-              ><ChartColumnIcon size={17} /><span>{$t('learning_analytics.title')}</span></a
+              ><ChartColumnIcon size={17} /><span>{$t(learningReportTitle)}</span></a
             >
           {/snippet}
         </Sidebar.MenuButton>

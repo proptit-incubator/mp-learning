@@ -26,11 +26,13 @@
   import RangePicker from '$features/analytics/components/range-picker.svelte';
   import RefreshButton from '$features/analytics/components/refresh-button.svelte';
   import LearningActivityChart from '$features/analytics/components/learning-activity-chart.svelte';
-  import { LearningAnalyticsApi } from '$features/analytics/api/learning-analytics.svelte';
+  import ChevronLeftIcon from '@lucide/svelte/icons/chevron-left';
+  import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
+  import { LearningAnalyticsApi, LearningAssignmentsApi } from '$features/analytics/api/learning-analytics.svelte';
   import {
     buildAssignmentExport,
     buildLearningExport,
-    filterAssignmentRows,
+    departmentCompletionRate,
     filterLearningReportCourses
   } from '$features/analytics/utils/learning-analytics-utils';
   import type { LearningCourseFilter, LearningState } from '$features/analytics/utils/types';
@@ -45,10 +47,14 @@
   let { employeesPath, coursesPath = null }: Props = $props();
 
   const learningApi = new LearningAnalyticsApi();
+  const assignmentsApi = new LearningAssignmentsApi();
   let searchValue = $state('');
   let courseFilter = $state<LearningCourseFilter>('all');
   const report = $derived(learningApi.report);
   const snapshot = $derived(report?.snapshot);
+  const reportTitle = $derived(
+    report?.scope === 'reports' ? 'learning_analytics.my_team_title' : 'learning_analytics.title'
+  );
   const initialLoading = $derived(!report && learningApi.loading);
   const filteredCourses = $derived(filterLearningReportCourses(snapshot?.courses ?? [], searchValue, courseFilter));
   const courseFilters = ['all', 'assigned', 'overdue'] as const;
@@ -57,17 +63,34 @@
   let rowBatch = $state('');
   let rowState = $state<LearningState | 'all'>('all');
   let rowSearch = $state('');
-  const assignmentRows = $derived(
-    filterAssignmentRows(snapshot?.rows ?? [], {
-      courseId: rowCourseId,
-      batchLabel: rowBatch,
-      state: rowState,
-      search: rowSearch
-    })
-  );
-  const assignmentExport = $derived(
-    buildAssignmentExport(
-      assignmentRows,
+  const assignmentFilters = $derived({
+    departmentId: learningApi.departmentId,
+    courseId: rowCourseId,
+    batchLabel: rowBatch,
+    state: rowState,
+    search: rowSearch
+  });
+  let searchTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => {
+    const filters = assignmentFilters;
+    if (!report?.generatedAt) return;
+
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => untrack(() => assignmentsApi.load(filters)), filters.search ? 300 : 0);
+  });
+  const assignmentPages = $derived(Math.max(1, Math.ceil(assignmentsApi.total / assignmentsApi.limit)));
+  const departmentLabel = $derived.by(() => {
+    if (!learningApi.departmentId) return $t('learning_analytics.departments.all');
+    if (learningApi.departmentId === 'none') return $t('learning_analytics.departments.none');
+    return (
+      learningApi.departmentOptions.find((department) => department.departmentId === learningApi.departmentId)
+        ?.department ?? $t('learning_analytics.departments.all')
+    );
+  });
+  async function loadAssignmentExport() {
+    const rows = await assignmentsApi.loadAll(assignmentFilters);
+    return buildAssignmentExport(
+      rows,
       $t('learning_analytics.assigned_section.title'),
       {
         employee: $t('employees.name'),
@@ -82,8 +105,8 @@
         validUntil: $t('enrollment.valid_until')
       },
       (state) => $t(`enrollment.state.${state}`)
-    )
-  );
+    );
+  }
   function formatDay(value: string | null) {
     return value ? new Intl.DateTimeFormat(getIntlLocale(), { dateStyle: 'medium' }).format(new Date(value)) : '';
   }
@@ -168,7 +191,11 @@
     untrack(() => learningApi.ensureOrganization(organizationId));
   });
 
-  onDestroy(() => learningApi.cancel());
+  onDestroy(() => {
+    learningApi.cancel();
+    assignmentsApi.cancel();
+    clearTimeout(searchTimer);
+  });
 
   function formatUpdated(value: string) {
     return new Intl.DateTimeFormat(getIntlLocale(), {
@@ -181,13 +208,13 @@
   }
 </script>
 
-<svelte:head><title>{$t('learning_analytics.title')} · MP Learning</title></svelte:head>
+<svelte:head><title>{$t(reportTitle)} · MP Learning</title></svelte:head>
 
 <Page.Root class="w-full pb-8">
   <Page.Header>
     <Page.HeaderContent>
       <Page.Eyebrow>{$t('learning_analytics.eyebrow')}</Page.Eyebrow>
-      <Page.Title>{$t('learning_analytics.title')}</Page.Title>
+      <Page.Title>{$t(reportTitle)}</Page.Title>
       <Page.Subtitle>{$t('learning_analytics.subtitle')}</Page.Subtitle>
       {#if report && report.scope !== 'organization'}
         <p class="ui:text-muted-foreground text-xs" data-testid="learning-report-scope">
@@ -223,9 +250,30 @@
               <h2 class="text-sm font-semibold">{$t('learning_analytics.snapshot_title')}</h2>
               <p class="ui:text-muted-foreground text-xs leading-relaxed">{$t('learning_analytics.snapshot_note')}</p>
             </div>
-            {#if report}<span class="ui:text-muted-foreground text-[11px]"
-                >{$t('learning_analytics.updated', { time: formatUpdated(report.generatedAt) })}</span
-              >{/if}
+            <div class="flex flex-wrap items-center gap-3">
+              {#if learningApi.departmentOptions.length}
+                <Select.Root
+                  type="single"
+                  value={learningApi.departmentId}
+                  onValueChange={(value) => learningApi.selectDepartment(value ?? '')}
+                >
+                  <Select.Trigger class="w-56" data-testid="learning-report-department"
+                    >{departmentLabel}</Select.Trigger
+                  >
+                  <Select.Content>
+                    <Select.Item value="">{$t('learning_analytics.departments.all')}</Select.Item>
+                    {#each learningApi.departmentOptions as department (department.departmentId ?? 'none')}
+                      <Select.Item value={department.departmentId ?? 'none'}
+                        >{department.department || $t('learning_analytics.departments.none')}</Select.Item
+                      >
+                    {/each}
+                  </Select.Content>
+                </Select.Root>
+              {/if}
+              {#if report}<span class="ui:text-muted-foreground text-[11px]"
+                  >{$t('learning_analytics.updated', { time: formatUpdated(report.generatedAt) })}</span
+                >{/if}
+            </div>
           </div>
           <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {#each metrics as metric (metric.label)}
@@ -470,6 +518,61 @@
           </div>
         </section>
 
+        {#if snapshot && snapshot.departments.length > 1 && !learningApi.departmentId}
+          <section
+            class="ui:bg-card ui:shadow-card overflow-hidden rounded-xl border"
+            aria-label={$t('learning_analytics.departments.title')}
+            data-testid="learning-report-departments"
+          >
+            <div class="space-y-1 p-5">
+              <h2 class="text-sm font-semibold">{$t('learning_analytics.departments.title')}</h2>
+              <p class="ui:text-muted-foreground text-xs leading-relaxed">
+                {$t('learning_analytics.departments.note')}
+              </p>
+            </div>
+            <Table.Root class="min-w-[720px]">
+              <Table.Header
+                ><Table.Row
+                  ><Table.Head>{$t('employees.department')}</Table.Head><Table.Head class="text-right"
+                    >{$t('learning_analytics.departments.columns.employees')}</Table.Head
+                  ><Table.Head class="text-right">{$t('learning_analytics.departments.columns.assignments')}</Table.Head
+                  ><Table.Head class="text-right">{$t('learning_analytics.departments.columns.overdue')}</Table.Head
+                  ><Table.Head class="text-right">{$t('learning_analytics.departments.columns.not_started')}</Table.Head
+                  ><Table.Head>{$t('learning_analytics.departments.columns.completion')}</Table.Head></Table.Row
+                ></Table.Header
+              >
+              <Table.Body>
+                {#each snapshot.departments as department (department.departmentId ?? 'none')}
+                  {@const rate = departmentCompletionRate(department)}
+                  <Table.Row
+                    ><Table.Cell
+                      ><button
+                        type="button"
+                        class="ui:hover:text-primary text-left font-medium"
+                        onclick={() => learningApi.selectDepartment(department.departmentId ?? 'none')}
+                        >{department.department || $t('learning_analytics.departments.none')}</button
+                      ></Table.Cell
+                    ><Table.Cell class="text-right tabular-nums">{department.employees}</Table.Cell><Table.Cell
+                      class="text-right tabular-nums">{department.assigned}</Table.Cell
+                    ><Table.Cell class="text-right tabular-nums"
+                      >{#if department.overdue}<Badge variant="warning">{department.overdue}</Badge
+                        >{:else}0{/if}</Table.Cell
+                    ><Table.Cell class="text-right tabular-nums">{department.not_started}</Table.Cell><Table.Cell
+                      >{#if rate === null}<span class="ui:text-muted-foreground">—</span>{:else}<div
+                          class="flex items-center gap-3"
+                        >
+                          <Progress value={rate} class="h-1.5 min-w-16 flex-1" /><span
+                            class="w-9 text-right text-xs tabular-nums">{rate}%</span
+                          >
+                        </div>{/if}</Table.Cell
+                    ></Table.Row
+                  >
+                {/each}
+              </Table.Body>
+            </Table.Root>
+          </section>
+        {/if}
+
         <section
           id="learning-assigned-report"
           class="ui:bg-card ui:shadow-card scroll-mt-20 overflow-hidden rounded-xl border"
@@ -481,7 +584,12 @@
                 {$t('learning_analytics.assigned_section.note')}
               </p>
             </div>
-            <ExportMenu document={assignmentExport} disabled={!assignmentRows.length} />
+            <ExportMenu
+              document={loadAssignmentExport}
+              estimatedRowCount={assignmentsApi.total}
+              disabled={!assignmentsApi.total}
+              testId="learning-assignments-export"
+            />
           </div>
           {#if snapshot}
             <div class="flex flex-wrap gap-2 px-5">
@@ -526,7 +634,11 @@
                 </Select.Content>
               </Select.Root>
             </div>
-            {#if !assignmentRows.length}
+            {#if assignmentsApi.loading && !assignmentsApi.rows.length}
+              <div class="space-y-2 p-5">
+                {#each [0, 1, 2] as index (index)}<Skeleton class="h-10 w-full" />{/each}
+              </div>
+            {:else if !assignmentsApi.rows.length}
               <Empty
                 icon={BookOpenIcon}
                 title={$t('learning_analytics.assigned_section.empty')}
@@ -546,7 +658,7 @@
                   ></Table.Header
                 >
                 <Table.Body>
-                  {#each assignmentRows.slice(0, 200) as row (row.enrollmentId)}
+                  {#each assignmentsApi.rows as row (row.enrollmentId)}
                     <Table.Row
                       ><Table.Cell
                         ><a
@@ -572,11 +684,29 @@
                   {/each}
                 </Table.Body>
               </Table.Root>
-              {#if assignmentRows.length > 200}
-                <p class="ui:text-muted-foreground border-t px-5 py-3 text-[11px]">
-                  {$t('learning_analytics.assigned_section.truncated', { count: assignmentRows.length })}
+              <div class="flex flex-wrap items-center justify-between gap-3 border-t px-5 py-3 text-xs">
+                <p class="ui:text-muted-foreground">
+                  {$t('learning_analytics.assigned_section.total', { count: assignmentsApi.total })}
                 </p>
-              {/if}
+                <div class="flex items-center gap-3">
+                  <span>{$t('employees.page_label', { page: assignmentsApi.page, pages: assignmentPages })}</span
+                  ><Button
+                    size="icon"
+                    variant="secondary"
+                    aria-label={$t('employees.previous')}
+                    disabled={assignmentsApi.page <= 1 || assignmentsApi.loading}
+                    onclick={() => assignmentsApi.load(assignmentFilters, assignmentsApi.page - 1)}
+                    ><ChevronLeftIcon size={16} /></Button
+                  ><Button
+                    size="icon"
+                    variant="secondary"
+                    aria-label={$t('employees.next')}
+                    disabled={assignmentsApi.page >= assignmentPages || assignmentsApi.loading}
+                    onclick={() => assignmentsApi.load(assignmentFilters, assignmentsApi.page + 1)}
+                    ><ChevronRightIcon size={16} /></Button
+                  >
+                </div>
+              </div>
             {/if}
           {/if}
         </section>

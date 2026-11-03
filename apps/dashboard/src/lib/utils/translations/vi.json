@@ -6363,8 +6363,22 @@
       "all_courses": "Tất cả khóa học",
       "all_batches": "Tất cả đợt",
       "empty": "Không có lượt giao phù hợp",
-      "truncated": "Đang hiển thị 200 / {count} dòng. Xuất file để xem đầy đủ."
-    }
+      "total": "{count} lượt giao"
+    },
+    "departments": {
+      "all": "Tất cả phòng ban",
+      "none": "Chưa có phòng ban",
+      "title": "Theo phòng ban",
+      "note": "Tỷ lệ hoàn thành trên các lượt giao của nhân viên đang làm việc trong từng phòng ban. Bấm tên phòng ban để xem riêng.",
+      "columns": {
+        "employees": "Nhân viên",
+        "assignments": "Lượt giao",
+        "overdue": "Quá hạn",
+        "not_started": "Chưa bắt đầu",
+        "completion": "Hoàn thành"
+      }
+    },
+    "my_team_title": "Báo cáo đội của tôi"
   },
   "employees": {
     "title": "Nhân viên",
@@ -6505,7 +6519,23 @@
     "unassigned": "Chưa cập nhật",
     "empty_hint": "Thêm nhân viên mới hoặc điều chỉnh bộ lọc để tìm người bạn cần.",
     "page_label": "Trang {page} / {pages}",
-    "job_title": "Chức danh"
+    "job_title": "Chức danh",
+    "departments": {
+      "title": "Phòng ban",
+      "description": "Danh sách phòng ban dùng chung cho nhân viên, giao khoá và báo cáo. Tên được chuẩn hoá khi nhập: khác chữ hoa hay khoảng trắng vẫn là một phòng ban.",
+      "empty": "Chưa có phòng ban nào",
+      "active_employees": "Đang làm / tổng",
+      "save": "Lưu",
+      "delete": "Xoá phòng ban",
+      "merge_hint": "Đổi tên trùng với một phòng ban khác sẽ gộp hai phòng ban làm một. Chỉ xoá được phòng ban không còn nhân viên.",
+      "renamed": "Đã đổi tên phòng ban",
+      "merged": "Đã gộp vào phòng ban có cùng tên",
+      "deleted": "Đã xoá phòng ban",
+      "errors": {
+        "missing": "Không tìm thấy phòng ban",
+        "not_empty": "Phòng ban vẫn còn nhân viên nên không xoá được"
+      }
+    }
   },
   "training_library": {
     "enrolled": "Đã tham gia",

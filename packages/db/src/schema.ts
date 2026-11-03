@@ -102,6 +102,23 @@ export const organizationMemberEventType = pgEnum('ORGANIZATION_MEMBER_EVENT_TYP
   'REMOVED'
 ]);
 
+export const department = pgTable(
+  'department',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organization.id),
+    name: text().notNull(),
+    nameKey: text('name_key').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    uniqueIndex('department_org_key_unique').on(table.organizationId, table.nameKey),
+    check('department_name_check', sql`btrim(${table.name}) <> ''`)
+  ]
+);
+
 export const employee = pgTable(
   'employee',
   {
@@ -116,7 +133,7 @@ export const employee = pgTable(
     employeeCode: varchar('employee_code', { length: 50 }).notNull(),
     fullname: text().notNull(),
     email: text().notNull(),
-    department: text().notNull().default(''),
+    departmentId: uuid('department_id').references((): AnyPgColumn => department.id),
     jobTitle: text('job_title').notNull().default(''),
     managerId: uuid('manager_id').references((): AnyPgColumn => employee.id),
     roles: text()
@@ -135,6 +152,7 @@ export const employee = pgTable(
     uniqueIndex('employee_org_code_unique').on(table.organizationId, table.employeeCode),
     uniqueIndex('employee_org_email_unique').on(table.organizationId, table.email),
     index('employee_manager_idx').on(table.organizationId, table.managerId),
+    index('employee_department_idx').on(table.organizationId, table.departmentId),
     check('employee_roles_check', sql`${table.roles} <@ ARRAY['ADMIN','LND','HR']::text[]`),
     check('employee_status_check', sql`${table.status} IN ('DRAFT','INVITED','ACTIVE','SUSPENDED','LEFT')`),
     check('employee_code_normalized', sql`${table.employeeCode} = upper(${table.employeeCode})`),

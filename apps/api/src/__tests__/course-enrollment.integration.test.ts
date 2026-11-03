@@ -79,6 +79,19 @@ integration('course enrollment on isolated PostgreSQL', () => {
         status: profileId ? 'ACTIVE' : 'DEACTIVATED'
       })
       .returning();
+    await database.db
+      .insert(database.department)
+      .values({ organizationId, name: 'Sales', nameKey: 'sales' })
+      .onConflictDoNothing();
+    const [sales] = await database.db
+      .select({ id: database.department.id })
+      .from(database.department)
+      .where(
+        database.and(
+          database.eq(database.department.organizationId, organizationId),
+          database.eq(database.department.nameKey, 'sales')
+        )
+      );
     const [row] = await database.db
       .insert(database.employee)
       .values({
@@ -87,7 +100,7 @@ integration('course enrollment on isolated PostgreSQL', () => {
         fullname: 'Learner',
         email: employeeEmail,
         employeeCode: randomUUID().slice(0, 12).toUpperCase(),
-        department: 'Sales',
+        departmentId: sales.id,
         jobTitle: 'Rep',
         status: profileId ? 'ACTIVE' : 'DRAFT',
         activatedAt: profileId ? new Date().toISOString() : null,
@@ -496,7 +509,13 @@ integration('course enrollment on isolated PostgreSQL', () => {
         kind: 'reports',
         managerEmployeeId: manager.employeeId
       });
-      const reportedEmployees = snapshot.rows.map((row) => row.employeeId);
+      const assignments = await analytics.getLearningAssignments(
+        organizationId,
+        { kind: 'reports', managerEmployeeId: manager.employeeId },
+        {},
+        { page: 1, limit: 25 }
+      );
+      const reportedEmployees = assignments.rows.map((row) => row.employeeId);
 
       expect(snapshot.employees).toBe(2);
       expect(reportedEmployees).toEqual([employeeId]);
@@ -531,7 +550,13 @@ integration('course enrollment on isolated PostgreSQL', () => {
 
       expect(snapshot.courses.map((course) => course.id)).toEqual([taught.id]);
       expect(snapshot.employees).toBe(1);
-      expect(snapshot.rows.map((row) => row.employeeId)).toEqual([employeeId]);
+      const assignments = await analytics.getLearningAssignments(
+        organizationId,
+        { kind: 'courses', teamProfileId: tutorId },
+        {},
+        { page: 1, limit: 25 }
+      );
+      expect(assignments.rows.map((row) => row.employeeId)).toEqual([employeeId]);
     });
   });
 });

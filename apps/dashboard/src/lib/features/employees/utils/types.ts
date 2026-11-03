@@ -25,3 +25,7 @@ export type PreviewActivation = Extract<InferResponseType<PreviewActivationReque
 export type ActivateEmployeeRequest = typeof classroomio.employees.activation.$post;
 export type EmployeeStatusAction = Extract<EmployeeStatus, 'ACTIVE' | 'SUSPENDED' | 'LEFT'>;
 export type EmployeeImportRow = Partial<CreateEmployee> & { managerCode?: string };
+export type DepartmentsRequest = typeof classroomio.employees.departments.$get;
+export type Department = Extract<InferResponseType<DepartmentsRequest>, { success: true }>['data'][number];
+export type RenameDepartmentRequest = (typeof classroomio.employees.departments)[':departmentId']['$patch'];
+export type DeleteDepartmentRequest = (typeof classroomio.employees.departments)[':departmentId']['$delete'];
