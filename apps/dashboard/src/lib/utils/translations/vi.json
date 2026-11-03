@@ -511,6 +511,13 @@
     "reset_password": {
       "heading": "Đặt mật khẩu mới",
       "description": "Nhập mật khẩu mới cho tài khoản của bạn"
+    },
+    "errors": {
+      "invalid_credentials": "Mã nhân viên, email hoặc mật khẩu không đúng.",
+      "locked": "Tài khoản tạm khoá vì nhập sai mật khẩu nhiều lần. Vui lòng thử lại sau {minutes} phút.",
+      "disabled": "Tài khoản đã bị vô hiệu hoá. Vui lòng liên hệ HR.",
+      "too_many_requests": "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.",
+      "unavailable": "Không thể đăng nhập lúc này. Vui lòng thử lại sau."
     }
   },
   "profileMenu": {
@@ -676,7 +683,8 @@
         "confirm": "Xác nhận",
         "cancel": "Hủy",
         "email_change_verification_note": "Email xác minh đã được gửi tới địa chỉ email hiện tại của bạn. Email mới chỉ có hiệu lực sau khi bạn xác nhận email này.",
-        "email_change_verification_sent": "Email xác minh đã được gửi tới địa chỉ email mới của bạn. Vui lòng kiểm tra hộp thư để xác minh email mới."
+        "email_change_verification_sent": "Email xác minh đã được gửi tới địa chỉ email mới của bạn. Vui lòng kiểm tra hộp thư để xác minh email mới.",
+        "managed_by_hr": "Họ tên và email do HR quản lý. Liên hệ HR nếu cần sửa."
       },
       "heading": "Hồ sơ",
       "update_profile": "Cập nhật hồ sơ",

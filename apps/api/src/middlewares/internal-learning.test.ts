@@ -55,8 +55,38 @@ describe('internal learning surfaces', () => {
   });
 
   it.each([
-    '/api/auth/get-session',
+    '/unsplash',
+    '/dash/track',
+    '/sso/discover',
+    '/organization/sso',
+    '/organization/token-auth',
+    '/organization/widgets',
+    '/agent/credits/purchase',
+    '/account/invites',
     '/invite/test',
+    '/license',
+    '/api/auth/token-exchange',
+    '/api/auth/sign-in/anonymous',
+    '/api/auth/admin/impersonate-user',
+    '/api/auth/sso/register',
+    '/api/auth/oauth-proxy-callback',
+    '/some-route-added-upstream'
+  ])('serves nothing at %s, which MP Learning has not reviewed', async (pathname) => {
+    const response = await app.request(pathname, { method: 'POST' });
+    expect(response.status).toBe(404);
+  });
+
+  it.each([
+    '/api/auth/get-session',
+    '/api/auth/sign-in/email',
+    '/api/auth/login-link',
+    '/api/auth/reset-password/token123',
+    '/session',
+    '/employees/access',
+    '/certificate/verify/ABCDEFGH23',
+    '/community',
+    '/agent/chat',
+    '/public-api/v1/courses',
     '/invite/organization/pending',
     '/organization/team',
     '/account',

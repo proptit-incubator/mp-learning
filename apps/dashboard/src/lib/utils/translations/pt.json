@@ -4160,7 +4160,8 @@
         "confirm": "Confirmar",
         "cancel": "Cancelar",
         "email_change_verification_note": "Um e-mail de verificação foi enviado para seu endereço de e-mail atual. O novo e-mail não terá efeito até que você aceite o e-mail de verificação.",
-        "email_change_verification_sent": "Um e-mail de verificação foi enviado para seu novo endereço de e-mail. Verifique sua caixa de entrada para verificar seu novo endereço de e-mail."
+        "email_change_verification_sent": "Um e-mail de verificação foi enviado para seu novo endereço de e-mail. Verifique sua caixa de entrada para verificar seu novo endereço de e-mail.",
+        "managed_by_hr": "Your name and email are managed by HR. Contact HR to change them."
       },
       "profile_picture": {
         "heading": "Foto do perfil",
@@ -4593,7 +4594,14 @@
       "heading": "Nova senha",
       "description": "Insira os detalhes da sua nova senha"
     },
-    "continue_with": "Ou continue com"
+    "continue_with": "Ou continue com",
+    "errors": {
+      "invalid_credentials": "Employee code, email or password is incorrect.",
+      "locked": "This account is locked after too many wrong passwords. Try again in {minutes} minutes.",
+      "disabled": "This account is disabled. Please contact HR.",
+      "too_many_requests": "Too many attempts. Please wait a moment and try again.",
+      "unavailable": "Sign-in is unavailable right now. Please try again later."
+    }
   },
   "app": {
     "search": {

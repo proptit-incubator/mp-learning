@@ -110,7 +110,7 @@ export const handle: Handle = async (args) => {
   const { event } = args;
 
   if (shouldForwardToApi(event.url.pathname)) {
-    return proxyRequestToApi(event.request);
+    return proxyRequestToApi(event.request, event.getClientAddress());
   }
 
   console.log('page path', event.url.pathname);

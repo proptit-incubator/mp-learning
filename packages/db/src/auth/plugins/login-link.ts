@@ -12,8 +12,9 @@ import { db } from '@db/drizzle';
 import { eq } from 'drizzle-orm';
 import { jwtVerify } from 'jose';
 import { ZLoginLinkPayload, ZLoginLinkQuery } from '@cio/utils/validation/organization';
-
-const SESSION_EXPIRES_IN_SEC = 60 * 60 * 24 * 7;
+import { canEmployeeSignIn } from '@db/queries/organization/employees';
+import { safeRedirectPath } from '@cio/utils/functions/links';
+import { SESSION_EXPIRES_IN_SECONDS } from '../session-policy';
 
 function generateToken(): string {
   const bytes = new Uint8Array(32);
@@ -46,7 +47,7 @@ export function loginLink(): BetterAuthPlugin {
           return c.json({ error: 'Invalid query', message: query.error.message }, { status: 400 });
         }
 
-        const redirectUrl = query.data.redirect && query.data.redirect.startsWith('/') ? query.data.redirect : '/';
+        const redirectUrl = safeRedirectPath(query.data.redirect);
 
         let payload: unknown;
         try {
@@ -70,8 +71,12 @@ export function loginLink(): BetterAuthPlugin {
           return c.json({ error: 'User not found' }, { status: 404 });
         }
 
+        if (!(await canEmployeeSignIn(user.id))) {
+          return c.json({ error: 'Account access is disabled' }, { status: 403 });
+        }
+
         const now = new Date();
-        const expiresAt = new Date(now.getTime() + SESSION_EXPIRES_IN_SEC * 1000);
+        const expiresAt = new Date(now.getTime() + SESSION_EXPIRES_IN_SECONDS * 1000);
         const sessionToken = generateToken();
 
         const [sessionRow] = await db

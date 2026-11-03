@@ -4160,7 +4160,8 @@
         "confirm": "पुष्टि करें",
         "cancel": "रद्द करें",
         "email_change_verification_note": "आपके वर्तमान ईमेल पते पर एक सत्यापन ईमेल भेज दिया गया है। जब तक आप सत्यापन ईमेल स्वीकार नहीं करते तब तक नया ईमेल प्रभावी नहीं होगा।",
-        "email_change_verification_sent": "आपके नए ईमेल पते पर एक सत्यापन ईमेल भेज दिया गया है। कृपया अपना नया ईमेल पता सत्यापित करने के लिए अपना इनबॉक्स जांचें।"
+        "email_change_verification_sent": "आपके नए ईमेल पते पर एक सत्यापन ईमेल भेज दिया गया है। कृपया अपना नया ईमेल पता सत्यापित करने के लिए अपना इनबॉक्स जांचें।",
+        "managed_by_hr": "Your name and email are managed by HR. Contact HR to change them."
       },
       "profile_picture": {
         "heading": "प्रोफ़ाइल चित्र",
@@ -4593,7 +4594,14 @@
       "heading": "नया पासवर्ड",
       "description": "अपना नया पासवर्ड विवरण दर्ज करें"
     },
-    "continue_with": "या साथ जारी रखें"
+    "continue_with": "या साथ जारी रखें",
+    "errors": {
+      "invalid_credentials": "Employee code, email or password is incorrect.",
+      "locked": "This account is locked after too many wrong passwords. Try again in {minutes} minutes.",
+      "disabled": "This account is disabled. Please contact HR.",
+      "too_many_requests": "Too many attempts. Please wait a moment and try again.",
+      "unavailable": "Sign-in is unavailable right now. Please try again later."
+    }
   },
   "app": {
     "search": {

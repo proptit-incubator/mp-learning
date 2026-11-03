@@ -96,3 +96,9 @@ export function extractUniqueLinks(rawInput = '', transformFn?: (link: string) =
 
   return dedupe(transformed);
 }
+
+/** A same-origin path to redirect to, or `/`. Browsers treat `//host` and `/\host` as another origin. */
+export function safeRedirectPath(redirect: string | null | undefined): string {
+  if (!redirect || !redirect.startsWith('/') || redirect.startsWith('//') || redirect.includes('\\')) return '/';
+  return redirect;
+}

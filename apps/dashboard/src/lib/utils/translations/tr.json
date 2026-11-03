@@ -521,6 +521,13 @@
     "reset_password": {
       "heading": "Yeni Şifre",
       "description": "Yeni şifre ayrıntılarınızı girin"
+    },
+    "errors": {
+      "invalid_credentials": "Employee code, email or password is incorrect.",
+      "locked": "This account is locked after too many wrong passwords. Try again in {minutes} minutes.",
+      "disabled": "This account is disabled. Please contact HR.",
+      "too_many_requests": "Too many attempts. Please wait a moment and try again.",
+      "unavailable": "Sign-in is unavailable right now. Please try again later."
     }
   },
   "profileMenu": {
@@ -588,7 +595,8 @@
         "confirm": "Confirm",
         "cancel": "Cancel",
         "email_change_verification_note": "Mevcut e-posta adresinize bir doğrulama e-postası gönderildi. Doğrulama e-postasını kabul edene kadar yeni e-posta geçerli olmayacaktır.",
-        "email_change_verification_sent": "Yeni e-posta adresinize bir doğrulama e-postası gönderildi. Lütfen yeni e-posta adresinizi doğrulamak için gelen kutunuzu kontrol edin."
+        "email_change_verification_sent": "Yeni e-posta adresinize bir doğrulama e-postası gönderildi. Lütfen yeni e-posta adresinizi doğrulamak için gelen kutunuzu kontrol edin.",
+        "managed_by_hr": "Your name and email are managed by HR. Contact HR to change them."
       },
       "heading": "Profil",
       "update_profile": "Profili Güncelle",

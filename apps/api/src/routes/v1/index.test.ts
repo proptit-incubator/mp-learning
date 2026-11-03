@@ -65,7 +65,7 @@ const CLIENT_IP = '203.0.113.10';
 const FAILED_AUTH_KEY = `public_api_failed_auth:${CLIENT_IP}`;
 
 function requestWithToken(token?: string) {
-  const headers = new Headers({ 'cf-connecting-ip': CLIENT_IP });
+  const headers = new Headers({ 'x-forwarded-for': CLIENT_IP });
 
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);

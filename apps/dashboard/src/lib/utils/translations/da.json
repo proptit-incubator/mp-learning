@@ -4160,7 +4160,8 @@
         "confirm": "Bekræft",
         "cancel": "Annuller",
         "email_change_verification_note": "En bekræftelses-e-mail er blevet sendt til din nuværende e-mailadresse. Den nye e-mail træder ikke i kraft, før du accepterer bekræftelses-e-mailen.",
-        "email_change_verification_sent": "En bekræftelses-e-mail er blevet sendt til din nye e-mailadresse. Tjek venligst din indbakke for at bekræfte din nye e-mailadresse."
+        "email_change_verification_sent": "En bekræftelses-e-mail er blevet sendt til din nye e-mailadresse. Tjek venligst din indbakke for at bekræfte din nye e-mailadresse.",
+        "managed_by_hr": "Your name and email are managed by HR. Contact HR to change them."
       },
       "profile_picture": {
         "heading": "Profilbillede",
@@ -4593,7 +4594,14 @@
       "heading": "Ny adgangskode",
       "description": "Indtast dine nye adgangskodeoplysninger"
     },
-    "continue_with": "Eller fortsæt med"
+    "continue_with": "Eller fortsæt med",
+    "errors": {
+      "invalid_credentials": "Employee code, email or password is incorrect.",
+      "locked": "This account is locked after too many wrong passwords. Try again in {minutes} minutes.",
+      "disabled": "This account is disabled. Please contact HR.",
+      "too_many_requests": "Too many attempts. Please wait a moment and try again.",
+      "unavailable": "Sign-in is unavailable right now. Please try again later."
+    }
   },
   "app": {
     "search": {

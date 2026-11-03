@@ -1,37 +1,66 @@
 import type { MiddlewareHandler } from 'hono';
 
+const AUTH_ENDPOINTS = [
+  'get-session',
+  'sign-in/email',
+  'sign-in/social',
+  'callback/google',
+  'sign-out',
+  'sign-up/email',
+  'request-password-reset',
+  'reset-password(?:/[^/]+)?',
+  'change-password',
+  'change-email',
+  'update-user',
+  'send-verification-email',
+  'verify-email',
+  'login-link',
+  'list-sessions',
+  'revoke-session',
+  'revoke-sessions',
+  'revoke-other-sessions'
+];
+
+const ALLOWED_PATHS = [
+  /^\/(?:docs)?$/,
+  /^\/session\/?$/,
+  new RegExp(`^/api/auth/(?:${AUTH_ENDPOINTS.join('|')})/?$`),
+  /^\/(account|employees|course|certificate|hls|transcripts|media|jobs|mail|organization|dash|community|report|internal|agent)(\/|$)/,
+  /^\/public-api\/v1(\/|$)/,
+  /^\/invite\/organization\/pending\/?$/,
+  /^\/admin\/queues(\/|$)/
+];
+
+const RETIRED_PATHS = [
+  /^\/course\/(slug\/|[^/]+\/payment-request(?:\/|$))/,
+  /^\/course\/[^/]+\/invites(?:\/|$)/,
+  /^\/public-api\/v1\/courses\/[^/]+\/invites(?:\/|$)/,
+  /^\/public-api\/v1\/organization\/landing-page(\/|$)/,
+  /^\/account\/(workspaces|usage|invites)(\/|$)/,
+  /^\/organization\/(courses|tags)\/public\/?$/,
+  /^\/organization\/(join|plan|plans|setup|early-adopter|team\/invite|link-invite)(\/|$)/,
+  /^\/organization\/(sso|token-auth|widgets)(\/|$)/,
+  /^\/dash\/track(\/|$)/,
+  /^\/agent\/credits\/purchase(\/|$)/
+];
+
+/**
+ * MP Learning serves only the routes listed here. Anything else, including routes that upstream ClassroomIO adds
+ * later, answers 404 until it is reviewed and added.
+ */
+export function isServedPath(method: string, pathname: string): boolean {
+  if (!ALLOWED_PATHS.some((pattern) => pattern.test(pathname))) return false;
+  if (RETIRED_PATHS.some((pattern) => pattern.test(pathname))) return false;
+
+  const organizationCreation = /^\/organization\/?$/.test(pathname) && ['POST', 'DELETE'].includes(method);
+  const teamMembershipChange =
+    /^\/organization\/team\/[^/]+\/?$/.test(pathname) && ['PATCH', 'DELETE'].includes(method);
+
+  return !organizationCreation && !teamMembershipChange;
+}
+
 export const internalLearning: MiddlewareHandler = async (context, next) => {
-  const pathname = context.req.path;
-  const retiredEndpoint = /^\/(widgets|org-site)(\/|$)/.test(pathname);
-  const publicCatalog = /^\/organization\/(courses|tags)\/public\/?$/.test(pathname);
-
-  const publicSales = /^\/course\/(slug\/|[^/]+\/payment-request(?:\/|$))/.test(pathname);
-  const retiredManagement =
-    /^\/(onboarding|domain|license|payments|webhooks\/polar)(\/|$)/.test(pathname) ||
-    /^\/account\/(workspaces|usage)(\/|$)/.test(pathname) ||
-    /^\/organization\/join\/?$/.test(pathname) ||
-    /^\/organization\/(plan|plans|setup|early-adopter)(\/|$)/.test(pathname) ||
-    /^\/(?:public-api\/)?v1\/organization\/landing-page(\/|$)/.test(pathname);
-  const organizationCreation = /^\/organization\/?$/.test(pathname) && ['POST', 'DELETE'].includes(context.req.method);
-  const courseInvitations =
-    /^\/course\/[^/]+\/invites(?:\/|$)/.test(pathname) ||
-    /^\/(?:public-api\/)?v1\/courses\/[^/]+\/invites(?:\/|$)/.test(pathname) ||
-    /^\/invite\/student(?:\/|$)/.test(pathname);
-  const teamInvitations =
-    /^\/organization\/(team\/invite|link-invite)\/?$/.test(pathname) ||
-    (/^\/organization\/team\/[^/]+\/?$/.test(pathname) && ['PATCH', 'DELETE'].includes(context.req.method)) ||
-    /^\/invite\/(link|r)(\/|$)/.test(pathname) ||
-    /^\/invite\/organization\/(?!pending\/?$)/.test(pathname);
-
-  if (
-    retiredEndpoint ||
-    publicCatalog ||
-    publicSales ||
-    retiredManagement ||
-    organizationCreation ||
-    courseInvitations ||
-    teamInvitations
-  ) {
+  if (!isServedPath(context.req.method, context.req.path)) {
     return context.json({ success: false, error: 'Not found' }, 404);
   }
 

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { signInErrorMessage } from '$features/auth/utils/sign-in-error';
+  import { safeRedirectPath } from '@cio/utils/functions/links';
   import { AuthUI } from '$features/ui';
   import { LOGIN_FIELDS } from '$lib/utils/constants/authentication';
   import { t } from '$lib/utils/functions/translations';
@@ -106,9 +108,7 @@
               });
             }
 
-            const redirect = redirectUrl || '/';
-            window.location.href =
-              redirect.startsWith('/') && !redirect.startsWith('//') && !redirect.includes('\\') ? redirect : '/';
+            window.location.href = safeRedirectPath(redirectUrl);
           }
         }
       );
@@ -117,8 +117,8 @@
 
       if (error) throw error;
     } catch (error) {
-      const err = error as { error_description?: string; message?: string };
-      submitError = err?.error_description ?? err?.message ?? '';
+      const message = signInErrorMessage(error as Parameters<typeof signInErrorMessage>[0]);
+      submitError = $t(message.key, message.params);
       loading = false;
     }
   }

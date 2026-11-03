@@ -15,41 +15,15 @@ function normalizeIp(value: string | null | undefined): string | null {
 }
 
 /**
- * Extract real client IP address considering various proxy headers
+ * Client IP for rate limits. Browser traffic reaches the API through the dashboard proxy, which replaces
+ * `x-forwarded-for` with the address it resolved, so only that header is read; `cf-connecting-ip` and `x-real-ip`
+ * would come straight from the client on an on-prem install.
  */
 export const extractClientIp = (c: Context): string => {
-  // Priority order (most trusted first):
-  // 1. CF-Connecting-IP (Cloudflare)
-  // 2. X-Real-IP (nginx)
-  // 3. X-Forwarded-For (standard, but can be spoofed)
-  // 4. Connection IP (least reliable)
+  const forwardedFor = normalizeIp(c.req.header('x-forwarded-for')?.split(',')[0]);
+  if (forwardedFor) return forwardedFor;
 
-  const cfConnectingIp = normalizeIp(c.req.header('cf-connecting-ip'));
-  const realIp = normalizeIp(c.req.header('x-real-ip'));
-  const forwardedFor = c.req.header('x-forwarded-for');
-  const connInfo = getConnInfo(c);
-  const remoteAddress = normalizeIp(connInfo.remote.address);
-
-  if (cfConnectingIp) {
-    return cfConnectingIp;
-  }
-
-  if (realIp) {
-    return realIp;
-  }
-
-  if (forwardedFor) {
-    // x-forwarded-for can contain multiple IPs: "client, proxy1, proxy2"
-    // The first IP is usually the original client
-    return normalizeIp(forwardedFor.split(',')[0]) ?? 'unknown';
-  }
-
-  if (remoteAddress) {
-    return remoteAddress;
-  }
-
-  // Fallback - this might be a proxy IP
-  return 'unknown';
+  return normalizeIp(getConnInfo(c).remote.address) ?? 'unknown';
 };
 
 /**

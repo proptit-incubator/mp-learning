@@ -116,7 +116,12 @@ export function buildProxiedApiResponse(upstream: Response): Response {
   });
 }
 
-export async function proxyRequestToApi(request: Request): Promise<Response> {
+/**
+ * Forwards a browser request to the API. `clientAddress` is the address SvelteKit resolved for the browser (it honours
+ * `ADDRESS_HEADER`/`XFF_DEPTH` when a reverse proxy sits in front); client-supplied IP headers are dropped so the API's
+ * rate limits and login lockout cannot be dodged by inventing an address.
+ */
+export async function proxyRequestToApi(request: Request, clientAddress?: string): Promise<Response> {
   const url = new URL(request.url);
   const apiBase = resolveApiUpstreamBase();
 
@@ -137,9 +142,9 @@ export async function proxyRequestToApi(request: Request): Promise<Response> {
   // can leave Content-Encoding set, which breaks the browser.
   upstreamHeaders.set('accept-encoding', 'identity');
 
-  const forwardedFor = request.headers.get('cf-connecting-ip') ?? request.headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    upstreamHeaders.set('x-forwarded-for', forwardedFor);
+  for (const name of ['cf-connecting-ip', 'x-real-ip', 'x-forwarded-for', 'forwarded']) upstreamHeaders.delete(name);
+  if (clientAddress) {
+    upstreamHeaders.set('x-forwarded-for', clientAddress);
   }
 
   const init: RequestInit = {

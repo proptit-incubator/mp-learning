@@ -188,6 +188,9 @@ services:
       NODE_ENV: production
       PORT: 3082
       ORIGIN: ${DASHBOARD_ORIGIN:-http://localhost:3082}
+      # Set ADDRESS_HEADER=X-Forwarded-For only when a reverse proxy in front of the dashboard sets that header.
+      ADDRESS_HEADER: ${ADDRESS_HEADER:-}
+      XFF_DEPTH: ${XFF_DEPTH:-1}
       PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-true}
       PRIVATE_SERVER_URL: ${PRIVATE_SERVER_URL:-http://api:3081}
       PRIVATE_SERVER_KEY: ${PRIVATE_SERVER_KEY:?set a strong PRIVATE_SERVER_KEY in .env}

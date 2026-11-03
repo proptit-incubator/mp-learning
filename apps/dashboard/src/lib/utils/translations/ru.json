@@ -4160,7 +4160,8 @@
         "confirm": "Подтвердить",
         "cancel": "Отмена",
         "email_change_verification_note": "На ваш текущий адрес электронной почты было отправлено письмо с подтверждением. Новый адрес электронной почты не вступит в силу, пока вы не примете письмо с подтверждением.",
-        "email_change_verification_sent": "На ваш новый адрес электронной почты было отправлено письмо с подтверждением. Пожалуйста, проверьте свой почтовый ящик, чтобы подтвердить новый адрес электронной почты."
+        "email_change_verification_sent": "На ваш новый адрес электронной почты было отправлено письмо с подтверждением. Пожалуйста, проверьте свой почтовый ящик, чтобы подтвердить новый адрес электронной почты.",
+        "managed_by_hr": "Your name and email are managed by HR. Contact HR to change them."
       },
       "profile_picture": {
         "heading": "Изображение профиля",
@@ -4593,7 +4594,14 @@
       "heading": "Новый пароль",
       "description": "Введите данные нового пароля"
     },
-    "continue_with": "Или продолжить с"
+    "continue_with": "Или продолжить с",
+    "errors": {
+      "invalid_credentials": "Employee code, email or password is incorrect.",
+      "locked": "This account is locked after too many wrong passwords. Try again in {minutes} minutes.",
+      "disabled": "This account is disabled. Please contact HR.",
+      "too_many_requests": "Too many attempts. Please wait a moment and try again.",
+      "unavailable": "Sign-in is unavailable right now. Please try again later."
+    }
   },
   "app": {
     "search": {

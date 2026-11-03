@@ -110,6 +110,24 @@ describe('proxyRequestToApi', () => {
     expect(await response.text()).toBe('API upstream not configured');
   });
 
+  it('forwards the resolved client address and drops addresses the browser sent', async () => {
+    process.env.PRIVATE_SERVER_URL = 'http://api.internal:3081';
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
+    global.fetch = fetchMock as typeof fetch;
+
+    await proxyRequestToApi(
+      new Request('https://dashboard.example/api/auth/sign-in/email', {
+        headers: { 'cf-connecting-ip': '1.1.1.1', 'x-real-ip': '2.2.2.2', 'x-forwarded-for': '3.3.3.3' }
+      }),
+      '10.0.0.7'
+    );
+
+    const upstreamHeaders = new Headers((fetchMock.mock.calls[0] as [URL, RequestInit])[1].headers);
+    expect(upstreamHeaders.get('x-forwarded-for')).toBe('10.0.0.7');
+    expect(upstreamHeaders.get('cf-connecting-ip')).toBeNull();
+    expect(upstreamHeaders.get('x-real-ip')).toBeNull();
+  });
+
   it('requests identity encoding and returns a stripped response', async () => {
     process.env.PRIVATE_SERVER_URL = 'http://api.internal:3081';
 

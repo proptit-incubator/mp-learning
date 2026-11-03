@@ -83,6 +83,17 @@ export async function canEmployeeSignIn(profileId: string, client: DbOrTxClient 
   return rows.every((row) => row.status === 'ACTIVE' && row.memberStatus === 'ACTIVE');
 }
 
+/** Whether HR manages this account through an employee record, which makes its email and name HR's to change. */
+export async function isManagedEmployeeAccount(profileId: string, client: DbOrTxClient = db) {
+  const [row] = await client
+    .select({ id: schema.employee.id })
+    .from(schema.employee)
+    .innerJoin(schema.organizationmember, eq(schema.employee.memberId, schema.organizationmember.id))
+    .where(eq(schema.organizationmember.profileId, profileId))
+    .limit(1);
+  return Boolean(row);
+}
+
 function membershipOnlyRoles(roleId: number): EmployeeRole[] {
   if (roleId === 1) return ['ADMIN'];
   if (roleId === 2) return ['LND'];

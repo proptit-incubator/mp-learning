@@ -49,6 +49,10 @@ Mỗi chu kỳ hoàn thành có một chứng chỉ với mã tra cứu 10 ký t
 
 Các cổng PostgreSQL, Redis, API, dashboard và storage được bind localhost. Đặt reverse proxy HTTPS trên host: LMS trỏ tới `127.0.0.1:3082`, storage trỏ tới `127.0.0.1:9000`. Chuyển tiếp host/protocol đúng; cấu hình giới hạn request đủ cho video. Không expose cổng 5432/6379/3081 ra Internet. Nếu reverse proxy chạy trong Docker, nối nó vào cùng network và dùng tên service thay vì localhost.
 
+Reverse proxy phải ghi đè header `X-Forwarded-For` bằng IP thật của người dùng (nginx: `proxy_set_header X-Forwarded-For $remote_addr;`). Sau đó đặt `ADDRESS_HEADER=X-Forwarded-For` trong `.env`. Nếu bỏ qua bước này, mọi người dùng sẽ có chung IP của proxy và giới hạn tần suất đăng nhập sẽ áp lên cả công ty. Ngược lại, không đặt `ADDRESS_HEADER` khi không có proxy, vì khi đó trình duyệt có thể tự khai IP giả.
+
+Đăng nhập: phiên đăng nhập hết hạn sau 12 giờ không hoạt động. Nhập sai mật khẩu 5 lần liên tiếp thì tài khoản bị khoá tạm 5 phút. Mỗi 5 lần sai tiếp theo, thời gian khoá tăng gấp đôi, tối đa 1 giờ. Khoá tự hết khi hết thời gian; đăng nhập đúng thì bộ đếm về 0. Bộ đếm theo tài khoản, nên đổi IP không vượt qua được. Nếu Redis ngừng, việc đăng nhập bị từ chối thay vì bỏ qua giới hạn.
+
 Ảnh trong bucket media vốn được phục vụ công khai bởi storage upstream. Không dùng bucket này cho tài liệu mật. Với yêu cầu chỉ truy cập trong mạng doanh nghiệp, đặt cả LMS và storage sau VPN hoặc kiểm soát truy cập mạng của doanh nghiệp. Tài liệu/video cần kiểm thử URL ký số với endpoint HTTPS thực trước khi nghiệm thu.
 
 ## Tài khoản đầu tiên và nhân viên

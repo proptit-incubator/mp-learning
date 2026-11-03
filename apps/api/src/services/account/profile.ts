@@ -1,5 +1,5 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
-import { getOrganizationByProfileId } from '@cio/db/queries/organization';
+import { getOrganizationByProfileId, isManagedEmployeeAccount } from '@cio/db/queries/organization';
 import {
   getProfileByEmail,
   getProfileById,
@@ -33,6 +33,17 @@ export async function getAccountData(userId: string): Promise<GetAccountDataResu
 }
 
 export async function updateUser(userId: string, data: TUpdateProfile) {
+  if (data.fullname !== undefined) {
+    const current = await getProfileById(userId);
+    if (
+      current &&
+      data.fullname.trim() !== (current.fullname ?? '').trim() &&
+      (await isManagedEmployeeAccount(userId))
+    ) {
+      throw new AppError('Email and name are managed by HR', ErrorCodes.IDENTITY_MANAGED_BY_HR, 403, 'fullname');
+    }
+  }
+
   try {
     const updatedProfile = await updateProfile(userId, data);
 

@@ -511,6 +511,13 @@
     "reset_password": {
       "heading": "Nuova parola d'ordine",
       "description": "Inserisci i dettagli della tua nuova password"
+    },
+    "errors": {
+      "invalid_credentials": "Employee code, email or password is incorrect.",
+      "locked": "This account is locked after too many wrong passwords. Try again in {minutes} minutes.",
+      "disabled": "This account is disabled. Please contact HR.",
+      "too_many_requests": "Too many attempts. Please wait a moment and try again.",
+      "unavailable": "Sign-in is unavailable right now. Please try again later."
     }
   },
   "profileMenu": {
@@ -676,7 +683,8 @@
         "confirm": "Confermare",
         "cancel": "Annulla",
         "email_change_verification_note": "Un'e-mail di verifica è stata inviata al tuo indirizzo e-mail corrente. La nuova email non sarà effettiva finché non accetterai l'email di verifica.",
-        "email_change_verification_sent": "Un'e-mail di verifica è stata inviata al tuo nuovo indirizzo e-mail. Controlla la tua casella di posta per verificare il tuo nuovo indirizzo email."
+        "email_change_verification_sent": "Un'e-mail di verifica è stata inviata al tuo nuovo indirizzo e-mail. Controlla la tua casella di posta per verificare il tuo nuovo indirizzo email.",
+        "managed_by_hr": "Your name and email are managed by HR. Contact HR to change them."
       },
       "heading": "Profilo",
       "update_profile": "Aggiorna profilo",

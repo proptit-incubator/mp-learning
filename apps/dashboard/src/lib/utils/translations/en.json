@@ -511,6 +511,13 @@
     "reset_password": {
       "heading": "New Password",
       "description": "Enter your new password details"
+    },
+    "errors": {
+      "invalid_credentials": "Employee code, email or password is incorrect.",
+      "locked": "This account is locked after too many wrong passwords. Try again in {minutes} minutes.",
+      "disabled": "This account is disabled. Please contact HR.",
+      "too_many_requests": "Too many attempts. Please wait a moment and try again.",
+      "unavailable": "Sign-in is unavailable right now. Please try again later."
     }
   },
   "profileMenu": {
@@ -676,7 +683,8 @@
         "confirm": "Confirm",
         "cancel": "Cancel",
         "email_change_verification_note": "A verification email has been sent to your current email address. The new email will not be in effect until you accept the verification email.",
-        "email_change_verification_sent": "A verification email has been sent to your new email address. Please check your inbox to verify your new email address."
+        "email_change_verification_sent": "A verification email has been sent to your new email address. Please check your inbox to verify your new email address.",
+        "managed_by_hr": "Your name and email are managed by HR. Contact HR to change them."
       },
       "heading": "Profile",
       "update_profile": "Update Profile",

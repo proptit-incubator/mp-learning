@@ -17,6 +17,13 @@ import { ErrorCodes, handlePublicApiError } from '@api/utils/errors';
 import { accountRouter } from '@api/routes/account';
 import { employeesRouter } from '@api/routes/employees';
 import { resolveEmployeeSignInRequest } from '@api/utils/employee-sign-in';
+import { changesManagedIdentity } from '@api/utils/managed-identity';
+import {
+  clearSignInFailures,
+  readSignInIdentity,
+  recordSignInFailure,
+  signInLockRemaining
+} from '@api/utils/sign-in-lockout';
 import { agentRouter } from '@api/routes/agent';
 import { auth } from '@cio/db/auth';
 import { communityRouter } from '@api/routes/community';
@@ -173,8 +180,54 @@ export const app = new Hono()
       }
     }
 
+    if (await changesManagedIdentity(request, c.get('user'))) {
+      return c.json(
+        {
+          success: false,
+          message: 'Email and name are managed by HR',
+          code: ErrorCodes.IDENTITY_MANAGED_BY_HR
+        },
+        403
+      );
+    }
+
     request = await resolveEmployeeSignInRequest(request);
+    const signInIdentity = await readSignInIdentity(request);
+    if (signInIdentity) {
+      let lockRemaining: number;
+      try {
+        lockRemaining = await signInLockRemaining(signInIdentity);
+      } catch (error) {
+        console.error('[auth-handler] sign-in lockout unavailable:', error);
+        return c.json(
+          { success: false, error: 'Sign-in is temporarily unavailable', code: ErrorCodes.RATE_LIMIT_UNAVAILABLE },
+          503
+        );
+      }
+      if (lockRemaining > 0) {
+        c.header('Retry-After', String(lockRemaining));
+        return c.json(
+          {
+            success: false,
+            message: 'Too many failed sign-in attempts',
+            code: ErrorCodes.SIGN_IN_LOCKED,
+            retryAfter: lockRemaining
+          },
+          429
+        );
+      }
+    }
+
     const response = await auth.handler(request);
+
+    if (signInIdentity) {
+      try {
+        if (response.status === 401) await recordSignInFailure(signInIdentity);
+        else if (response.ok) await clearSignInFailures(signInIdentity);
+      } catch (error) {
+        console.error('[auth-handler] failed to update sign-in lockout:', error);
+      }
+    }
 
     // Outbound: if the OAuth callback redirected to
     // `/oauth-proxy-callback?cookies=…<huge>`, stash the cookies payload

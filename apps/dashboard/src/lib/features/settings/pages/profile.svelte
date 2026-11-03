@@ -10,6 +10,8 @@
   import { Button } from '@cio/ui/base/button';
   import { UploadImage, UnsavedChanges } from '$features/ui';
   import * as Field from '@cio/ui/base/field';
+  import { currentOrg } from '$lib/utils/store/org';
+  import { employeesApi } from '$features/employees/api/employees.svelte';
 
   interface Props {
     hasUnsavedChanges?: boolean;
@@ -28,6 +30,11 @@
   let capturedProfileId = $state<string | null>(null);
   let email = $derived($profile.email || '');
   let isChangingEmail = $state(false);
+  const identityManagedByHr = $derived(Boolean(employeesApi.access?.employeeId));
+
+  $effect(() => {
+    if ($currentOrg.id) void employeesApi.loadAccess($currentOrg.id);
+  });
   let emailChangeInitiated = $state(false);
 
   export async function handleUpdate() {
@@ -138,7 +145,7 @@
     <Field.Group>
       <Field.Field>
         <Field.Label>{$t('settings.profile.personal_information.full_name')}</Field.Label>
-        <Input bind:value={fullname} class="" />
+        <Input bind:value={fullname} class="" disabled={identityManagedByHr} />
         {#if profileApi.errors.fullname}
           <Field.Error>{$t(profileApi.errors.fullname)}</Field.Error>
         {/if}
@@ -156,7 +163,7 @@
           bind:value={email}
           class="w-full"
           type="email"
-          disabled={profileApi.isLoading}
+          disabled={profileApi.isLoading || identityManagedByHr}
           oninput={() => {
             if (email !== $profile.email) {
               isChangingEmail = true;
@@ -164,6 +171,9 @@
             }
           }}
         />
+        {#if identityManagedByHr}
+          <Field.Description>{$t('settings.profile.personal_information.managed_by_hr')}</Field.Description>
+        {/if}
         {#if profileApi.errors.newEmail}
           <Field.Error>{$t(profileApi.errors.newEmail)}</Field.Error>
         {/if}

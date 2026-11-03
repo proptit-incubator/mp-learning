@@ -1,7 +1,7 @@
 import * as CONSTANTS from './constants';
 import * as schema from '@db/schema';
 
-import { admin, anonymous } from 'better-auth/plugins';
+import { admin } from 'better-auth/plugins';
 import {
   sendChangeEmailConfirmation,
   retryPendingWelcomeEmail,
@@ -24,7 +24,7 @@ import { oAuthProxy } from 'better-auth/plugins/oauth-proxy';
 import { resolveTrustedBrowserOrigin } from './utils';
 import { sso } from '@better-auth/sso';
 import { syncUserWithProfile } from './auth/hooks/sync-user';
-import { tokenExchange } from './auth/plugins/token-exchange';
+import { SESSION_EXPIRES_IN_SECONDS, SESSION_UPDATE_AGE_SECONDS } from './auth/session-policy';
 import { trackLoginHook } from './auth/hooks/track-login';
 import { syncProfileEmailVerificationFromAuthUser } from './queries/auth/profile';
 
@@ -96,8 +96,8 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     storeAccountCookie: true
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 30, // 30 days
-    updateAge: 60 * 60 * 24, // 1 day (every 1 day the session expiration is updated)
+    expiresIn: SESSION_EXPIRES_IN_SECONDS,
+    updateAge: SESSION_UPDATE_AGE_SECONDS,
     cookieCache: {
       enabled: false,
       maxAge: 60 * 60 // 1 hour
@@ -142,14 +142,12 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
   },
   plugins: [
     admin(),
-    anonymous(),
     sso({
       // OIDC providers are registered dynamically per organization
       // via the admin API (auth.api.registerSSOProvider)
     }),
     ...buildOAuthProxyPlugin(),
     loginLink(),
-    tokenExchange(),
     // Attaches the user's org memberships ({ [orgId]: roleId }) to the session
     // so org-scoped middlewares can authorize without a per-request DB query.
     // Refreshes when the session cookie cache expires (see session.cookieCache.maxAge).
