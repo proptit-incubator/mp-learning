@@ -55,22 +55,31 @@ describe('studentCourseWelcomeEmail', () => {
         customMessage: '<p>Welcome from your instructor.</p>',
         branding: {}
       },
-      { locale: 'fr' }
+      { locale: 'vi' }
     );
 
-    expect(rendered).toContain('<html lang="fr">');
+    expect(rendered).toContain('<html lang="vi">');
     expect(rendered).toContain('<p>Welcome from your instructor.</p>');
-    expect(rendered).not.toContain('Vous avez maintenant accès à');
-    expect(rendered).toContain('Ouvrir le cours');
+    expect(rendered).not.toContain('Bạn đã có quyền truy cập');
+    expect(rendered).toContain('Mở khóa học');
   });
 
   it('sends the default body when the course has no welcome message', () => {
     const rendered = studentCourseWelcomeEmail.template.render(
       { orgName: 'Academy', courseName: 'React Basics', loginUrl: 'https://example.com/course', branding: {} },
-      { locale: 'fr' }
+      { locale: 'vi' }
     );
 
-    expect(rendered).toContain('Vous avez maintenant accès à');
+    expect(rendered).toContain('Bạn đã có quyền truy cập');
+  });
+
+  it('falls back to Vietnamese for a locale MP Learning no longer ships', () => {
+    const rendered = studentCourseWelcomeEmail.template.render(
+      { orgName: 'Academy', courseName: 'React Basics', loginUrl: 'https://example.com/course', branding: {} },
+      { locale: 'fr' as never }
+    );
+
+    expect(rendered).toContain('Bạn đã có quyền truy cập');
   });
 
   it('resolves dynamic action links in organization overrides', () => {
@@ -82,7 +91,7 @@ describe('studentCourseWelcomeEmail', () => {
         branding: {}
       },
       {
-        locale: 'fr',
+        locale: 'vi',
         contentOverride: '<p>Continue learning.</p><a href="{{action_url}}">Open course</a>'
       }
     );

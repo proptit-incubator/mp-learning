@@ -20,12 +20,10 @@ The `prototypes/` directory holds standalone HTML/CSS design mocks for explorati
 
 ## Translation, Formatting, and Git Workflow
 
-- If `apps/dashboard/src/lib/utils/translations/en.json` changes, update the other dashboard locale files before staging or committing.
-- To translate dashboard locale changes, run `cd apps/dashboard && pnpm translate`.
-- After running translation, review the generated locale changes and make sure placeholders wrapped in `{}` were preserved exactly. Fix any translated variable names before continuing.
+- MP Learning ships two dashboard locales: `vi.json` (default) and `en.json` in `apps/dashboard/src/lib/utils/translations/`. Add every new key to both by hand, keep placeholders wrapped in `{}` identical, and write the Vietnamese copy with the glossary in `docs/mp-thuat-ngu.md`.
 - Format changed files with the repo's changed-file formatter before staging. Prefer `pnpm format:changed` from the repository root. Use broader format commands only if the changed-file formatter is not sufficient for the task.
 - If you changed files under `packages/ui/src/**`, make sure the required `ui:` Tailwind prefix rules still pass. Run `pnpm --filter @cio/ui prefix` if needed before the final formatting pass.
-- Stage files only after translation and formatting are complete. Prefer explicit staging such as `git add path/to/file` or `git add <changed-files>` over broad staging commands.
+- Stage files only after both locale files and formatting are complete. Prefer explicit staging such as `git add path/to/file` or `git add <changed-files>` over broad staging commands.
 - Before creating a commit, manually run the current `lefthook` checks that would run on `pre-commit`:
   - `pnpm format:check`
   - `pnpm --filter @cio/ui prefix:check:staged` if staged changes include `packages/ui/src/**/*.{svelte,ts,tsx,js,jsx}`

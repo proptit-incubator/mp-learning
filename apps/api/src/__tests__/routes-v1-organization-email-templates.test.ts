@@ -52,11 +52,11 @@ import { enrichPublicApiOpenApiSpec } from '@cio/utils/openapi/public-api';
 import { v1Router } from '@api/routes/v1';
 
 const SCOPES = ['organization:read', 'organization:write'];
-const TEMPLATE_PATH = '/organization/email-templates/studentCourseWelcome/fr';
+const TEMPLATE_PATH = '/organization/email-templates/studentCourseWelcome/en';
 
 const summary = {
   emailId: 'studentCourseWelcome',
-  locale: 'fr',
+  locale: 'en',
   subject: 'Bienvenue',
   isCustomized: true,
   updatedAt: '2026-10-25T10:00:00.000Z'
@@ -146,13 +146,13 @@ describe('organization email template routes through the v1 router', () => {
   });
 
   it('passes the key organization and creator to every service', async () => {
-    const params = { emailId: 'studentCourseWelcome', locale: 'fr' };
+    const params = { emailId: 'studentCourseWelcome', locale: 'en' };
 
-    await request('GET', '/organization/email-templates?locale=fr&limit=5');
+    await request('GET', '/organization/email-templates?locale=en&limit=5');
     expect(mocks.emailTemplates.listEmailTemplatesService).toHaveBeenCalledWith('org-id', 'actor-id', {
       page: 1,
       limit: 5,
-      locale: 'fr'
+      locale: 'en'
     });
 
     await request('GET', TEMPLATE_PATH);

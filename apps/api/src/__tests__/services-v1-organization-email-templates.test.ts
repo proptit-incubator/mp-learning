@@ -30,13 +30,13 @@ import {
 
 const ORG_ID = 'org-1';
 const ACTOR_ID = 'actor-1';
-const PARAMS = { emailId: 'studentCourseWelcome', locale: 'fr' } as const;
-const FR_WELCOME = STUDENT_EMAIL_CATALOG.fr.templates.studentCourseWelcome;
+const PARAMS = { emailId: 'studentCourseWelcome', locale: 'en' } as const;
+const EN_WELCOME = STUDENT_EMAIL_CATALOG.en.templates.studentCourseWelcome;
 
 const savedFrWelcome = {
   organizationId: ORG_ID,
   emailId: 'studentCourseWelcome',
-  locale: 'fr',
+  locale: 'en',
   content: '<p>Salut {{course_name}}</p>',
   subject: null,
   updatedAt: '2026-10-25T10:00:00.000Z',
@@ -57,7 +57,7 @@ describe('services/v1/organization/email-templates', () => {
   describe('who may call it', () => {
     const calls = {
       list: (actorId: string | null) =>
-        listEmailTemplatesService(ORG_ID, actorId, { page: 1, limit: 20, locale: 'fr' }),
+        listEmailTemplatesService(ORG_ID, actorId, { page: 1, limit: 20, locale: 'en' }),
       get: (actorId: string | null) => getEmailTemplateService(ORG_ID, actorId, PARAMS),
       save: (actorId: string | null) => saveEmailTemplateService(ORG_ID, actorId, PARAMS, { content: '<p>x</p>' }),
       reset: (actorId: string | null) => resetEmailTemplateService(ORG_ID, actorId, PARAMS),
@@ -89,22 +89,22 @@ describe('services/v1/organization/email-templates', () => {
     const { items, pagination } = await listEmailTemplatesService(ORG_ID, ACTOR_ID, {
       page: 1,
       limit: 20,
-      locale: 'fr'
+      locale: 'en'
     });
 
     expect(items.map((item) => item.emailId)).toEqual([...EMPLOYEE_EMAIL_IDS]);
     expect(pagination).toEqual({ page: 1, limit: 20, total: EMPLOYEE_EMAIL_IDS.length, totalPages: 1 });
     expect(items[0]).toEqual({
       emailId: 'employeeActivation',
-      locale: 'fr',
-      subject: STUDENT_EMAIL_CATALOG.fr.templates.employeeActivation.subject,
+      locale: 'en',
+      subject: STUDENT_EMAIL_CATALOG.en.templates.employeeActivation.subject,
       isCustomized: false,
       updatedAt: null
     });
     expect(items.find((item) => item.emailId === 'studentCourseWelcome')).toEqual({
       emailId: 'studentCourseWelcome',
-      locale: 'fr',
-      subject: FR_WELCOME.subject,
+      locale: 'en',
+      subject: EN_WELCOME.subject,
       isCustomized: true,
       updatedAt: savedFrWelcome.updatedAt
     });
@@ -113,8 +113,8 @@ describe('services/v1/organization/email-templates', () => {
   it('gets the saved body, the default subject when none is saved, and the allowed placeholders', async () => {
     expect(await getEmailTemplateService(ORG_ID, ACTOR_ID, PARAMS)).toEqual({
       emailId: 'studentCourseWelcome',
-      locale: 'fr',
-      subject: FR_WELCOME.subject,
+      locale: 'en',
+      subject: EN_WELCOME.subject,
       isCustomized: true,
       updatedAt: savedFrWelcome.updatedAt,
       content: savedFrWelcome.content,
@@ -142,7 +142,7 @@ describe('services/v1/organization/email-templates', () => {
     expect(saveStudentEmailTemplate).toHaveBeenCalledWith({
       organizationId: ORG_ID,
       emailId: 'studentCourseWelcome',
-      locale: 'fr',
+      locale: 'en',
       content: '<p>x</p>',
       subject: null
     });
@@ -153,8 +153,8 @@ describe('services/v1/organization/email-templates', () => {
 
     const template = await resetEmailTemplateService(ORG_ID, ACTOR_ID, PARAMS);
 
-    expect(resetStudentEmailTemplate).toHaveBeenCalledWith(ORG_ID, 'studentCourseWelcome', 'fr');
-    expect(template).toMatchObject({ content: FR_WELCOME.body, subject: FR_WELCOME.subject, isCustomized: false });
+    expect(resetStudentEmailTemplate).toHaveBeenCalledWith(ORG_ID, 'studentCourseWelcome', 'en');
+    expect(template).toMatchObject({ content: EN_WELCOME.body, subject: EN_WELCOME.subject, isCustomized: false });
   });
 
   it('tests the current template when no draft is sent', async () => {
@@ -163,9 +163,9 @@ describe('services/v1/organization/email-templates', () => {
     expect(sendStudentEmailTemplateTest).toHaveBeenCalledWith({
       organizationId: ORG_ID,
       emailId: 'studentCourseWelcome',
-      locale: 'fr',
+      locale: 'en',
       content: savedFrWelcome.content,
-      subject: FR_WELCOME.subject,
+      subject: EN_WELCOME.subject,
       recipientEmails: ['a@example.com']
     });
   });

@@ -131,7 +131,7 @@ export class OnboardingApi extends BaseApiWithErrors {
       logContext: 'submitting onboarding metadata',
       onSuccess: async (result) => {
         profile.set(result.data);
-        handleLocaleChange(result.data.locale ?? 'en');
+        handleLocaleChange(result.data.locale);
 
         const welcomePopup = `${result.data.isEmailVerified}`;
         const siteName = get(currentOrg)?.siteName ?? data.siteName;

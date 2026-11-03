@@ -1,21 +1,8 @@
-import type { TLocale } from '@cio/db/types';
+import type { SupportedLocale } from '$lib/utils/functions/translations';
 
-export const LANGUAGE: Record<TLocale, string> = {
-  da: 'Dansk',
-  de: 'Deutsch',
-  en: 'English',
-  es: 'Español',
-  fr: 'Français',
-  hi: 'हिन्दी',
-  it: 'Italiano',
-  pl: 'Polski',
-  pt: 'Português',
-  ru: 'Русский',
-  tr: 'Türkçe',
-  vi: 'Tiếng Việt'
+export const LANGUAGE: Record<SupportedLocale, string> = {
+  vi: 'Tiếng Việt',
+  en: 'English'
 };
 
-export const LANGUAGES = Object.keys(LANGUAGE).map((lang) => ({
-  id: lang,
-  text: LANGUAGE[lang]
-}));
+export const LANGUAGES = Object.entries(LANGUAGE).map(([id, text]) => ({ id, text }));

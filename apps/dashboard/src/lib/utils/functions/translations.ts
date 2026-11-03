@@ -3,75 +3,33 @@ import i18n from '@sveltekit-i18n/base';
 import parser from '@sveltekit-i18n/parser-icu';
 import { writable } from 'svelte/store';
 
+/** MP Learning ships Vietnamese, the default, and English. Any other stored locale falls back to Vietnamese. */
+export const SUPPORTED_LOCALES = ['vi', 'en'] as const;
+export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+
+export function supportedLocale(value: string | null | undefined): SupportedLocale {
+  return (value ?? '').split('-')[0] === 'en' ? 'en' : 'vi';
+}
+
 export const config = {
   parser: parser(),
   loaders: [
-    {
-      locale: 'en',
-      key: '',
-      loader: async () => (await import('../translations/en.json')).default
-    },
-    {
-      locale: 'hi',
-      key: '',
-      loader: async () => (await import('../translations/hi.json')).default
-    },
-    {
-      locale: 'fr',
-      key: '',
-      loader: async () => (await import('../translations/fr.json')).default
-    },
-    {
-      locale: 'pl',
-      key: '',
-      loader: async () => (await import('../translations/pl.json')).default
-    },
-    {
-      locale: 'pt',
-      key: '',
-      loader: async () => (await import('../translations/pt.json')).default
-    },
-    {
-      locale: 'de',
-      key: '',
-      loader: async () => (await import('../translations/de.json')).default
-    },
     {
       locale: 'vi',
       key: '',
       loader: async () => (await import('../translations/vi.json')).default
     },
     {
-      locale: 'ru',
+      locale: 'en',
       key: '',
-      loader: async () => (await import('../translations/ru.json')).default
-    },
-    {
-      locale: 'es',
-      key: '',
-      loader: async () => (await import('../translations/es.json')).default
-    },
-    {
-      locale: 'da',
-      key: '',
-      loader: async () => (await import('../translations/da.json')).default
-    },
-    {
-      locale: 'tr',
-      key: '',
-      loader: async () => (await import('../translations/tr.json')).default
-    },
-    {
-      locale: 'it',
-      key: '',
-      loader: async () => (await import('../translations/it.json')).default
+      loader: async () => (await import('../translations/en.json')).default
     }
   ]
 };
 
 export const { t, loading, locales, locale, initialized, translations, loadTranslations } = new i18n(config);
 
-export const selectedLocale = writable<string>('en');
+export const selectedLocale = writable<string>('vi');
 export const LOCALE_STORAGE_KEY = 'classroomio_locale';
 export const LOCALE_COOKIE_KEY = 'classroomio_locale';
 
@@ -114,30 +72,25 @@ export async function ensureTranslations(
   targetLocale: string,
   shouldActivate: () => boolean = () => true
 ): Promise<void> {
-  await primeLocale(targetLocale);
+  const resolvedLocale = supportedLocale(targetLocale);
+  await primeLocale(resolvedLocale);
 
   // `locale.set` re-enters the library's loader trigger; `forceSet` just marks
   // the active locale for the strings we already hold.
-  if (shouldActivate()) locale.forceSet(targetLocale);
+  if (shouldActivate()) locale.forceSet(resolvedLocale);
 }
 
-export function handleLocaleChange(newLocale: TLocale) {
-  if (!newLocale) {
-    return;
-  }
-
-  locale.set(newLocale);
-
-  selectedLocale.set(newLocale);
-
-  persistLocale(newLocale);
+export function handleLocaleChange(newLocale: TLocale | null | undefined) {
+  const resolvedLocale = supportedLocale(newLocale);
+  locale.set(resolvedLocale);
+  selectedLocale.set(resolvedLocale);
+  persistLocale(resolvedLocale);
 }
 
-export function activateLocale(newLocale: TLocale) {
-  if (!newLocale) return;
-
-  locale.set(newLocale);
-  selectedLocale.set(newLocale);
+export function activateLocale(newLocale: TLocale | null | undefined) {
+  const resolvedLocale = supportedLocale(newLocale);
+  locale.set(resolvedLocale);
+  selectedLocale.set(resolvedLocale);
 }
 
 export function getPersistedLocale(): string | null {
@@ -158,7 +111,7 @@ export function getPersistedLocale(): string | null {
   return cookieMatch?.[1] ? decodeURIComponent(cookieMatch[1]) : null;
 }
 
-function persistLocale(newLocale: TLocale) {
+function persistLocale(newLocale: SupportedLocale) {
   if (typeof window === 'undefined') {
     return;
   }

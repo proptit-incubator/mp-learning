@@ -37,7 +37,7 @@ describe('student email catalog', () => {
   });
 
   it('uses the enforced locale for paid and self-hosted organizations', () => {
-    expect(resolveStudentEmailLocale({ isEligible: true, enforced: true, locale: 'fr' })).toBe('fr');
+    expect(resolveStudentEmailLocale({ isEligible: true, enforced: true, locale: 'en' })).toBe('en');
   });
 
   it('falls back to Vietnamese for unsupported locales', () => {

@@ -26,7 +26,6 @@ import {
 import type { AnswerData } from '@cio/question-types';
 import type { CourseProgressionMode } from '@cio/utils/functions/course-progression';
 import type { EmployeeRole } from '@cio/utils/validation/organization';
-import { EMAIL_LOCALES } from '@cio/utils/email';
 import { LESSON_VERSION_KIND_VALUES } from '@cio/utils/constants/lesson-version';
 import {
   LIVE_SESSION_REMINDER_STATUS_VALUES,
@@ -34,7 +33,8 @@ import {
 } from '@cio/utils/constants/live-session-reminder';
 import { sql } from 'drizzle-orm';
 
-export const locale = pgEnum('LOCALE', [...EMAIL_LOCALES]);
+/** Every value the LOCALE enum holds in the database. MP Learning only offers `vi` and `en`, but older rows may hold others. */
+export const locale = pgEnum('LOCALE', ['en', 'hi', 'fr', 'pt', 'de', 'vi', 'ru', 'es', 'pl', 'da', 'tr', 'it']);
 export const lessonVersionKind = pgEnum('LESSON_VERSION_KIND', [...LESSON_VERSION_KIND_VALUES]);
 export const plan = pgEnum('PLAN', ['EARLY_ADOPTER', 'ENTERPRISE', 'BASIC']);
 export const earlyAdopterClaimStatus = pgEnum('EARLY_ADOPTER_CLAIM_STATUS', ['pending', 'claimed', 'canceled']);

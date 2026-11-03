@@ -1,5 +1,6 @@
 import {
   DEFAULT_EMAIL_LOCALE,
+  isEmailLocale,
   STUDENT_EMAIL_CATALOG,
   type EmailLocale,
   type StudentEmailId,
@@ -54,7 +55,7 @@ export function getStudentEmailCopy(
   id: StudentEmailId,
   context: EmailRenderContext = {}
 ): { locale: EmailLocale; copy: StudentEmailTemplateCopy } {
-  const locale = context.locale ?? DEFAULT_EMAIL_LOCALE;
+  const locale = isEmailLocale(context.locale) ? context.locale : DEFAULT_EMAIL_LOCALE;
   return { locale, copy: STUDENT_EMAIL_CATALOG[locale].templates[id] };
 }
 

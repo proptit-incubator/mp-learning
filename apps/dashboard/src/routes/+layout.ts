@@ -1,6 +1,4 @@
-import { config, ensureTranslations, getPersistedLocale } from '$lib/utils/functions/translations';
-
-const SUPPORTED_LANGUAGES = config?.loaders?.map((loader) => loader.locale) || [];
+import { ensureTranslations, getPersistedLocale, supportedLocale } from '$lib/utils/functions/translations';
 
 export const load = async ({ data }) => {
   const persistedLocale = data?.localeCookie || getPersistedLocale();
@@ -10,7 +8,7 @@ export const load = async ({ data }) => {
   const defaultOrgLocale = data?.isOrgSite ? data?.org?.settings?.language?.locale : undefined;
   const userLocale = enforcedOrgLocale || persistedLocale || data?.locals?.profile?.locale || defaultOrgLocale || 'vi';
 
-  const initLocale = getInitialLocale(userLocale);
+  const initLocale = supportedLocale(userLocale);
   const translationsStart = performance.now();
   await ensureTranslations(initLocale); // keep this just before the `return`
   const translationsMs = Math.round((performance.now() - translationsStart) * 100) / 100;
@@ -18,11 +16,3 @@ export const load = async ({ data }) => {
 
   return data ?? {};
 };
-
-function getInitialLocale(lang: string): string {
-  const locale = lang.split('-')[0];
-
-  if (SUPPORTED_LANGUAGES.includes(locale)) return locale;
-
-  return 'en';
-}
