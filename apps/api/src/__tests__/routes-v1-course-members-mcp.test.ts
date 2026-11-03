@@ -27,12 +27,6 @@ vi.mock('@api/services/v1/courses/members', () => ({
   getCourseMemberAnalyticsService: vi.fn().mockResolvedValue({})
 }));
 
-vi.mock('@api/services/v1/courses/invites', () => ({
-  listCourseInvitesService: vi.fn().mockResolvedValue({ items: [], page: 1, limit: 20, total: 0, totalPages: 0 }),
-  createCourseInviteService: vi.fn().mockResolvedValue({}),
-  revokeCourseInviteService: vi.fn().mockResolvedValue({})
-}));
-
 vi.mock('@api/services/v1/shared', () => ({
   assertCourseBelongsToOrganization: vi.fn(),
   assertCourseTeamMemberOrOrgAdmin: vi.fn()
@@ -46,7 +40,6 @@ import { v1CoursesRouter } from '@api/routes/v1/courses';
 
 const COURSE_ID = '11111111-1111-4111-8111-111111111111';
 const MEMBER_ID = '33333333-3333-4333-8333-333333333333';
-const INVITE_ID = '44444444-4444-4444-8444-444444444444';
 const MCP_SCOPES = ['course:read', 'course:member:read', 'course:member:write'];
 
 function buildApp(automationKey: { type: string; scopes: string[] }) {
@@ -105,7 +98,6 @@ describe('public API scopes for MCP keys', () => {
 
     expect((await app.request(`${base}/members`)).status).toBe(200);
     expect((await app.request(`${base}/members/${MEMBER_ID}`, { method: 'DELETE' })).status).toBe(403);
-    expect((await app.request(`${base}/invites/${INVITE_ID}/revoke`, { method: 'POST' })).status).toBe(403);
   });
 
   it('still lets a public_api:* key reach every route', async () => {
@@ -133,12 +125,6 @@ describe('MCP usage on course member routes', () => {
     await app.request(`${base}/members/${MEMBER_ID}`, { method: 'DELETE' });
     await app.request(`${base}/members/${MEMBER_ID}/reset-progress`, { method: 'POST' });
     await app.request(`${base}/members/${MEMBER_ID}/analytics`);
-    await app.request(`${base}/invites`);
-    await app.request(
-      `${base}/invites`,
-      json('POST', { preset: 'MULTI_USE_30D', recipientEmails: ['a@example.com'], sendEmail: false })
-    );
-    await app.request(`${base}/invites/${INVITE_ID}/revoke`, { method: 'POST' });
 
     const categories = mocks.reserve.mock.calls.map(([, category]) => category);
     expect(mocks.complete.mock.calls.map(([, action, cost], index) => [action, categories[index], cost])).toEqual([
@@ -148,10 +134,7 @@ describe('MCP usage on course member routes', () => {
       ['update_course_member', 'write', 1],
       ['delete_course_member', 'write', 1],
       ['reset_course_member_progress', 'write', 1],
-      ['get_course_member_analytics', 'read', 0],
-      ['list_course_invites', 'read', 0],
-      ['create_course_invite', 'write', 1],
-      ['revoke_course_invite', 'write', 1]
+      ['get_course_member_analytics', 'read', 0]
     ]);
   });
 

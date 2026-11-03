@@ -21,10 +21,9 @@
   import CoursePublishBadge from './course-publish-badge.svelte';
   import CourseTagsOverflow from './course-tags-overflow.svelte';
   import type { OrgCourses, UserEnrolledCourses } from '$features/course/types';
-  import type { OrgPublicCourses } from '$features/org/utils/types';
 
   export interface Props {
-    course: OrgCourses[number] | UserEnrolledCourses[number] | OrgPublicCourses[number];
+    course: OrgCourses[number] | UserEnrolledCourses[number];
     isOnLandingPage?: boolean;
     isLMS?: boolean;
     isExplore?: boolean;
@@ -49,7 +48,7 @@
     progressRate = 45
   } = $derived({
     id: course.id,
-    slug: course.slug,
+    slug: course.slug ?? '',
     bannerImage: course.bannerImage || '',
     title: course.title,
     description: course.description,

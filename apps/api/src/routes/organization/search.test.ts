@@ -38,7 +38,6 @@ describe('organization search audience access', () => {
     mocks.searchOrganization.mockResolvedValue({
       courses: [],
       cohorts: [],
-      widgets: [],
       tags: [],
       audience: []
     });

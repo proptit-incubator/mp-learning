@@ -30,7 +30,6 @@ yarn-error.log*
 # Generated files
 apps/api/dist/
 packages/utils/dist/
-packages/course-app/dist/
 packages/db/dist/
 
 # Vite temp files

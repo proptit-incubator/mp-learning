@@ -4,7 +4,6 @@
 
   import { Snackbar } from '$features/ui';
   import { appInitApi } from '$features/app/init.svelte';
-  import PendingInviteModal from '$features/invite/components/pending-invite-modal.svelte';
   import { resolveAppOrgParams } from '$features/app/resolve-app-org-params';
   import { globalStore } from '$lib/utils/store/app';
   import { currentOrg, mergeAccountOrgFromServer } from '$lib/utils/store/org';
@@ -120,14 +119,6 @@
 
   <Snackbar />
   <AppVersionNotifier />
-
-  {#if appInitApi.pendingOrgInvite}
-    <PendingInviteModal
-      bind:open={appInitApi.showPendingInviteModal}
-      invite={appInitApi.pendingOrgInvite}
-      onAccepted={(redirectTo) => appInitApi.handlePendingInviteAccepted(redirectTo)}
-    />
-  {/if}
 
   {@render children?.()}
 </div>

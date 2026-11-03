@@ -4,7 +4,7 @@
   import * as Command from '@cio/ui/base/command';
   import { Button } from '@cio/ui/base/button';
   import { Spinner } from '@cio/ui/base/spinner';
-  import { BookOpen, Boxes, Clock, LayoutGrid, Settings, Tag, UserRound } from '@lucide/svelte';
+  import { BookOpen, Boxes, Clock, Settings, Tag, UserRound } from '@lucide/svelte';
   import { t } from '$lib/utils/functions/translations';
   import { currentOrg, currentOrgPath, isOrgAdmin } from '$lib/utils/store/org';
   import { searchApi } from '../api/search.svelte';
@@ -36,10 +36,7 @@
   const filteredRecents = $derived(filterStaticCatalog(recents, query));
   const hasQuery = $derived(query.trim().length > 0);
   const hasServerResults = $derived(
-    searchApi.results.course.length > 0 ||
-      searchApi.results.widget.length > 0 ||
-      searchApi.results.tag.length > 0 ||
-      searchApi.results.audience.length > 0
+    searchApi.results.course.length > 0 || searchApi.results.tag.length > 0 || searchApi.results.audience.length > 0
   );
   const hasVisibleResults = $derived(
     hasQuery
@@ -132,12 +129,6 @@
         onSelect={handleSelect}
       />
       {#if scope === 'org'}
-        <SearchResultGroup
-          heading={$t('app.search.command_palette.groups.widgets')}
-          items={groupItems('widget')}
-          fallbackIcon={LayoutGrid}
-          onSelect={handleSelect}
-        />
         <SearchResultGroup
           heading={$t('app.search.command_palette.groups.tags')}
           items={groupItems('tag')}

@@ -52,7 +52,6 @@
     class: className,
     placeholder = '',
     onImageUpload,
-    onSearchUnsplash,
     emailSafe = false
   }: EdraEditorProps = $props();
 
@@ -125,5 +124,5 @@
 ></div>
 
 {#if editor && !editor.isDestroyed}
-  <ImageUploadModal {editor} bind:open={isImageModalOpen} {onImageUpload} {onSearchUnsplash} />
+  <ImageUploadModal {editor} bind:open={isImageModalOpen} {onImageUpload} />
 {/if}

@@ -7,90 +7,37 @@ import type {
   TGetAudienceQuery,
   TGetOrganizationCoursesQuery
 } from '@cio/utils/validation/organization';
-import type { TNewOrganizationPlan, TOrganization, TOrganizationPlan } from '@db/types';
+import type { TOrganization } from '@db/types';
 import {
-  activateOrganizationPlan,
-  cancelOrganizationPlan,
-  createOrganizationPlan,
   deleteOrganizationAudienceMember,
-  deleteOrganizationMember,
   getActiveOrganizationPlan,
   getFirstOrganizationWithPlans,
   getLatestOrgInvitesByEmails,
-  getOrgIdBySiteName,
   getOrganizationAudience,
   getOrganizationAudienceMember,
   getOrganizationById,
-  getOrganizationBySiteName,
-  getOrganizationMemberByIdAndOrg,
-  getOrganizationMemberIdByOrgAndProfile,
-  getOrganizationPlanBySubscriptionId,
   getOrganizationTeam,
   revokeActiveOrganizationInvitesByEmails,
-  updateOrganization,
-  updateOrganizationPlan
+  updateOrganization
 } from '@cio/db/queries/organization';
 import {
   countOrgCourses,
-  countPublishedCoursesBySiteName,
   getCoursesById,
-  getCoursesBySiteNameForSetup,
   getEnrolledCourses,
-  getExercisesBySiteName,
-  getLessonsBySiteName,
   getOrgCourses,
-  getPublishedCoursesBySiteName,
   reorderOrgCourses as reorderOrgCoursesQuery
 } from '@cio/db/queries/course';
 import { countAssetsByOrg } from '@cio/db/queries/assets';
 import { countTagsByOrg, getCourseIdsByTagSlugs, getCourseTagsByCourseIdsForOrganization } from '@cio/db/queries/tag';
-import { getAccountPrimary } from '@cio/db/queries/account';
 import { getLastLogin, getProfileCourseProgress, getUserExercisesStats } from '@cio/db/queries/analytics';
 
 import type { OrganizationWithPlans } from '@cio/db/queries/organization/types';
 import { canUseBasicAuthSettings, PLAN } from '@cio/utils/plans';
 import { env } from '@cio/core/config/env';
 import { ROLE } from '@cio/utils/constants';
-import { createOrganizationWithOwner } from '@api/services/onboarding';
 import { deriveAudienceMemberStatus } from '@api/utils/audience-member-status';
-import { getProfileById, getProfileByEmail } from '@cio/db/queries/auth';
-import { inviteTeamMembers as inviteTeamMembersSecure, recordOrganizationInviteAudits } from './organization/invite';
-
-export { updateTeamMemberRole } from './organization/team-role';
-
-const PUBLIC_ORG_LANDING_PAGE_COURSE_LIMIT = 4;
-const ORG_COURSES_PAGE_SIZE = 6;
-
-/**
- * Creates a new organization with the current user as owner
- * @param profileId - The profile ID of the user creating the organization
- * @param data - Organization creation data (name, siteName)
- * @returns Created organization, member, and updated organizations list
- */
-export async function createOrg(profileId: string, data: { name: string; siteName: string }) {
-  try {
-    // Reuse existing function from onboarding service
-    return await createOrganizationWithOwner(
-      profileId,
-      {
-        orgName: data.name,
-        siteName: data.siteName
-      },
-      'add_org'
-    );
-  } catch (error) {
-    // Re-throw AppError as-is
-    if (error instanceof AppError) {
-      throw error;
-    }
-    // Wrap unexpected errors
-    throw new AppError(
-      error instanceof Error ? error.message : 'Failed to create organization',
-      ErrorCodes.ORG_CREATE_FAILED,
-      500
-    );
-  }
-}
+import { getProfileById } from '@cio/db/queries/auth';
+import { recordOrganizationInviteAudits } from './organization/invite';
 
 /**
  * Gets organizations with optional filters
@@ -288,81 +235,6 @@ export async function removeAudienceMember(orgId: string, memberId: number, remo
     throw new AppError(
       error instanceof Error ? error.message : 'Failed to remove audience member',
       ErrorCodes.ORG_AUDIENCE_REMOVE_FAILED,
-      500
-    );
-  }
-}
-
-/**
- * Gets public courses for an organization (landing page)
- * @param siteName - The organization siteName
- * @returns Array of published courses with lesson counts
- */
-export async function getPublicCourses(
-  siteName: string,
-  tagSlugs?: string[],
-  search?: string,
-  pagination?: { page?: number; limit?: number }
-) {
-  try {
-    const orgResult = await getOrgIdBySiteName(siteName);
-    const org = orgResult[0];
-
-    if (!org) {
-      throw new AppError('Organization not found', ErrorCodes.ORG_NOT_FOUND, 404);
-    }
-
-    const isPaginated = pagination !== undefined;
-    const limit = isPaginated ? (pagination.limit ?? ORG_COURSES_PAGE_SIZE) : PUBLIC_ORG_LANDING_PAGE_COURSE_LIMIT;
-    const page = isPaginated ? (pagination.page ?? 1) : 1;
-    const offset = (page - 1) * limit;
-
-    let filteredCourseIds: string[] | undefined = undefined;
-    if (tagSlugs && tagSlugs.length > 0) {
-      filteredCourseIds = await getCourseIdsByTagSlugs(org.id, tagSlugs);
-      if (filteredCourseIds.length === 0) {
-        return {
-          courses: [],
-          hasMoreCourses: false,
-          total: 0,
-          page,
-          limit,
-          totalPages: 0
-        };
-      }
-    }
-
-    const totalCourses = await countPublishedCoursesBySiteName(siteName, filteredCourseIds, undefined, search);
-    const courses = await getPublishedCoursesBySiteName(
-      siteName,
-      filteredCourseIds,
-      undefined,
-      search,
-      undefined,
-      limit,
-      offset
-    );
-    const tagsByCourseId = await getCourseTagsByCourseIdsForOrganization(
-      org.id,
-      courses.map((course) => course.id)
-    );
-
-    return {
-      courses: courses.map((course) => ({
-        ...course,
-        tags: tagsByCourseId[course.id] ?? []
-      })),
-      hasMoreCourses: offset + courses.length < totalCourses,
-      total: totalCourses,
-      page,
-      limit,
-      totalPages: Math.ceil(totalCourses / limit)
-    };
-  } catch (error) {
-    if (error instanceof AppError) throw error;
-    throw new AppError(
-      error instanceof Error ? error.message : 'Failed to fetch public courses',
-      ErrorCodes.COURSES_FETCH_FAILED,
       500
     );
   }
@@ -603,130 +475,6 @@ export async function getCoursesByOrgId(orgId: string) {
 }
 
 /**
- * Gets setup data for an organization
- * @param siteName - The organization site name
- * @returns Setup data including courses, lessons, exercises, and organization info
- */
-export async function getOrgSetupData(siteName: string) {
-  try {
-    const [organization, courses, lessons, exercises] = await Promise.all([
-      getOrganizationBySiteName(siteName),
-      getCoursesBySiteNameForSetup(siteName),
-      getLessonsBySiteName(siteName),
-      getExercisesBySiteName(siteName)
-    ]);
-
-    // Check if course is published
-    const publishedCourse = courses.find((course) => course.isPublished === true);
-
-    // Get organization avatar URL directly from organization
-    const orgHasAvatarUrl = !!organization?.avatarUrl;
-
-    return {
-      isCoursePublished: !!publishedCourse,
-      isCourseCreated: courses.length > 0,
-      orgHasAvatarUrl,
-      courseData: courses,
-      lessonData: lessons,
-      isLessonCreated: lessons.length > 0,
-      isExerciseCreated: exercises.length > 0
-    };
-  } catch (error) {
-    throw new AppError(
-      error instanceof Error ? error.message : 'Failed to fetch setup data',
-      ErrorCodes.INTERNAL_ERROR,
-      500
-    );
-  }
-}
-
-async function resolveOrgPlanTriggeredBy(params: {
-  checkoutOrgId: string;
-  targetOrgId: string;
-  triggeredBy: number;
-  payload: Record<string, unknown> | null | undefined;
-}): Promise<number> {
-  const { checkoutOrgId, targetOrgId, triggeredBy, payload } = params;
-  const checkoutMember = await getOrganizationMemberByIdAndOrg(triggeredBy, checkoutOrgId);
-
-  if (checkoutMember?.profileId) {
-    if (targetOrgId === checkoutOrgId) {
-      return triggeredBy;
-    }
-
-    const primaryMemberId = await getOrganizationMemberIdByOrgAndProfile(targetOrgId, checkoutMember.profileId);
-
-    if (primaryMemberId) {
-      return primaryMemberId;
-    }
-  }
-
-  const customer = payload?.customer;
-
-  if (customer && typeof customer === 'object' && 'email' in customer && typeof customer.email === 'string') {
-    const profile = await getProfileByEmail(customer.email);
-    const memberId = profile ? await getOrganizationMemberIdByOrgAndProfile(targetOrgId, profile.id) : null;
-
-    if (memberId) {
-      return memberId;
-    }
-  }
-
-  throw new AppError('Could not resolve organization member for plan', ErrorCodes.ORG_PLAN_CREATE_FAILED, 400);
-}
-
-/**
- * Creates a new organization plan
- * @param data - Organization plan creation data
- * @returns Created organization plan
- */
-export async function createOrgPlan(data: TNewOrganizationPlan) {
-  try {
-    if (!data.orgId || data.triggeredBy == null || !data.subscriptionId) {
-      throw new AppError('Missing organization plan fields', ErrorCodes.ORG_PLAN_CREATE_FAILED, 400);
-    }
-
-    const existingPlan = await getOrganizationPlanBySubscriptionId(data.subscriptionId);
-
-    if (existingPlan) {
-      return existingPlan;
-    }
-
-    // Subscriptions always attach to the primary workspace, even if a
-    // secondary org id was supplied at checkout.
-    const primary = await getAccountPrimary(data.orgId);
-    const targetOrgId = primary?.id ?? data.orgId;
-    const triggeredBy = await resolveOrgPlanTriggeredBy({
-      checkoutOrgId: data.orgId,
-      targetOrgId,
-      triggeredBy: data.triggeredBy,
-      payload: data.payload as Record<string, unknown> | null | undefined
-    });
-
-    const plan = await createOrganizationPlan({
-      orgId: targetOrgId,
-      planName: data.planName,
-      subscriptionId: data.subscriptionId,
-      triggeredBy,
-      payload: data.payload,
-      isActive: true,
-      provider: 'polar'
-    });
-    return plan;
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-
-    throw new AppError(
-      error instanceof Error ? error.message : 'Failed to create organization plan',
-      ErrorCodes.ORG_PLAN_CREATE_FAILED,
-      500
-    );
-  }
-}
-
-/**
  * Updates an organization
  * @param orgId - The organization ID
  * @param data - Partial organization data to update
@@ -842,149 +590,6 @@ export async function updateOrg(orgId: string, data: Partial<TOrganization>) {
     throw new AppError(
       error instanceof Error ? error.message : 'Failed to update organization',
       ErrorCodes.INTERNAL_ERROR,
-      500
-    );
-  }
-}
-
-/**
- * Updates an organization plan
- * @param subscriptionId - Subscription ID
- * @param payload - Payload data to update
- * @returns Updated organization plan
- */
-export async function updateOrgPlan(subscriptionId: string, payload: TOrganizationPlan['payload']) {
-  try {
-    const plan = await updateOrganizationPlan(subscriptionId, { payload });
-    if (!plan) {
-      throw new AppError('Organization plan not found', ErrorCodes.ORG_PLAN_NOT_FOUND, 404);
-    }
-    return plan;
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new AppError(
-      error instanceof Error ? error.message : 'Failed to update organization plan',
-      ErrorCodes.ORG_PLAN_UPDATE_FAILED,
-      500
-    );
-  }
-}
-
-/**
- * Activates an organization plan, creating it when the initial subscription event
- * arrived before the subscription became active.
- * @param data Organization plan activation data
- * @returns Activated or created organization plan
- */
-export async function activateOrgPlan(data: TNewOrganizationPlan) {
-  try {
-    if (!data.subscriptionId) {
-      throw new AppError('Missing organization plan fields', ErrorCodes.ORG_PLAN_CREATE_FAILED, 400);
-    }
-
-    const activatedPlan = await activateOrganizationPlan(data.subscriptionId, data.payload);
-
-    if (activatedPlan) {
-      return activatedPlan;
-    }
-
-    return await createOrgPlan(data);
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-
-    throw new AppError(
-      error instanceof Error ? error.message : 'Failed to activate organization plan',
-      ErrorCodes.ORG_PLAN_UPDATE_FAILED,
-      500
-    );
-  }
-}
-
-/**
- * Cancels an organization plan
- * @param subscriptionId - Subscription ID
- * @param payload - Payload data to update
- * @returns Updated organization plan
- */
-export async function cancelOrgPlan(subscriptionId: string, payload: TOrganizationPlan['payload']) {
-  try {
-    const plan = await cancelOrganizationPlan(subscriptionId, payload);
-    if (!plan) {
-      throw new AppError('Organization plan not found', ErrorCodes.ORG_PLAN_NOT_FOUND, 404);
-    }
-    return plan;
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-
-    throw new AppError(
-      error instanceof Error ? error.message : 'Failed to cancel organization plan',
-      ErrorCodes.ORG_PLAN_CANCEL_FAILED,
-      500
-    );
-  }
-}
-
-/**
- * Invites team members to an organization
- * @param orgId - The organization ID
- * @param emails - Array of email addresses to invite
- * @param roleId - Role ID to assign (ADMIN or TUTOR)
- * @returns Array of created members
- */
-export async function inviteTeamMembers(orgId: string, emails: string[], roleId: number, invitedByProfileId?: string) {
-  if (!invitedByProfileId) {
-    throw new AppError('Inviter profile ID is required', ErrorCodes.VALIDATION_ERROR, 400, 'invitedByProfileId');
-  }
-
-  return inviteTeamMembersSecure(orgId, emails, roleId, invitedByProfileId);
-}
-
-/**
- * Removes a team member from an organization
- * @param orgId - The organization ID
- * @param memberId - The member ID to remove
- * @returns Deleted member
- */
-export async function removeTeamMember(orgId: string, memberId: number, removedByProfileId?: string) {
-  try {
-    const deleted = await deleteOrganizationMember(orgId, memberId);
-    if (!deleted) {
-      throw new AppError('Team member not found', ErrorCodes.ORG_TEAM_REMOVE_FAILED, 404);
-    }
-
-    await emitOrganizationMemberWebhookEvent('organization.member.removed', orgId, deleted, removedByProfileId ?? null);
-
-    if (deleted.email && removedByProfileId) {
-      const targetEmail = deleted.email.toLowerCase();
-      const revoked = await revokeActiveOrganizationInvitesByEmails(orgId, [targetEmail], removedByProfileId);
-      await recordOrganizationInviteAudits(
-        revoked.map((invite) => ({
-          inviteId: invite.id,
-          organizationId: orgId,
-          eventType: 'REVOKED' as const,
-          actorProfileId: removedByProfileId,
-          targetEmail,
-          ipAddress: null,
-          userAgent: null,
-          metadata: { reason: 'member_removed' }
-        }))
-      );
-    }
-
-    return deleted;
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new AppError(
-      error instanceof Error ? error.message : 'Failed to remove team member',
-      ErrorCodes.ORG_TEAM_REMOVE_FAILED,
       500
     );
   }

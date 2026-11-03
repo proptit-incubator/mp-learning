@@ -14,10 +14,6 @@
   import { Input } from '@cio/ui/base/input';
   import { Password } from '@cio/ui/custom/password';
   import { Button } from '@cio/ui/base/button';
-  import { ssoApi } from '$features/org/api/sso.svelte';
-  import ShieldIcon from '@lucide/svelte/icons/shield';
-  import { buildSsoRedirectUrl, createSsoEmailChecker, type SsoAuthState } from '$features/auth/utils/auth-sso';
-  import { authSsoStore, ensureSsoInfoLoaded } from '$features/auth/utils/auth-sso-store';
 
   const emailFromUrl = page.url.searchParams.get('email') ?? '';
   const isEmailPrefilled = !!emailFromUrl;
@@ -27,53 +23,16 @@
   let submitError: string | undefined = $state();
   let loading = $state(false);
   let errors = $state(Object.assign({}, LOGIN_FIELDS));
-  /** Per-email discovery result; display uses this over org-level when set */
-  let discoveryState = $state<SsoAuthState | null>(null);
 
   const redirectUrl = $derived(page.url.searchParams.get('redirect'));
 
   const hideGoogleAuth = $derived(!!($globalStore.isOrgSite && $currentOrg.disableGoogleAuth));
 
-  const ssoState = $derived(discoveryState ?? $authSsoStore.ssoState);
-  const orgSupportsSso = $derived($authSsoStore.orgSupportsSso);
-
-  $effect(() => {
-    const orgId = $currentOrg.id;
-    if (orgId) ensureSsoInfoLoaded(orgId, (id) => ssoApi.getOrgSsoInfo(id));
-  });
-
-  const handleEmailChange = createSsoEmailChecker({
-    getEmail: () => fields.email,
-    getOrgSupportsSso: () => orgSupportsSso,
-    discoverSso: (email) => ssoApi.discoverSso(email),
-    onChecking: () => {
-      discoveryState = { ...$authSsoStore.ssoState, checking: true };
-    },
-    onResult: (state) => {
-      discoveryState = state;
-    },
-    onClear: () => {
-      errors.email = '';
-      discoveryState = null;
-    }
-  });
-
-  async function handleSsoLogin() {
-    const url = buildSsoRedirectUrl(ssoState.redirectUrl);
-
-    await authClient.signIn.sso({
-      email: fields.email,
-      providerId: ssoState.providerId || '',
-      callbackURL: url
-    });
+  function handleEmailChange() {
+    errors.email = '';
   }
 
   async function handleSubmit() {
-    if (ssoState.required && ssoState.available) {
-      handleSsoLogin();
-      return;
-    }
-
     if ($globalStore.isOrgSite && $currentOrg.disableEmailPassword) {
       submitError = t.get('settings.auth.login.email_password_disabled');
       return;
@@ -117,32 +76,7 @@
   <title>{$t('login.login')} · MP Learning</title>
 </svelte:head>
 
-{#snippet getPasswordAuthAlternative()}
-  <!-- SSO Section (when SSO is available) -->
-  <div class="space-y-3">
-    {#if ssoState.required}
-      <div class="flex items-center gap-3">
-        <ShieldIcon class="size-5 text-blue-600" />
-        <div class="flex-1">
-          <p class="mt-1 text-xs text-blue-600">
-            {$t('settings.auth.login.sso_required')}
-          </p>
-        </div>
-      </div>
-    {/if}
-    <Button type="button" variant="outline" class="w-full" onclick={handleSsoLogin}>
-      {$t('settings.auth.login.sign_in_with_sso', { provider: ssoState.providerName || 'SSO' })}
-    </Button>
-  </div>
-{/snippet}
-
-<AuthUI
-  isLogin={true}
-  {handleSubmit}
-  isLoading={loading}
-  {hideGoogleAuth}
-  getPasswordAuthAlternative={ssoState.available ? getPasswordAuthAlternative : undefined}
->
+<AuthUI isLogin={true} {handleSubmit} isLoading={loading} {hideGoogleAuth}>
   <div class="flex flex-col gap-6">
     <Field.Field>
       <Field.Label for="email">{$t('employees.login_identity')}</Field.Label>
@@ -166,8 +100,7 @@
       </Field.Content>
     </Field.Field>
 
-    <!-- Password Section (when not force SSO and email/password not disabled) -->
-    {#if !ssoState.required && !($globalStore.isOrgSite && $currentOrg.disableEmailPassword)}
+    {#if !($globalStore.isOrgSite && $currentOrg.disableEmailPassword)}
       <Field.Field>
         <div class="flex items-center justify-between">
           <Field.Label for="password">{$t('login.password')}</Field.Label>
@@ -202,7 +135,7 @@
       <Button type="submit" disabled={loading} {loading} class="w-full" testId="auth-login-submit">
         {$t('login.login')}
       </Button>
-    {:else if $globalStore.isOrgSite && $currentOrg.disableEmailPassword && !ssoState.available}
+    {:else}
       <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
         <p class="text-sm text-amber-800 dark:text-amber-200">
           {$t('settings.auth.login.email_password_disabled_message')}

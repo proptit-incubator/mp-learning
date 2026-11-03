@@ -10,36 +10,22 @@ vi.mock('@api/services/v1/courses/members', () => ({
   getCourseMemberAnalyticsService: vi.fn()
 }));
 
-vi.mock('@api/services/v1/courses/invites', () => ({
-  listCourseInvitesService: vi.fn(),
-  createCourseInviteService: vi.fn(),
-  revokeCourseInviteService: vi.fn()
-}));
-
 vi.mock('@api/services/v1/shared', () => ({
   assertCourseBelongsToOrganization: vi.fn(),
   assertCourseTeamMemberOrOrgAdmin: vi.fn()
 }));
 
 import { Hono } from '@api/utils/hono';
-import { AppError } from '@api/utils/errors';
-import { assertCourseTeamMemberOrOrgAdmin } from '@api/services/v1/shared';
 import {
   addCourseMemberService,
   deleteCourseMemberService,
   listCourseMembersService,
   updateCourseMemberService
 } from '@api/services/v1/courses/members';
-import {
-  createCourseInviteService,
-  listCourseInvitesService,
-  revokeCourseInviteService
-} from '@api/services/v1/courses/invites';
 import { v1CoursesRouter } from '@api/routes/v1/courses';
 
 const COURSE_ID = '11111111-1111-4111-8111-111111111111';
 const MEMBER_ID = '33333333-3333-4333-8333-333333333333';
-const INVITE_ID = '44444444-4444-4444-8444-444444444444';
 
 const emptyPage = { items: [], page: 1, limit: 20, total: 0, totalPages: 0 };
 
@@ -57,7 +43,7 @@ const jsonRequest = (method: string, body: unknown) => ({
   body: JSON.stringify(body)
 });
 
-describe('v1CoursesRouter nested course-member/course-invite mounts', () => {
+describe('v1CoursesRouter nested course-member mounts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -81,22 +67,6 @@ describe('v1CoursesRouter nested course-member/course-invite mounts', () => {
       data: [],
       pagination: { page: 1, limit: 20, total: 0, totalPages: 0 }
     });
-  });
-
-  it('lists invites with the actor', async () => {
-    vi.mocked(listCourseInvitesService).mockResolvedValue(
-      emptyPage as Awaited<ReturnType<typeof listCourseInvitesService>>
-    );
-
-    const response = await app.request(`/${COURSE_ID}/invites`);
-
-    expect(response.status).toBe(200);
-    expect(listCourseInvitesService).toHaveBeenCalledWith(
-      'org-1',
-      'actor-1',
-      { courseId: COURSE_ID },
-      expect.objectContaining({ page: 1, limit: 20 })
-    );
   });
 
   it('adds a member with the actor and returns 201 with the member', async () => {
@@ -158,48 +128,6 @@ describe('v1CoursesRouter nested course-member/course-invite mounts', () => {
 
     expect(response.status).toBe(400);
     expect(updateCourseMemberService).not.toHaveBeenCalled();
-  });
-
-  it('revokes an invite with the actor', async () => {
-    vi.mocked(revokeCourseInviteService).mockResolvedValue({ id: INVITE_ID } as Awaited<
-      ReturnType<typeof revokeCourseInviteService>
-    >);
-
-    const response = await app.request(`/${COURSE_ID}/invites/${INVITE_ID}/revoke`, { method: 'POST' });
-
-    expect(response.status).toBe(200);
-    expect(revokeCourseInviteService).toHaveBeenCalledWith('org-1', 'actor-1', {
-      courseId: COURSE_ID,
-      inviteId: INVITE_ID
-    });
-  });
-
-  it('creates an invite once the actor passes the team check', async () => {
-    vi.mocked(createCourseInviteService).mockResolvedValue({ id: INVITE_ID } as unknown as Awaited<
-      ReturnType<typeof createCourseInviteService>
-    >);
-
-    const response = await app.request(
-      `/${COURSE_ID}/invites`,
-      jsonRequest('POST', { preset: 'MULTI_USE_30D', recipientEmails: ['a@example.com'], sendEmail: false })
-    );
-
-    expect(response.status).toBe(201);
-    expect(assertCourseTeamMemberOrOrgAdmin).toHaveBeenCalledWith(COURSE_ID, 'actor-1');
-  });
-
-  it('rejects invite creation for a non-team actor before the rate limit and handler run', async () => {
-    vi.mocked(assertCourseTeamMemberOrOrgAdmin).mockRejectedValueOnce(
-      new AppError('Automation actor must be a course tutor/admin or an organization admin', 'FORBIDDEN', 403)
-    );
-
-    const response = await app.request(
-      `/${COURSE_ID}/invites`,
-      jsonRequest('POST', { preset: 'MULTI_USE_30D', recipientEmails: ['a@example.com'], sendEmail: false })
-    );
-
-    expect(response.status).toBe(403);
-    expect(createCourseInviteService).not.toHaveBeenCalled();
   });
 
   it('rejects a non-UUID courseId with a validation error, not a 404 route miss', async () => {

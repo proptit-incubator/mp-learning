@@ -2,30 +2,17 @@ import { listCourseLibrary, getCourseLibraryDetails } from '@api/services/course
 import {
   ZAssignAudienceCourses,
   ZAudienceInviteByEmail,
-  ZCancelOrgPlan,
-  ZClaimEarlyAdopterPlan,
   ZCourseReorder,
-  ZCreateLinkInvite,
-  ZCreateOrgPlan,
-  ZCreateOrganization,
-  ZEarlyAdopterSubscriptionEvent,
   ZAudienceExportQuery,
   ZBulkAudienceAction,
   ZGetAudienceQuery,
-  ZGetCoursesBySiteName,
-  ZGetLinkInvite,
-  ZGetOrgSetup,
   ZGetOrganizationCoursesQuery,
   ZGetOrganizations,
   ZGetUserAnalytics,
   ZImportAudienceMembers,
-  ZInviteTeamMembers,
   ZLMSExercisesParam,
   ZRemoveTeamMember,
-  ZUpdateTeamMemberRole,
-  ZToggleLinkInvite,
   ZUndoBulkAudienceAction,
-  ZUpdateOrgPlan,
   ZUpdateOrganization
 } from '@cio/utils/validation/organization';
 import { assertMcpAutomationUsageAllowed, recordMcpAutomationUsage } from '@api/services/organization/automation-usage';
@@ -43,57 +30,35 @@ import {
   undoBulkAudienceAction
 } from '@api/services/organization/audience-bulk';
 import {
-  activateOrgPlan,
-  cancelOrgPlan,
-  createOrg,
-  createOrgPlan,
   getFirstOrgForSelfHosted,
   getOrgAudience,
-  getOrgSetupData,
   getOrgTeam,
   getOrganizationCourses,
   getOrganizationNavCounts,
   getOrganizationsWithFilters,
-  getPublicCourses,
   getRecommendedCourses,
   getUserAnalytics,
   getUserEnrolledCourses,
   removeAudienceMember,
-  removeTeamMember,
   reorderOrgCourses,
-  updateTeamMemberRole,
-  updateOrg,
-  updateOrgPlan
+  updateOrg
 } from '@api/services/organization';
 
 import { Hono } from '@api/utils/hono';
 import { ROLE } from '@cio/utils/constants';
 import { TOrganization } from '@db/types';
 import { assetsRouter } from '@api/routes/organization/assets';
-import { joinOrganization } from '@api/services/organization/join';
 import { organizationAiTutorRouter } from '@api/routes/organization/ai-tutor';
 import { organizationAiPolicyRouter } from '@api/routes/organization/ai-policy';
 import { organizationMemberEmailNotificationsRouter } from '@api/routes/organization/member-email-notifications';
 import { authMiddleware } from '@api/middlewares/auth';
 import { authOrApiKeyMiddleware } from '@api/middlewares/auth-or-api-key';
-import { apiKeyMiddleware } from '@api/middlewares/api-key';
 import { authOrAutomationKeyMiddleware } from '@api/middlewares/auth-or-automation-key';
 import { automationRouter } from '@api/routes/organization/automation';
 import { webhooksRouter } from '@api/routes/organization/webhooks';
 import { courseImportRouter } from '@api/routes/organization/course-import';
-import {
-  claimEarlyAdopterPlan,
-  recordEarlyAdopterSubscriptionEvent
-} from '@api/services/organization/early-adopter-claim';
-import { createRateLimiter } from '@api/middlewares/rate-limiter';
 import { getLMSExercisesService } from '@api/services/exercise';
 import { handleError } from '@api/utils/errors';
-import {
-  fetchOrgLinkInvite,
-  getOrCreateLinkInvite,
-  inviteTeamMembers,
-  toggleOrgLinkInvite
-} from '@api/services/organization/invite';
 import { orgAdminMiddleware } from '@api/middlewares/org-admin';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
 import { orgMemberOrAutomationKeyMiddleware } from '@api/middlewares/org-member-or-automation-key';
@@ -101,17 +66,9 @@ import { orgTeamMemberMiddleware } from '@api/middlewares/org-team-member';
 import { quizRouter } from '@api/routes/organization/quiz';
 import { searchRouter } from '@api/routes/organization/search';
 import { tagsRouter } from '@api/routes/organization/tags';
-import { widgetsRouter } from '@api/routes/organization/widgets';
 import { zValidator } from '@hono/zod-validator';
 import { ZCourseLibraryParam, ZGetRecommendedCourses } from '@cio/utils/validation/course';
 import { studentEmailTemplatesRouter } from '@api/routes/organization/email-templates';
-
-const earlyAdopterClaimRateLimit = createRateLimiter({
-  windowMs: 15 * 60 * 1000,
-  maxRequests: 10,
-  message: 'Too many attempts. Please try again later.',
-  keyGenerator: (c) => `early_adopter_claim:${c.get('user')?.id ?? 'unknown'}`
-});
 
 export const organizationRouter = new Hono()
   /**
@@ -161,27 +118,6 @@ export const organizationRouter = new Hono()
    * Gets organization team members (non-students)
    * Requires organization admin access
    */
-  /**
-   * POST /organization/join
-   * Idempotently joins the authenticated user to the open organization
-   * identified by the `cio-org-id` header. Called after tenant signup or from
-   * the explicit Join Academy action; ordinary login never invokes this route.
-   */
-  .post('/join', authMiddleware, async (c) => {
-    try {
-      const user = c.get('user')!;
-      const orgId = c.req.header('cio-org-id');
-
-      if (!orgId) {
-        return c.json({ success: false, error: 'Organization ID is required', code: 'ORG_ID_REQUIRED' }, 400);
-      }
-
-      const result = await joinOrganization(user.id, orgId);
-      return c.json({ success: true, data: result }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to join organization');
-    }
-  })
   .get('/team', authMiddleware, orgAdminMiddleware, async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;
@@ -198,118 +134,6 @@ export const organizationRouter = new Hono()
       return handleError(c, error, 'Failed to fetch organization team');
     }
   })
-  /**
-   * POST /organization/team/invite
-   * Invites team members to an organization
-   * Requires authentication and admin role
-   */
-  .post('/team/invite', authMiddleware, orgAdminMiddleware, zValidator('json', ZInviteTeamMembers), async (c) => {
-    try {
-      const orgId = c.req.header('cio-org-id')!;
-      const user = c.get('user')!;
-      const { emails, roleId, confirmedStudentEmails } = c.req.valid('json');
-
-      const result = await inviteTeamMembers(orgId, emails, roleId, user.id, confirmedStudentEmails);
-      const status = result.requiresConfirmation || result.existingTeamMembers.length > 0 ? 200 : 201;
-
-      return c.json(
-        {
-          success: true,
-          data: result
-        },
-        status
-      );
-    } catch (error) {
-      return handleError(c, error, 'Failed to invite team members');
-    }
-  })
-  /**
-   * GET /organization/link-invite
-   * Returns the active link for the requested role (null if none exists)
-   */
-  .get('/link-invite', authMiddleware, orgAdminMiddleware, zValidator('query', ZGetLinkInvite), async (c) => {
-    try {
-      const orgId = c.req.header('cio-org-id')!;
-      const { roleId } = c.req.valid('query');
-      const data = await fetchOrgLinkInvite(orgId, roleId);
-      return c.json({ success: true, data }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to fetch link invite');
-    }
-  })
-  /**
-   * POST /organization/link-invite
-   * Get or create a link for the requested role
-   */
-  .post('/link-invite', authMiddleware, orgAdminMiddleware, zValidator('json', ZCreateLinkInvite), async (c) => {
-    try {
-      const orgId = c.req.header('cio-org-id')!;
-      const user = c.get('user')!;
-      const { roleId } = c.req.valid('json');
-      const data = await getOrCreateLinkInvite(orgId, roleId, user.id);
-      return c.json({ success: true, data }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to create link invite');
-    }
-  })
-  /**
-   * PATCH /organization/link-invite
-   * Enable or disable the requested role's link
-   */
-  .patch('/link-invite', authMiddleware, orgAdminMiddleware, zValidator('json', ZToggleLinkInvite), async (c) => {
-    try {
-      const orgId = c.req.header('cio-org-id')!;
-      const user = c.get('user')!;
-      const { roleId, isRevoked } = c.req.valid('json');
-      const data = await toggleOrgLinkInvite(orgId, roleId, isRevoked, user.id);
-      return c.json({ success: true, data }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to update link invite');
-    }
-  })
-  /**
-   * DELETE /organization/team/:memberId
-   * Removes a team member from an organization
-   * Requires authentication and admin role
-   */
-  .delete('/team/:memberId', authMiddleware, orgAdminMiddleware, zValidator('param', ZRemoveTeamMember), async (c) => {
-    try {
-      const orgId = c.req.header('cio-org-id')!;
-      const user = c.get('user')!;
-      const { memberId } = c.req.valid('param');
-
-      await removeTeamMember(orgId, memberId, user.id);
-
-      return c.json(
-        {
-          success: true
-        },
-        200
-      );
-    } catch (error) {
-      return handleError(c, error, 'Failed to remove team member');
-    }
-  })
-  .patch(
-    '/team/:memberId',
-    authMiddleware,
-    orgAdminMiddleware,
-    zValidator('param', ZRemoveTeamMember),
-    zValidator('json', ZUpdateTeamMemberRole),
-    async (c) => {
-      try {
-        const orgId = c.req.header('cio-org-id')!;
-        const user = c.get('user')!;
-        const { memberId } = c.req.valid('param');
-        const { roleId } = c.req.valid('json');
-        const member = await updateTeamMemberRole(orgId, memberId, roleId, user.id);
-
-        return c.json({ success: true, data: member }, 200);
-      } catch (error) {
-        return handleError(c, error, 'Failed to update team member role');
-      }
-    }
-  )
   /**
    * GET /organization/audience
    * Gets organization audience (students)
@@ -534,38 +358,6 @@ export const organizationRouter = new Hono()
     }
   )
   /**
-   * GET /organization/courses/public
-   * Gets published courses for an organization (public landing page)
-   * Query params: siteName (string)
-   * No authentication required - returns only published courses
-   */
-  .get('/courses/public', zValidator('query', ZGetCoursesBySiteName), async (c) => {
-    try {
-      const { siteName, tags, search, page, limit } = c.req.valid('query');
-      const tagSlugs = tags
-        ?.split(',')
-        .map((v) => v.trim())
-        .filter(Boolean);
-      const pagination = page !== undefined || limit !== undefined ? { page, limit } : undefined;
-      const courses = await getPublicCourses(
-        siteName,
-        tagSlugs?.length ? tagSlugs : undefined,
-        search || undefined,
-        pagination
-      );
-
-      return c.json(
-        {
-          success: true,
-          data: courses
-        },
-        200
-      );
-    } catch (error) {
-      return handleError(c, error, 'Failed to fetch public courses');
-    }
-  })
-  /**
    * POST /organization/courses/reorder
    * Persists the manual display order of organization courses (landing page + public catalog)
    * Requires authentication and an organization admin or L&D member. Automation keys use PUT /public-api/v1/organization/landing-page/featured-courses
@@ -775,179 +567,6 @@ export const organizationRouter = new Hono()
     }
   )
   /**
-   * GET /organization/setup
-   * Gets setup data for an organization (courses, lessons, exercises, org info)
-   * Query params: siteName (string)
-   */
-  .get('/setup', zValidator('query', ZGetOrgSetup), async (c) => {
-    try {
-      const { siteName } = c.req.valid('query');
-      const setupData = await getOrgSetupData(siteName);
-
-      return c.json(
-        {
-          success: true,
-          data: setupData
-        },
-        200
-      );
-    } catch (error) {
-      return handleError(c, error, 'Failed to fetch setup data');
-    }
-  })
-  /**
-   * POST /organization/plan
-   * Creates a new organization plan
-   * Requires a server API key
-   */
-  .post('/plan', apiKeyMiddleware, zValidator('json', ZCreateOrgPlan), async (c) => {
-    try {
-      const data = c.req.valid('json');
-      const plan = await createOrgPlan(data);
-
-      return c.json(
-        {
-          success: true,
-          data: plan
-        },
-        201
-      );
-    } catch (error) {
-      return handleError(c, error, 'Failed to create organization plan');
-    }
-  })
-  /**
-   * POST /organization/plan/activate
-   * Activates an existing organization plan or creates it when the initial
-   * subscription event arrived before payment became active.
-   * Requires a server API key
-   */
-  .post('/plan/activate', apiKeyMiddleware, zValidator('json', ZCreateOrgPlan), async (c) => {
-    try {
-      const data = c.req.valid('json');
-      const plan = await activateOrgPlan(data);
-
-      return c.json(
-        {
-          success: true,
-          data: plan
-        },
-        200
-      );
-    } catch (error) {
-      return handleError(c, error, 'Failed to activate organization plan');
-    }
-  })
-  /**
-   * PUT /organization/plan
-   * Updates an organization plan by subscription ID
-   * Requires a server API key
-   */
-  .put('/plan', apiKeyMiddleware, zValidator('json', ZUpdateOrgPlan), async (c) => {
-    try {
-      const { subscriptionId, payload } = c.req.valid('json');
-      const plan = await updateOrgPlan(subscriptionId, payload);
-
-      return c.json(
-        {
-          success: true,
-          data: plan
-        },
-        200
-      );
-    } catch (error) {
-      return handleError(c, error, 'Failed to update organization plan');
-    }
-  })
-  /**
-   * POST /organization/plan/early-adopter-event
-   * Records a Polar subscription event for an Early Adopter purchase made without an account.
-   * Requires a server API key
-   */
-  .post(
-    '/plan/early-adopter-event',
-    apiKeyMiddleware,
-    zValidator('json', ZEarlyAdopterSubscriptionEvent),
-    async (c) => {
-      try {
-        const data = c.req.valid('json');
-        await recordEarlyAdopterSubscriptionEvent(data);
-
-        return c.json({ success: true, data: { recorded: true } }, 200);
-      } catch (error) {
-        return handleError(c, error, 'Failed to record early adopter purchase');
-      }
-    }
-  )
-  /**
-   * POST /organization/plan/claim
-   * Connects a paid Early Adopter subscription to the organization in the cio-org-id header.
-   * Requires an organization admin session
-   */
-  .post(
-    '/plan/claim',
-    authMiddleware,
-    orgAdminMiddleware,
-    earlyAdopterClaimRateLimit,
-    zValidator('json', ZClaimEarlyAdopterPlan),
-    async (c) => {
-      try {
-        const user = c.get('user')!;
-        const orgId = c.req.header('cio-org-id')!;
-        const { token } = c.req.valid('json');
-        const result = await claimEarlyAdopterPlan(user.id, orgId, token);
-
-        return c.json({ success: true, data: result }, 200);
-      } catch (error) {
-        return handleError(c, error, 'Failed to claim early adopter plan');
-      }
-    }
-  )
-  /**
-   * POST /organization/plan/cancel
-   * Cancels an organization plan by subscription ID
-   * Requires a server API key
-   */
-  .post('/plan/cancel', apiKeyMiddleware, zValidator('json', ZCancelOrgPlan), async (c) => {
-    try {
-      const { subscriptionId, payload } = c.req.valid('json');
-      const plan = await cancelOrgPlan(subscriptionId, payload);
-
-      return c.json(
-        {
-          success: true,
-          data: plan
-        },
-        200
-      );
-    } catch (error) {
-      return handleError(c, error, 'Failed to cancel organization plan');
-    }
-  })
-  /**
-   * POST /organization
-   * Creates a new organization with the current user as owner
-   * Requires authentication
-   */
-  .post('/', authMiddleware, zValidator('json', ZCreateOrganization), async (c) => {
-    try {
-      const user = c.get('user')!;
-      const data = c.req.valid('json');
-
-      const result = await createOrg(user.id, data);
-
-      return c.json(
-        {
-          success: true,
-          data: result
-        },
-        201
-      );
-    } catch (error) {
-      return handleError(c, error, 'Failed to create organization');
-    }
-  })
-  /**
    * PUT /organization
    * Updates an organization (name, avatarUrl)
    * Requires authentication
@@ -1075,7 +694,6 @@ export const organizationRouter = new Hono()
   .route('/course-import', courseImportRouter)
   .route('/search', searchRouter)
   .route('/tags', tagsRouter)
-  .route('/widgets', widgetsRouter)
   .route('/assets', assetsRouter)
   .route('/ai-tutor', organizationAiTutorRouter)
   .route('/ai-policy', organizationAiPolicyRouter)

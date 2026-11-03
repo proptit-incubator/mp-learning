@@ -1,37 +1,25 @@
 import type {
   AssignAudienceCoursesRequest,
-  CreateLinkInviteRequest,
   BulkAudienceActionRequest,
   BulkAudienceActionStatusRequest,
   AudienceExportRequest,
   BulkAudiencePreviewRequest,
   DeleteAudienceMemberRequest,
-  DeleteTeamRequest,
-  DomainRequestRequest,
   GetAudienceRequest,
-  GetLinkInviteRequest,
-  GetOrgPublicCoursesRequest,
   GetStudentEmailTemplatesRequest,
   ImportAudienceRequest,
-  InviteTeamRequest,
-  JoinAcademyRequest,
-  OrgLinkInvite,
-  OrgPublicCourses,
   OrganizationAudience,
   OrganizationAudiencePagination,
   OrganizationAudienceQuery,
   OrganizationTeamMembers,
   ResendAudienceInviteRequest,
   ResetStudentEmailTemplateRequest,
-  ReorderOrgCoursesRequest,
   RevokeAudienceInviteRequest,
   SaveStudentEmailTemplateRequest,
   SendStudentEmailTemplateTestRequest,
   StudentEmailTemplateTestDraft,
-  ToggleLinkInviteRequest,
   UndoBulkAudienceActionRequest,
   UpdateOrganizationRequest,
-  UpdateTeamMemberRoleRequest,
   TOrgUpdateForm
 } from '../utils/types';
 import type { EmailLocale, StudentEmailId } from '@cio/utils/email';
@@ -39,38 +27,27 @@ import { BaseApiWithErrors, classroomio } from '$lib/utils/services/api';
 import type {
   TAssignAudienceCourses,
   TAudienceInviteByEmail,
-  TCreateOrganization,
-  TGetOrganizations,
-  TCourseReorder,
   TBulkAudienceAction,
   TImportAudienceMembers,
-  TUpdateOrganization,
-  TUpdateTeamMemberRole
+  TUpdateOrganization
 } from '@cio/utils/validation/organization';
-import { ZBulkAudienceAction, ZCreateOrganization, ZUpdateOrganization } from '@cio/utils/validation/organization';
+import { ZBulkAudienceAction, ZUpdateOrganization } from '@cio/utils/validation/organization';
 import { currentOrg, mergeAccountOrgFromServer, orgs } from '$lib/utils/store/org';
 
 import type { AccountOrg } from '$features/app/types';
 import type { GetTeamRequest } from '../utils/types';
-import { ROLE, ErrorCodes } from '@cio/utils/constants';
+import { ROLE } from '@cio/utils/constants';
 import { ROLE_LABEL } from '$lib/utils/constants/roles';
 import { get } from 'svelte/store';
-import { goto } from '$app/navigation';
 import { mapZodErrorsToTranslations } from '$lib/utils/validation';
-import { resolve } from '$app/paths';
 import { snackbar } from '$features/ui/snackbar/store';
 import { t } from '$lib/utils/functions/translations';
 import { uploadImage } from '$lib/utils/services/upload';
-import { authClient } from '$lib/utils/services/auth/client';
 import {
   DEFAULT_ORG_AUDIENCE_QUERY,
   toAudienceBulkFilterQuery,
   toAudienceRequestQuery
 } from '../utils/audience-query-utils';
-import { resolveOrgJoinRedirect } from '../utils/org-join-redirect';
-import type { ZodError } from 'zod';
-
-const PUBLISHED_COURSES_ORDERING_LIMIT = 100;
 
 /**
  * API class for organization operations
@@ -79,40 +56,8 @@ class OrgApi extends BaseApiWithErrors {
   teamMembers = $state<OrganizationTeamMembers>([]);
   audience = $state<OrganizationAudience>([]);
   audiencePagination = $state<OrganizationAudiencePagination | null>(null);
-  publicCourses: OrgPublicCourses = $state([]);
-  hasMorePublicCourses = $state(false);
-  publicCoursesLoadedSiteName: string | null = $state(null);
-  joinErrorCode = $state<string | null>(null);
 
-  isFetchingOrgPublicCourses = $state(false);
-  private activePublicCoursesFetch: Promise<void> | null = null;
-  private activePublicCoursesFetchSiteName: string | null = null;
   private activeAudienceRequestController: AbortController | null = null;
-
-  async joinAcademy(orgId: string, redirectTo = '/lms') {
-    this.joinErrorCode = null;
-
-    return this.execute<JoinAcademyRequest>({
-      requestFn: () => classroomio.organization.join.$post({}, { headers: { 'cio-org-id': orgId } }),
-      logContext: 'joining academy',
-      onSuccess: async (response) => {
-        if (response.data.pendingInvite) {
-          window.location.href = '/';
-          return;
-        }
-
-        await authClient.getSession({ query: { disableCookieCache: true } });
-        window.location.href = resolveOrgJoinRedirect(redirectTo, window.location.origin);
-      },
-      onError: (result) => {
-        if (typeof result === 'object' && 'code' in result && typeof result.code === 'string') {
-          this.joinErrorCode = result.code;
-        }
-
-        snackbar.error('invite.organization.messages.join_failed');
-      }
-    });
-  }
 
   cancelAudienceRequest() {
     this.activeAudienceRequestController?.abort();
@@ -193,212 +138,6 @@ class OrgApi extends BaseApiWithErrors {
     }
 
     return response;
-  }
-
-  invalidatePublicCourses() {
-    this.publicCoursesLoadedSiteName = null;
-  }
-
-  /**
-   * Refetches public courses for a site, clearing any cached settings preview data.
-   */
-  async refreshPublicCourses(siteName: string) {
-    if (!siteName) {
-      return;
-    }
-
-    this.invalidatePublicCourses();
-    await this.fetchPublicCoursesBySiteName(siteName);
-  }
-
-  /**
-   * Loads public courses for a site when they have not been fetched yet.
-   * Skips the request when courses are already in memory for the same site.
-   */
-  async loadPublicCoursesIfNeeded(siteName: string) {
-    if (!siteName || this.publicCoursesLoadedSiteName === siteName) {
-      return;
-    }
-
-    await this.fetchPublicCoursesBySiteName(siteName);
-  }
-
-  /**
-   * Gets public courses by organization siteName (for landing pages)
-   * @param siteName Organization site name
-   * @returns Published courses array
-   */
-  async getPublicCoursesBySiteName(siteName: string) {
-    this.invalidatePublicCourses();
-    await this.fetchPublicCoursesBySiteName(siteName);
-  }
-
-  private fetchPublicCoursesBySiteName(siteName: string): Promise<void> {
-    if (this.activePublicCoursesFetch && this.activePublicCoursesFetchSiteName === siteName) {
-      return this.activePublicCoursesFetch;
-    }
-
-    this.isFetchingOrgPublicCourses = true;
-
-    const fetchPromise = this.execute<GetOrgPublicCoursesRequest>({
-      requestFn: () =>
-        classroomio.organization.courses.public.$get({
-          query: { siteName }
-        }),
-      logContext: 'fetching public courses',
-      onSuccess: (response) => {
-        this.publicCourses = response.data.courses;
-        this.hasMorePublicCourses = response.data.hasMoreCourses;
-        this.publicCoursesLoadedSiteName = siteName;
-      }
-    })
-      .then(() => undefined)
-      .finally(() => {
-        this.isFetchingOrgPublicCourses = false;
-
-        if (this.publicCoursesLoadedSiteName !== siteName) {
-          this.publicCourses = [];
-          this.hasMorePublicCourses = false;
-          this.publicCoursesLoadedSiteName = siteName;
-        }
-
-        if (this.activePublicCoursesFetchSiteName === siteName) {
-          this.activePublicCoursesFetch = null;
-          this.activePublicCoursesFetchSiteName = null;
-        }
-      });
-
-    this.activePublicCoursesFetch = fetchPromise;
-    this.activePublicCoursesFetchSiteName = siteName;
-
-    return fetchPromise;
-  }
-
-  /**
-   * Lists published courses for the manual ordering editor (up to 100)
-   * Keeps the landing-page preview state (`publicCourses`) untouched.
-   * @param siteName Organization site name
-   * @returns Published courses array in their current display order
-   */
-  async listPublishedCoursesForOrdering(siteName: string): Promise<OrgPublicCourses> {
-    if (!siteName) {
-      return [];
-    }
-
-    const response = await this.execute<GetOrgPublicCoursesRequest>({
-      requestFn: () =>
-        classroomio.organization.courses.public.$get({
-          query: { siteName, limit: String(PUBLISHED_COURSES_ORDERING_LIMIT) }
-        }),
-      logContext: 'fetching published courses for ordering'
-    });
-
-    if (!response) {
-      throw new Error('Failed to fetch published courses for ordering');
-    }
-
-    return response.data.courses;
-  }
-
-  /**
-   * Persists the manual display order of published courses
-   * @param orders Array of course IDs with their new positions
-   */
-  async reorderPublishedCourses(orders: TCourseReorder['courses'], options: { showToast?: boolean } = {}) {
-    const { showToast = false } = options;
-    return this.execute<ReorderOrgCoursesRequest>({
-      requestFn: () =>
-        classroomio.organization.courses.reorder.$post({
-          json: {
-            courses: orders
-          }
-        }),
-      logContext: 'reordering published courses',
-      onSuccess: () => {
-        if (showToast) {
-          snackbar.success('snackbar.landing_page_settings.success.courses_reordered');
-        }
-      },
-      onError: () => snackbar.error('snackbar.landing_page_settings.error.courses_reorder_failed')
-    });
-  }
-
-  /**
-   * Gets current organization by siteName or custom domain
-   * @param siteName Organization site name or custom domain
-   * @param isCustomDomain Whether the siteName is a custom domain
-   * @returns Organization data or null if not found
-   */
-  async getOrgBySiteName(siteName: string, isCustomDomain = false) {
-    const query: TGetOrganizations = { siteName };
-    if (isCustomDomain) {
-      query.customDomain = siteName;
-      query.isCustomDomainVerified = true;
-    }
-
-    const result = await this.execute<typeof classroomio.organization.$get>({
-      requestFn: () =>
-        classroomio.organization.$get({
-          query
-        }),
-      logContext: 'fetching organization',
-      onSuccess: (response) => {
-        if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
-          return;
-        }
-
-        orgs.set(response.data);
-      }
-    });
-
-    return result?.data?.[0] ?? null;
-  }
-
-  /**
-   * Creates a new organization with the current user as owner
-   * @param fields Organization creation data (name, siteName)
-   */
-  async create(fields: TCreateOrganization) {
-    const result = ZCreateOrganization.safeParse(fields);
-    if (!result.success) {
-      this.errors = mapZodErrorsToTranslations(result.error, 'organization');
-      return;
-    }
-
-    await this.execute<typeof classroomio.organization.$post>({
-      requestFn: () =>
-        classroomio.organization.$post({
-          json: result.data
-        }),
-      logContext: 'creating organization',
-      onSuccess: (response) => {
-        if (!response.data) {
-          return;
-        }
-
-        const { organization, organizations } = response.data;
-
-        // Update stores
-        orgs.set(organizations.map((org) => mergeAccountOrgFromServer(org)));
-        const createdOrg = organizations.find((org) => org.id === organization.id);
-        if (createdOrg) {
-          currentOrg.set(mergeAccountOrgFromServer(createdOrg));
-        }
-
-        snackbar.success('snackbar.success_update');
-
-        goto(resolve(`/org/${organization.siteName}`, {}));
-      },
-      onError: (result) => {
-        if (typeof result === 'string') {
-          snackbar.error(result);
-          return;
-        }
-        if ('error' in result) {
-          this.handleValidationError(result);
-        }
-      }
-    });
   }
 
   /**
@@ -620,114 +359,6 @@ class OrgApi extends BaseApiWithErrors {
   }
 
   /**
-   * Invites team members to the organization
-   *
-   * @param emails Array of email addresses
-   * @param roleId Role ID (ADMIN or TUTOR)
-   */
-  async inviteTeamMembers(emails: string[], roleId: number, confirmedStudentEmails: string[] = []) {
-    return this.execute<InviteTeamRequest>({
-      requestFn: () =>
-        classroomio.organization.team.invite.$post({
-          json: { emails, roleId, confirmedStudentEmails }
-        }),
-      logContext: 'inviting team members',
-      onSuccess: (response) => {
-        if (response.data.queuedCount > 0) void this.getOrgTeam();
-      },
-      onError: (result) => {
-        if (typeof result === 'string') {
-          snackbar.error(result);
-          return;
-        }
-        if ('error' in result && 'field' in result) {
-          this.errors[result.field as string] = result.error;
-        }
-      }
-    });
-  }
-
-  /**
-   * Changes another team member's organization role.
-   *
-   * @param memberId Member ID to update
-   * @param roleId Admin or tutor role id
-   */
-  async updateTeamMemberRole(memberId: number, roleId: TUpdateTeamMemberRole['roleId']) {
-    return this.execute<UpdateTeamMemberRoleRequest>({
-      requestFn: () =>
-        classroomio.organization.team[':memberId'].$patch({
-          param: { memberId: memberId.toString() },
-          json: { roleId }
-        }),
-      logContext: 'updating team member role',
-      onSuccess: async () => {
-        snackbar.success('snackbar.team_members.role_updated');
-        await this.getOrgTeam();
-      },
-      onError: (result) => {
-        if (typeof result !== 'string' && result.code === ErrorCodes.ORG_TEAM_LAST_ADMIN) {
-          snackbar.error('snackbar.team_members.last_admin');
-          return;
-        }
-
-        snackbar.error('snackbar.team_members.role_update_failed');
-      }
-    });
-  }
-
-  /**
-   * Removes a team member from the organization
-   *
-   * @param memberId Member ID to remove
-   */
-  async removeTeamMember(memberId: number) {
-    return this.execute<DeleteTeamRequest>({
-      requestFn: () =>
-        classroomio.organization.team[':memberId'].$delete({
-          param: { memberId: memberId.toString() }
-        }),
-      logContext: 'removing team member',
-      onSuccess: () => {
-        this.getOrgTeam();
-      },
-      onError: (result) => {
-        if (typeof result === 'string') {
-          snackbar.error(result);
-        }
-      }
-    });
-  }
-
-  /**
-   * Sends a domain request (connect, refresh, or remove)
-   * @param action Domain operation action
-   * @param domain Domain name
-   * @returns Domain request response data
-   */
-  async sendDomainRequest(action: 'connect' | 'refresh' | 'remove', domain: string) {
-    return this.execute<DomainRequestRequest>({
-      requestFn: () =>
-        classroomio.domain.$post({
-          json: {
-            action,
-            domain
-          }
-        }),
-      logContext: `processing domain request: ${action}`,
-      onSuccess: () => {
-        this.success = true;
-        this.errors = {};
-      },
-      onError: (result) => {
-        if (typeof result === 'string') {
-          snackbar.error(result);
-        }
-      }
-    });
-  }
-
-  /**
    * Imports users into the organization as students
    */
   async importAudienceMembers(data: TImportAudienceMembers) {
@@ -933,44 +564,6 @@ class OrgApi extends BaseApiWithErrors {
         }
 
         snackbar.error('error' in result ? result.error : result.message);
-      }
-    });
-  }
-
-  linkInvite = $state<OrgLinkInvite>(null);
-
-  async getLinkInvite(roleId: number) {
-    return this.execute<GetLinkInviteRequest>({
-      requestFn: () => classroomio.organization['link-invite'].$get({ query: { roleId: roleId.toString() } }),
-      logContext: 'fetching link invite',
-      onSuccess: (response) => {
-        this.linkInvite = response.data;
-      }
-    });
-  }
-
-  async generateLinkInvite(roleId: number) {
-    return this.execute<CreateLinkInviteRequest>({
-      requestFn: () => classroomio.organization['link-invite'].$post({ json: { roleId } }),
-      logContext: 'generating link invite',
-      onSuccess: (response) => {
-        const wasNew = !this.linkInvite;
-        this.linkInvite = response.data;
-
-        if (wasNew) {
-          snackbar.success('snackbar.link_invite.generated');
-        }
-      }
-    });
-  }
-
-  async toggleLinkInvite(roleId: number, isRevoked: boolean) {
-    return this.execute<ToggleLinkInviteRequest>({
-      requestFn: () => classroomio.organization['link-invite'].$patch({ json: { roleId, isRevoked } }),
-      logContext: 'toggling link invite',
-      onSuccess: (response) => {
-        this.linkInvite = response.data;
-        snackbar.success(isRevoked ? 'snackbar.link_invite.disabled' : 'snackbar.link_invite.enabled');
       }
     });
   }

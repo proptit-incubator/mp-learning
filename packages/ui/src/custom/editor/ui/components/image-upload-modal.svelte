@@ -7,14 +7,11 @@
   import { InputField } from '../../../input-field';
   import UploadCloudIcon from '@lucide/svelte/icons/upload-cloud';
   import LoaderCircle from '@lucide/svelte/icons/loader-circle';
-  import SearchIcon from '@lucide/svelte/icons/search';
-  import type { UnsplashPhoto } from '../../types';
 
   interface Props {
     editor?: Editor;
     open?: boolean;
     onImageUpload?: (file: File) => Promise<string>;
-    onSearchUnsplash?: (query: string) => Promise<UnsplashPhoto[]>;
     onImageSelect?: (url: string) => void;
     cropAspect?: number;
     /** Crop after upload when an aspect ratio is required. Off by default (editor images have no size rule). */
@@ -25,7 +22,6 @@
     editor,
     open = $bindable(false),
     onImageUpload,
-    onSearchUnsplash,
     onImageSelect,
     cropAspect,
     enableCrop = !!cropAspect
@@ -33,7 +29,6 @@
 
   const tabs = $derived([
     ...(onImageUpload ? [{ label: 'Upload', value: 'upload' }] : []),
-    ...(onSearchUnsplash ? [{ label: 'Unsplash', value: 'unsplash' }] : []),
     { label: 'Link', value: 'link' }
   ]);
 
@@ -42,11 +37,6 @@
   let isUploading = $state(false);
 
   let imageUrl = $state('');
-
-  let searchQuery = $state('');
-  let isSearching = $state(false);
-  let unsplashImages: UnsplashPhoto[] = $state([]);
-  let searchError = $state('');
 
   function handleImageSelect(src: string) {
     if (!src) return;
@@ -83,21 +73,6 @@
 
   function handleUrlInsert() {
     if (imageUrl.trim()) handleImageSelect(imageUrl.trim());
-  }
-
-  async function handleUnsplashSearch() {
-    if (!onSearchUnsplash) return;
-    isSearching = true;
-    searchError = '';
-    try {
-      unsplashImages = await onSearchUnsplash(searchQuery || 'nature landscape architecture');
-    } catch (error) {
-      console.error('Error fetching images from Unsplash:', error);
-      unsplashImages = [];
-      searchError = 'Failed to fetch images from Unsplash. Please try again.';
-    } finally {
-      isSearching = false;
-    }
   }
 </script>
 
@@ -151,61 +126,6 @@
                   </ImageCropper.Dialog>
                 {/if}
               </ImageCropper.Root>
-            </div>
-          </UnderlineTabs.Content>
-        {/if}
-
-        {#if onSearchUnsplash}
-          <UnderlineTabs.Content value="unsplash">
-            <div class="ui:h-full ui:overflow-y-auto">
-              <form
-                onsubmit={(e) => {
-                  e.preventDefault();
-                  handleUnsplashSearch();
-                }}
-                class="ui:mt-1 ui:flex ui:gap-2 ui:pb-3"
-              >
-                <div class="ui:flex-1">
-                  <InputField bind:value={searchQuery} placeholder="Search images on Unsplash..." />
-                </div>
-                <Button type="submit" variant="outline" loading={isSearching}>
-                  <SearchIcon size={16} />
-                </Button>
-              </form>
-              {#if searchError}
-                <p class="ui:py-7 ui:text-center ui:text-sm ui:text-destructive">{searchError}</p>
-              {:else if unsplashImages.length > 0}
-                <div class="ui:grid ui:max-h-[400px] ui:grid-cols-4 ui:gap-3 ui:overflow-y-auto ui:p-1">
-                  {#each unsplashImages as photo (photo.id)}
-                    <div>
-                      <button
-                        type="button"
-                        onclick={() => handleImageSelect(photo.urls.regular)}
-                        class="ui:group ui:relative ui:aspect-[3/2] ui:overflow-hidden ui:rounded-md"
-                      >
-                        <img
-                          src={photo.urls.regular}
-                          alt={photo.alt_description}
-                          class="ui:h-full ui:w-full ui:object-cover ui:transition-opacity ui:group-hover:opacity-80"
-                        />
-                      </button>
-                      {#if photo.user?.name}
-                        <p class="ui:mt-1 ui:truncate ui:text-center ui:text-xs ui:font-light ui:text-muted-foreground">
-                          By
-                          <a
-                            href="https://unsplash.com/@{photo.user.username}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="ui:hover:text-primary ui:underline">{photo.user.name}</a
-                          >
-                        </p>
-                      {/if}
-                    </div>
-                  {/each}
-                </div>
-              {:else if !isSearching}
-                <p class="ui:py-7 ui:text-center ui:text-sm ui:text-muted-foreground">Search for images on Unsplash</p>
-              {/if}
             </div>
           </UnderlineTabs.Content>
         {/if}

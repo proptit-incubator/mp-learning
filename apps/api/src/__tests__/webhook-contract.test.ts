@@ -6,10 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { WEBHOOK_EVENT_TYPES } from '@cio/utils/constants/webhook';
 import { ZWebhookEventData } from '@cio/utils/validation/webhook';
 
-const docs = readFileSync(
-  fileURLToPath(new URL('../../../docs/content/docs/developers/webhooks.mdx', import.meta.url)),
-  'utf8'
-);
+const docs = readFileSync(fileURLToPath(new URL('../../../../docs/webhooks.mdx', import.meta.url)), 'utf8');
 
 function extractExample(eventType: string): unknown {
   const sectionStart = docs.indexOf(`#### \`${eventType}\``);

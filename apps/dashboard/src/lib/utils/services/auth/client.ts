@@ -1,6 +1,5 @@
 import { createAuthClient } from 'better-auth/svelte';
 import { env } from '$env/dynamic/public';
-import { ssoClient } from '@better-auth/sso/client';
 import { dev } from '$app/environment';
 
 // Browser baseURL depends on deployment shape:
@@ -49,12 +48,5 @@ export const authClient = createAuthClient({
   baseURL,
   fetchOptions: {
     credentials: 'include' // Include cookies in requests
-  },
-  plugins: [
-    ssoClient({
-      domainVerification: {
-        enabled: true
-      }
-    })
-  ]
+  }
 });

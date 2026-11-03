@@ -21,12 +21,6 @@ vi.mock('@api/services/v1/courses/members', () => ({
   getCourseMemberAnalyticsService: vi.fn()
 }));
 
-vi.mock('@api/services/v1/courses/invites', () => ({
-  listCourseInvitesService: vi.fn(),
-  createCourseInviteService: vi.fn(),
-  revokeCourseInviteService: vi.fn()
-}));
-
 vi.mock('@api/services/v1/shared', () => ({
   assertCourseBelongsToOrganization: vi.fn(),
   assertCourseTeamMemberOrOrgAdmin: vi.fn()

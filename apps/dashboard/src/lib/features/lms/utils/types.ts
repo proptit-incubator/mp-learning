@@ -9,7 +9,3 @@ export type LibraryDetailSuccess = Extract<InferResponseType<LibraryDetailReques
 export type LibraryEnrollRequest = (typeof classroomio.course)[':courseId']['enroll']['$post'];
 type LibraryRequestQuery = InferRequestType<LibraryRequest>['query'];
 export type LibraryQuery = Omit<LibraryRequestQuery, 'limit' | 'page'> & { limit?: number; page?: number };
-
-export type GetPendingOrgInviteRequest = (typeof classroomio.invite.organization)['pending']['$get'];
-type GetPendingOrgInviteResponse = Extract<InferResponseType<GetPendingOrgInviteRequest>, { success: true }>;
-export type PendingOrgInvite = NonNullable<GetPendingOrgInviteResponse['data']>;

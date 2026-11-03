@@ -729,39 +729,6 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
     expect(added[0].profileId).toBe(learner.profileId);
   });
 
-  it('rejects old course share links at creation, preview and acceptance', async () => {
-    const fixture = await courseFixture();
-    const links = await import('@api/services/invite-link/invite-link');
-    const { createInviteLink } = await import('@cio/db/queries/invite-link');
-    const { generateInviteToken, hashInviteToken } = await import('@api/utils/invite-token');
-    const token = generateInviteToken();
-    const tokenHash = hashInviteToken(token);
-    await createInviteLink({
-      organizationId,
-      courseId: fixture.courseId,
-      resourceType: 'COURSE',
-      roleId: 3,
-      token,
-      tokenHash,
-      createdByProfileId: administratorId
-    });
-    await expect(
-      links.getOrCreateInviteLink({
-        organizationId,
-        target: { resourceType: 'COURSE', resourceId: fixture.courseId },
-        createdByProfileId: administratorId
-      })
-    ).rejects.toThrow('Add existing employees');
-    await expect(links.previewInviteLink(token)).rejects.toThrow('Add existing employees');
-    await expect(
-      links.acceptInviteLink(token, { id: administratorId, email: `${administratorId}@example.com` })
-    ).rejects.toThrow('Add existing employees');
-    const [count] = await database.db.execute(
-      database.sql`select count(*)::int as total from groupmember where group_id = ${fixture.groupId}`
-    );
-    expect(count.total).toBe(0);
-  });
-
   afterAll(async () => {
     vi.restoreAllMocks();
   });

@@ -14,7 +14,6 @@ const SEARCH_DEBOUNCE_MS = 200;
 function emptyResults(): GroupedSearchResults {
   return {
     course: [],
-    widget: [],
     tag: [],
     audience: [],
     nav: [],
@@ -133,16 +132,6 @@ function mapSearchResults(data: SearchOrgData, currentOrgPath: string): GroupedS
       title: course.title,
       subtitle: summarize(course.description),
       url: `/courses/${course.id}`
-    })
-  );
-
-  results.widget = data.widgets.map(
-    (widget): SearchResultItem => ({
-      kind: 'widget',
-      id: widget.id,
-      title: widget.name,
-      subtitle: widget.status,
-      url: `/widgets/${widget.id}`
     })
   );
 

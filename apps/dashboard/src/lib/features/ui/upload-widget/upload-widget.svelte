@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import { snackbar } from '$features/ui/snackbar/store';
   import { handleOpenWidget } from '$features/ui/course-landing-page/store';
-  import { queryUnsplash } from './utils';
   import { uploadImage } from '$lib/utils/services/upload';
   import { getResolvedUploadLimits } from '$lib/utils/config/upload-limits-context';
   import { ImageUploadModal } from '@cio/ui/custom/editor';
@@ -19,7 +18,7 @@
   const uploadLimits = getResolvedUploadLimits();
   const maxLandingImageSize = uploadLimits.landingImageBytes;
 
-  async function handleUnsplashSelect(url: string) {
+  async function handleImageSelect(url: string) {
     imageURL = url;
     onchange?.(url);
     snackbar.success('snackbar.landing_page_settings.success.complete');
@@ -46,7 +45,6 @@
   editor={null}
   bind:open={$handleOpenWidget.open}
   onImageUpload={handleUpload}
-  onSearchUnsplash={queryUnsplash}
-  onImageSelect={handleUnsplashSelect}
+  onImageSelect={handleImageSelect}
   cropAspect={COVER_ASPECT}
 />

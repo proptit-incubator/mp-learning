@@ -15,13 +15,6 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { ssoApi } from '$features/org/api/sso.svelte';
-  import ShieldIcon from '@lucide/svelte/icons/shield';
-  import { buildSsoRedirectUrl, createSsoEmailChecker, type SsoAuthState } from '$features/auth/utils/auth-sso';
-  import { authSsoStore, ensureSsoInfoLoaded } from '$features/auth/utils/auth-sso-store';
-  import { orgApi } from '$features/org/api/org.svelte';
-  import { onboardingApi } from '$features/onboarding/api/onboarding.svelte';
-  import { PUBLIC_IS_SELFHOSTED } from '$env/static/public';
 
   let { data } = $props();
   const emailFromUrl = page.url.searchParams.get('email') ?? '';
@@ -35,9 +28,6 @@
   } = $state({});
   let submitError: string = $state('');
 
-  /** Per-email discovery result; display uses this over org-level when set */
-  let discoveryState = $state<SsoAuthState | null>(null);
-
   const disableSubmit = $derived(getDisableSubmit(fields));
   const redirectUrl = $derived(page.url.searchParams.get('redirect'));
   const inviteToken = $derived(page.url.searchParams.get('invite_token'));
@@ -45,24 +35,10 @@
   // Use org from store or layout data (layout data ensures org is available on self-hosted before store is set)
   const org = $derived($currentOrg?.id ? $currentOrg : (data.org ?? $currentOrg));
 
-  const ssoState = $derived(discoveryState ?? $authSsoStore.ssoState);
-  const orgSupportsSso = $derived($authSsoStore.orgSupportsSso);
-
   // Invite context: allow signup when invite_token present or redirect contains invite info
   const hasInviteContext = $derived(
     !!inviteToken || (!!redirectUrl && (redirectUrl.includes('/invite/') || redirectUrl.includes('invite_token')))
   );
-  const isNormalOrgSiteSignup = $derived(
-    PUBLIC_IS_SELFHOSTED !== 'true' && $globalStore.isOrgSite && !!org.id && !hasInviteContext
-  );
-  const newUserCallbackPathname = $derived.by(() => {
-    if (!isNormalOrgSiteSignup) {
-      return undefined;
-    }
-
-    return redirectUrl ? `/join-academy?redirect=${encodeURIComponent(redirectUrl)}` : '/join-academy';
-  });
-
   const inviteOnly = $derived(!!org?.settings?.signup?.inviteOnly);
   const signupRestricted = $derived($globalStore.isOrgSite && (org.disableSignup || (inviteOnly && !hasInviteContext)));
 
@@ -76,45 +52,13 @@
     }
   });
 
-  $effect(() => {
-    const orgId = org?.id;
-    if (orgId) ensureSsoInfoLoaded(orgId, (id) => ssoApi.getOrgSsoInfo(id));
-  });
-
-  const handleEmailChange = createSsoEmailChecker({
-    getEmail: () => fields.email,
-    getOrgSupportsSso: () => orgSupportsSso,
-    discoverSso: (email) => ssoApi.discoverSso(email),
-    onChecking: () => {
-      discoveryState = { ...$authSsoStore.ssoState, checking: true };
-    },
-    onResult: (state) => {
-      discoveryState = state;
-    },
-    onClear: () => {
-      errors.email = '';
-      discoveryState = null;
-    }
-  });
-
-  async function handleSsoLogin() {
-    const url = buildSsoRedirectUrl(ssoState.redirectUrl);
-
-    await authClient.signIn.sso({
-      email: fields.email,
-      providerId: ssoState.providerId || '',
-      callbackURL: url
-    });
+  function handleEmailChange() {
+    errors.email = '';
   }
 
   async function handleSubmit() {
     if (signupRestricted) {
       submitError = t.get('settings.auth.login.signup_disabled_error');
-      return;
-    }
-
-    if (ssoState.required && ssoState.available) {
-      handleSsoLogin();
       return;
     }
 
@@ -141,39 +85,12 @@
           name: name
         },
         {
-          headers,
-          onSuccess: async (ctx) => {
-            console.log('Signup successful');
-            if (!$globalStore.isOrgSite) {
-              let welcomeEmailPending = false;
-              for (let attempt = 0; attempt < 3 && !welcomeEmailPending; attempt++) {
-                welcomeEmailPending = await onboardingApi.markWelcomeEmailPending();
-                if (!welcomeEmailPending) {
-                  await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
-                }
-              }
-
-              if (!welcomeEmailPending) {
-                throw new Error('Unable to prepare welcome email');
-              }
-            }
-          }
+          headers
         }
       );
 
       if (error) {
         throw error;
-      }
-
-      if (isNormalOrgSiteSignup) {
-        const joinResult = await orgApi.joinAcademy(org.id, redirectUrl || '/lms');
-        const joinRetryPathname = newUserCallbackPathname;
-
-        if (!joinResult && joinRetryPathname) {
-          await goto(resolve(joinRetryPathname, {}));
-        }
-
-        return;
       }
 
       const redirect = redirectUrl || '/';
@@ -237,32 +154,7 @@
     </Button>
   </div>
 {:else}
-  {#snippet getPasswordAuthAlternative()}
-    <div class="space-y-3">
-      {#if ssoState.required}
-        <div class="flex items-center gap-3">
-          <ShieldIcon class="size-5 text-blue-600" />
-          <div class="flex-1">
-            <p class="mt-1 text-xs text-blue-600">
-              {$t('settings.auth.login.sso_required')}
-            </p>
-          </div>
-        </div>
-      {/if}
-      <Button type="button" variant="outline" class="w-full" onclick={handleSsoLogin}>
-        {$t('settings.auth.login.sign_in_with_sso', { provider: ssoState.providerName || 'SSO' })}
-      </Button>
-    </div>
-  {/snippet}
-
-  <AuthUI
-    isLogin={false}
-    {handleSubmit}
-    isLoading={loading}
-    {hideGoogleAuth}
-    {newUserCallbackPathname}
-    getPasswordAuthAlternative={ssoState.available ? getPasswordAuthAlternative : undefined}
-  >
+  <AuthUI isLogin={false} {handleSubmit} isLoading={loading} {hideGoogleAuth}>
     <div class="flex flex-col gap-6">
       <Field.Field>
         <Field.Label for="email">{$t('login.fields.email')}</Field.Label>
@@ -285,61 +177,59 @@
         </Field.Content>
       </Field.Field>
 
-      {#if !ssoState.required}
-        <Field.Field>
-          <Field.Label for="password">{$t('login.fields.password')}</Field.Label>
-          <Field.Content>
-            <Password
-              id="password"
-              bind:value={fields.password}
-              placeholder="************"
-              showPasswordTooltip={$t('auth.password.show')}
-              hidePasswordTooltip={$t('auth.password.hide')}
-              showPasswordAriaLabel={$t('auth.password.show')}
-              hidePasswordAriaLabel={$t('auth.password.hide')}
-              disabled={loading}
-              onblur={handlePasswordBlur}
-              oninput={handlePasswordInput}
-              aria-invalid={errors.password ? 'true' : undefined}
-              autocomplete="new-password"
-            />
-            {#if errors.password}
-              <Field.Error>{$t(errors.password)}</Field.Error>
-            {:else}
-              <Field.Description>{$t('login.fields.password_helper_message')}</Field.Description>
-            {/if}
-          </Field.Content>
-        </Field.Field>
+      <Field.Field>
+        <Field.Label for="password">{$t('login.fields.password')}</Field.Label>
+        <Field.Content>
+          <Password
+            id="password"
+            bind:value={fields.password}
+            placeholder="************"
+            showPasswordTooltip={$t('auth.password.show')}
+            hidePasswordTooltip={$t('auth.password.hide')}
+            showPasswordAriaLabel={$t('auth.password.show')}
+            hidePasswordAriaLabel={$t('auth.password.hide')}
+            disabled={loading}
+            onblur={handlePasswordBlur}
+            oninput={handlePasswordInput}
+            aria-invalid={errors.password ? 'true' : undefined}
+            autocomplete="new-password"
+          />
+          {#if errors.password}
+            <Field.Error>{$t(errors.password)}</Field.Error>
+          {:else}
+            <Field.Description>{$t('login.fields.password_helper_message')}</Field.Description>
+          {/if}
+        </Field.Content>
+      </Field.Field>
 
-        <Field.Field>
-          <Field.Label for="confirmPassword">{$t('login.fields.confirm_password')}</Field.Label>
-          <Field.Content>
-            <Password
-              id="confirmPassword"
-              bind:value={fields.confirmPassword}
-              placeholder="************"
-              showPasswordTooltip={$t('auth.password.show')}
-              hidePasswordTooltip={$t('auth.password.hide')}
-              showPasswordAriaLabel={$t('auth.password.show')}
-              hidePasswordAriaLabel={$t('auth.password.hide')}
-              disabled={loading}
-              aria-invalid={confirmPasswordError ? 'true' : undefined}
-              autocomplete="new-password"
-            />
-            {#if confirmPasswordError}
-              <Field.Error>{confirmPasswordError}</Field.Error>
-            {/if}
-          </Field.Content>
-        </Field.Field>
+      <Field.Field>
+        <Field.Label for="confirmPassword">{$t('login.fields.confirm_password')}</Field.Label>
+        <Field.Content>
+          <Password
+            id="confirmPassword"
+            bind:value={fields.confirmPassword}
+            placeholder="************"
+            showPasswordTooltip={$t('auth.password.show')}
+            hidePasswordTooltip={$t('auth.password.hide')}
+            showPasswordAriaLabel={$t('auth.password.show')}
+            hidePasswordAriaLabel={$t('auth.password.hide')}
+            disabled={loading}
+            aria-invalid={confirmPasswordError ? 'true' : undefined}
+            autocomplete="new-password"
+          />
+          {#if confirmPasswordError}
+            <Field.Error>{confirmPasswordError}</Field.Error>
+          {/if}
+        </Field.Content>
+      </Field.Field>
 
-        {#if submitError}
-          <p class="ui:text-destructive text-sm">{submitError}</p>
-        {/if}
-
-        <Button type="submit" disabled={disableSubmit || loading} {loading} class="w-full">
-          {$t('login.create_account')}
-        </Button>
+      {#if submitError}
+        <p class="ui:text-destructive text-sm">{submitError}</p>
       {/if}
+
+      <Button type="submit" disabled={disableSubmit || loading} {loading} class="w-full">
+        {$t('login.create_account')}
+      </Button>
     </div>
   </AuthUI>
 {/if}

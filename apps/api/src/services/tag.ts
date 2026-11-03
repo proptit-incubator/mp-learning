@@ -24,7 +24,7 @@ import {
   updateTag,
   updateTagGroup
 } from '@cio/db/queries/tag';
-import { getOrgIdBySiteName, isUserOrgAdmin } from '@cio/db/queries/organization';
+import { isUserOrgAdmin } from '@cio/db/queries/organization';
 import { TAG_COLOR_OPTIONS, type TTagColor } from '@cio/utils/validation/tag';
 import { slugifyTagValue } from '@cio/db/queries/tag';
 import type { DbOrTxClient } from '@cio/db/drizzle';
@@ -92,56 +92,6 @@ export async function getOrganizationTagGroups(orgId: string) {
   } catch (error) {
     throw new AppError(
       error instanceof Error ? error.message : 'Failed to fetch tag groups',
-      ErrorCodes.TAG_FETCH_FAILED,
-      500
-    );
-  }
-}
-
-export async function getPublicOrganizationTagGroups(siteName: string) {
-  try {
-    const orgResult = await getOrgIdBySiteName(siteName);
-    const org = orgResult[0];
-
-    if (!org) {
-      throw new AppError('Organization not found', ErrorCodes.ORG_NOT_FOUND, 404);
-    }
-
-    const groups = await getTagGroupsWithTags(org.id, {
-      onlyPublishedCourses: true
-    });
-
-    const tagsByGroupId = new Map<string, (typeof groups)[number]['tags']>();
-
-    for (const group of groups) {
-      for (const tag of group.tags) {
-        if (tag.courseCount <= 0) {
-          continue;
-        }
-
-        const groupId = tag.groupId || group.id;
-        const existing = tagsByGroupId.get(groupId) ?? [];
-
-        if (!existing.some((item) => item.id === tag.id)) {
-          existing.push(tag);
-          tagsByGroupId.set(groupId, existing);
-        }
-      }
-    }
-
-    return groups
-      .map((group) => ({
-        ...group,
-        tags: tagsByGroupId.get(group.id) ?? []
-      }))
-      .filter((group) => group.tags.length > 0);
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-
-    throw new AppError(
-      error instanceof Error ? error.message : 'Failed to fetch public tag groups',
       ErrorCodes.TAG_FETCH_FAILED,
       500
     );

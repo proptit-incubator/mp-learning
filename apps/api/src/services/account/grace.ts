@@ -1,8 +1,4 @@
-import {
-  clearSecondariesReadOnly,
-  findAccountsOverAllowance,
-  setSecondariesReadOnlyUntil
-} from '@cio/db/queries/account';
+import { findAccountsOverAllowance, setSecondariesReadOnlyUntil } from '@cio/db/queries/account';
 
 import { WORKSPACES_INCLUDED } from '@cio/utils/plans';
 
@@ -30,8 +26,4 @@ export async function runWorkspaceGraceCheck(): Promise<GraceCheckResult> {
   }
 
   return { scanned: offenders.length, marked };
-}
-
-export async function clearWorkspaceGraceForAccount(primaryOrgId: string): Promise<number> {
-  return clearSecondariesReadOnly(primaryOrgId);
 }

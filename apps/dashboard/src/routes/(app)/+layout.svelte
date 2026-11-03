@@ -4,7 +4,6 @@
 
   import { UpgradeModal, PageLoadProgress, PageRestricted } from '$features/ui';
   import { VerifyEmailModal, WelcomeModal } from '$features/onboarding/components';
-  import { EarlyAdopterClaimHandler } from '$features/early-adopter-claim/components';
   import { CommandPalette, KeyboardShortcutListener } from '$features/search';
   import { ReportDialog } from '$features/report';
   import SaveAsTemplateDialog from '$features/course/components/save-as-template-dialog.svelte';
@@ -47,7 +46,6 @@
 </script>
 
 {#if PUBLIC_IS_SELFHOSTED !== 'true'}
-  <EarlyAdopterClaimHandler />
   <UpgradeModal />
 {/if}
 <VerifyEmailModal />

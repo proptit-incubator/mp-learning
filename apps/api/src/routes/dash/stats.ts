@@ -1,12 +1,6 @@
 import { Hono } from '@api/utils/hono';
 import { learningAnalyticsRouter } from './learning-analytics';
-import {
-  ZDashAnalyticsRange,
-  ZDashCourseFunnel,
-  ZDashStats,
-  ZIngestBatch,
-  ZLoginActivity
-} from '@cio/utils/validation/dash';
+import { ZDashAnalyticsRange, ZDashCourseFunnel, ZDashStats, ZLoginActivity } from '@cio/utils/validation/dash';
 import { authMiddleware } from '@api/middlewares/auth';
 import { getCurrentUserLoginStreak, getOrganisationAnalytics, getStudentLoginActivity } from '@api/services/dash';
 import { resolveLearningAnalyticsScope } from '@api/services/learning-analytics';
@@ -14,32 +8,10 @@ import { handleError } from '@api/utils/errors';
 import { orgAdminMiddleware } from '@api/middlewares/org-admin';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
 import { zValidator } from '@hono/zod-validator';
-import {
-  getCountryBreakdown,
-  getCourseFunnel,
-  getLandingStats,
-  getTopCoursesByViews,
-  ingestEventBatch
-} from '@api/services/analytics';
+import { getCountryBreakdown, getCourseFunnel, getLandingStats, getTopCoursesByViews } from '@api/services/analytics';
 
 export const dashAnalyticsRouter = new Hono()
   .route('/', learningAnalyticsRouter)
-  .post('/track', zValidator('json', ZIngestBatch), async (c) => {
-    try {
-      const batch = c.req.valid('json');
-      const user = c.get('user');
-
-      const result = await ingestEventBatch(batch, {
-        country: c.req.header('cf-ipcountry') ?? c.req.header('CF-IPCountry') ?? null,
-        userAgent: c.req.header('user-agent') ?? null,
-        userId: user?.id ?? null
-      });
-
-      return c.json({ success: true, data: result }, 200);
-    } catch (error) {
-      return handleError(c, error, 'Failed to ingest analytics events');
-    }
-  })
   .get('/stats', authMiddleware, orgMemberMiddleware, zValidator('query', ZDashStats), async (c) => {
     try {
       const { bust } = c.req.valid('query');

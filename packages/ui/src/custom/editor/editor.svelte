@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { HTMLContent, Editor } from '@tiptap/core';
   import type { Transaction } from '@tiptap/pm/state';
-  import type { UnsplashPhoto } from './types';
   import type { Snippet } from 'svelte';
   import { EdraEditor, EdraToolBar, EdraBubbleMenu, EdraDragHandleExtended } from './ui';
   import { slide } from 'svelte/transition';
@@ -34,7 +33,6 @@
     onEditorReady?: (editor: Editor) => void;
     onEditorDestroy?: () => void;
     onImageUpload?: (file: File) => Promise<string>;
-    onSearchUnsplash?: (query: string) => Promise<UnsplashPhoto[]>;
     showDragHandle?: boolean;
     /** Enables a large editor sheet, opened by setting `expanded`; both editors stay in sync. */
     expandable?: boolean;
@@ -58,7 +56,6 @@
     onContentChange,
     onEditorReady,
     onImageUpload,
-    onSearchUnsplash,
     showDragHandle = true,
     expandable = false,
     expanded = $bindable(false),
@@ -196,7 +193,6 @@
         {onUpdate}
         {placeholder}
         {onImageUpload}
-        {onSearchUnsplash}
       />
     </div>
   </div>

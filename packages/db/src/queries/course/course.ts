@@ -17,7 +17,7 @@ import {
   TNewCourseSection,
   TProfile
 } from '@db/types';
-import { and, asc, count, desc, eq, gt, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 
 import { ROLE } from '@cio/utils/constants';
 import { db, type DbOrTxClient } from '@db/drizzle';
@@ -70,137 +70,6 @@ export interface TStudentCourse extends TBaseCourse {
   certificateRevoked: boolean;
   upcomingSession: CourseUpcomingSession | null;
 }
-
-/**
- * Gets published courses by organization siteName
- * @param siteName Organization site name
- * @returns Array of published courses with lesson counts
- */
-export const getPublishedCoursesBySiteName = async (
-  siteName: string,
-  courseIds?: string[],
-  _courseTypes?: string[],
-  search?: string,
-  _pricing?: 'free' | 'paid',
-  limit?: number,
-  offset?: number
-): Promise<TBaseCourse[]> => {
-  try {
-    if (courseIds && courseIds.length === 0) {
-      return [];
-    }
-
-    const conditions = [
-      eq(schema.organization.siteName, siteName),
-      eq(schema.course.status, 'ACTIVE'),
-      eq(schema.course.isPublished, true),
-      eq(schema.course.isTemplate, false)
-    ];
-
-    if (courseIds && courseIds.length > 0) {
-      conditions.push(inArray(schema.course.id, courseIds));
-    }
-
-    if (search) {
-      const pattern = `%${search}%`;
-      conditions.push(or(ilike(schema.course.title, pattern), ilike(schema.course.description, pattern))!);
-    }
-
-    const exerciseCountSql = sql<number>`(
-      SELECT COUNT(*)::bigint
-      FROM ${schema.exercise} as ex
-      LEFT JOIN ${schema.lesson} as el ON el.id = ex.lesson_id
-      WHERE ${or(eq(sql`ex.course_id`, schema.course.id), eq(sql`el.course_id`, schema.course.id))}
-    )`.as('exercise_count');
-
-    const result = limit
-      ? await db
-          .select({
-            course: schema.course,
-            lessonCount: sql<number>`COUNT(${schema.lesson.id})`.as('lesson_count'),
-            exerciseCount: exerciseCountSql
-          })
-          .from(schema.course)
-          .innerJoin(schema.group, eq(schema.course.groupId, schema.group.id))
-          .innerJoin(schema.organization, eq(schema.group.organizationId, schema.organization.id))
-          .leftJoin(schema.lesson, eq(schema.course.id, schema.lesson.courseId))
-          .where(and(...conditions))
-          .groupBy(schema.course.id)
-          .orderBy(asc(schema.course.displayOrder), desc(schema.course.createdAt))
-          .limit(limit)
-          .offset(offset ?? 0)
-      : await db
-          .select({
-            course: schema.course,
-            lessonCount: sql<number>`COUNT(${schema.lesson.id})`.as('lesson_count'),
-            exerciseCount: exerciseCountSql
-          })
-          .from(schema.course)
-          .innerJoin(schema.group, eq(schema.course.groupId, schema.group.id))
-          .innerJoin(schema.organization, eq(schema.group.organizationId, schema.organization.id))
-          .leftJoin(schema.lesson, eq(schema.course.id, schema.lesson.courseId))
-          .where(and(...conditions))
-          .groupBy(schema.course.id)
-          .orderBy(asc(schema.course.displayOrder), desc(schema.course.createdAt));
-
-    return result.map((row) => ({
-      ...withResolvedCourseBannerImage(row.course),
-      lessonCount: Number(row.lessonCount),
-      exerciseCount: Number(row.exerciseCount)
-    }));
-  } catch (error) {
-    console.error('getCoursesBySiteName error:', error);
-    throw new Error(
-      `Failed to get courses by site name "${siteName}": ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
-  }
-};
-
-export const countPublishedCoursesBySiteName = async (
-  siteName: string,
-  courseIds?: string[],
-  courseTypes?: string[],
-  search?: string,
-  pricing?: 'free' | 'paid'
-): Promise<number> => {
-  try {
-    if (courseIds && courseIds.length === 0) {
-      return 0;
-    }
-
-    const conditions = [
-      eq(schema.organization.siteName, siteName),
-      eq(schema.course.status, 'ACTIVE'),
-      eq(schema.course.isPublished, true),
-      eq(schema.course.isTemplate, false)
-    ];
-
-    if (courseIds && courseIds.length > 0) {
-      conditions.push(inArray(schema.course.id, courseIds));
-    }
-
-    if (search) {
-      const pattern = `%${search}%`;
-      conditions.push(or(ilike(schema.course.title, pattern), ilike(schema.course.description, pattern))!);
-    }
-
-    const [result] = await db
-      .select({
-        total: count(schema.course.id)
-      })
-      .from(schema.course)
-      .innerJoin(schema.group, eq(schema.course.groupId, schema.group.id))
-      .innerJoin(schema.organization, eq(schema.group.organizationId, schema.organization.id))
-      .where(and(...conditions));
-
-    return Number(result?.total ?? 0);
-  } catch (error) {
-    console.error('countPublishedCoursesBySiteName error:', error);
-    throw new Error(
-      `Failed to count courses by site name "${siteName}": ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
-  }
-};
 
 /**
  * Reorders courses for an organization
@@ -304,69 +173,6 @@ export const getCoursesById = async (orgId: string): Promise<TCourse[]> => {
   }
 };
 
-/**
- * Gets lessons by organization siteName
- * @param siteName Organization site name
- * @returns Array of lessons
- */
-export const getLessonsBySiteName = async (siteName: string) => {
-  const result = await db
-    .select({
-      lesson: schema.lesson
-    })
-    .from(schema.lesson)
-    .innerJoin(schema.course, eq(schema.lesson.courseId, schema.course.id))
-    .innerJoin(schema.group, eq(schema.course.groupId, schema.group.id))
-    .innerJoin(schema.organization, eq(schema.group.organizationId, schema.organization.id))
-    .where(eq(schema.organization.siteName, siteName))
-    .limit(1);
-
-  return result.map((row) => row.lesson);
-};
-
-/**
- * Gets exercises by organization siteName
- * @param siteName Organization site name
- * @returns Array of exercises
- */
-export const getExercisesBySiteName = async (siteName: string) => {
-  const result = await db
-    .select({
-      exercise: schema.exercise
-    })
-    .from(schema.exercise)
-    .leftJoin(schema.lesson, eq(schema.exercise.lessonId, schema.lesson.id))
-    .innerJoin(
-      schema.course,
-      or(eq(schema.exercise.courseId, schema.course.id), eq(schema.lesson.courseId, schema.course.id))
-    )
-    .innerJoin(schema.group, eq(schema.course.groupId, schema.group.id))
-    .innerJoin(schema.organization, eq(schema.group.organizationId, schema.organization.id))
-    .where(eq(schema.organization.siteName, siteName))
-    .limit(1);
-
-  return result.map((row) => row.exercise);
-};
-
-/**
- * Gets courses by organization siteName (for setup - includes unpublished courses)
- * @param siteName Organization site name
- * @returns Array of courses with organization info
- */
-export const getCoursesBySiteNameForSetup = async (siteName: string) => {
-  const result = await db
-    .select({
-      course: schema.course
-    })
-    .from(schema.course)
-    .innerJoin(schema.group, eq(schema.course.groupId, schema.group.id))
-    .innerJoin(schema.organization, eq(schema.group.organizationId, schema.organization.id))
-    .where(eq(schema.organization.siteName, siteName));
-
-  return result.map((row) => ({
-    ...withResolvedCourseBannerImage(row.course)
-  }));
-};
 export async function getCourseById(courseId: string, dbClient: DbOrTxClient = db) {
   try {
     const rows = await dbClient.select().from(schema.course).where(eq(schema.course.id, courseId)).limit(1);

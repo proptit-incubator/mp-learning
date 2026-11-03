@@ -67,7 +67,6 @@ export const JOB_NAMES = {
     assetStorageCleanup: 'asset-storage-cleanup',
     courseRoleReconcile: 'course-role-reconcile',
     memberActivityReconcile: 'member-activity-reconcile',
-    earlyAdopterClaimReminder: 'early-adopter-claim-reminder',
     webhookRetention: 'webhook-retention',
     webhookSweep: 'webhook-sweep'
   }
