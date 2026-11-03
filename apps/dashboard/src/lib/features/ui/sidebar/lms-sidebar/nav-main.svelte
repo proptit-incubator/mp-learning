@@ -8,6 +8,7 @@
   import { untrack } from 'svelte';
   import UsersRoundIcon from '@lucide/svelte/icons/users-round';
   import ChartColumnIcon from '@lucide/svelte/icons/chart-column';
+  import ScrollTextIcon from '@lucide/svelte/icons/scroll-text';
 
   $effect(() => {
     const orgId = $currentOrg.id;
@@ -69,6 +70,18 @@
           {#snippet child({ props })}
             <a href="/lms/analytics" {...props} data-testid="learning-report-navigation"
               ><ChartColumnIcon size={17} /><span>{$t(learningReportTitle)}</span></a
+            >
+          {/snippet}
+        </Sidebar.MenuButton>
+      </Sidebar.MenuItem>
+      <Sidebar.MenuItem>
+        <Sidebar.MenuButton
+          tooltipContent={$t('certificate_register.title')}
+          isActive={page.url.pathname === '/lms/certificate-register'}
+        >
+          {#snippet child({ props })}
+            <a href="/lms/certificate-register" {...props} data-testid="certificate-register-navigation"
+              ><ScrollTextIcon size={17} /><span>{$t('certificate_register.title')}</span></a
             >
           {/snippet}
         </Sidebar.MenuButton>

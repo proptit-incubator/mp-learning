@@ -1007,7 +1007,10 @@ export const courseCertificateIssue = pgTable(
     expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'string' }),
     status: varchar().default('valid').notNull(),
     code: varchar({ length: 20 }).notNull(),
-    fileUrl: text('file_url')
+    fileUrl: text('file_url'),
+    revokedAt: timestamp('revoked_at', { withTimezone: true, mode: 'string' }),
+    revokedBy: uuid('revoked_by').references(() => profile.id),
+    revokedReason: text('revoked_reason')
   },
   (table) => [
     foreignKey({
@@ -1025,6 +1028,11 @@ export const courseCertificateIssue = pgTable(
       foreignColumns: [courseCompletionRecord.id],
       name: 'course_certificate_issue_record_id_fkey'
     }).onDelete('cascade'),
+    check('course_certificate_issue_status_check', sql`${table.status} IN ('valid', 'revoked')`),
+    index('course_certificate_issue_course_idx').on(table.courseId),
+    index('course_certificate_issue_expires_idx')
+      .on(table.expiresAt)
+      .where(sql`${table.status} = 'valid'`),
     unique('course_certificate_issue_record_id_key').on(table.courseCompletionRecordId),
     unique('course_certificate_issue_code_key').on(table.code),
     index('idx_course_certificate_issue_course_id').on(table.courseId),

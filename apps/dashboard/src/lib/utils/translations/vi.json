@@ -6672,5 +6672,58 @@
     "valid_until": "Hiệu lực đến",
     "no_expiry": "Không thời hạn",
     "code": "Mã chứng chỉ"
+  },
+  "certificate_register": {
+    "title": "Sổ chứng chỉ",
+    "subtitle": "Tất cả chứng chỉ đã cấp, hạn hiệu lực và những chứng chỉ cần cấp lại.",
+    "summary": "Tổng quan chứng chỉ",
+    "state": {
+      "valid": "Còn hiệu lực",
+      "expiring": "Sắp hết hiệu lực",
+      "expired": "Hết hiệu lực",
+      "revoked": "Đã thu hồi"
+    },
+    "state_note": {
+      "valid": "Đang có giá trị và chưa tới kỳ học lại.",
+      "expiring": "Hết hiệu lực trong {days} ngày tới. Nên nhắc nhân viên học lại.",
+      "expired": "Đã quá ngày hiệu lực, nhân viên cần học lại.",
+      "revoked": "Trang xác minh báo không còn giá trị."
+    },
+    "expiry_window": "Tính sắp hết hiệu lực trong",
+    "days": "{count} ngày",
+    "search": "Tìm tên, mã NV, mã chứng chỉ",
+    "filters": {
+      "all_courses": "Tất cả khoá học"
+    },
+    "columns": {
+      "code": "Mã chứng chỉ",
+      "issued": "Ngày cấp",
+      "expires": "Hiệu lực đến",
+      "state": "Trạng thái"
+    },
+    "actions": "Thao tác",
+    "no_expiry": "Không thời hạn",
+    "expired_ago": "Hết hạn {count} ngày trước",
+    "days_left": "Còn {count} ngày",
+    "open_verify": "Mở trang xác minh",
+    "revoke": "Thu hồi",
+    "restore": "Khôi phục",
+    "cancel": "Huỷ",
+    "revoke_title": "Thu hồi chứng chỉ",
+    "revoke_description": "Chứng chỉ khoá \"{course}\" của {name} sẽ báo đã thu hồi trên trang xác minh, và nhân viên không tải được nữa. Bạn có thể khôi phục lại sau.",
+    "revoke_reason": "Lý do thu hồi",
+    "revoke_placeholder": "Ví dụ: cấp nhầm người, gian lận khi làm bài kiểm tra",
+    "revoke_hint": "Lý do được lưu vào nhật ký của nhân viên.",
+    "revoked": "Đã thu hồi chứng chỉ",
+    "restored": "Đã khôi phục chứng chỉ",
+    "errors": {
+      "revoke": "Không thu hồi được chứng chỉ. Vui lòng thử lại.",
+      "restore": "Không khôi phục được chứng chỉ. Vui lòng thử lại."
+    },
+    "total": "{count} chứng chỉ",
+    "load_error": "Không tải được sổ chứng chỉ.",
+    "no_results": "Không có chứng chỉ phù hợp",
+    "empty_title": "Chưa có chứng chỉ nào",
+    "empty_description": "Chứng chỉ được cấp tự động khi nhân viên hoàn thành khoá học có bật chứng chỉ."
   }
 }

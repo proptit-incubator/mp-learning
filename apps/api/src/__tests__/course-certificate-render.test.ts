@@ -71,6 +71,12 @@ describe('course certificate rendering', () => {
     );
   });
 
+  it('refuses to render a revoked certificate', async () => {
+    mocks.ensureLatestCycleCertificate.mockResolvedValue({ ...issue, status: 'revoked' });
+
+    await expect(assembleCertificateRender('course-1', 'profile-1')).rejects.toMatchObject({ statusCode: 403 });
+  });
+
   it('refuses to render without a completion cycle', async () => {
     mocks.ensureLatestCycleCertificate.mockResolvedValue(null);
 

@@ -101,7 +101,7 @@ const STATE_COUNT_COLUMNS = sql`
   COUNT(*) FILTER (WHERE ls.state = 'expired')::int AS expired,
   COUNT(*) FILTER (WHERE ls.state = 'waived')::int AS waived`;
 
-function teamCourseSql(courseAlias: string, teamProfileId: string) {
+export function teamCourseSql(courseAlias: string, teamProfileId: string) {
   return sql`EXISTS (
     SELECT 1 FROM groupmember tm
     WHERE tm.group_id = ${sql.raw(courseAlias)}.group_id AND tm.profile_id = ${teamProfileId}

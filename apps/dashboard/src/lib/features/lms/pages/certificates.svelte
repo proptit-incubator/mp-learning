@@ -12,7 +12,9 @@
   let searchValue = $state('');
 
   const earnedCertificates = $derived.by(() => {
-    const courses = coursesApi.enrolledCourses.filter((course) => course.certificateEarnedAt != null);
+    const courses = coursesApi.enrolledCourses.filter(
+      (course) => course.certificateEarnedAt != null && !course.certificateRevoked
+    );
 
     return [...courses].sort((leftCourse, rightCourse) => {
       const leftDate = leftCourse.certificateEarnedAt ? new Date(leftCourse.certificateEarnedAt).getTime() : 0;

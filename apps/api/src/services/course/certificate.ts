@@ -80,13 +80,16 @@ async function loadCertificateContext(courseId: string) {
 /**
  * Builds the certificate of `profileId` for `courseId` entirely from stored data: the employee's name and code, and
  * the issue date, expiry and verification code of the certificate of their latest completion cycle.
- * Throws 403 when the learner has no completion cycle.
+ * Throws 403 when the learner has no completion cycle or the certificate was revoked.
  */
 export async function assembleCertificateRender(courseId: string, profileId: string): Promise<CertificateRenderInput> {
   const { courseRow, organizationId, organization, orgLogoUrl, design } = await loadCertificateContext(courseId);
   const issue = await issueCourseCertificate(courseId, profileId, new Date().toISOString());
   if (!issue) {
     throw new AppError('Course completion requirements not met', ErrorCodes.VALIDATION_ERROR, 403);
+  }
+  if (issue.status === 'revoked') {
+    throw new AppError('This certificate has been revoked', ErrorCodes.FORBIDDEN, 403);
   }
 
   const employee = organizationId ? await findEmployeeProfile(organizationId, profileId) : null;

@@ -6642,5 +6642,58 @@
     "valid_until": "Valid until",
     "no_expiry": "No expiry",
     "code": "Certificate code"
+  },
+  "certificate_register": {
+    "title": "Certificate register",
+    "subtitle": "Every certificate issued, when it expires and which ones need renewing.",
+    "summary": "Certificate overview",
+    "state": {
+      "valid": "Valid",
+      "expiring": "Expiring soon",
+      "expired": "Expired",
+      "revoked": "Revoked"
+    },
+    "state_note": {
+      "valid": "Valid and not yet due for renewal.",
+      "expiring": "Expires within the next {days} days. Remind the employee to retake it.",
+      "expired": "Past its expiry date. The employee needs to retake the course.",
+      "revoked": "The verification page reports it as no longer valid."
+    },
+    "expiry_window": "Count as expiring within",
+    "days": "{count} days",
+    "search": "Search name or code",
+    "filters": {
+      "all_courses": "All courses"
+    },
+    "columns": {
+      "code": "Certificate code",
+      "issued": "Issued",
+      "expires": "Valid until",
+      "state": "Status"
+    },
+    "actions": "Actions",
+    "no_expiry": "Does not expire",
+    "expired_ago": "Expired {count} days ago",
+    "days_left": "{count} days left",
+    "open_verify": "Open verification page",
+    "revoke": "Revoke",
+    "restore": "Restore",
+    "cancel": "Cancel",
+    "revoke_title": "Revoke certificate",
+    "revoke_description": "{name}'s certificate for \"{course}\" will show as revoked on its verification page and can no longer be downloaded. You can restore it later.",
+    "revoke_reason": "Reason",
+    "revoke_placeholder": "For example: issued to the wrong person, cheating on the test",
+    "revoke_hint": "The reason is saved in the employee's log.",
+    "revoked": "Certificate revoked",
+    "restored": "Certificate restored",
+    "errors": {
+      "revoke": "Could not revoke the certificate. Please try again.",
+      "restore": "Could not restore the certificate. Please try again."
+    },
+    "total": "{count} certificates",
+    "load_error": "Could not load the certificate register.",
+    "no_results": "No matching certificates",
+    "empty_title": "No certificates yet",
+    "empty_description": "Certificates are issued automatically when employees complete a course with certificates turned on."
   }
 }

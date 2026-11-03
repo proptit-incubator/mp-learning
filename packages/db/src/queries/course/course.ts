@@ -66,6 +66,8 @@ export interface TStudentCourse extends TBaseCourse {
   progressRate: number;
   exercisesCompleted: number;
   certificateEarnedAt: string | null;
+  /** The certificate of the learner's latest completion cycle was revoked by L&D. */
+  certificateRevoked: boolean;
   upcomingSession: CourseUpcomingSession | null;
 }
 
@@ -1116,6 +1118,11 @@ export const getEnrolledCourses = async ({
           )}
         )`.as('exercises_completed'),
         certificateEarnedAt: schema.groupmember.certificateEarnedAt,
+        certificateRevoked: sql<boolean>`COALESCE((
+          SELECT cci.status = 'revoked' FROM ${schema.courseCertificateIssue} as cci
+          WHERE cci.course_id = ${schema.course.id} AND cci.profile_id = ${profileId}
+          ORDER BY cci.cycle_number DESC LIMIT 1
+        ), false)`.as('certificate_revoked'),
         hasLiveSession: sql<boolean>`EXISTS (
           SELECT 1 FROM ${schema.lesson} as live_lesson
           WHERE live_lesson.course_id = ${schema.course.id}
@@ -1156,6 +1163,7 @@ export const getEnrolledCourses = async ({
       exerciseCount: Number(row.exerciseCount),
       exercisesCompleted: Number(row.exercisesCompleted),
       certificateEarnedAt: row.certificateEarnedAt ?? null,
+      certificateRevoked: Boolean(row.certificateRevoked),
       upcomingSession: upcomingByCourse.get(row.course.id) ?? null
     }));
   } catch (error) {
