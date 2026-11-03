@@ -164,3 +164,7 @@ yarn.lock
 .graphqlrc
 .editorconfig
 .npmrc
+
+# MP Learning backups and generated reports
+backups
+reports

@@ -5,7 +5,6 @@ import { consumeHandoffPayload, storeHandoffPayload } from '@api/utils/redis/oau
 import { isPublicCorsPath, sessionCors } from '@api/middlewares/cors';
 import { randomBytes } from 'crypto';
 
-import { API_SERVER_URL } from '@api/constants';
 import {
   resolveOAuthBrowserOrigin,
   rewriteAuthRequestUrl,
@@ -47,6 +46,7 @@ import rateLimiter from '@api/middlewares/rate-limiter';
 import { secureHeaders } from 'hono/secure-headers';
 import { signupGuard } from '@api/middlewares/signup-guard';
 import { internalLearning } from '@api/middlewares/internal-learning';
+import { healthHandler } from '@api/routes/health';
 import { learningInstance } from '@api/middlewares/learning-instance';
 import { publicApiRouter } from '@api/routes/public-api';
 
@@ -110,11 +110,8 @@ export const app = new Hono()
   .use('*', learningInstance)
 
   // Routes
-  .get('/', (c) =>
-    c.json({
-      message: `"Welcome to Classroomio.com API - docs are at ${API_SERVER_URL}/docs"`
-    })
-  )
+  .get('/', (c) => c.json({ message: 'MP Learning API' }))
+  .get('/health', healthHandler)
   .use('/api/auth/sign-up/*', signupGuard)
   .on(['POST', 'GET'], '/api/auth/*', async (c) => {
     // Behind the Cloudflare Worker proxy the raw Request URL points at the

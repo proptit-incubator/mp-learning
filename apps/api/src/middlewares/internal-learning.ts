@@ -22,7 +22,7 @@ const AUTH_ENDPOINTS = [
 ];
 
 const ALLOWED_PATHS = [
-  /^\/(?:docs)?$/,
+  /^\/(?:docs|health)?$/,
   /^\/session\/?$/,
   new RegExp(`^/api/auth/(?:${AUTH_ENDPOINTS.join('|')})/?$`),
   /^\/(account|employees|course|certificate|hls|transcripts|media|jobs|mail|organization|dash|community|report|internal|agent)(\/|$)/,

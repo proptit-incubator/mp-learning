@@ -72,6 +72,7 @@ MP Learning build image từ chính mã nguồn này. Không dùng `./classroomi
 3. `docker compose --profile storage up -d --build api dashboard jobs`
 4. `docker compose logs --tail 100 api` để xem migration đã chạy xong. API tự migrate khi khởi động.
 5. Kiểm tra `docker compose ps` để chắc mọi dịch vụ đều ở trạng thái `healthy` hoặc `running`.
+6. `curl http://127.0.0.1:3081/health` phải trả `{"status":"ok","database":"ok","redis":"ok"}`.
 
 Nếu bản mới lỗi: checkout lại commit cũ (ghi trong `manifest.txt`), khôi phục bản sao lưu vừa tạo ở bước 1, rồi build lại.
 
@@ -83,3 +84,9 @@ Nếu bản mới lỗi: checkout lại commit cũ (ghi trong `manifest.txt`), k
 | Email giao khóa không gửi | `docker compose logs jobs` và cấu hình SMTP trong `.env`. |
 | Dịch vụ dừng sau khi khởi động lại máy | Mọi dịch vụ dùng `restart: unless-stopped`. Chạy `docker compose --profile storage up -d`. |
 | Hết dung lượng đĩa | Xóa bớt bản sao lưu cũ trong `backups/` hoặc giảm `BACKUP_KEEP_DAYS`. Dùng `docker system df` để xem image cũ. |
+| API báo `unhealthy` | `curl http://127.0.0.1:3081/health` cho biết PostgreSQL hay Redis không trả lời. Xem log của dịch vụ đó. |
+
+## Theo dõi
+
+- `GET /health` trên API trả 200 khi PostgreSQL và Redis đều trả lời, 503 nếu có phần nào hỏng. Công cụ giám sát nội bộ có thể gọi địa chỉ này mỗi phút.
+- Log Docker của mỗi dịch vụ được giới hạn 5 tệp × 20 MB (`x-logging` trong `docker-compose.yaml`), nên không làm đầy đĩa.

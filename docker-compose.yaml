@@ -1,8 +1,15 @@
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '20m'
+    max-file: '5'
+
 services:
   postgres:
     image: postgres:16-alpine
     container_name: cio-postgres
     restart: unless-stopped
+    logging: *logging
     # Bound to localhost only so host tools (pnpm api:dev, db:setup) can reach it
     # without exposing the database to the LAN.
     ports:
@@ -30,6 +37,7 @@ services:
     image: redis:7-alpine
     container_name: cio-redis
     restart: unless-stopped
+    logging: *logging
     # Bound to localhost only (see postgres note above).
     ports:
       - '127.0.0.1:6379:6379'
@@ -48,6 +56,7 @@ services:
     image: chrislusf/seaweedfs:4.48
     container_name: cio-storage
     restart: unless-stopped
+    logging: *logging
     entrypoint:
       - /bin/sh
       - -c
@@ -121,7 +130,7 @@ services:
           'CMD',
           'node',
           '-e',
-          "fetch('http://localhost:3081/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+          "fetch('http://localhost:3081/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
         ]
       interval: 10s
       timeout: 5s
@@ -173,6 +182,7 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set a strong BETTER_AUTH_SECRET in .env}
       SKIP_DB_SETUP: ${SKIP_DB_SETUP:-}
     restart: unless-stopped
+    logging: *logging
 
   dashboard:
     build:
@@ -186,6 +196,18 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3082/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     environment:
       NODE_ENV: production
       PORT: 3082
@@ -215,6 +237,7 @@ services:
       UPLOAD_MAX_LANDING_IMAGE_MB: ${UPLOAD_MAX_LANDING_IMAGE_MB:-}
       UPLOAD_MAX_THUMBNAIL_MB: ${UPLOAD_MAX_THUMBNAIL_MB:-}
     restart: unless-stopped
+    logging: *logging
 
   # Background worker (BullMQ). Drains the Redis queue: video processing, transcription,
   # AI course generation, and emails.
@@ -262,6 +285,7 @@ services:
       MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
       LICENSE_KEY: ${LICENSE_KEY:-}
     restart: unless-stopped
+    logging: *logging
 
 volumes:
   postgres-data:
