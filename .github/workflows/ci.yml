@@ -17,7 +17,7 @@ concurrency:
 jobs:
   test:
     name: Build and test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     services:
       postgres:
@@ -63,8 +63,9 @@ jobs:
       - name: Test and build dashboard
         run: |
           cp apps/dashboard/.env.example apps/dashboard/.env
+          pnpm --filter @cio/dashboard^... build
           pnpm --filter @cio/dashboard test
-          pnpm --filter @cio/dashboard^... build && pnpm --filter @cio/dashboard build
+          pnpm --filter @cio/dashboard build
         env:
           NODE_OPTIONS: '--max-old-space-size=6144'
 
@@ -101,7 +102,7 @@ jobs:
 
   e2e:
     name: End-to-end
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     services:
       postgres:
@@ -187,7 +188,7 @@ jobs:
 
   docker:
     name: Build Docker images
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     strategy:
       fail-fast: false
