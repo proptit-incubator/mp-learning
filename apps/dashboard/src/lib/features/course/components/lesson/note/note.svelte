@@ -11,6 +11,7 @@
   import QuoteSelection from '$features/course/components/lesson/note/quote-selection.svelte';
   import type { Writable } from 'svelte/store';
   import { saveDraft } from '$features/course/utils/lesson-draft';
+  import { pickLessonContent } from '@cio/utils/functions/lesson-content';
 
   interface Props {
     mode?: (typeof MODES)[keyof typeof MODES];
@@ -34,12 +35,6 @@
     editRoot = editor.view.dom as HTMLElement;
   }
 
-  let hasAtLeastOneTranslation = $derived(
-    Object.values(lessonApi.translations[lessonId] || {}).some((content) => {
-      return content && !!content.length;
-    })
-  );
-
   function onEditorChange(content: Content) {
     if (mode === MODES.view) return;
 
@@ -52,7 +47,11 @@
     lessonApi.markDirty();
   }
 
-  const content = $derived(lessonApi.translations[lessonId]?.[lessonApi.currentLocale] || '');
+  const content = $derived(
+    mode === MODES.edit
+      ? lessonApi.translations[lessonId]?.[lessonApi.currentLocale] || ''
+      : pickLessonContent(lessonApi.translations[lessonId], lessonApi.currentLocale)
+  );
 </script>
 
 {#if mode === MODES.edit}
@@ -80,9 +79,5 @@
       </HTMLRender>
       <QuoteSelection root={noteRoot} enabled />
     </div>
-  {:else if hasAtLeastOneTranslation}
-    <p class="text-md py-2 font-normal italic dark:text-white">
-      {$t('course.navItem.lessons.materials.no_translation')}
-    </p>
   {/if}
 {/if}

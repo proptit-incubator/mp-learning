@@ -31,17 +31,17 @@ describe('student email catalog', () => {
     }
   });
 
-  it('uses English for unpaid plans and unenforced organization languages', () => {
-    expect(resolveStudentEmailLocale({ isEligible: false, enforced: true, locale: 'fr' })).toBe('en');
-    expect(resolveStudentEmailLocale({ isEligible: true, enforced: false, locale: 'fr' })).toBe('en');
+  it('uses Vietnamese for unpaid plans and unenforced organization languages', () => {
+    expect(resolveStudentEmailLocale({ isEligible: false, enforced: true, locale: 'fr' })).toBe('vi');
+    expect(resolveStudentEmailLocale({ isEligible: true, enforced: false, locale: 'fr' })).toBe('vi');
   });
 
   it('uses the enforced locale for paid and self-hosted organizations', () => {
     expect(resolveStudentEmailLocale({ isEligible: true, enforced: true, locale: 'fr' })).toBe('fr');
   });
 
-  it('falls back to English for unsupported locales', () => {
-    expect(resolveStudentEmailLocale({ isEligible: true, enforced: true, locale: 'xx' })).toBe('en');
+  it('falls back to Vietnamese for unsupported locales', () => {
+    expect(resolveStudentEmailLocale({ isEligible: true, enforced: true, locale: 'xx' })).toBe('vi');
   });
 
   it('does not call editor-normalized default bodies customized', () => {

@@ -27,6 +27,7 @@
   import LessonVersionHistory from '$features/course/components/lesson/lesson-version-history.svelte';
   import { courseApi, lessonApi } from '$features/course/api';
   import { isHtmlValueEmpty } from '$lib/utils/functions/toHtml';
+  import { pickLessonContent } from '@cio/utils/functions/lesson-content';
   import { lessonVideoUpload, lessonDocUpload } from '$features/course/components/lesson/store';
   import { t } from '$lib/utils/functions/translations';
   import { ContentType } from '@cio/utils/constants/content';
@@ -214,7 +215,10 @@
   let tabs = $derived.by(() => {
     if (lessonApi.lesson?.id !== lessonId) return [];
     const ordered = orderedTabs(materialTabs, courseApi.course?.metadata?.lessonTabsOrder);
-    const content = lessonApi.translations[lessonId]?.[lessonApi.currentLocale] || '';
+    const content =
+      mode === MODES.edit
+        ? lessonApi.translations[lessonId]?.[lessonApi.currentLocale] || ''
+        : pickLessonContent(lessonApi.translations[lessonId], lessonApi.currentLocale);
 
     const slides = resolveLessonSlides(lessonApi.lesson?.slides, lessonApi.lesson?.slideUrl);
     const videos = lessonApi.lesson?.videos || [];
@@ -533,7 +537,9 @@
         <RefreshPageData class="hidden lg:inline-flex" onRefresh={() => lessonApi.get(courseId, lessonId)} />
       </RoleBasedSecurity>
 
-      <LanguageSelector />
+      {#if !$isCourseLearnerView}
+        <LanguageSelector />
+      {/if}
     </div>
   </Page.Action>
 </Page.Header>

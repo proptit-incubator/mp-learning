@@ -1,4 +1,4 @@
-import { and, eq, ilike, or } from 'drizzle-orm';
+import { and, eq, ilike, or, sql } from 'drizzle-orm';
 import { tool } from 'ai';
 import { z } from 'zod';
 
@@ -7,6 +7,7 @@ import * as schema from '@cio/db/schema';
 import type { AiTutorSettings } from '@cio/ai-assistant';
 
 import { getLesson } from '@cio/core/services/lesson/lesson';
+import { pickLessonContent } from '@cio/utils/functions/lesson-content';
 import { getLessonVideoTranscript } from '@cio/core/services/agent/lesson-transcript';
 import { getExercise } from '@cio/core/services/exercise/exercise';
 import { getCourseOutlineSummary } from '@cio/core/services/course/outline';
@@ -163,7 +164,10 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
             note?: string | null;
             lessonLanguages?: Array<{ locale: string; content: string | null }>;
           };
-          const content = lessonWithLangs.lessonLanguages?.find((ll) => ll.locale === 'en')?.content ?? null;
+          const contentByLocale = Object.fromEntries(
+            (lessonWithLangs.lessonLanguages ?? []).map((language) => [language.locale, language.content])
+          );
+          const content = pickLessonContent(contentByLocale, 'vi') || null;
 
           return {
             id: lesson.id,
@@ -248,17 +252,23 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
               .select({
                 id: schema.lesson.id,
                 title: schema.lesson.title,
-                content: schema.lessonLanguage.content
+                content: sql<string | null>`(
+                  SELECT ll.content FROM ${schema.lessonLanguage} ll
+                  WHERE ll.lesson_id = ${schema.lesson.id} AND ll.content ILIKE ${pattern}
+                  ORDER BY ll.locale = 'vi' DESC, ll.locale = 'en' DESC LIMIT 1
+                )`
               })
               .from(schema.lesson)
-              .leftJoin(
-                schema.lessonLanguage,
-                and(eq(schema.lessonLanguage.lessonId, schema.lesson.id), eq(schema.lessonLanguage.locale, 'en'))
-              )
               .where(
                 and(
                   eq(schema.lesson.courseId, courseId),
-                  or(ilike(schema.lesson.title, pattern), ilike(schema.lessonLanguage.content, pattern))
+                  or(
+                    ilike(schema.lesson.title, pattern),
+                    sql`EXISTS (
+                      SELECT 1 FROM ${schema.lessonLanguage} ll
+                      WHERE ll.lesson_id = ${schema.lesson.id} AND ll.content ILIKE ${pattern}
+                    )`
+                  )
                 )
               )
               .limit(limit),

@@ -30,23 +30,23 @@ describe('getStudentEmailSendContext', () => {
     });
   });
 
-  it('sends the English default once the organization is back on the free plan', async () => {
+  it('sends the Vietnamese default once the organization is back on the free plan', async () => {
     vi.mocked(getActiveOrganizationPlan).mockResolvedValue({ planName: 'BASIC' } as never);
 
     await expect(getStudentEmailSendContext('org-1', 'studentCourseWelcome', 'fr')).resolves.toEqual({
-      locale: 'en',
+      locale: 'vi',
       templateOverride: undefined
     });
     expect(getOrganizationStudentEmailTemplate).not.toHaveBeenCalled();
   });
 
-  it('sends the English default when a send-time lookup fails', async () => {
+  it('sends the Vietnamese default when a send-time lookup fails', async () => {
     vi.mocked(getActiveOrganizationPlan).mockResolvedValue({ planName: 'EARLY_ADOPTER' } as never);
     vi.mocked(getOrganizationStudentEmailTemplate).mockRejectedValue(new Error('database unavailable'));
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     await expect(getStudentEmailSendContext('org-1', 'studentCourseWelcome', 'fr')).resolves.toEqual({
-      locale: 'en',
+      locale: 'vi',
       templateOverride: undefined
     });
   });
@@ -55,17 +55,17 @@ describe('getStudentEmailSendContext', () => {
     vi.mocked(getActiveOrganizationPlan).mockResolvedValue({ planName: 'EARLY_ADOPTER' } as never);
 
     await expect(getStudentEmailSendContext('org-1', 'teacherStudentJoined', 'fr')).resolves.toEqual({
-      locale: 'en',
+      locale: 'vi',
       templateOverride: undefined
     });
   });
 });
 
 describe('getStudentEmailDeliveryLocale', () => {
-  it('falls back to English when the plan lookup fails', async () => {
+  it('falls back to Vietnamese when the plan lookup fails', async () => {
     vi.mocked(getActiveOrganizationPlan).mockRejectedValue(new Error('database unavailable'));
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    await expect(getStudentEmailDeliveryLocale('org-1', 'studentOrgInvite')).resolves.toBe('en');
+    await expect(getStudentEmailDeliveryLocale('org-1', 'studentOrgInvite')).resolves.toBe('vi');
   });
 });

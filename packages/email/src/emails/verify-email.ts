@@ -6,7 +6,7 @@ import { ZEmailBranding } from '../core/branding';
 
 export const verifyEmailEmail = defineEmail({
   id: 'verifyEmail',
-  subject: 'Action Required: Confirm your email',
+  subject: (fields) => (fields.newEmail ? 'Xác nhận đổi email - MP Learning' : 'Xác nhận email của bạn - MP Learning'),
   schema: z.object({
     link: z.url(),
     newEmail: z.email().optional(),
@@ -16,28 +16,27 @@ export const verifyEmailEmail = defineEmail({
   }),
   render: (fields) => {
     const isEmailChange = !!fields.newEmail;
-    const userName = fields.userName || 'there';
+    const greeting = fields.userName ? `Chào ${fields.userName},` : 'Chào bạn,';
     const hasOrgBranding = Boolean(fields.branding?.orgName);
     const welcomeLine = hasOrgBranding
-      ? `Welcome to ${fields.orgName}! In order to get your account ready for usage, we need to verify your email.`
-      : 'Welcome! In order to get your account ready for usage, we need to verify your email.';
+      ? `Chào mừng bạn đến với ${fields.orgName}. Vui lòng xác nhận email để bắt đầu sử dụng tài khoản.`
+      : 'Vui lòng xác nhận email để bắt đầu sử dụng tài khoản.';
 
     const content = isEmailChange
       ? `
-    <p><strong>Hey ${userName} 👋</strong></p>
-    <p>You have requested to change your email address to <strong>${fields.newEmail}</strong>.</p>
-    <p>To approve this change, please click the button below:</p>
+    <p><strong>${greeting}</strong></p>
+    <p>Bạn vừa yêu cầu đổi email đăng nhập sang <strong>${fields.newEmail}</strong>.</p>
+    <p>Bấm nút dưới đây để xác nhận thay đổi:</p>
     <div>
-      <a class="button" href="${fields.link}">Approve Email Change</a>
+      <a class="button" href="${fields.link}">Xác nhận đổi email</a>
     </div>
-    <p>If you did not request this change, please ignore this email.</p>
+    <p>Nếu bạn không yêu cầu thay đổi này, hãy bỏ qua email này.</p>
   `
       : `
-    <p><strong>Hey ${userName} 👋</strong></p>
+    <p><strong>${greeting}</strong></p>
     <p>${welcomeLine}</p>
-    <p>We do this to make sure we don't get fake user emails in our signup. To get the best out of our product, we'll need you to verify your email by clicking the <strong>Verify</strong> button below.</p>
     <div>
-      <a class="button" href="${fields.link}">Verify</a>
+      <a class="button" href="${fields.link}">Xác nhận email</a>
     </div>
   `;
 

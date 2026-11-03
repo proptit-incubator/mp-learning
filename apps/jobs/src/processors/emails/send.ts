@@ -1,6 +1,7 @@
 import { deliverEmail, sendEmail, type EmailId } from '@cio/email';
 import { ZSendEmailPayload } from '@cio/jobs';
 import { getStudentEmailSendContext } from '@cio/core/services/email/localization';
+import { DEFAULT_EMAIL_LOCALE } from '@cio/utils/email';
 import { isReminderDeliveryClaimedBy, markReminderDeliverySent } from '@cio/db/queries/course';
 
 import { log } from '../../utils/logger';
@@ -27,8 +28,12 @@ export async function processSendEmail(rawPayload: unknown, bullmqJobId?: string
     }
 
     const { locale, templateOverride } = payload.organizationId
-      ? await getStudentEmailSendContext(payload.organizationId, payload.template, payload.locale ?? 'en')
-      : { locale: payload.locale ?? 'en', templateOverride: undefined };
+      ? await getStudentEmailSendContext(
+          payload.organizationId,
+          payload.template,
+          payload.locale ?? DEFAULT_EMAIL_LOCALE
+        )
+      : { locale: payload.locale ?? DEFAULT_EMAIL_LOCALE, templateOverride: undefined };
     const responses = await sendEmail(payload.template as EmailId, {
       to: payload.to,
       // Re-validated by `sendEmail` against the registered template schema; the

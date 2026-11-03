@@ -5,13 +5,14 @@ import { getDefaultTemplate } from '../templates';
 
 export const onPasswordResetEmail = defineEmail({
   id: 'onPasswordReset',
-  subject: 'Password Reset Successful - MP Learning',
+  subject: 'Mật khẩu đã được đổi - MP Learning',
   schema: z.object({
     name: z.string().min(1)
   }),
   render: (fields) => {
-    return getDefaultTemplate(`Heya ${fields.name},
-    <p>Your password has been reset successfully.</p>
+    return getDefaultTemplate(`<p>Chào ${fields.name},</p>
+    <p>Mật khẩu tài khoản MP Learning của bạn vừa được đổi thành công.</p>
+    <p>Nếu không phải bạn đổi, hãy báo ngay cho quản trị đào tạo.</p>
     `);
   }
 });

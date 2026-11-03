@@ -23,13 +23,15 @@ describe('studentCourseWelcomeEmail', () => {
       'MP Transformation: Digital Skills'
     );
   });
-  it('includes the course name in the subject', () => {
-    const resolveSubject = studentCourseWelcomeEmail.template.subject;
+  it('includes the course name in the subject, in Vietnamese unless another locale is set', () => {
+    const resolveSubject = studentCourseWelcomeEmail.template.subject as (
+      fields: { courseName: string },
+      context?: { locale: 'en' }
+    ) => string;
 
-    expect(typeof resolveSubject).toBe('function');
-    expect((resolveSubject as (fields: { courseName: string }) => string)({ courseName: 'React Basics' })).toBe(
-      'You have access to React Basics'
-    );
+    expect(resolveSubject({ courseName: 'React Basics' })).toContain('React Basics');
+    expect(resolveSubject({ courseName: 'React Basics' })).not.toBe('You have access to React Basics');
+    expect(resolveSubject({ courseName: 'React Basics' }, { locale: 'en' })).toBe('You have access to React Basics');
   });
 
   it('uses a localized custom subject and fills its dynamic values', () => {

@@ -5,6 +5,9 @@ export const EMAIL_LOCALES = ['en', 'hi', 'fr', 'pt', 'de', 'vi', 'ru', 'es', 'p
 
 export type EmailLocale = (typeof EMAIL_LOCALES)[number];
 
+/** MP Learning writes to employees in Vietnamese unless the organization enforces another email language. */
+export const DEFAULT_EMAIL_LOCALE: EmailLocale = 'vi';
+
 export const STUDENT_EMAIL_IDS = [
   'employeeActivation',
   'studentCourseInvite',
@@ -149,9 +152,9 @@ export function resolveStudentEmailLocale(input: {
   enforced: boolean;
   locale: unknown;
 }): EmailLocale {
-  if (!input.isEligible) return 'en';
+  if (!input.isEligible) return DEFAULT_EMAIL_LOCALE;
 
-  return input.enforced && isEmailLocale(input.locale) ? input.locale : 'en';
+  return input.enforced && isEmailLocale(input.locale) ? input.locale : DEFAULT_EMAIL_LOCALE;
 }
 
 export function isStudentEmailId(value: unknown): value is StudentEmailId {

@@ -165,12 +165,16 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
 
       const failed = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
       expect(failed.courses[0].progress).toBe(0);
-      expect((await listEmployeeEnrollments(employeeId, transaction))[0].progressPercent).toBe(0);
+      expect(
+        ((await listEmployeeEnrollments(employeeId, transaction))[0] as { progressPercent?: number }).progressPercent
+      ).toBe(0);
 
       await transaction.update(schema.submission).set({ total: 9 }).where(eq(schema.submission.id, submission.id));
       const passed = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
       expect(passed.courses[0].progress).toBe(100);
-      expect((await listEmployeeEnrollments(employeeId, transaction))[0].progressPercent).toBe(100);
+      expect(
+        ((await listEmployeeEnrollments(employeeId, transaction))[0] as { progressPercent?: number }).progressPercent
+      ).toBe(100);
     });
   });
 

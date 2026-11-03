@@ -5,22 +5,22 @@ import { getDefaultTemplate } from '../templates';
 
 export const forgotPasswordEmail = defineEmail({
   id: 'forgotPassword',
-  subject: 'Password reset notification - MP Learning',
+  subject: 'Đặt lại mật khẩu - MP Learning',
   schema: z.object({
     email: z.email(),
     name: z.string().min(1),
     link: z.url()
   }),
   render: (fields) => {
-    const content = `Hello ${fields.name},
-    <p>You are receiving this email because you have requested a password reset for your MP Learning account.</p>
-    <p>Please click the button below to reset your password:</p>
-    
+    const content = `<p>Chào ${fields.name},</p>
+    <p>Bạn vừa yêu cầu đặt lại mật khẩu tài khoản MP Learning.</p>
+    <p>Bấm nút dưới đây để đặt mật khẩu mới:</p>
+
     <div>
-      <a class="button" href="${fields.link}">Reset my password</a>
+      <a class="button" href="${fields.link}">Đặt lại mật khẩu</a>
     </div>
 
-    <p>PS: If you did not initiate this request, contact your internal training administrator so we can look into a possible attempt to breach your account.</p>
+    <p>Nếu bạn không yêu cầu, hãy báo ngay cho quản trị đào tạo vì có thể ai đó đang cố truy cập tài khoản của bạn.</p>
     `;
 
     return getDefaultTemplate(content);
