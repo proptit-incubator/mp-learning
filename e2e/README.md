@@ -1,60 +1,29 @@
-# E2E test hooks
+# End-to-end tests
 
-Playwright specs and helpers for PR demos and future end-to-end tests.
+Playwright specs in `e2e/mp/` walk the paths MP Learning cannot break: an employee is created, activates their
+account, signs in with their employee code, finishes an assigned course, and the certificate shows up in the register,
+on its public verification page and in the training report.
 
-## Locator priority
+## Running
 
-1. `getByRole` / `getByLabel` when the control is accessible
-2. Existing `#id` attributes (e.g. legacy login fields)
-3. `getByTestId` for stable, locale-independent hooks
-
-Do not select by CSS class, Tailwind utility, or translated copy in CI.
-
-## Fixed test ids (infrastructure)
-
-These ship in the app shell or shared UI and do not require call-site props.
-
-| Test id | Surface |
-|---|---|
-| `auth-login-email` | Login email input |
-| `auth-login-password` | Login password input |
-| `auth-login-submit` | Login submit button |
-| `org-nav-{path}` | Org sidebar links (derived from route path, e.g. `org-nav-courses`) |
-| `org-switcher-trigger` | Org / workspace switcher |
-| `app-sidebar-trigger` | Collapse sidebar |
-| `app-notifications-trigger` | Header notifications |
-| `app-user-menu-trigger` | Footer profile menu |
-| `page-settings-actions` | Sticky settings save bar container |
-| `page-settings-save` | Settings save button |
-| `page-settings-discard` | Settings discard button |
-
-Org nav ids are built by `orgNavTestId()` in `apps/dashboard/src/lib/features/ui/navigation/org-navigation.ts`.
-
-## Call-site test ids
-
-Pass `testId` on `@cio/ui` field wrappers and buttons when a feature needs a stable hook:
-
-```svelte
-<InputField testId="course-settings-title" label={...} bind:value={...} />
-<Button testId="course-create-submit">Create</Button>
-```
-
-Naming: kebab-case, feature-scoped — `{area}-{element}` or `{area}-{element}-{action}`.
-
-| Test id | Surface |
-|---|---|
-| `course-settings-people-link` | Self-enrollment description link to the course People page |
-
-## Helpers
-
-- `e2e/helpers/login.ts` — `loginAsAdmin`, `openOrgCatalog`
-- `e2e/helpers/nav.ts` — `clickOrgNav`, `goToOrgCourses`
-
-## Running locally
-
-Requires dashboard preview + API (see root `README.md`). Then:
+The specs need a running API and dashboard on an empty database whose name ends in `_e2e`. CI starts both from the
+build output (see the `e2e` job in `.github/workflows/ci.yml`). Locally:
 
 ```bash
-pnpm exec playwright install chromium
-DEMO_BASE_URL=http://localhost:4173 pnpm demo:playwright
+createdb mp_learning_e2e
+DATABASE_URL=postgresql://…/mp_learning_e2e pnpm --filter @cio/db db:setup
+# start the API with LMS_ALLOWED_EMAILS=admin@e2e.test and the dashboard pointing at it
+E2E_BASE_URL=http://localhost:3092 E2E_DATABASE_URL=postgresql://…/mp_learning_e2e pnpm e2e
 ```
+
+The first run signs `admin@e2e.test` up, which creates the organization. Steps a person would do by email, verifying
+the administrator and issuing an activation link, go straight to the database through `e2e/helpers/mp.ts`.
+
+## Locators
+
+1. `getByRole` / `getByLabel` when the control is accessible
+2. Existing `#id` attributes
+3. `getByTestId` for stable, locale-independent hooks
+
+Never select by CSS class or translated copy. State that a test checks (for example a certificate being valid) goes in
+a `data-*` attribute such as `data-state`.

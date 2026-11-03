@@ -42,6 +42,9 @@ importers:
       eslint:
         specifier: ^9.36.0
         version: 9.39.2(jiti@2.7.0)
+      postgres:
+        specifier: 3.4.7
+        version: 3.4.7
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
@@ -23088,7 +23091,7 @@ snapshots:
       '@tanstack/router-core': 1.143.4
       '@tanstack/router-utils': 1.141.0
       '@tanstack/virtual-file-routes': 1.141.0
-      prettier: 3.8.2
+      prettier: 3.6.2
       recast: 0.23.11
       source-map: 0.7.6
       tsx: 4.21.0

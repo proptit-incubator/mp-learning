@@ -42,7 +42,7 @@
     "storybook:dev:https": "cross-env HTTPS=true pnpm run storybook:dev",
     "mcp:build": "pnpm --filter @cio/question-types build && pnpm --filter @cio/utils build && pnpm --filter @classroomio/mcp build",
     "db:push": "pnpm --filter @cio/db db push",
-    "demo:playwright": "playwright test --config e2e/playwright.config.ts",
+    "e2e": "playwright test --config e2e/playwright.config.ts",
     "mp:setup": "node scripts/setup-mp.mjs"
   },
   "license": "MIT",
@@ -50,14 +50,15 @@
     "turbo": "^1.10.16"
   },
   "devDependencies": {
-    "@playwright/test": "^1.57.0",
     "@babel/plugin-syntax-jsx": "^7.28.6",
     "@babel/preset-typescript": "^7.28.5",
     "@cio/tsconfig": "workspace:*",
     "@evilmartians/lefthook": "^1.13.6",
+    "@playwright/test": "^1.57.0",
     "concurrently": "^8.2.2",
     "cross-env": "^10.1.0",
     "eslint": "^9.36.0",
+    "postgres": "3.4.7",
     "prettier": "^3.6.2",
     "prettier-plugin-svelte": "^3.4.1",
     "prettier-plugin-tailwindcss": "^0.7.2",

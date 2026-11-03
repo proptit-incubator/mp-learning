@@ -99,6 +99,92 @@ jobs:
           OBJECT_STORAGE_SECRET_ACCESS_KEY: ci-secret
           OBJECT_STORAGE_REGION: us-east-1
 
+  e2e:
+    name: End-to-end
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      E2E_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mp_learning_e2e
+      E2E_BASE_URL: http://localhost:3082
+      PRIVATE_SERVER_KEY: ci-private-server-key
+      BETTER_AUTH_SECRET: ci-better-auth-secret-at-least-32-chars
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.1'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build API and dashboard
+        run: |
+          cp apps/dashboard/.env.example apps/dashboard/.env
+          pnpm --filter @cio/api^... build && pnpm --filter @cio/api build
+          pnpm --filter @cio/dashboard^... build && pnpm --filter @cio/dashboard build
+        env:
+          NODE_OPTIONS: '--max-old-space-size=6144'
+
+      - name: Prepare database
+        run: |
+          psql postgresql://postgres:postgres@localhost:5432/postgres -c 'CREATE DATABASE mp_learning_e2e'
+          DATABASE_URL=$E2E_DATABASE_URL pnpm --filter @cio/db db:setup
+
+      - name: Start API and dashboard
+        run: |
+          (cd apps/api && PORT=3081 nohup node dist/index.js > ../../api.log 2>&1 &)
+          (cd apps/dashboard && PORT=3082 nohup node build > ../../dashboard.log 2>&1 &)
+          for i in $(seq 1 60); do curl -sf http://localhost:3081/ > /dev/null && curl -sf -o /dev/null http://localhost:3082/login && exit 0; sleep 2; done
+          cat api.log dashboard.log
+          exit 1
+        env:
+          NODE_ENV: production
+          DATABASE_URL: ${{ env.E2E_DATABASE_URL }}
+          PGBOUNCER_DATABASE_URL: ''
+          REDIS_URL: redis://localhost:6379
+          LMS_ALLOWED_EMAILS: admin@e2e.test
+          DASHBOARD_ORIGIN: http://localhost:3082
+          TRUSTED_ORIGINS: http://localhost:3082
+          ORIGIN: http://localhost:3082
+          PRIVATE_SERVER_URL: http://127.0.0.1:3081
+          PUBLIC_IS_SELFHOSTED: 'true'
+
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        run: pnpm e2e
+
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+            api.log
+            dashboard.log
+
   docker:
     name: Build Docker images
     runs-on: ubuntu-latest

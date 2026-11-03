@@ -188,6 +188,7 @@
         size="sm"
         variant="secondary"
         onclick={() => markLessonComplete(lessonId)}
+        testId="lesson-mark-complete"
         loading={isMarkingComplete}
         disabled={isMarkCompleteDisabled || showVideoWatchCompleteState}
       >

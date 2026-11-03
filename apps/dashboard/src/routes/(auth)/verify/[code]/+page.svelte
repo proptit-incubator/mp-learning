@@ -62,7 +62,7 @@
           </div>
         </div>
       {:else}
-        <div class="space-y-5" data-testid="certificate-verify-result">
+        <div class="space-y-5" data-testid="certificate-verify-result" data-state={certificate.state}>
           <div class="flex items-center gap-2">
             <ShieldCheckIcon class="custom size-5 text-[#1559c6]" />
             <Badge variant={stateVariant}>{$t(`certificate_verify.state.${certificate.state}`)}</Badge>

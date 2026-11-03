@@ -29,7 +29,7 @@
   <section class="ui:bg-card ui:border-border w-full max-w-md space-y-6 rounded-2xl border p-8 shadow-sm">
     <h1 class="text-2xl font-semibold">{$t('employees.activate')}</h1>
     {#if api.activated}
-      <p>{$t('employees.activation_done')}</p>
+      <p data-testid="employee-activation-done">{$t('employees.activation_done')}</p>
       <Button href="/login" class="w-full">{$t('employees.login')}</Button>
     {:else if api.preview}
       <p>{api.preview.fullname} · {api.preview.employeeCode}</p>
