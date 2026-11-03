@@ -28,7 +28,7 @@
   import { courseApi } from '$features/course/api';
   import { courseHasLiveSession } from '$features/course/utils/live-session';
   import { t } from '$lib/utils/functions/translations';
-  import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
+  import { aiEnabled } from '$lib/utils/store/ai';
   import { currentOrg, currentOrgPath } from '$lib/utils/store/org';
   import { isStudentExperience } from '$lib/utils/store/app';
   import { getNavItemRoute, getLessonsRoute } from '$features/course/utils/functions';
@@ -164,7 +164,7 @@
         url: getNavItemRoute(id, 'ai-tutor'),
         isActive: currentPath === getNavItemRoute(id, 'ai-tutor'),
         show() {
-          return !isStudent && IS_AI_ENABLED;
+          return !isStudent && $aiEnabled;
         },
         icon: getNavIcon(NAV_IDS.AI_ASSISTANT)
       },

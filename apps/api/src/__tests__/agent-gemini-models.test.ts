@@ -5,6 +5,7 @@ import { insertTokenUsageAndDrainCredits } from '@cio/db/queries/agent';
 import { recordTokenUsage } from '@cio/core/services/agent/usage';
 
 vi.mock('@cio/db/queries/agent', () => ({
+  getOrgAiPolicy: vi.fn().mockResolvedValue(null),
   insertTokenUsageAndDrainCredits: vi.fn()
 }));
 

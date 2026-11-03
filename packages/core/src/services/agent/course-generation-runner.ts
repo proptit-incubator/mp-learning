@@ -15,7 +15,7 @@ import { createModel, getProviderConfigForProvider } from '@cio/ai-assistant/pro
 import { buildContextMessage, buildSystemPrompt } from '@cio/ai-assistant/prompt';
 import { AGENT_MODELS, DEFAULT_PICKER_MODEL_ID, type AgentModelId } from '@cio/utils/agent-models';
 import { AppError } from '@cio/utils/errors';
-import { isOrgOnPaidPlan, recordTokenUsage } from './usage';
+import { assertAiEnabled, enforceTokenBalance, isOrgOnPaidPlan, recordTokenUsage } from './usage';
 import {
   collectDocumentIds,
   getActiveCourseTemplateId,
@@ -219,6 +219,8 @@ export async function runAgentCourseGenerationJob(input: RunAgentCourseGeneratio
 
     for (let roundIndex = 0; roundIndex < MAX_WORKER_ROUNDS; roundIndex += 1) {
       const latestRun = await assertRunCanContinue(initialRun.id);
+      await assertAiEnabled(initialRun.orgId);
+      await enforceTokenBalance(initialRun.orgId, initialRun.userId);
 
       if (latestRun.queuedInstructions.length > 0) {
         const instructionText = latestRun.queuedInstructions.map((instruction) => `- ${instruction.text}`).join('\n');

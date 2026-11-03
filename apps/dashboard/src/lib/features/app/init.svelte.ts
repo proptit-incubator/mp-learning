@@ -13,6 +13,7 @@ import { activateLocale, handleLocaleChange } from '$lib/utils/functions/transla
 import { isOrgStudent, globalStore } from '$lib/utils/store/app';
 import { isPublicRoute } from '$lib/utils/functions/routes/isPublicRoute';
 import { licenseApi } from '$features/license/api/license.svelte';
+import { aiConfigured } from '$lib/utils/store/ai';
 import { logout } from '$lib/utils/functions/logout';
 import { page } from '$app/state';
 import { resolve } from '$app/paths';
@@ -115,6 +116,7 @@ class AppInitApi extends BaseApi {
     this.data = accountData;
     this.setupStores(params);
     licenseApi.syncFromAccount(accountData.licenseFeatures, get(currentOrg));
+    aiConfigured.set(accountData.aiConfigured);
     this.setUserAnalytics();
     this.routeUserToNextPage(params);
   }
@@ -191,6 +193,7 @@ class AppInitApi extends BaseApi {
 
     this.setOrgStore(params);
     licenseApi.syncFromAccount(this.data.licenseFeatures, get(currentOrg));
+    aiConfigured.set(this.data.aiConfigured);
   }
 
   /*

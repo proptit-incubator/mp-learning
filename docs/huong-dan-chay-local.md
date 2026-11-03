@@ -21,7 +21,7 @@ File cấu hình đã có sẵn (đều bị Git bỏ qua):
 |---|---|
 | `apps/api/.env` | API: database, Redis, bí mật xác thực, khóa AI, danh sách email được đăng ký |
 | `apps/jobs/.env` | Worker nền — bản sao của `apps/api/.env` |
-| `apps/dashboard/.env` | Giao diện: `PUBLIC_SERVER_URL=http://localhost:3081`, `PUBLIC_IS_AI_ENABLED=true`, danh sách domain được nhúng `CSP_*_DOMAINS` |
+| `apps/dashboard/.env` | Giao diện: `PUBLIC_SERVER_URL=http://localhost:3081`, danh sách domain được nhúng `CSP_*_DOMAINS` |
 | `.env` | Dùng cho chế độ chạy toàn bộ bằng Docker |
 | `.env.local` | Tài khoản thử (admin và học viên) |
 
@@ -71,7 +71,7 @@ docker exec cio-postgres psql -U mp_learning -d mp_learning -c "update \"user\" 
 
 ## 4. Bật AI
 
-Cờ giao diện đã bật (`PUBLIC_IS_AI_ENABLED=true`). Tổ chức đang ở gói **ENTERPRISE**, có 15 triệu đơn vị AI mỗi tháng. Bạn chỉ cần thêm **khóa của nhà cung cấp AI**:
+AI tự bật khi máy chủ có **khóa của nhà cung cấp AI** (đặt `AI_ENABLED=false` để tắt hẳn trên máy chủ). Hạn mức mặc định là 15 triệu đơn vị AI mỗi tháng cho cả tổ chức. Admin chỉnh công tắc và hạn mức ở **Cài đặt → AI**. Để thêm khóa:
 
 1. Lấy khóa Gemini (khuyến nghị, vì là model mặc định cho học viên và cho trình tạo khóa học) tại https://aistudio.google.com/apikey.
 2. Dán khóa vào **cả hai file** `apps/api/.env` và `apps/jobs/.env`:

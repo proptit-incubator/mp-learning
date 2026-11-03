@@ -16,7 +16,7 @@
   import { courseApi } from '$features/course/api';
   import { getActiveCourseNavKey } from '$features/course/utils/functions';
   import { toggleAiAssistant } from '$features/ai-assistant/utils/store';
-  import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
+  import { aiEnabled } from '$lib/utils/store/ai';
   import { t } from '$lib/utils/functions/translations';
   import CourseProgressPopover from './course-progress-popover.svelte';
   import { Badge } from '@cio/ui/base/badge';
@@ -81,7 +81,7 @@
       <CourseProgressPopover class="md:hidden" />
     {/if}
 
-    {#if IS_AI_ENABLED}
+    {#if $aiEnabled}
       <Button size="sm" variant="outline" onclick={toggleAiAssistant}>
         <SparklesIcon size={14} class="ui:text-brand-cyan" />
         <span class="hidden sm:inline">{$t('course.navItems.nav_ai_assistant')}</span>

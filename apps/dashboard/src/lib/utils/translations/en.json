@@ -448,6 +448,7 @@
       "landing_page_tab": "Course overview",
       "billing_tab": "Billing",
       "ai_credits_tab": "AI Credits",
+      "ai_tab": "AI",
       "ai_tutor_tab": "AI Tutor",
       "integrations_tab": "Integrations",
       "language_tab": "Language",
@@ -1050,43 +1051,52 @@
       "open_billing": "Open billing",
       "error": "An error occurred while opening billing"
     },
-    "ai_credits": {
-      "sub_title": "AI credits",
-      "page_subtitle": "Track AI assistant usage, team consumption, and purchase AI credit packs.",
-      "cost_note": "Credit usage is weighted by model cost. Gemini 3.1 Flash Lite counts as 1 credit unit per token. GPT-5.4 Mini and Kimi K2.6 count as 4× per token. Claude Sonnet 5.5 counts as 7.2× per token, reflecting its higher API cost.",
-      "included": {
-        "title": "Your included usage",
-        "subtitle": "Monthly AI credits included with your plan.",
-        "resets_on": "Resets {date}"
+    "ai": {
+      "title": "AI",
+      "subtitle": "Turn AI on or off for the whole organization and set monthly limits.",
+      "not_configured": {
+        "title": "The server has no AI",
+        "description": "The server has no AI provider API key, or runs with AI_ENABLED=false. Operations need to configure the server before AI can be turned on here."
       },
-      "purchased": {
-        "title": "Purchased usage",
-        "subtitle": "Extra AI credits you bought roll over until used.",
-        "lifetime": "{tokens} credits purchased · ${dollars} spent",
-        "buy_more": "Buy more"
+      "policy": {
+        "availability": "Status",
+        "enabled": "Allow AI",
+        "enabled_description": "When off, every AI feature disappears from the interface and the server refuses AI requests, including course drafting, writing help and the AI tutor for learners.",
+        "limits": "Monthly limits",
+        "limits_description": "Usage is counted in AI units: one unit is one token of the cheapest model, and pricier models count more units. Limits reset on the 1st of each month.",
+        "monthly_limit": "Organization limit (million units)",
+        "monthly_limit_help": "{units} units a month, estimated cost {cost}. When it runs out, AI stops until next month.",
+        "author_limit": "Limit per course author (million units)",
+        "author_limit_help": "Each course author (L&D, course owners) can use up to {units} units a month.",
+        "author_limit_unlimited_help": "Course authors are only limited by the organization limit.",
+        "author_unlimited": "No per-person limit",
+        "learner_messages": "AI tutor messages per learner",
+        "learner_messages_help": "How many questions a learner can send the AI tutor each month. Set 0 to turn the AI tutor off for learners."
+      },
+      "usage": {
+        "heading": "This month's usage",
+        "used_this_month": "Used / limit",
+        "resets_on": "{percent}% used · resets {date}",
+        "estimated_cost": "Estimated cost",
+        "requests": "{count} AI requests this month"
       },
       "chart": {
-        "heading": "Usage",
-        "subheading": "Daily AI credits consumption this month.",
-        "tokens": "Credits",
-        "total_tokens": "Total credits",
-        "total_requests": "Total requests",
-        "empty": "No usage recorded this month yet."
+        "heading": "By day",
+        "subheading": "AI units used each day this month.",
+        "tokens": "AI units",
+        "empty": "Nobody has used AI this month."
       },
       "leaderboard": {
-        "title": "Team usage",
-        "this_month": "Current month",
+        "title": "By person",
+        "this_month": "This month",
         "user": "User",
-        "favorite_model": "Favorite model",
-        "tokens": "Credits",
-        "empty": "Nobody on your team has used the AI assistant this month."
+        "favorite_model": "Most used model",
+        "tokens": "Used",
+        "empty": "Nobody has used AI this month."
       },
-      "buy_tokens": {
-        "title": "Buy more credits",
-        "description": "Each pack adds 5,000,000 credits for $5 USD. Choose how many packs you need.",
-        "quantity_hint": "packs",
-        "preview": "{quantity} pack(s) · {tokens} credits · ${dollars}",
-        "buy_button": "Buy for ${dollars}"
+      "snackbar": {
+        "saved": "AI settings saved.",
+        "invalid": "A limit is not valid. Check the number fields."
       }
     }
   },
@@ -4381,10 +4391,6 @@
       "activated": "Token auth enabled.",
       "deactivated": "Token auth disabled."
     },
-    "ai_credits": {
-      "purchase_success": "AI credit pack added to your balance.",
-      "checkout_failed": "Could not start checkout. Please try again."
-    },
     "account": {
       "workspaceCreated": "Workspace created",
       "workspaceDeleted": "Workspace deleted",
@@ -4893,8 +4899,7 @@
     "upload_error_unsupported_type": "File type not supported. Please upload a PDF, DOCX, PPTX, or ODT file.",
     "upload_error_generic": "Failed to upload document. Please try again.",
     "upgrade_to_upload": "Upgrade to upload documents",
-    "tokens_exhausted": "Monthly AI token limit reached.",
-    "tokens_exhausted_buy_more": "Buy more",
+    "tokens_exhausted": "The organization has used its AI limit for this month.",
     "chat_history": "Chat History",
     "no_conversations": "No conversations yet",
     "untitled": "Untitled",
@@ -5042,7 +5047,11 @@
     "context_full_new_chat": "Start new chat with summary",
     "context_full_summarizing": "Creating summary...",
     "context_compacted_badge": "Conversation compacted ({count} earlier messages)",
-    "generate_text_failed": "Could not generate the text. Please try again."
+    "generate_text_failed": "Could not generate the text. Please try again.",
+    "user_limit_reached": "You have used your personal AI limit for this month.",
+    "view_ai_limits": "View limits",
+    "error_ai_disabled": "AI is turned off for this organization.",
+    "error_ai_not_configured": "AI is not configured on this server."
   },
   "side_panel": {
     "close_aria": "Close panel",
@@ -5365,7 +5374,6 @@
     "exercises": "Exercises",
     "certificates": "Certificates",
     "billing": "Billing",
-    "ai_credits": "AI credits",
     "teams": "Teams",
     "custom_domain": "Custom domain",
     "ai_tutor_settings": "AI tutor settings",

@@ -1,8 +1,4 @@
-import {
-  STUDENT_TUTOR_APPROACHING_THRESHOLD,
-  STUDENT_TUTOR_MONTHLY_CAP,
-  type AiTutorSettings
-} from '@cio/ai-assistant/tutor-config';
+import { STUDENT_TUTOR_APPROACHING_THRESHOLD, type AiTutorSettings } from '@cio/ai-assistant/tutor-config';
 import {
   getCapStatusSummary,
   getLearnerCapEvents,
@@ -16,18 +12,11 @@ import {
 
 import { AppError } from '@api/utils/errors';
 import { getEffectiveAiTutorSettings } from './tutor-config';
-import { enforceTokenBalance } from '@cio/core/services/agent/usage';
+import { enforceTokenBalance, getAiPolicy } from '@cio/core/services/agent/usage';
 
-export const STUDENT_TUTOR_CAP = STUDENT_TUTOR_MONTHLY_CAP;
-
-/**
- * Whether per-learner cap enforcement is on for this environment.
- * Phase 1 ships with this off (instrumentation only); Phase 3 flips it on.
- */
-export function isCapEnforced(): boolean {
-  const raw = process.env.AI_TUTOR_CAP_ENFORCED;
-  if (raw == null) return false;
-  return raw === '1' || raw.toLowerCase() === 'true';
+/** The organization's monthly tutor message allowance for each learner. */
+async function getLearnerCap(orgId: string): Promise<number> {
+  return (await getAiPolicy(orgId)).learnerMonthlyMessages;
 }
 
 function startOfCurrentMonthUtc(): Date {
@@ -69,10 +58,9 @@ export interface TutorPolicyResult {
  * Order of checks (matches PRD §"Enforcement"):
  *   1. Workspace AI tutor toggle  (settings.enabled)
  *   2. Org pooled quota           (enforceTokenBalance)
- *   3. Per-learner monthly cap    (STUDENT_TUTOR_MONTHLY_CAP)
+ *   3. Per-learner monthly cap    (AI policy learnerMonthlyMessages)
  *
  * Each failure logs a cap event so admins can see why a learner was blocked.
- * Cap enforcement is gated behind `AI_TUTOR_CAP_ENFORCED` for Phase 1 rollout.
  */
 export async function enforceStudentTutorPolicy(
   orgId: string,
@@ -96,9 +84,12 @@ export async function enforceStudentTutorPolicy(
     throw error;
   }
 
-  const monthly = await getMonthlyTutorCount(orgId, userId, startOfCurrentMonthUtc());
+  const [monthly, cap] = await Promise.all([
+    getMonthlyTutorCount(orgId, userId, startOfCurrentMonthUtc()),
+    getLearnerCap(orgId)
+  ]);
 
-  if (isCapEnforced() && monthly.messageCount >= STUDENT_TUTOR_CAP) {
+  if (monthly.messageCount >= cap) {
     if (!monthly.capHitAt) {
       await recordCapEvent({ orgId, userId, courseId, eventType: 'cap_reached' });
     }
@@ -108,7 +99,7 @@ export async function enforceStudentTutorPolicy(
   return {
     settings,
     messageCount: monthly.messageCount,
-    capRemaining: Math.max(0, STUDENT_TUTOR_CAP - monthly.messageCount)
+    capRemaining: Math.max(0, cap - monthly.messageCount)
   };
 }
 
@@ -121,10 +112,10 @@ export async function incrementStudentTutorCount(
     orgId,
     userId,
     periodStart: startOfCurrentMonthUtc(),
-    cap: STUDENT_TUTOR_CAP
+    cap: await getLearnerCap(orgId)
   });
 
-  if (result.capHit && isCapEnforced()) {
+  if (result.capHit) {
     await recordCapEvent({ orgId, userId, courseId, eventType: 'cap_reached' });
   }
 
@@ -136,14 +127,17 @@ export async function getStudentTutorStatus(
   courseId: string,
   userId: string
 ): Promise<{ enabled: boolean; cap: number; capRemaining: number; enforced: boolean }> {
-  const settings = await getEffectiveAiTutorSettings(orgId, courseId);
-  const monthly = await getMonthlyTutorCount(orgId, userId, startOfCurrentMonthUtc());
+  const [settings, monthly, cap] = await Promise.all([
+    getEffectiveAiTutorSettings(orgId, courseId),
+    getMonthlyTutorCount(orgId, userId, startOfCurrentMonthUtc()),
+    getLearnerCap(orgId)
+  ]);
 
   return {
     enabled: settings.enabled,
-    cap: STUDENT_TUTOR_CAP,
-    capRemaining: Math.max(0, STUDENT_TUTOR_CAP - monthly.messageCount),
-    enforced: isCapEnforced()
+    cap,
+    capRemaining: Math.max(0, cap - monthly.messageCount),
+    enforced: true
   };
 }
 
@@ -174,6 +168,7 @@ export async function getTutorLearnerLeaderboard(
   }
 ): Promise<{ entries: AdminLeaderboardEntry[]; total: number; cap: number; periodStart: string }> {
   const { start, end } = resolveTutorPeriod(params.period);
+  const cap = await getLearnerCap(orgId);
   const page = params.page ?? 1;
   const limit = params.limit ?? 20;
 
@@ -188,13 +183,9 @@ export async function getTutorLearnerLeaderboard(
 
   const entries: AdminLeaderboardEntry[] = rows.map((row) => {
     const messageCount = row.messageCount;
-    const capPct = messageCount / STUDENT_TUTOR_CAP;
+    const capPct = cap > 0 ? messageCount / cap : 1;
     const status: AdminLeaderboardEntry['status'] =
-      messageCount >= STUDENT_TUTOR_CAP
-        ? 'at_cap'
-        : capPct >= STUDENT_TUTOR_APPROACHING_THRESHOLD
-          ? 'approaching'
-          : 'under';
+      messageCount >= cap ? 'at_cap' : capPct >= STUDENT_TUTOR_APPROACHING_THRESHOLD ? 'approaching' : 'under';
 
     return {
       userId: row.userId,
@@ -203,7 +194,7 @@ export async function getTutorLearnerLeaderboard(
       avatarUrl: row.avatarUrl,
       messageCount,
       tokens: row.tokens,
-      capRemaining: Math.max(0, STUDENT_TUTOR_CAP - messageCount),
+      capRemaining: Math.max(0, cap - messageCount),
       capPct,
       status,
       capHitAt: row.capHitAt,
@@ -211,7 +202,7 @@ export async function getTutorLearnerLeaderboard(
     };
   });
 
-  return { entries, total, cap: STUDENT_TUTOR_CAP, periodStart: start.toISOString() };
+  return { entries, total, cap, periodStart: start.toISOString() };
 }
 
 export async function getTutorCapStatusSummary(
@@ -219,9 +210,10 @@ export async function getTutorCapStatusSummary(
   period: 'current' | 'previous' | 'last90' = 'current'
 ): Promise<{ atCap: number; approaching: number; totalActive: number; cap: number; periodStart: string }> {
   const { start } = resolveTutorPeriod(period);
-  const summary = await getCapStatusSummary(orgId, start, STUDENT_TUTOR_CAP, STUDENT_TUTOR_APPROACHING_THRESHOLD);
+  const cap = await getLearnerCap(orgId);
+  const summary = await getCapStatusSummary(orgId, start, cap, STUDENT_TUTOR_APPROACHING_THRESHOLD);
 
-  return { ...summary, cap: STUDENT_TUTOR_CAP, periodStart: start.toISOString() };
+  return { ...summary, cap, periodStart: start.toISOString() };
 }
 
 export interface AdminLearnerDetail {
@@ -231,7 +223,7 @@ export interface AdminLearnerDetail {
   capRemaining: number;
   status: AdminLeaderboardEntry['status'];
   dailyUsage: { date: string; messages: number; tokens: number }[];
-  courseBreakdown: { courseId: string; courseTitle: string | null; tokens: number; messages: number }[];
+  courseBreakdown: { courseId: string | null; courseTitle: string | null; tokens: number; messages: number }[];
   capEvents: { id: number; eventType: string; occurredAt: string; courseId: string | null }[];
   periodStart: string;
 }
@@ -242,26 +234,22 @@ export async function getTutorLearnerDetail(
   period: 'current' | 'previous' | 'last90' = 'current'
 ): Promise<AdminLearnerDetail> {
   const { start } = resolveTutorPeriod(period);
-  const monthly = await getMonthlyTutorCount(orgId, userId, start);
+  const [monthly, cap] = await Promise.all([getMonthlyTutorCount(orgId, userId, start), getLearnerCap(orgId)]);
   const [dailyUsage, courseBreakdown, capEvents] = await Promise.all([
     getLearnerDailyUsage(orgId, userId, start),
     getLearnerCourseBreakdown(orgId, userId, start),
     getLearnerCapEvents(orgId, userId, start)
   ]);
 
-  const capPct = monthly.messageCount / STUDENT_TUTOR_CAP;
+  const capPct = cap > 0 ? monthly.messageCount / cap : 1;
   const status: AdminLeaderboardEntry['status'] =
-    monthly.messageCount >= STUDENT_TUTOR_CAP
-      ? 'at_cap'
-      : capPct >= STUDENT_TUTOR_APPROACHING_THRESHOLD
-        ? 'approaching'
-        : 'under';
+    monthly.messageCount >= cap ? 'at_cap' : capPct >= STUDENT_TUTOR_APPROACHING_THRESHOLD ? 'approaching' : 'under';
 
   return {
     userId,
-    cap: STUDENT_TUTOR_CAP,
+    cap,
     messageCount: monthly.messageCount,
-    capRemaining: Math.max(0, STUDENT_TUTOR_CAP - monthly.messageCount),
+    capRemaining: Math.max(0, cap - monthly.messageCount),
     status,
     dailyUsage,
     courseBreakdown,

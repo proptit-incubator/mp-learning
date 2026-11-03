@@ -6,6 +6,7 @@
   import { getOrgNavigationGroups } from '$features/ui/navigation/org-navigation';
   import { formatCompactCount } from '@cio/utils/functions';
   import { orgNavCountsApi } from './org-nav-counts.svelte';
+  import { aiEnabled } from '$lib/utils/store/ai';
 
   const groups = $derived(
     getOrgNavigationGroups(
@@ -15,7 +16,8 @@
       $t,
       page.url.pathname + page.url.search,
       {},
-      orgNavCountsApi.counts
+      orgNavCountsApi.counts,
+      $aiEnabled
     )
   );
 </script>

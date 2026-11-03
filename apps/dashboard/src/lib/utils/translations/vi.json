@@ -448,6 +448,7 @@
       "landing_page_tab": "Giới thiệu khóa học",
       "billing_tab": "Thanh toán",
       "ai_credits_tab": "Lượt dùng AI",
+      "ai_tab": "AI",
       "ai_tutor_tab": "Trợ giảng AI",
       "integrations_tab": "Tích hợp",
       "language_tab": "Ngôn ngữ",
@@ -1050,43 +1051,52 @@
       "open_billing": "Mở trang thanh toán",
       "error": "Không mở được trang thanh toán. Vui lòng thử lại."
     },
-    "ai_credits": {
-      "sub_title": "Lượt dùng AI",
-      "page_subtitle": "Theo dõi mức dùng trợ lý AI của bạn và nhóm, đồng thời bổ sung lượt dùng AI.",
-      "cost_note": "Lượt dùng được tính theo chi phí của từng mô hình. Gemini 3.1 Flash Lite tính 1 đơn vị cho mỗi token. GPT-5.4 Mini và Kimi K2.6 tính gấp 4 lần mỗi token. Claude Sonnet 5.5 tính gấp 7.2 lần mỗi token do chi phí API cao hơn.",
-      "included": {
-        "title": "Lượt dùng trong gói",
-        "subtitle": "Lượt dùng AI hằng tháng đi kèm gói của tổ chức.",
-        "resets_on": "Đặt lại vào {date}"
+    "ai": {
+      "title": "AI",
+      "subtitle": "Bật hoặc tắt AI cho cả tổ chức và đặt hạn mức dùng hằng tháng.",
+      "not_configured": {
+        "title": "Máy chủ chưa có AI",
+        "description": "Máy chủ chưa có khóa API của nhà cung cấp AI, hoặc đang chạy với AI_ENABLED=false. Bộ phận vận hành cần cấu hình máy chủ trước, sau đó bạn mới bật được AI ở đây."
       },
-      "purchased": {
-        "title": "Lượt dùng bổ sung",
-        "subtitle": "Lượt dùng AI bổ sung được cộng dồn cho đến khi dùng hết.",
-        "lifetime": "Đã bổ sung {tokens} lượt dùng · ${dollars}",
-        "buy_more": "Bổ sung"
+      "policy": {
+        "availability": "Trạng thái",
+        "enabled": "Cho phép dùng AI",
+        "enabled_description": "Khi tắt, mọi tính năng AI biến mất khỏi giao diện và máy chủ từ chối mọi yêu cầu AI, gồm soạn khóa học, viết nội dung và trợ giảng AI cho học viên.",
+        "limits": "Hạn mức hằng tháng",
+        "limits_description": "Mức dùng tính bằng đơn vị AI: 1 đơn vị bằng 1 token của mô hình rẻ nhất, mô hình đắt hơn tính nhiều đơn vị hơn. Hạn mức đặt lại vào ngày 1 hằng tháng.",
+        "monthly_limit": "Hạn mức của cả tổ chức (triệu đơn vị)",
+        "monthly_limit_help": "{units} đơn vị mỗi tháng, chi phí ước tính {cost}. Hết hạn mức thì AI dừng cho đến tháng sau.",
+        "author_limit": "Hạn mức mỗi người soạn bài (triệu đơn vị)",
+        "author_limit_help": "Mỗi người soạn bài (L&D, người phụ trách khóa) dùng tối đa {units} đơn vị mỗi tháng.",
+        "author_limit_unlimited_help": "Người soạn bài chỉ bị giới hạn bởi hạn mức chung của tổ chức.",
+        "author_unlimited": "Không đặt hạn mức riêng cho từng người",
+        "learner_messages": "Số tin nhắn trợ giảng AI mỗi học viên",
+        "learner_messages_help": "Số câu hỏi một học viên được gửi trợ giảng AI mỗi tháng. Đặt 0 để học viên không dùng trợ giảng AI."
+      },
+      "usage": {
+        "heading": "Mức dùng tháng này",
+        "used_this_month": "Đã dùng / hạn mức",
+        "resets_on": "Đã dùng {percent}% · đặt lại ngày {date}",
+        "estimated_cost": "Chi phí ước tính",
+        "requests": "{count} yêu cầu AI trong tháng"
       },
       "chart": {
-        "heading": "Mức sử dụng",
-        "subheading": "Lượt dùng AI theo ngày trong tháng này.",
-        "tokens": "Lượt dùng",
-        "total_tokens": "Tổng lượt dùng",
-        "total_requests": "Tổng số yêu cầu",
-        "empty": "Tháng này chưa có lượt sử dụng nào."
+        "heading": "Theo ngày",
+        "subheading": "Số đơn vị AI đã dùng mỗi ngày trong tháng này.",
+        "tokens": "Đơn vị AI",
+        "empty": "Tháng này chưa có ai dùng AI."
       },
       "leaderboard": {
-        "title": "Mức dùng của nhóm",
+        "title": "Theo người",
         "this_month": "Tháng này",
         "user": "Người dùng",
         "favorite_model": "Mô hình dùng nhiều nhất",
-        "tokens": "Lượt dùng",
-        "empty": "Tháng này chưa có ai trong nhóm dùng trợ lý AI."
+        "tokens": "Đã dùng",
+        "empty": "Tháng này chưa có ai dùng AI."
       },
-      "buy_tokens": {
-        "title": "Bổ sung lượt dùng",
-        "description": "Mỗi gói bổ sung 5.000.000 lượt dùng, tương ứng 5 USD. Chọn số gói cần bổ sung.",
-        "quantity_hint": "gói",
-        "preview": "{quantity} gói · {tokens} lượt dùng · ${dollars}",
-        "buy_button": "Thanh toán ${dollars}"
+      "snackbar": {
+        "saved": "Đã lưu cài đặt AI.",
+        "invalid": "Hạn mức không hợp lệ. Kiểm tra lại các ô số."
       }
     }
   },
@@ -4381,10 +4391,6 @@
       "activated": "Đã bật xác thực bằng token.",
       "deactivated": "Đã tắt xác thực bằng token."
     },
-    "ai_credits": {
-      "purchase_success": "Đã cộng gói lượt dùng AI vào số dư.",
-      "checkout_failed": "Không thể bắt đầu thanh toán. Vui lòng thử lại."
-    },
     "account": {
       "workspaceCreated": "Đã tạo không gian làm việc",
       "workspaceDeleted": "Đã xóa không gian làm việc",
@@ -4893,8 +4899,7 @@
     "upload_error_unsupported_type": "Không hỗ trợ loại tệp này. Vui lòng tải lên tệp PDF, DOCX, PPTX hoặc ODT.",
     "upload_error_generic": "Không tải được tài liệu lên. Vui lòng thử lại.",
     "upgrade_to_upload": "Tính năng tải tài liệu chưa được bật",
-    "tokens_exhausted": "Đã hết lượt dùng AI của tháng này.",
-    "tokens_exhausted_buy_more": "Liên hệ quản trị viên",
+    "tokens_exhausted": "Tổ chức đã dùng hết hạn mức AI của tháng này.",
     "chat_history": "Lịch sử trò chuyện",
     "no_conversations": "Chưa có cuộc trò chuyện nào",
     "untitled": "Chưa đặt tên",
@@ -5042,7 +5047,11 @@
     "context_full_new_chat": "Trò chuyện mới kèm bản tóm tắt",
     "context_full_summarizing": "Đang tạo bản tóm tắt...",
     "context_compacted_badge": "Đã rút gọn cuộc trò chuyện ({count} tin nhắn trước đó)",
-    "generate_text_failed": "Không tạo được nội dung. Vui lòng thử lại."
+    "generate_text_failed": "Không tạo được nội dung. Vui lòng thử lại.",
+    "user_limit_reached": "Bạn đã dùng hết hạn mức AI cá nhân của tháng này.",
+    "view_ai_limits": "Xem hạn mức",
+    "error_ai_disabled": "AI đang tắt cho tổ chức này.",
+    "error_ai_not_configured": "Máy chủ chưa được cấu hình AI."
   },
   "side_panel": {
     "close_aria": "Đóng bảng",
@@ -5365,7 +5374,6 @@
     "exercises": "Bài tập",
     "certificates": "Chứng chỉ",
     "billing": "Thanh toán",
-    "ai_credits": "Lượt dùng AI",
     "teams": "Nhóm quản trị",
     "custom_domain": "Tên miền riêng",
     "ai_tutor_settings": "Cài đặt trợ giảng AI",

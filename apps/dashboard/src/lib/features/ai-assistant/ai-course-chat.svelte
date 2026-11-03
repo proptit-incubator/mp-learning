@@ -734,7 +734,13 @@
   }
 
   const isStreaming = $derived(chat.status === 'streaming' || chat.status === 'submitted');
-  const isExhausted = $derived(tokenUsage !== null && tokenUsage.remaining <= 0);
+  const exhausted = $derived.by(() => {
+    if (!tokenUsage || tokenUsage.remaining > 0) return null;
+
+    return tokenUsage.used >= tokenUsage.allowance && tokenUsage.creditBalance <= 0
+      ? ('org' as const)
+      : ('user' as const);
+  });
 
   const status = $derived(aiAssistantApi.status);
   const isStudent = $derived(status?.role === 'student');
@@ -1346,7 +1352,7 @@
     <ChatInput
       bind:inputValue
       {isStreaming}
-      {isExhausted}
+      {exhausted}
       {isUploading}
       {uploadedDocument}
       {mentionItems}

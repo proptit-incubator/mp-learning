@@ -1,19 +1,23 @@
 import type { TokenBalance, TokenUsage } from '@cio/ai-assistant';
+import { pickAnyConfiguredProvider } from '@cio/ai-assistant/providers';
 import {
   aggregateTokenUsageByUser,
   countRequests,
   getDailyTokenUsageHistory,
   getMonthlyTokenUsage,
+  getOrgAiPolicy,
   getOrgCreditBalance,
+  getUserMonthlyTokenUsage,
   insertTokenUsageAndDrainCredits,
+  setOrgAiPolicy,
   summarizePurchases,
   upsertCreditBalance
 } from '@cio/db/queries/agent';
 import type { UsageLeaderboardRow } from '@cio/db/queries/agent';
 import { getActiveOrganizationPlan } from '@cio/db/queries/organization';
+import { resolveAiPolicy, type TAiPolicy, type TAiPolicyUpdate } from '@cio/utils/validation/agent';
 
 import { AppError } from '@cio/utils/errors';
-import { capturePlanLimitReached } from '../posthog';
 
 function startOfCurrentMonth(): Date {
   const date = new Date();
@@ -22,14 +26,6 @@ function startOfCurrentMonth(): Date {
 
   return date;
 }
-
-// ─── Plan-Based Token Allowances ─────────────────────────────────────────────
-
-const PLAN_TOKEN_ALLOWANCES: Record<string, number> = {
-  BASIC: 500_000,
-  EARLY_ADOPTER: 3_000_000,
-  ENTERPRISE: 15_000_000
-};
 
 // ─── Model Cost Multipliers ───────────────────────────────────────────────────
 
@@ -63,19 +59,33 @@ function computeCostUnits(promptTokens: number, completionTokens: number, model:
   return Math.round((promptTokens + completionTokens) * effectiveMultiplier);
 }
 
-async function getPlanAllowance(orgId: string): Promise<{ planName: string; allowance: number }> {
-  const activePlan = await getActiveOrganizationPlan(orgId);
+/** AI runs only when the server has a provider key and `AI_ENABLED` is not `false`. */
+export function isAiConfigured(): boolean {
+  if (process.env.AI_ENABLED?.toLowerCase() === 'false') return false;
 
-  if (!activePlan || !activePlan.planName) {
-    return { planName: 'BASIC', allowance: PLAN_TOKEN_ALLOWANCES.BASIC };
-  }
+  return pickAnyConfiguredProvider() !== null;
+}
 
-  const planName = activePlan.planName;
-  const payload = activePlan.payload as Record<string, unknown> | null;
-  const customAllowance = payload?.aiTokenAllowance as number | undefined;
-  const allowance = customAllowance ?? PLAN_TOKEN_ALLOWANCES[planName] ?? 0;
+export async function getAiPolicy(orgId: string): Promise<TAiPolicy> {
+  return resolveAiPolicy(await getOrgAiPolicy(orgId));
+}
 
-  return { planName, allowance };
+export async function updateAiPolicy(orgId: string, patch: TAiPolicyUpdate): Promise<TAiPolicy> {
+  const next = { ...(await getAiPolicy(orgId)), ...patch };
+  const saved = await setOrgAiPolicy(orgId, next);
+  if (!saved) throw new AppError('Organization not found', 'ORGANIZATION_NOT_FOUND', 404);
+
+  return resolveAiPolicy(saved);
+}
+
+/** Refuses an AI call when the server has no AI or the organization switched it off. */
+export async function assertAiEnabled(orgId: string): Promise<TAiPolicy> {
+  if (!isAiConfigured()) throw new AppError('AI is not configured on this server', 'AI_NOT_CONFIGURED', 503);
+
+  const policy = await getAiPolicy(orgId);
+  if (!policy.enabled) throw new AppError('AI is turned off for this organization', 'AI_DISABLED', 403);
+
+  return policy;
 }
 
 export async function getMonthlyUsage(orgId: string): Promise<number> {
@@ -86,40 +96,44 @@ export async function getCreditBalance(orgId: string): Promise<number> {
   return getOrgCreditBalance(orgId);
 }
 
-export async function getTokenBalance(orgId: string): Promise<TokenBalance> {
-  const [{ allowance }, monthlyUsage, creditBalance] = await Promise.all([
-    getPlanAllowance(orgId),
+/**
+ * The organization's monthly budget. With `userId`, `remaining` is also capped by that person's own monthly limit
+ * when the policy sets one, and `user` reports where they stand.
+ */
+export async function getTokenBalance(orgId: string, userId?: string): Promise<TokenBalance> {
+  const [policy, monthlyUsage, creditBalance, userUsed] = await Promise.all([
+    getAiPolicy(orgId),
     getMonthlyUsage(orgId),
-    getCreditBalance(orgId)
+    getCreditBalance(orgId),
+    userId ? getUserMonthlyTokenUsage(orgId, userId, startOfCurrentMonth()) : Promise.resolve(0)
   ]);
 
-  const remainingAllowance = Math.max(0, allowance - monthlyUsage);
-  const remaining = remainingAllowance + creditBalance;
+  const orgRemaining = Math.max(0, policy.monthlyLimit - monthlyUsage) + creditBalance;
+  const userLimit = userId ? policy.authorMonthlyLimit : null;
+  const userRemaining = userLimit === null ? Infinity : Math.max(0, userLimit - userUsed);
 
   return {
     used: monthlyUsage,
-    allowance,
+    allowance: policy.monthlyLimit,
     creditBalance,
-    remaining
+    remaining: Math.min(orgRemaining, userRemaining),
+    ...(userId ? { user: { used: userUsed, limit: userLimit } } : {})
   };
 }
 
-export async function enforceTokenBalance(orgId: string): Promise<TokenBalance> {
-  const balance = await getTokenBalance(orgId);
+/**
+ * Throws when the organization's monthly budget is spent, or, with `userId`, when that person reached their own
+ * monthly limit. Learners are limited by message count instead, so callers pass `userId` only for authors.
+ */
+export async function enforceTokenBalance(orgId: string, userId?: string): Promise<TokenBalance> {
+  const balance = await getTokenBalance(orgId, userId);
+
+  if (balance.used >= balance.allowance && balance.creditBalance <= 0) {
+    throw new AppError('Token limit reached', 'TOKEN_LIMIT_REACHED', 429);
+  }
 
   if (balance.remaining <= 0) {
-    const { planName } = await getPlanAllowance(orgId);
-
-    capturePlanLimitReached({
-      orgId,
-      limitType: 'ai_tokens',
-      plan: planName,
-      limit: balance.allowance,
-      current: balance.used,
-      blocked: true
-    });
-
-    throw new AppError('Token limit reached', 'TOKEN_LIMIT_REACHED', 402);
+    throw new AppError('Your monthly AI limit is reached', 'USER_AI_LIMIT_REACHED', 429);
   }
 
   return balance;
@@ -139,12 +153,12 @@ export function computePurchasedTokenOverflow(params: {
 export async function recordTokenUsage(
   orgId: string,
   userId: string,
-  courseId: string,
+  courseId: string | null,
   usage: TokenUsage,
   model: string
 ): Promise<void> {
   const costUnits = computeCostUnits(usage.promptTokens, usage.completionTokens, model);
-  const { allowance } = await getPlanAllowance(orgId);
+  const { monthlyLimit: allowance } = await getAiPolicy(orgId);
 
   await insertTokenUsageAndDrainCredits({
     orgId,
@@ -172,7 +186,7 @@ export async function recordTokenUsage(
 export async function recordFlatCostUnits(
   orgId: string,
   userId: string,
-  courseId: string,
+  courseId: string | null,
   costUnits: number,
   model: string
 ): Promise<void> {
@@ -180,7 +194,7 @@ export async function recordFlatCostUnits(
     return;
   }
 
-  const { allowance } = await getPlanAllowance(orgId);
+  const { monthlyLimit: allowance } = await getAiPolicy(orgId);
 
   await insertTokenUsageAndDrainCredits({
     orgId,
@@ -196,9 +210,9 @@ export async function recordFlatCostUnits(
 }
 
 export async function getOrgPlanName(orgId: string): Promise<string> {
-  const { planName } = await getPlanAllowance(orgId);
+  const activePlan = await getActiveOrganizationPlan(orgId);
 
-  return planName;
+  return activePlan?.planName ?? 'BASIC';
 }
 
 export async function isOrgOnPaidPlan(orgId: string): Promise<boolean> {

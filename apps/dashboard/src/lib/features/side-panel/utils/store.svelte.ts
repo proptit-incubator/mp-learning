@@ -1,7 +1,8 @@
+import { SvelteMap } from 'svelte/reactivity';
 import type { SidePanelDefinition, SidePanelScope } from './types';
 
 class SidePanelStore {
-  private definitions = $state<Map<string, SidePanelDefinition>>(new Map());
+  private definitions = new SvelteMap<string, SidePanelDefinition>();
 
   activePanelId = $state<string | null>(null);
   panelProps = $state<Record<string, unknown>>({});
@@ -9,6 +10,11 @@ class SidePanelStore {
 
   register(definition: SidePanelDefinition) {
     this.definitions.set(definition.id, definition);
+  }
+
+  unregister(id: string) {
+    this.definitions.delete(id);
+    if (this.activePanelId === id) this.activePanelId = null;
   }
 
   list(): SidePanelDefinition[] {

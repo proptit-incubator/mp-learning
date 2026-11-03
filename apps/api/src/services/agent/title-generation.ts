@@ -1,6 +1,6 @@
 import { generateText, generateObject } from 'ai';
 import { z } from 'zod';
-import { AIProvider, type AIProviderConfig, createModel } from '@cio/ai-assistant';
+import { AIProvider, type AIProviderConfig, type TokenUsage, createModel } from '@cio/ai-assistant';
 
 /**
  * Cheap models used specifically for title generation to minimize token cost.
@@ -64,10 +64,10 @@ const CourseMeta = z.object({
 export async function generateCourseMeta(
   prompt: string,
   providerConfig: AIProviderConfig
-): Promise<{ title: string; description: string }> {
+): Promise<{ title: string; description: string; usage: TokenUsage; modelName: string }> {
   const model = createTitleModel(providerConfig);
 
-  const { object } = await generateObject({
+  const { object, usage } = await generateObject({
     model,
     schema: CourseMeta,
     system:
@@ -78,6 +78,12 @@ export async function generateCourseMeta(
 
   return {
     title: object.title.trim().slice(0, 100),
-    description: object.description.trim().slice(0, 300)
+    description: object.description.trim().slice(0, 300),
+    usage: {
+      promptTokens: usage.inputTokens ?? 0,
+      completionTokens: usage.outputTokens ?? 0,
+      totalTokens: usage.totalTokens ?? 0
+    },
+    modelName: TITLE_MODELS[providerConfig.provider]
   };
 }

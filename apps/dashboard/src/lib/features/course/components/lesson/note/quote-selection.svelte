@@ -4,18 +4,16 @@
   import QuoteIcon from '@lucide/svelte/icons/quote';
   import { t } from '$lib/utils/functions/translations';
   import { quoteInChat } from '$features/ai-assistant/utils/store';
-  import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
+  import { aiEnabled } from '$lib/utils/store/ai';
 
   interface Props {
     root: HTMLElement | undefined;
     enabled?: boolean;
   }
 
-  let { root = undefined, enabled = false }: Props = $props();
+  let { root = undefined, enabled: requested = false }: Props = $props();
 
-  if (!IS_AI_ENABLED) {
-    enabled = false;
-  }
+  const enabled = $derived(requested && $aiEnabled);
 
   let top = $state(0);
   let left = $state(0);

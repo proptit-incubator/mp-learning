@@ -9,8 +9,11 @@
   import { t } from '$lib/utils/functions/translations';
   import { getOrgNavigationItems } from './org-navigation';
   import { generateBreadcrumbs } from './breadcrumb';
+  import { aiEnabled } from '$lib/utils/store/ai';
 
-  const navItems = $derived(getOrgNavigationItems($currentOrgPath, $currentOrg, $isOrgAdmin, $t, page.url.pathname));
+  const navItems = $derived(
+    getOrgNavigationItems($currentOrgPath, $currentOrg, $isOrgAdmin, $t, page.url.pathname, $aiEnabled)
+  );
 
   const breadcrumbs = $derived(
     generateBreadcrumbs(

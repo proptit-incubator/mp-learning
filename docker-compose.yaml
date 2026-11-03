@@ -161,6 +161,8 @@ services:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # false turns AI off for the whole server; without a provider key AI is off anyway.
+      AI_ENABLED: ${AI_ENABLED:-true}
       MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
       # Upload size limits (megabytes). Unset = built-in defaults — see .env.example.
       UPLOAD_MAX_DOCUMENT_MB: ${UPLOAD_MAX_DOCUMENT_MB:-}
@@ -194,7 +196,6 @@ services:
       PUBLIC_IS_SELFHOSTED: ${PUBLIC_IS_SELFHOSTED:-true}
       PRIVATE_SERVER_URL: ${PRIVATE_SERVER_URL:-http://api:3081}
       PRIVATE_SERVER_KEY: ${PRIVATE_SERVER_KEY:?set a strong PRIVATE_SERVER_KEY in .env}
-      PUBLIC_IS_AI_ENABLED: ${PUBLIC_IS_AI_ENABLED:-false}
       PUBLIC_GOOGLE_AUTH_ENABLED: ${PUBLIC_GOOGLE_AUTH_ENABLED:-false}
       PRIVATE_APP_HOST: ${PRIVATE_APP_HOST:-localhost}
       PRIVATE_APP_SUBDOMAINS: ${PRIVATE_APP_SUBDOMAINS:-app}
@@ -256,6 +257,8 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # false turns AI off for the whole server; without a provider key AI is off anyway.
+      AI_ENABLED: ${AI_ENABLED:-true}
       MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
       LICENSE_KEY: ${LICENSE_KEY:-}
     restart: unless-stopped

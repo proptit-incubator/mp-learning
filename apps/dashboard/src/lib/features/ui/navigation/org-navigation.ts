@@ -12,7 +12,6 @@ import TagsIcon from '@lucide/svelte/icons/tags';
 import type { AccountOrg } from '$features/app/types';
 import type { Component } from 'svelte';
 import { isActive } from '$lib/utils/functions/app';
-import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
 import type { PlanLimitResource } from '@cio/utils/plans';
 import type { OrgNavCountKey, OrgNavCounts } from '$features/ui/sidebar/org-sidebar/org-nav-counts.svelte';
 
@@ -185,6 +184,10 @@ export const baseNavConfig: NavItemConfig[] = [
         titleKey: 'settings.tabs.notifications_tab'
       },
       {
+        path: 'ai',
+        titleKey: 'settings.tabs.ai_tab'
+      },
+      {
         path: 'ai-tutor',
         titleKey: 'settings.tabs.ai_tutor_tab'
       },
@@ -207,7 +210,7 @@ export const baseNavConfig: NavItemConfig[] = [
 function isAiSettingsPath(path: string | undefined): boolean {
   if (!path) return false;
 
-  return path.includes('ai-tutor') || path.includes('ai-credits');
+  return path.includes('ai-tutor');
 }
 
 function isHomePath(path: string): boolean {
@@ -217,15 +220,17 @@ function isHomePath(path: string): boolean {
 /**
  * Nav config with the Home item and AI-related settings tabs removed when AI is turned off.
  */
-const resolvedNavConfig = IS_AI_ENABLED
-  ? baseNavConfig
-  : baseNavConfig
-      .filter((config) => !isHomePath(config.path))
-      .map((config) => ({
-        ...config,
-        items: config.items?.filter((sub) => !isAiSettingsPath(sub.path)),
-        nestedRoutes: config.nestedRoutes?.filter((route) => !isAiSettingsPath(route.path))
-      }));
+function resolveNavConfig(aiEnabled: boolean): NavItemConfig[] {
+  if (aiEnabled) return baseNavConfig;
+
+  return baseNavConfig
+    .filter((config) => !isHomePath(config.path))
+    .map((config) => ({
+      ...config,
+      items: config.items?.filter((sub) => !isAiSettingsPath(sub.path)),
+      nestedRoutes: config.nestedRoutes?.filter((route) => !isAiSettingsPath(route.path))
+    }));
+}
 
 /**
  * Get navigation items based on organization context and permissions
@@ -235,11 +240,12 @@ export function getOrgNavigationItems(
   currentOrg: AccountOrg,
   isOrgAdmin: boolean | null,
   t: (key: string) => string,
-  pagePathname: string
+  pagePathname: string,
+  aiEnabled: boolean
 ): NavItem[] {
   const items: NavItem[] = [];
 
-  for (const config of resolvedNavConfig) {
+  for (const config of resolveNavConfig(aiEnabled)) {
     // Skip admin-only items if user is not admin
     if (config.requiresAdmin && !isOrgAdmin && !config.disableWhenNotAdmin) {
       continue;
@@ -321,7 +327,8 @@ export function getOrgNavigationGroups(
   t: (key: string) => string,
   pagePathname: string,
   limitsReached: Partial<Record<PlanLimitResource, boolean>> = {},
-  counts: OrgNavCounts | null = null
+  counts: OrgNavCounts | null = null,
+  aiEnabled = false
 ): NavGroup[] {
   const pathnameOnly = pagePathname.split('?')[0];
   const groupedMap = new Map<string | null, NavItem[]>();
@@ -330,7 +337,7 @@ export function getOrgNavigationGroups(
     groupedMap.set(groupDef.key, []);
   }
 
-  for (const config of resolvedNavConfig) {
+  for (const config of resolveNavConfig(aiEnabled)) {
     if (config.hideFromSidebar) {
       continue;
     }

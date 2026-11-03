@@ -14,6 +14,7 @@ import { extractClientIp } from '@api/utils/redis/key-generators';
 import { getProfileById } from '@cio/db/queries/auth';
 import { handleError } from '@api/utils/errors';
 import { zValidator } from '@hono/zod-validator';
+import { isAiConfigured } from '@cio/core/services/agent/usage';
 
 const pendingInvitesRateLimit = createRateLimiter({
   windowMs: 60 * 1000,
@@ -41,7 +42,8 @@ export const accountRouter = new Hono()
           user,
           profile: accountData.profile,
           organizations: accountData.organizations,
-          licenseFeatures: accountData.licenseFeatures
+          licenseFeatures: accountData.licenseFeatures,
+          aiConfigured: isAiConfigured()
         },
         200
       );

@@ -3,18 +3,19 @@
   import { currentOrgPath, isOrgAdmin } from '$lib/utils/store/org';
   import { page } from '$app/state';
   import { t } from '$lib/utils/functions/translations';
-  import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
+  import { aiConfigured, aiEnabled } from '$lib/utils/store/ai';
   import Search from '$features/ui/search.svelte';
   import { isActive } from '$lib/utils/functions/app';
   import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
   import BellIcon from '@lucide/svelte/icons/bell';
   import BotIcon from '@lucide/svelte/icons/bot';
+  import SparklesIcon from '@lucide/svelte/icons/sparkles';
   import KeyRoundIcon from '@lucide/svelte/icons/key-round';
   import MailIcon from '@lucide/svelte/icons/mail';
   import PaletteIcon from '@lucide/svelte/icons/palette';
   import UserRoundIcon from '@lucide/svelte/icons/user-round';
 
-  const groups = [
+  const groups = $derived([
     {
       label: 'settings.sidebar.personal',
       items: [
@@ -32,11 +33,12 @@
     {
       label: 'settings.sidebar.extensions',
       items: [
-        ...(IS_AI_ENABLED ? [{ key: 'settings.tabs.ai_tutor_tab', path: '/settings/ai-tutor', icon: BotIcon }] : []),
+        ...($aiConfigured ? [{ key: 'settings.tabs.ai_tab', path: '/settings/ai', icon: SparklesIcon }] : []),
+        ...($aiEnabled ? [{ key: 'settings.tabs.ai_tutor_tab', path: '/settings/ai-tutor', icon: BotIcon }] : []),
         { key: 'settings.tabs.auth_tab', path: '/settings/auth', icon: KeyRoundIcon }
       ]
     }
-  ];
+  ]);
 
   const currentPath = $derived($currentOrgPath);
 </script>

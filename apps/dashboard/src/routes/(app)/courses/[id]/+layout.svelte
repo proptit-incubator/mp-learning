@@ -20,7 +20,7 @@
   } from '$features/ai-assistant/utils/content-ask-ai-bar';
   import { initialChatPrompt, openAiAssistant } from '$features/ai-assistant/utils/store';
   import { sidePanel, SidePanelRail } from '$features/side-panel';
-  import { IS_AI_ENABLED } from '$lib/utils/constants/ai';
+  import { aiEnabled } from '$lib/utils/store/ai';
   import { transcriptPanelDefinition } from '$features/course/components/lesson/video/transcript-panel-definition';
   import { get } from 'svelte/store';
   import { page } from '$app/state';
@@ -42,9 +42,10 @@
     COURSE_SIDEBAR_STORAGE_KEY
   } from '$features/course/components/sidebar/constants';
 
-  if (IS_AI_ENABLED) {
-    sidePanel.register(aiAssistantPanelDefinition);
-  }
+  $effect(() => {
+    if ($aiEnabled) sidePanel.register(aiAssistantPanelDefinition);
+    else sidePanel.unregister(aiAssistantPanelDefinition.id);
+  });
 
   sidePanel.register(transcriptPanelDefinition);
 
@@ -121,7 +122,7 @@
   const showContentAskAiBar = $derived(
     isCourseReady &&
       isLessonOrExercisePage &&
-      IS_AI_ENABLED &&
+      $aiEnabled &&
       !($isCourseLearnerView && isContentLockedForStudent) &&
       sidePanel.activePanelId !== AI_ASSISTANT_PANEL_ID
   );
@@ -177,7 +178,7 @@
     hasLoadedSidebarWidth = true;
     hasLoadedSidebarOpen = true;
 
-    if (IS_AI_ENABLED && get(initialChatPrompt)) {
+    if (get(aiEnabled) && get(initialChatPrompt)) {
       openAiAssistant();
     }
   });

@@ -2430,6 +2430,12 @@ export const organization = pgTable(
         inviteOnly?: boolean;
       };
       internalEnrollmentOnly?: boolean;
+      ai?: {
+        enabled?: boolean;
+        monthlyLimit?: number;
+        authorMonthlyLimit?: number | null;
+        learnerMonthlyMessages?: number;
+      };
       language?: {
         locale?: (typeof locale.enumValues)[number];
         enforced?: boolean;
@@ -3235,7 +3241,7 @@ export const aiTokenUsage = pgTable(
     }),
     orgId: uuid('org_id').notNull(),
     userId: uuid('user_id').notNull(),
-    courseId: uuid('course_id').notNull(),
+    courseId: uuid('course_id'),
     promptTokens: integer('prompt_tokens').notNull(),
     completionTokens: integer('completion_tokens').notNull(),
     costUnits: integer('cost_units'),

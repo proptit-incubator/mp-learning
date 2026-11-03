@@ -1,5 +1,6 @@
 import { Hono } from '@api/utils/hono';
 import { authMiddleware } from '@api/middlewares/auth';
+import { enforceTokenBalance } from '@cio/core/services/agent/usage';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
 import { zValidator } from '@hono/zod-validator';
 import {
@@ -46,6 +47,7 @@ export const agentRunsRouter = new Hono()
       const user = c.get('user')!;
       const orgId = c.req.header('cio-org-id')!;
       const data = c.req.valid('json');
+      await enforceTokenBalance(orgId, user.id);
       const run = await createAgentRunState({
         orgId,
         userId: user.id,

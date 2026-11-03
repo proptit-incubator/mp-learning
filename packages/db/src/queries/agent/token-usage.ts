@@ -19,6 +19,28 @@ export async function getMonthlyTokenUsage(orgId: string, since: Date): Promise<
   }
 }
 
+export async function getUserMonthlyTokenUsage(orgId: string, userId: string, since: Date): Promise<number> {
+  try {
+    const [row] = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(COALESCE(${schema.aiTokenUsage.costUnits}, ${schema.aiTokenUsage.promptTokens} + ${schema.aiTokenUsage.completionTokens})), 0)`
+      })
+      .from(schema.aiTokenUsage)
+      .where(
+        and(
+          eq(schema.aiTokenUsage.orgId, orgId),
+          eq(schema.aiTokenUsage.userId, userId),
+          gte(schema.aiTokenUsage.createdAt, since.toISOString())
+        )
+      );
+
+    return Number(row?.total ?? 0);
+  } catch (error) {
+    console.error('getUserMonthlyTokenUsage error:', error);
+    throw new Error('Failed to get user monthly token usage');
+  }
+}
+
 export async function getDailyTokenUsageHistory(
   orgId: string,
   since: Date
@@ -59,7 +81,7 @@ export async function getOrgCreditBalance(orgId: string): Promise<number> {
 export interface InsertTokenUsageParams {
   orgId: string;
   userId: string;
-  courseId: string;
+  courseId: string | null;
   promptTokens: number;
   completionTokens: number;
   costUnits: number;

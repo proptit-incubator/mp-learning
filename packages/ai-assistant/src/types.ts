@@ -169,6 +169,8 @@ export interface TokenBalance {
   allowance: number;
   creditBalance: number;
   remaining: number;
+  /** The caller's own monthly use and limit, when the balance was read for one person. */
+  user?: { used: number; limit: number | null };
 }
 
 // ─── Agent Status (returned by GET /agent/status) ────────────────────────────

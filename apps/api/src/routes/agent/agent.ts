@@ -3,7 +3,7 @@ import { Hono } from '@api/utils/hono';
 import { authMiddleware } from '@api/middlewares/auth';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
 import { orgAdminMiddleware } from '@api/middlewares/org-admin';
-import { authOrApiKeyMiddleware } from '@api/middlewares/auth-or-api-key';
+import { aiEnabledMiddleware } from '@api/middlewares/ai-enabled';
 import { b64EnvelopeRewrite } from '@api/middlewares/b64-envelope';
 import { handleError, AppError } from '@api/utils/errors';
 import { MAX_AGENT_DOCUMENT_SIZE } from '@api/constants/upload';
@@ -11,8 +11,6 @@ import { zValidator } from '@hono/zod-validator';
 import { streamText, stepCountIs, convertToModelMessages } from 'ai';
 import {
   ZAgentChatBody,
-  ZAgentCreditPurchase,
-  ZAgentCreditsBody,
   ZAgentGenerateCourseTitleBody,
   ZAgentGenerateTextBody,
   ZAgentStatusQuery,
@@ -22,12 +20,12 @@ import {
   ZTutorUsageUserParam
 } from '@cio/utils/validation/agent';
 import {
-  addCredits,
   enforceTokenBalance,
+  getAiPolicy,
   getDetailedUsage,
-  getPurchasedSummary,
   getTeamLeaderboard,
   getTokenBalance,
+  isAiConfigured,
   isOrgOnPaidPlan,
   recordTokenUsage
 } from '@cio/core/services/agent/usage';
@@ -42,10 +40,10 @@ import {
 import { buildStudentAgentTools } from '@api/services/agent/student-tools';
 import { getStudentSubmissionReview } from '@api/services/submission/student-submission';
 import { parseAndStoreDocument } from '@cio/core/services/agent/document';
-import { recordCreditPurchase } from '@api/services/agent/credit-purchase';
 import { generateCourseMeta } from '@api/services/agent/title-generation';
 import { generateFieldText } from '@api/services/agent/text-generation';
 import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
+import { ROLE } from '@cio/utils/constants';
 import { getChatConversation } from '@cio/db/queries/agent';
 import {
   AgentRole,
@@ -82,6 +80,14 @@ import { summarizeConversation } from '@cio/core/services/agent/summarize';
 import { agentHistoryRouter } from './history';
 import { agentRunsRouter } from './runs';
 
+/** Writing course content with AI is for L&D and the people who run the course. */
+async function requireAiAuthor(userRole: number | null | undefined, userId: string, courseId?: string) {
+  if (userRole === ROLE.ADMIN || userRole === ROLE.TUTOR) return;
+  if (courseId && (await isCourseTeamMemberOrOrgAdmin(courseId, userId))) return;
+
+  throw new AppError('Only course authors can use AI writing', 'NOT_COURSE_TEAM_MEMBER', 403);
+}
+
 const agentCoreRouter = new Hono()
   .get('/status', authMiddleware, orgMemberMiddleware, zValidator('query', ZAgentStatusQuery), async (c) => {
     try {
@@ -89,8 +95,8 @@ const agentCoreRouter = new Hono()
       const orgId = c.req.header('cio-org-id')!;
       const { courseId } = c.req.valid('query');
 
-      const providerConfig = pickAnyConfiguredProvider();
-      if (!providerConfig) {
+      const policy = await getAiPolicy(orgId);
+      if (!isAiConfigured() || !policy.enabled) {
         const status: AgentStatus = {
           enabled: false,
           role: AgentRole.STUDENT,
@@ -104,7 +110,7 @@ const agentCoreRouter = new Hono()
       const isTeamMember = await isCourseTeamMemberOrOrgAdmin(courseId, user.id);
       const role = isTeamMember ? AgentRole.TEACHER : AgentRole.STUDENT;
 
-      const usage = await getTokenBalance(orgId);
+      const usage = await getTokenBalance(orgId, role === AgentRole.TEACHER ? user.id : undefined);
 
       const tutor =
         role === AgentRole.STUDENT
@@ -195,17 +201,7 @@ const agentCoreRouter = new Hono()
       return handleError(c, error, 'Failed to upload document');
     }
   })
-  .get('/usage/purchased', authMiddleware, orgMemberMiddleware, async (c) => {
-    try {
-      const orgId = c.req.header('cio-org-id')!;
-      const data = await getPurchasedSummary(orgId);
-
-      return c.json({ success: true, data });
-    } catch (error) {
-      return handleError(c, error, 'Failed to fetch purchased summary');
-    }
-  })
-  .get('/usage/leaderboard', authMiddleware, orgMemberMiddleware, async (c) => {
+  .get('/usage/leaderboard', authMiddleware, orgAdminMiddleware, async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;
       const data = await getTeamLeaderboard(orgId);
@@ -215,7 +211,7 @@ const agentCoreRouter = new Hono()
       return handleError(c, error, 'Failed to fetch leaderboard');
     }
   })
-  .get('/usage', authMiddleware, orgMemberMiddleware, async (c) => {
+  .get('/usage', authMiddleware, orgAdminMiddleware, async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;
       const usage = await getDetailedUsage(orgId);
@@ -228,7 +224,7 @@ const agentCoreRouter = new Hono()
   .get(
     '/tutor-usage/leaderboard',
     authMiddleware,
-    orgMemberMiddleware,
+    orgAdminMiddleware,
     zValidator('query', ZTutorUsageQuery),
     async (c) => {
       try {
@@ -245,7 +241,7 @@ const agentCoreRouter = new Hono()
   .get(
     '/tutor-usage/summary',
     authMiddleware,
-    orgMemberMiddleware,
+    orgAdminMiddleware,
     zValidator(
       'query',
       ZTutorUsagePeriod.optional()
@@ -286,29 +282,6 @@ const agentCoreRouter = new Hono()
       }
     }
   )
-  .post('/credits', authMiddleware, orgAdminMiddleware, zValidator('json', ZAgentCreditsBody), async (c) => {
-    try {
-      const orgId = c.req.header('cio-org-id')!;
-      const { amount } = c.req.valid('json');
-
-      await addCredits(orgId, amount);
-      const balance = await getTokenBalance(orgId);
-
-      return c.json({ success: true, data: balance });
-    } catch (error) {
-      return handleError(c, error, 'Failed to purchase credits');
-    }
-  })
-  .post('/credits/purchase', authOrApiKeyMiddleware, zValidator('json', ZAgentCreditPurchase), async (c) => {
-    try {
-      const body = c.req.valid('json');
-      const purchase = await recordCreditPurchase(body);
-
-      return c.json({ success: true, data: purchase });
-    } catch (error) {
-      return handleError(c, error, 'Failed to record credit purchase');
-    }
-  })
   .post(
     '/generate-course-title',
     authMiddleware,
@@ -316,7 +289,10 @@ const agentCoreRouter = new Hono()
     zValidator('json', ZAgentGenerateCourseTitleBody),
     async (c) => {
       try {
+        const user = c.get('user')!;
+        const orgId = c.req.header('cio-org-id')!;
         const { prompt } = c.req.valid('json');
+        await requireAiAuthor(c.get('userRole'), user.id);
 
         const providerConfig = pickAnyConfiguredProvider();
 
@@ -324,7 +300,10 @@ const agentCoreRouter = new Hono()
           throw new AppError('AI assistant is not configured', 'AI_NOT_CONFIGURED', 503);
         }
 
-        const meta = await generateCourseMeta(prompt, providerConfig);
+        await enforceTokenBalance(orgId, user.id);
+
+        const { usage, modelName, ...meta } = await generateCourseMeta(prompt, providerConfig);
+        await recordTokenUsage(orgId, user.id, null, usage, modelName);
 
         return c.json({ success: true as const, data: meta });
       } catch (error) {
@@ -342,6 +321,7 @@ const agentCoreRouter = new Hono()
         const user = c.get('user')!;
         const orgId = c.req.header('cio-org-id')!;
         const { prompt, tone, format, context, courseId } = c.req.valid('json');
+        await requireAiAuthor(c.get('userRole'), user.id, courseId);
 
         const providerConfig = pickAnyConfiguredProvider();
 
@@ -349,13 +329,10 @@ const agentCoreRouter = new Hono()
           throw new AppError('AI assistant is not configured', 'AI_NOT_CONFIGURED', 503);
         }
 
-        await enforceTokenBalance(orgId);
+        await enforceTokenBalance(orgId, user.id);
 
         const { text, usage, modelName } = await generateFieldText(prompt, tone, format, context, providerConfig);
-
-        if (courseId) {
-          await recordTokenUsage(orgId, user.id, courseId, usage, modelName);
-        }
+        await recordTokenUsage(orgId, user.id, courseId ?? null, usage, modelName);
 
         return c.json({ success: true as const, data: { text } });
       } catch (error) {
@@ -367,6 +344,7 @@ const agentCoreRouter = new Hono()
     try {
       const { messages, courseId } = c.req.valid('json');
       const user = c.get('user')!;
+      const orgId = c.req.header('cio-org-id')!;
 
       const isTeamMember = await isCourseTeamMemberOrOrgAdmin(courseId, user.id);
 
@@ -378,6 +356,7 @@ const agentCoreRouter = new Hono()
         );
       }
 
+      await enforceTokenBalance(orgId, user.id);
       const summary = await summarizeConversation({ messages });
 
       return c.json({ success: true as const, data: { summary } });
@@ -449,7 +428,7 @@ const agentCoreRouter = new Hono()
         role === AgentRole.STUDENT ? await enforceStudentTutorPolicy(orgId, courseId, user.id) : null;
 
       if (role === AgentRole.TEACHER) {
-        await enforceTokenBalance(orgId);
+        await enforceTokenBalance(orgId, user.id);
       }
 
       const documentIds = collectDocumentIds(messages, context?.documentId);
@@ -727,6 +706,7 @@ const agentCoreRouter = new Hono()
 
 export const agentRouter = new Hono()
   .use('*', b64EnvelopeRewrite)
+  .use('*', aiEnabledMiddleware)
   .route('/', agentCoreRouter)
   .route('/history', agentHistoryRouter)
   .route('/runs', agentRunsRouter);

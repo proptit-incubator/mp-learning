@@ -321,7 +321,7 @@ export async function getLearnerDailyUsage(orgId: string, userId: string, since:
 }
 
 export interface LearnerCourseBreakdown {
-  courseId: string;
+  courseId: string | null;
   courseTitle: string | null;
   tokens: number;
   messages: number;

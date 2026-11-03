@@ -72,6 +72,7 @@ import { TOrganization } from '@db/types';
 import { assetsRouter } from '@api/routes/organization/assets';
 import { joinOrganization } from '@api/services/organization/join';
 import { organizationAiTutorRouter } from '@api/routes/organization/ai-tutor';
+import { organizationAiPolicyRouter } from '@api/routes/organization/ai-policy';
 import { organizationMemberEmailNotificationsRouter } from '@api/routes/organization/member-email-notifications';
 import { authMiddleware } from '@api/middlewares/auth';
 import { authOrApiKeyMiddleware } from '@api/middlewares/auth-or-api-key';
@@ -1077,5 +1078,6 @@ export const organizationRouter = new Hono()
   .route('/widgets', widgetsRouter)
   .route('/assets', assetsRouter)
   .route('/ai-tutor', organizationAiTutorRouter)
+  .route('/ai-policy', organizationAiPolicyRouter)
   .route('/member/email-notifications', organizationMemberEmailNotificationsRouter)
   .route('/:orgId/quiz', quizRouter);

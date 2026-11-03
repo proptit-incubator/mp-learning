@@ -13,7 +13,7 @@
   import TableOfContentsIcon from '@lucide/svelte/icons/table-of-contents';
   import { t } from '$lib/utils/functions/translations';
   import { resolve } from '$app/paths';
-  import { currentOrgPath, isFreePlan } from '$lib/utils/store/org';
+  import { currentOrgPath, isFreePlan, isOrgAdmin } from '$lib/utils/store/org';
   import { openUpgradeModal } from '$lib/utils/store/upgrade-modal';
   import { ModelPicker } from '@cio/ui/custom/model-picker';
   import type { AgentModelId } from '@cio/utils/agent-models';
@@ -27,7 +27,8 @@
   interface Props {
     inputValue: string;
     isStreaming: boolean;
-    isExhausted: boolean;
+    /** Which monthly AI limit stopped this person, if any. */
+    exhausted: 'org' | 'user' | null;
     isUploading: boolean;
     error: Error | null | undefined;
     mentionItems: MentionItem[];
@@ -48,7 +49,7 @@
   let {
     inputValue = $bindable(),
     isStreaming,
-    isExhausted,
+    exhausted,
     isUploading,
     error,
     mentionItems,
@@ -111,7 +112,7 @@
       return;
     }
 
-    if (!wasBusy || isExhausted || !chatTextareaRef) {
+    if (!wasBusy || exhausted || !chatTextareaRef) {
       return;
     }
 
@@ -146,8 +147,18 @@
     return t.get('ai_assistant.mention_lesson');
   }
 
+  const AI_ERROR_KEYS: Record<string, string> = {
+    USER_AI_LIMIT_REACHED: 'ai_assistant.user_limit_reached',
+    TOKEN_LIMIT_REACHED: 'ai_assistant.tokens_exhausted',
+    AI_DISABLED: 'ai_assistant.error_ai_disabled',
+    AI_NOT_CONFIGURED: 'ai_assistant.error_ai_not_configured'
+  };
+
   function getUserFriendlyErrorMessage(errorMessage: string): string {
     const lowerMessage = errorMessage.toLowerCase();
+
+    const code = Object.keys(AI_ERROR_KEYS).find((key) => errorMessage.includes(key));
+    if (code) return t.get(AI_ERROR_KEYS[code]);
 
     if (lowerMessage.includes('quota exceeded') || lowerMessage.includes('rate limit')) {
       const retryMatch = errorMessage.match(/retry in (\d+(?:\.\d+)?)/i);
@@ -189,19 +200,21 @@
   </div>
 {:else}
   <div class="border-t px-3 pt-3 pb-1.5">
-    {#if isExhausted}
+    {#if exhausted}
       <div
         class="flex flex-col gap-2 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 sm:flex-row sm:items-center sm:justify-between dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300"
       >
-        <span>{$t('ai_assistant.tokens_exhausted')}</span>
-        {#if $currentOrgPath !== '#'}
+        <span role="status">
+          {exhausted === 'user' ? $t('ai_assistant.user_limit_reached') : $t('ai_assistant.tokens_exhausted')}
+        </span>
+        {#if $isOrgAdmin && $currentOrgPath !== '#'}
           <Button
             variant="outline"
             size="sm"
-            href={`${resolve(`${$currentOrgPath}/settings/ai-credits`)}#buy-tokens`}
+            href={resolve(`${$currentOrgPath}/settings/ai`)}
             class="w-full shrink-0 sm:w-auto"
           >
-            {$t('ai_assistant.tokens_exhausted_buy_more')}
+            {$t('ai_assistant.view_ai_limits')}
           </Button>
         {/if}
       </div>

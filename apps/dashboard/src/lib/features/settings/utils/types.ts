@@ -5,15 +5,12 @@ export type UpdateProfileSuccess = Extract<InferResponseType<UpdateProfileReques
 export type UpdateProfileResponseProfile = UpdateProfileSuccess['profile'];
 
 export type GetUsageRequest = typeof classroomio.agent.usage.$get;
-export type GetPurchasedRequest = (typeof classroomio.agent.usage)['purchased']['$get'];
 export type GetLeaderboardRequest = (typeof classroomio.agent.usage)['leaderboard']['$get'];
 
 type GetUsageSuccess = Extract<InferResponseType<GetUsageRequest>, { success: true }>;
-type GetPurchasedSuccess = Extract<InferResponseType<GetPurchasedRequest>, { success: true }>;
 type GetLeaderboardSuccess = Extract<InferResponseType<GetLeaderboardRequest>, { success: true }>;
 
 export type AiUsageData = GetUsageSuccess['data'];
-export type PurchasedSummaryData = GetPurchasedSuccess['data'];
 export type LeaderboardData = GetLeaderboardSuccess['data'];
 export type LeaderboardEntry = LeaderboardData['entries'][number];
 
@@ -27,3 +24,7 @@ export type GetMemberEmailNotificationsSuccess = Extract<
   { success: true }
 >;
 export type MemberEmailNotificationPreferences = GetMemberEmailNotificationsSuccess['data'];
+
+export type GetAiPolicyRequest = (typeof classroomio.organization)['ai-policy']['$get'];
+export type UpdateAiPolicyRequest = (typeof classroomio.organization)['ai-policy']['$put'];
+export type AiPolicyData = Extract<InferResponseType<GetAiPolicyRequest>, { success: true }>['data'];

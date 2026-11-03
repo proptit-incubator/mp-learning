@@ -5,8 +5,11 @@ vi.mock('@cio/db/queries/agent', () => ({
   countRequests: vi.fn(),
   getDailyTokenUsageHistory: vi.fn(),
   getMonthlyTokenUsage: vi.fn(),
+  getOrgAiPolicy: vi.fn(),
   getOrgCreditBalance: vi.fn(),
+  getUserMonthlyTokenUsage: vi.fn(),
   insertTokenUsageAndDrainCredits: vi.fn(),
+  setOrgAiPolicy: vi.fn(),
   summarizePurchases: vi.fn(),
   upsertCreditBalance: vi.fn()
 }));
@@ -16,7 +19,7 @@ vi.mock('@cio/db/queries/organization', () => ({
 }));
 
 import { recordFlatCostUnits, recordTokenUsage } from '@cio/core/services/agent/usage';
-import { insertTokenUsageAndDrainCredits } from '@cio/db/queries/agent';
+import { getOrgAiPolicy, insertTokenUsageAndDrainCredits } from '@cio/db/queries/agent';
 import { getActiveOrganizationPlan } from '@cio/db/queries/organization';
 
 const ORG_ID = 'org-1';
@@ -26,6 +29,7 @@ const COURSE_ID = 'course-1';
 describe('recordFlatCostUnits', () => {
   beforeEach(() => {
     vi.mocked(insertTokenUsageAndDrainCredits).mockReset();
+    vi.mocked(getOrgAiPolicy).mockResolvedValue({ monthlyLimit: 4_000_000 });
     vi.mocked(getActiveOrganizationPlan).mockResolvedValue({
       planName: 'EARLY_ADOPTER',
       payload: null
@@ -47,11 +51,10 @@ describe('recordFlatCostUnits', () => {
     });
   });
 
-  it('passes the plan allowance through so purchased credits drain past it', async () => {
+  it('passes the organization monthly limit through so purchased credits drain past it', async () => {
     await recordFlatCostUnits(ORG_ID, USER_ID, COURSE_ID, 6_000, 'supadata-youtube-captions');
 
-    // EARLY_ADOPTER allowance, unchanged by the flat charge.
-    expect(vi.mocked(insertTokenUsageAndDrainCredits).mock.calls[0][0].planAllowance).toBe(3_000_000);
+    expect(vi.mocked(insertTokenUsageAndDrainCredits).mock.calls[0][0].planAllowance).toBe(4_000_000);
   });
 
   it.each([0, -1])('writes nothing for a non-positive charge of %s', async (costUnits) => {
