@@ -20,7 +20,9 @@
     "lint": {
       "dependsOn": ["^build"]
     },
-    "format": { "cache": true },
+    "format": {
+      "cache": true
+    },
     "dev": {
       "cache": false,
       "persistent": true
@@ -29,15 +31,15 @@
       "cache": false,
       "persistent": true
     },
-    "storybook:dev": {
-      "cache": false,
-      "persistent": true
-    },
     "prepare": {
       "dependsOn": ["^build"],
       "persistent": true
     },
-    "clean": { "cache": false },
-    "db": { "cache": false }
+    "clean": {
+      "cache": false
+    },
+    "db": {
+      "cache": false
+    }
   }
 }

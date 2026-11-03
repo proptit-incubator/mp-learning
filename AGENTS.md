@@ -14,10 +14,6 @@ When a task requires factual information (API specifications, context window siz
 
 The `prototypes/` directory holds standalone HTML/CSS design mocks for exploration. Do not treat prototype files as production code: avoid implementing features there unless explicitly asked, and do not apply production review standards (CodeRabbit/Greptile exclude this path via `.coderabbit.yaml` and `.greptile/config.json`).
 
-## Help Center screenshots
-
-**Read [`skills/add-docs-image/SKILL.md`](skills/add-docs-image/SKILL.md) before capturing, producing, or placing any screenshot under `apps/help/**`.** Every help screenshot is captured at 1350×830 with device scale 1 and framed in the ClassroomIO browser board with `pnpm --filter @cio/help frame-screenshot`. Never ship an unframed image, and do not try to fix a soft-looking screenshot by raising the capture scale.
-
 ## Translation, Formatting, and Git Workflow
 
 - MP Learning ships two dashboard locales: `vi.json` (default) and `en.json` in `apps/dashboard/src/lib/utils/translations/`. Add every new key to both by hand, keep placeholders wrapped in `{}` identical, and write the Vietnamese copy with the glossary in `docs/mp-thuat-ngu.md`.
@@ -933,7 +929,6 @@ Do not use `pnpm dev` (it trips turbo's concurrency cap). Build shared package `
 - **Vite SSR circular dependency (layerchart):** authenticated/chart pages occasionally render "Something unexpected occurred" on a cold load. Reload the page (or restart `dashboard:dev`) and it renders — it is intermittent, not a setup failure.
 - **Object storage is optional and not started by default.** Without it, image/media thumbnails show "Failed to load"; that is expected. Start the bundled SeaweedFS with `docker compose -f docker-compose.yaml --profile storage up -d storage storage-init` and add the `OBJECT_STORAGE_*` vars from `README.md` to `apps/api/.env`.
 - **Pre-existing lint/test issues (not environment problems):** `pnpm --filter @cio/api lint` fails (missing ESLint v9 `eslint.config.*`); `pnpm --filter @cio/dashboard lint` runs but reports pre-existing errors; api `vitest run` passes 61 tests but 5 files fail to load `@cio/core/services/*/*` subpaths (Vite nested-wildcard exports quirk; Node resolves them fine); `pnpm --filter @cio/dashboard test` (jest) fails to parse `jest.config.ts`. The pre-commit gate `pnpm format:check` passes.
-- The optional `@cio/storybook` build fails on an unresolved `@lucide/svelte/icons/bot` import; it does not affect api/dashboard.
 
 ### Deployment mode: self-hosted vs cloud (affects which features you can test)
 A single flag, `PUBLIC_IS_SELFHOSTED`, switches the whole product between **self-hosted** and **cloud** behavior. It is read in two places: the dashboard via `$env/static/public` (e.g. `apps/dashboard/src/lib/features/app/layout-setup.ts`) and the API/db layer via `@cio/core/config/env` (e.g. `apps/api/src/services/license.ts`, `apps/api/src/middlewares/license.ts`, `apps/api/src/services/onboarding.ts`). `FEATURE_AUDIT.md` §5 is the source-of-truth feature-by-feature map.

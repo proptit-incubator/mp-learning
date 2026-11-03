@@ -8,10 +8,7 @@ static
 skills
 dist
 docker
-packages/storybook/storybook-static
 
-**/course-app
-apps/docs
 apps/api/static
 
 pnpm-lock.yaml
