@@ -146,6 +146,7 @@ exports[`public certificate contract > keeps the ZPublicApiUpdateCourseCertifica
         },
         "templateId": {
           "enum": [
+            "mp",
             "classique",
             "brutalist",
             "noir",

@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mp_learning_ci_test
+      BOOTSTRAP_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mp_learning_single_instance_ci_test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.1'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Check migration journal
+        run: pnpm db:check-migrations
+
+      - name: Build and test utils
+        run: pnpm --filter @cio/utils^... build && pnpm --filter @cio/utils build && pnpm --filter @cio/utils test
+
+      - name: Test email templates
+        run: pnpm --filter @cio/email^... build && pnpm --filter @cio/email test
+
+      - name: Test and build dashboard
+        run: |
+          cp apps/dashboard/.env.example apps/dashboard/.env
+          pnpm --filter @cio/dashboard test
+          pnpm --filter @cio/dashboard^... build && pnpm --filter @cio/dashboard build
+        env:
+          NODE_OPTIONS: '--max-old-space-size=6144'
+
+      - name: Build API and jobs
+        run: |
+          pnpm --filter @cio/api^... build && pnpm --filter @cio/api build
+          pnpm --filter @cio/jobs-worker exec tsc --noEmit -p .
+          pnpm --filter @cio/jobs-worker exec vitest run
+
+      - name: Prepare test databases
+        run: |
+          psql postgresql://postgres:postgres@localhost:5432/postgres -c 'CREATE DATABASE mp_learning_ci_test'
+          psql postgresql://postgres:postgres@localhost:5432/postgres -c 'CREATE DATABASE mp_learning_single_instance_ci_test'
+          DATABASE_URL=$TEST_DATABASE_URL pnpm --filter @cio/db db:setup:seed
+          DATABASE_URL=$BOOTSTRAP_DATABASE_URL pnpm --filter @cio/db db:setup
+
+      - name: Run API tests against PostgreSQL
+        run: pnpm --filter @cio/api exec vitest run --no-file-parallelism
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+          PGBOUNCER_DATABASE_URL: ''
+          COURSE_LIBRARY_TEST_DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+          EMPLOYEE_TEST_DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+          COURSE_ACCESS_TEST_DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+          LEARNING_INSTANCE_TEST_DATABASE_URL: ${{ env.BOOTSTRAP_DATABASE_URL }}
+          MP_ANALYTICS_DB_TESTS: 'true'
+          REDIS_URL: redis://localhost:6379
+          PRIVATE_SERVER_KEY: ci-private-server-key
+          BETTER_AUTH_SECRET: ci-better-auth-secret-at-least-32-chars
+          OBJECT_STORAGE_ENDPOINT: http://localhost:9000
+          OBJECT_STORAGE_ACCESS_KEY_ID: ci
+          OBJECT_STORAGE_SECRET_ACCESS_KEY: ci-secret
+          OBJECT_STORAGE_REGION: us-east-1
+
+  docker:
+    name: Build Docker images
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [api, dashboard, jobs]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.image }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.${{ matrix.image }}
+          push: false
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}

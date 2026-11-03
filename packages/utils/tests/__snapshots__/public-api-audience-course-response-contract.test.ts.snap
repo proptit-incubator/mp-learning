@@ -221,6 +221,7 @@ exports[`public API audience and course response contract > ZPublicApiCertificat
         },
         "templateId": {
           "enum": [
+            "mp",
             "classique",
             "brutalist",
             "noir",
@@ -411,6 +412,7 @@ exports[`public API audience and course response contract > ZPublicApiCourseDeta
                 },
                 "templateId": {
                   "enum": [
+                    "mp",
                     "classique",
                     "brutalist",
                     "noir",
@@ -1656,6 +1658,7 @@ exports[`public API audience and course response contract > ZPublicApiCourseList
                 },
                 "templateId": {
                   "enum": [
+                    "mp",
                     "classique",
                     "brutalist",
                     "noir",
@@ -2184,6 +2187,7 @@ exports[`public API audience and course response contract > ZPublicApiCourseResp
                 },
                 "templateId": {
                   "enum": [
+                    "mp",
                     "classique",
                     "brutalist",
                     "noir",
@@ -3498,6 +3502,7 @@ exports[`public API audience and course response contract > ZPublicApiCreateCour
                     },
                     "templateId": {
                       "enum": [
+                        "mp",
                         "classique",
                         "brutalist",
                         "noir",

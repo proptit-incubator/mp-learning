@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.hoisted(() => {
   process.env.PRIVATE_SERVER_KEY = 'unit-test-server-key';
-  process.env.PUBLIC_IS_SELFHOSTED = 'false';
 });
 
 vi.mock('@cio/db/queries/organization', () => ({
@@ -98,7 +97,7 @@ function allowPlan(planName: 'EARLY_ADOPTER' | 'ENTERPRISE' | 'BASIC') {
 describe('webhook service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    allowPlan('EARLY_ADOPTER');
+    allowPlan('ENTERPRISE');
     vi.mocked(getWebhookDeliveryStats).mockResolvedValue(new Map());
     vi.mocked(createWebhookEndpointWithinLimit).mockImplementation(
       async (values, eventTypes) =>
@@ -151,7 +150,13 @@ describe('webhook service', () => {
       await expect(listWebhooksService(orgId)).rejects.toMatchObject({ statusCode: 403 });
     });
 
-    it('allows Early Adopter and Enterprise orgs', async () => {
+    it('rejects Early Adopter, which only unlocks webhooks on the cloud', async () => {
+      allowPlan('EARLY_ADOPTER');
+
+      await expect(listWebhooksService(orgId)).rejects.toMatchObject({ statusCode: 403 });
+    });
+
+    it('allows Enterprise orgs', async () => {
       vi.mocked(getActiveOrganizationPlan).mockResolvedValue({ planName: 'ENTERPRISE' } as never);
       vi.mocked(listWebhookEndpoints).mockResolvedValue([buildEndpoint()]);
 

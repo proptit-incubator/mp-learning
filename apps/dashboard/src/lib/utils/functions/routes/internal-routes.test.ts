@@ -10,6 +10,7 @@ describe('internal LMS routes', () => {
     '/org/mp/settings/workspaces',
     '/org/mp/settings/domains',
     '/org/mp/settings/ai-credits',
+    '/org/mp/settings/teams',
     '/org/mp/setup',
     '/api/polar/webhook',
     '/courses/internal-course/landingpage',
@@ -25,7 +26,6 @@ describe('internal LMS routes', () => {
     '/signup',
     '/invite/test',
     '/org/mp/courses',
-    '/org/mp/settings/teams',
     '/org/mp/settings/customize-lms',
     '/org/mp/automation/mcp',
     '/org/mp/automation/webhooks'
