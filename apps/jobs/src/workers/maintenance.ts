@@ -7,12 +7,7 @@ import { purgeAssetStorage } from '@cio/core/services/assets/assets';
 import { reconcileCourseRolesToOrgRole } from '@cio/core/services/organization/course-roles';
 import { pruneDeadLetterJobsOlderThan, reapStuckHlsEncodes, reapStuckMediaJobs } from '@cio/db/queries';
 import { deleteExpiredWebhookEvents, listWebhookIdsWithDueDeliveries } from '@cio/db/queries/webhook';
-import {
-  listEarlyAdopterClaimsDueForReminder,
-  markEarlyAdopterClaimReminded,
-  reconcileMemberLastActive
-} from '@cio/db/queries/organization';
-import { buildEarlyAdopterClaimUrl, deriveEarlyAdopterClaimToken } from '@cio/core/services/early-adopter/claim-token';
+import { reconcileMemberLastActive } from '@cio/db/queries/organization';
 import { capAutoLessonVersionsPerLanguage, pruneAutoLessonVersions } from '@cio/db/queries/lesson/version';
 import {
   JOB_NAMES,
@@ -21,7 +16,6 @@ import {
   ZAssetStorageCleanupPayload,
   ZCourseRoleReconcilePayload,
   ZDeadLetterCleanupPayload,
-  ZEarlyAdopterClaimReminderPayload,
   ZLessonVersionRetentionPayload,
   ZMediaJobReapPayload,
   ZMemberActivityReconcilePayload,
@@ -146,27 +140,6 @@ const worker = new Worker(
       return result;
     }
 
-    if (job.name === JOB_NAMES.maintenance.earlyAdopterClaimReminder) {
-      const data = ZEarlyAdopterClaimReminderPayload.parse(job.data ?? {});
-      const cutoff = new Date(Date.now() - data.remindAfterDays * 86_400 * 1_000).toISOString();
-      const due = await listEarlyAdopterClaimsDueForReminder(cutoff, data.batchSize);
-      let reminded = 0;
-
-      for (const claim of due) {
-        const claimUrl = buildEarlyAdopterClaimUrl(deriveEarlyAdopterClaimToken(claim.polarSubscriptionId));
-
-        await enqueueEmailSend(
-          { kind: 'template', template: 'earlyAdopterReminder', to: claim.email, fields: { claimUrl } },
-          { idempotencyKey: `early-adopter-reminder:${claim.polarSubscriptionId}` }
-        );
-        await markEarlyAdopterClaimReminded(claim.id);
-        reminded += 1;
-      }
-
-      log.info('early-adopter-claim-reminder-done', { due: due.length, reminded });
-      return { reminded };
-    }
-
     if (job.name === JOB_NAMES.maintenance.webhookRetention) {
       const data = ZWebhookRetentionPayload.parse(job.data ?? {});
       const cutoff = new Date(Date.now() - data.olderThanDays * 86_400 * 1_000);
@@ -244,18 +217,9 @@ async function registerSchedulers(): Promise<void> {
       everyMs: 86_400_000
     });
 
-    await maintenanceQueue.upsertJobScheduler(
-      'early-adopter-claim-reminder-scheduler',
-      { every: 86_400_000 },
-      { name: JOB_NAMES.maintenance.earlyAdopterClaimReminder, data: {} }
-    );
-    log.info('early-adopter-claim-reminder-scheduler-registered', {
-      name: JOB_NAMES.maintenance.earlyAdopterClaimReminder,
-      everyMs: 86_400_000
-    });
-
-    // Installs from before MP Learning removed telemetry still hold this scheduler in Redis.
+    // Installs from before MP Learning removed telemetry and Early Adopter claims still hold these schedulers in Redis.
     await maintenanceQueue.removeJobScheduler('instance-telemetry-scheduler');
+    await maintenanceQueue.removeJobScheduler('early-adopter-claim-reminder-scheduler');
 
     await maintenanceQueue.upsertJobScheduler(
       'webhook-retention-scheduler',

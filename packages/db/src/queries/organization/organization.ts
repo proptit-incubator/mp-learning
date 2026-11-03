@@ -9,32 +9,11 @@ import type {
   TOrganizationPlan,
   TOrganizationmember
 } from '@db/types';
-import {
-  and,
-  asc,
-  count,
-  desc,
-  eq,
-  getTableColumns,
-  gt,
-  ilike,
-  inArray,
-  isNotNull,
-  ne,
-  not,
-  notInArray,
-  or,
-  sql
-} from 'drizzle-orm';
+import { and, count, eq, getTableColumns, gt, inArray, isNotNull, ne, notInArray, or, sql } from 'drizzle-orm';
 
 import { PLAN } from '@cio/utils/plans';
 import { ROLE } from '@cio/utils/constants';
 import { db, type DbOrTxClient } from '@db/drizzle';
-import type { TAudienceSortBy, TAudienceSortOrder } from '@cio/utils/validation/organization';
-
-export function getOrgIdBySiteName(siteName: string) {
-  return db.select().from(schema.organization).where(eq(schema.organization.siteName, siteName)).limit(1);
-}
 
 /**
  * Hostnames (lowercase) for organizations with a verified custom domain.
@@ -151,32 +130,6 @@ export const createOrganizationMember = async (data: TNewOrganizationmember, dbC
 
   return member;
 };
-
-export async function getOrganizationMemberByIdAndOrg(
-  memberId: number,
-  organizationId: string,
-  dbClient: DbOrTxClient = db
-): Promise<{ id: number; profileId: string | null } | null> {
-  try {
-    const [row] = await dbClient
-      .select({
-        id: schema.organizationmember.id,
-        profileId: schema.organizationmember.profileId
-      })
-      .from(schema.organizationmember)
-      .where(
-        and(eq(schema.organizationmember.id, memberId), eq(schema.organizationmember.organizationId, organizationId))
-      )
-      .limit(1);
-
-    return row ?? null;
-  } catch (error) {
-    console.error('getOrganizationMemberByIdAndOrg error:', error);
-    throw new Error(
-      `Failed to resolve organization membership: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
-  }
-}
 
 export async function getOrganizationMemberIdByOrgAndProfile(
   organizationId: string,
@@ -510,21 +463,6 @@ export const checkEmailsExistInOrg = async (orgId: string, emails: string[]): Pr
   });
 
   return Array.from(existingEmails);
-};
-
-/**
- * Deletes an organization member by ID
- * @param orgId Organization ID
- * @param memberId Member ID to delete
- * @returns Deleted member or null if not found
- */
-export const deleteOrganizationMember = async (orgId: string, memberId: number) => {
-  const [deleted] = await db
-    .delete(schema.organizationmember)
-    .where(and(eq(schema.organizationmember.organizationId, orgId), eq(schema.organizationmember.id, memberId)))
-    .returning();
-
-  return deleted || null;
 };
 
 /**
@@ -1196,30 +1134,6 @@ export const getOrganizationCount = async (): Promise<number> => {
 };
 
 /**
- * Creates a new organization plan
- * @param data Organization plan creation data
- * @param dbClient Optional DB or transaction client for use within transactions
- * @returns Created organization plan record
- */
-export const getOrganizationPlanBySubscriptionId = async (
-  subscriptionId: string,
-  dbClient: DbOrTxClient = db
-): Promise<TOrganizationPlan | null> => {
-  try {
-    const [plan] = await dbClient
-      .select()
-      .from(schema.organizationPlan)
-      .where(eq(schema.organizationPlan.subscriptionId, subscriptionId))
-      .limit(1);
-
-    return plan ?? null;
-  } catch (error) {
-    console.error('getOrganizationPlanBySubscriptionId error:', error);
-    throw new Error(`Failed to fetch organization plan: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-};
-
-/**
  * Gets every active organization plan that has a Polar subscription ID attached.
  * Used by one-off backfills that need to re-verify subscription status against Polar.
  * @param dbClient Optional DB or transaction client for use within transactions
@@ -1252,50 +1166,6 @@ export const createOrganizationPlan = async (
 ): Promise<TOrganizationPlan> => {
   const [plan] = await dbClient.insert(schema.organizationPlan).values(data).returning();
   return plan;
-};
-
-/**
- * Updates an organization plan by subscription ID
- * @param subscriptionId Subscription ID
- * @param updates Organization plan fields to update
- * @returns Updated organization plan record
- */
-export const updateOrganizationPlan = async (
-  subscriptionId: string,
-  updates: Partial<Pick<TOrganizationPlan, 'isActive' | 'deactivatedAt' | 'payload'>>,
-  dbClient: DbOrTxClient = db
-): Promise<TOrganizationPlan | null> => {
-  const [plan] = await dbClient
-    .update(schema.organizationPlan)
-    .set({ ...updates, updatedAt: sql`timezone('utc'::text, now())` })
-    .where(eq(schema.organizationPlan.subscriptionId, subscriptionId))
-    .returning();
-  return plan ?? null;
-};
-
-/**
- * Activates an organization plan by subscription ID.
- * @param subscriptionId Subscription ID
- * @param payload Payload data to update
- * @returns Activated organization plan record, or null when it does not exist
- */
-export const activateOrganizationPlan = async (
-  subscriptionId: string,
-  payload: TOrganizationPlan['payload'],
-  dbClient: DbOrTxClient = db
-): Promise<TOrganizationPlan | null> => {
-  const [plan] = await dbClient
-    .update(schema.organizationPlan)
-    .set({
-      isActive: true,
-      deactivatedAt: null,
-      payload,
-      updatedAt: sql`timezone('utc'::text, now())`
-    })
-    .where(eq(schema.organizationPlan.subscriptionId, subscriptionId))
-    .returning();
-
-  return plan ?? null;
 };
 
 /**

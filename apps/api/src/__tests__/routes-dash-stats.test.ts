@@ -23,8 +23,7 @@ vi.mock('@api/services/analytics', () => ({
   getCountryBreakdown: vi.fn().mockResolvedValue([]),
   getCourseFunnel: vi.fn().mockResolvedValue({ steps: [] }),
   getLandingStats: vi.fn().mockResolvedValue({}),
-  getTopCoursesByViews: vi.fn().mockResolvedValue([]),
-  ingestEventBatch: vi.fn()
+  getTopCoursesByViews: vi.fn().mockResolvedValue([])
 }));
 
 import { getOrganisationAnalytics, getStudentLoginActivity } from '@api/services/dash';

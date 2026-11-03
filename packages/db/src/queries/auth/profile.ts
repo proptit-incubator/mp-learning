@@ -95,16 +95,6 @@ export const getProfileById = async (id: string) => {
   return profile;
 };
 
-export async function markWelcomeEmailPending(userId: string) {
-  const [updatedProfile] = await db
-    .update(schema.profile)
-    .set({ welcomeEmailPending: true })
-    .where(eq(schema.profile.id, userId))
-    .returning({ id: schema.profile.id });
-
-  return updatedProfile ?? null;
-}
-
 export async function clearWelcomeEmailPending(userId: string) {
   await db.update(schema.profile).set({ welcomeEmailPending: false }).where(eq(schema.profile.id, userId));
 }

@@ -1,5 +1,4 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
-import type { TProfile } from '@cio/db/types';
 import {
   checkSiteNameExists,
   createOrganization,
@@ -8,7 +7,7 @@ import {
   getOrganizationByProfileId,
   getOrganizationCount
 } from '@cio/db/queries';
-import { markWelcomeEmailPending, updateProfile } from '@cio/db/queries/auth';
+import { updateProfile } from '@cio/db/queries/auth';
 
 import { env } from '@cio/core/config/env';
 import { ROLE } from '@cio/utils/constants';
@@ -100,42 +99,5 @@ export async function createOrganizationWithOwner(
       throw new AppError(`Site name '${input.siteName}' already exists`, ErrorCodes.SITENAME_EXISTS, 409);
     }
     throw new AppError(error instanceof Error ? error : new Error('Unknown error'), ErrorCodes.ORG_CREATE_FAILED, 500);
-  }
-}
-
-export async function updateUserOnboarding(userId: string, data: Partial<TProfile>) {
-  try {
-    const updatedProfile = await updateProfile(userId, data);
-
-    if (!updatedProfile) {
-      throw new AppError('Failed to update profile - profile not found', ErrorCodes.PROFILE_NOT_FOUND, 404);
-    }
-
-    return updatedProfile;
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-    throw new AppError(
-      error instanceof Error ? error : new Error('Unknown error'),
-      ErrorCodes.PROFILE_UPDATE_FAILED,
-      500
-    );
-  }
-}
-
-export async function markOnboardingWelcomeEmailPending(userId: string) {
-  const organizations = await getOrganizationByProfileId(userId);
-  if (organizations.length > 0) {
-    throw new AppError(
-      'Welcome email onboarding is only available for new dashboard accounts',
-      ErrorCodes.VALIDATION_ERROR,
-      403
-    );
-  }
-
-  const updatedProfile = await markWelcomeEmailPending(userId);
-  if (!updatedProfile) {
-    throw new AppError('Profile not found', ErrorCodes.PROFILE_NOT_FOUND, 404);
   }
 }

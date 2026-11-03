@@ -14,7 +14,6 @@ export * from './progression';
 export * from './content-batch';
 export * from './people';
 export * from './reset-progress';
-export * from './invite';
 export * from './lesson-language-body';
 export * from './session';
 export * from './member-progress';
