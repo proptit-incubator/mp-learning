@@ -221,10 +221,10 @@ function getEmailDomain(email: string): string {
 }
 
 function getExpiryLabel(expiresAtIso: string): string {
-  return new Date(expiresAtIso).toLocaleString('en-US', {
+  return new Date(expiresAtIso).toLocaleString('vi-VN', {
     dateStyle: 'medium',
     timeStyle: 'short',
-    timeZone: 'UTC'
+    timeZone: 'Asia/Ho_Chi_Minh'
   });
 }
 

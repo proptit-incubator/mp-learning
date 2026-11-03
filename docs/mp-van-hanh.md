@@ -19,7 +19,7 @@ Các biến môi trường:
 | Biến | Mặc định | Ý nghĩa |
 | --- | --- | --- |
 | `BACKUP_DIR` | `./backups` | Thư mục chứa bản sao lưu |
-| `BACKUP_KEEP_DAYS` | `14` | Bản sao lưu cục bộ cũ hơn số ngày này sẽ bị xoá sau mỗi lần sao lưu |
+| `BACKUP_KEEP_DAYS` | `14` | Bản sao lưu cục bộ cũ hơn số ngày này sẽ bị xóa sau mỗi lần sao lưu |
 | `BACKUP_REMOTE` | (trống) | Đích `rsync` trên máy khác, ví dụ `backup@nas:/srv/mp-learning` |
 
 Bản sao lưu chỉ nằm trên máy chủ thì không bảo vệ được khi mất máy chủ. Luôn đặt `BACKUP_REMOTE`.
@@ -38,7 +38,7 @@ Nếu dùng S3 bên ngoài thay cho kho file đi kèm, script chỉ sao lưu cơ
 
 ## Kiểm tra bản sao lưu
 
-Lệnh dưới đây khôi phục bản dump vào một cơ sở dữ liệu tạm, đếm người dùng, khoá học và bài nộp, rồi xoá cơ sở dữ liệu tạm. Lệnh không đụng tới dữ liệu đang chạy.
+Lệnh dưới đây khôi phục bản dump vào một cơ sở dữ liệu tạm, đếm người dùng, khóa học và bài nộp, rồi xóa cơ sở dữ liệu tạm. Lệnh không đụng tới dữ liệu đang chạy.
 
 ```bash
 scripts/mp-backup.sh verify backups/mp-20261103-010721
@@ -59,7 +59,7 @@ Khôi phục sẽ ghi đè cơ sở dữ liệu và kho file hiện tại. Scrip
    scripts/mp-backup.sh restore backups/mp-20261103-010721 --yes
    ```
 
-5. Kiểm tra: đăng nhập bằng tài khoản quản trị, mở một khoá học có video, mở trang `/verify/<mã>` của một chứng chỉ.
+5. Kiểm tra: đăng nhập bằng tài khoản quản trị, mở một khóa học có video, mở trang `/verify/<mã>` của một chứng chỉ.
 
 Bản sao lưu được tạo từ code cũ hơn vẫn khôi phục được. API tự chạy các migration còn thiếu khi khởi động. Không khôi phục bản sao lưu từ code **mới hơn** code đang chạy. Hãy cập nhật code trước.
 
@@ -80,6 +80,6 @@ Nếu bản mới lỗi: checkout lại commit cũ (ghi trong `manifest.txt`), k
 | Hiện tượng | Kiểm tra |
 | --- | --- |
 | Không tải được chứng chỉ PDF | `docker compose logs api`. Image API phải có Chromium (`CHROMIUM_EXECUTABLE_PATH`). |
-| Email giao khoá không gửi | `docker compose logs jobs` và cấu hình SMTP trong `.env`. |
+| Email giao khóa không gửi | `docker compose logs jobs` và cấu hình SMTP trong `.env`. |
 | Dịch vụ dừng sau khi khởi động lại máy | Mọi dịch vụ dùng `restart: unless-stopped`. Chạy `docker compose --profile storage up -d`. |
-| Hết dung lượng đĩa | Xoá bớt bản sao lưu cũ trong `backups/` hoặc giảm `BACKUP_KEEP_DAYS`. Dùng `docker system df` để xem image cũ. |
+| Hết dung lượng đĩa | Xóa bớt bản sao lưu cũ trong `backups/` hoặc giảm `BACKUP_KEEP_DAYS`. Dùng `docker system df` để xem image cũ. |

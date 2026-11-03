@@ -24,8 +24,8 @@ describe('getStudentEmailSendContext', () => {
   it('keeps the queued locale and saved template for a paid organization', async () => {
     vi.mocked(getActiveOrganizationPlan).mockResolvedValue({ planName: 'EARLY_ADOPTER' } as never);
 
-    await expect(getStudentEmailSendContext('org-1', 'studentCourseWelcome', 'fr')).resolves.toEqual({
-      locale: 'fr',
+    await expect(getStudentEmailSendContext('org-1', 'studentCourseWelcome', 'en')).resolves.toEqual({
+      locale: 'en',
       templateOverride: savedTemplate
     });
   });
@@ -33,7 +33,7 @@ describe('getStudentEmailSendContext', () => {
   it('sends the Vietnamese default once the organization is back on the free plan', async () => {
     vi.mocked(getActiveOrganizationPlan).mockResolvedValue({ planName: 'BASIC' } as never);
 
-    await expect(getStudentEmailSendContext('org-1', 'studentCourseWelcome', 'fr')).resolves.toEqual({
+    await expect(getStudentEmailSendContext('org-1', 'studentCourseWelcome', 'en')).resolves.toEqual({
       locale: 'vi',
       templateOverride: undefined
     });
@@ -45,7 +45,7 @@ describe('getStudentEmailSendContext', () => {
     vi.mocked(getOrganizationStudentEmailTemplate).mockRejectedValue(new Error('database unavailable'));
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    await expect(getStudentEmailSendContext('org-1', 'studentCourseWelcome', 'fr')).resolves.toEqual({
+    await expect(getStudentEmailSendContext('org-1', 'studentCourseWelcome', 'en')).resolves.toEqual({
       locale: 'vi',
       templateOverride: undefined
     });
@@ -54,7 +54,7 @@ describe('getStudentEmailSendContext', () => {
   it('ignores emails that are not student templates', async () => {
     vi.mocked(getActiveOrganizationPlan).mockResolvedValue({ planName: 'EARLY_ADOPTER' } as never);
 
-    await expect(getStudentEmailSendContext('org-1', 'teacherStudentJoined', 'fr')).resolves.toEqual({
+    await expect(getStudentEmailSendContext('org-1', 'teacherStudentJoined', 'en')).resolves.toEqual({
       locale: 'vi',
       templateOverride: undefined
     });

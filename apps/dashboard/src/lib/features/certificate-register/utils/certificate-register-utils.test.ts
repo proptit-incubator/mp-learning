@@ -36,7 +36,7 @@ describe('buildCertificateRegisterExport', () => {
         employee: 'Nhân viên',
         code: 'Mã NV',
         department: 'Phòng ban',
-        course: 'Khoá học',
+        course: 'Khóa học',
         certificate: 'Mã chứng chỉ',
         issued: 'Ngày cấp',
         expires: 'Hiệu lực đến',

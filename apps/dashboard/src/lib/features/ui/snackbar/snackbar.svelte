@@ -2,7 +2,8 @@
   import { Toaster, toast } from '@cio/ui/base/sonner';
   import { SNACKBAR_SEVERITY } from './constants';
   import { snackbarStore, snackbarStoreInitialState } from './store';
-  import { t } from '$lib/utils/functions/translations';
+  import { locale, t } from '$lib/utils/functions/translations';
+  import { resolveSnackbarMessage } from './message';
 
   function handleClose() {
     if (typeof $snackbarStore.handleClose === 'function') {
@@ -16,8 +17,16 @@
   }
 
   function showToast() {
-    const message = $t($snackbarStore.message);
     const { action, autoHideDuration, id, severity } = $snackbarStore;
+    const translated = $t($snackbarStore.message);
+    const message = resolveSnackbarMessage({
+      message: $snackbarStore.message,
+      translated,
+      locale: $locale,
+      severity,
+      translate: (key) => $t(key)
+    });
+    if (message !== translated) console.warn('Snackbar message shown generically:', $snackbarStore.message);
 
     const options = {
       duration: autoHideDuration || 5000,

@@ -318,7 +318,7 @@
   },
   "welcome_modal": {
     "we_at": "Tại",
-    "small_team": "học tập là một phần của cách chúng ta cùng phát triển. MP Learning tập trung mọi khóa đào tạo, lớp học và chứng chỉ nội bộ vào một nơi để bạn chỉ cần tập trung nâng cao năng lực.",
+    "small_team": "học tập là một phần của cách chúng ta cùng phát triển. MP Learning tập trung mọi khóa đào tạo và chứng chỉ nội bộ vào một nơi để bạn chỉ cần tập trung nâng cao năng lực.",
     "thank_you": "Rất vui được đồng hành cùng bạn",
     "deeply_appreciate": "bộ phận Đào tạo luôn sẵn sàng hỗ trợ bạn.",
     "title": "Chào mừng đến với MP Learning",
@@ -334,9 +334,9 @@
       "command_palette": {
         "title": "Bảng lệnh",
         "description": "Tìm kiếm và di chuyển nhanh trong tổ chức",
-        "placeholder": "Tìm khóa học, lớp đào tạo, widget, học viên, thẻ, cài đặt...",
-        "org_placeholder": "Tìm khóa học, lớp đào tạo, widget, học viên, thẻ, cài đặt...",
-        "lms_placeholder": "Tìm khóa học, lớp đào tạo và trang học tập của bạn...",
+        "placeholder": "Tìm khóa học, nhân viên, thẻ, cài đặt...",
+        "org_placeholder": "Tìm khóa học, nhân viên, thẻ, cài đặt...",
+        "lms_placeholder": "Tìm khóa học và trang học tập của bạn...",
         "lms_description": "Tìm kiếm và di chuyển nhanh trong không gian học tập",
         "empty": "Không tìm thấy kết quả",
         "loading": "Đang tìm...",
@@ -429,8 +429,8 @@
     },
     "errors": {
       "invalid_credentials": "Mã nhân viên, email hoặc mật khẩu không đúng.",
-      "locked": "Tài khoản tạm khoá vì nhập sai mật khẩu nhiều lần. Vui lòng thử lại sau {minutes} phút.",
-      "disabled": "Tài khoản đã bị vô hiệu hoá. Vui lòng liên hệ HR.",
+      "locked": "Tài khoản tạm khóa vì nhập sai mật khẩu nhiều lần. Vui lòng thử lại sau {minutes} phút.",
+      "disabled": "Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ HR.",
       "too_many_requests": "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.",
       "unavailable": "Không thể đăng nhập lúc này. Vui lòng thử lại sau."
     }
@@ -600,7 +600,7 @@
         },
         "enrollment": {
           "heading": "Ghi danh",
-          "description": "Email chào mừng gửi khi quản trị viên thêm thành viên vào khóa học hoặc lớp đào tạo."
+          "description": "Email chào mừng gửi khi nhân viên được giao một khóa học."
         }
       },
       "toggles": {
@@ -634,7 +634,7 @@
         },
         "enrollmentWelcome": {
           "label": "Email chào mừng khi ghi danh",
-          "description": "Gửi email chào mừng khi quản trị viên ghi danh học viên vào khóa học hoặc lớp đào tạo."
+          "description": "Gửi email chào mừng khi nhân viên được giao một khóa học."
         },
         "courseCompletion": {
           "label": "Hoàn thành khóa học và chứng chỉ",
@@ -1993,8 +1993,8 @@
           "post": "Đăng"
         },
         "body_header": "Chưa có bài đăng",
-        "body_content": "Hãy đăng bài cho lớp của bạn. Bắt đầu bằng cách nhấp nút Thêm.",
-        "student_body_content": "Lớp học này chưa có bài đăng nào.",
+        "body_content": "Hãy đăng bài cho học viên của khóa. Bắt đầu bằng cách nhấp nút Thêm.",
+        "student_body_content": "Khóa học này chưa có bài đăng nào.",
         "pinned": "Đã ghim",
         "other_posts": "Bài đăng khác",
         "user": "Người dùng",
@@ -2011,7 +2011,7 @@
           "delete": "Xóa"
         },
         "comments": {
-          "placeholder": "Thêm bình luận cho lớp",
+          "placeholder": "Thêm bình luận",
           "reply": "Trả lời",
           "replying_to": "Đang trả lời @{name}",
           "cancel_reply": "Hủy",
@@ -3061,7 +3061,7 @@
         "title": "Bài tập đã nộp",
         "access": {
           "denied_title": "Bạn không có quyền chấm bài của khóa học này",
-          "denied_description": "Hãy đề nghị quản trị viên thêm bạn làm giảng viên của khóa học, hoặc người hướng dẫn của lớp đào tạo có khóa học này."
+          "denied_description": "Hãy đề nghị L&D thêm bạn vào nhóm phụ trách khóa học này."
         },
         "submission_status": {
           "submitted": "Đã nộp",
@@ -3604,7 +3604,7 @@
           "title_label": "Tiêu đề",
           "title_placeholder": "Bạn muốn tìm hiểu sâu hơn?",
           "description_label": "Mô tả",
-          "description_placeholder": "Tham gia lớp đào tạo đầy đủ để hoàn thành một dự án thực tế trong 4 tuần.",
+          "description_placeholder": "Hoàn thành khóa học để làm một dự án thực tế trong 4 tuần.",
           "button_label": "Nhãn nút",
           "button_label_placeholder": "Xem thêm trên cổng học tập",
           "button_url_label": "URL của nút",
@@ -3798,7 +3798,7 @@
     "delete": {
       "action": "Xóa",
       "title": "Xóa thành viên",
-      "description": "Thành viên sẽ bị xóa khỏi tổ chức và mất quyền truy cập vào mọi khóa học, lớp đào tạo đã được gán.",
+      "description": "Thành viên sẽ bị xóa khỏi tổ chức và mất quyền truy cập vào mọi khóa học đã được giao.",
       "confirmation": "Bạn có chắc muốn xóa {name} ({email})? Không thể hoàn tác thao tác này.",
       "cancel": "Hủy",
       "confirm": "Xóa",
@@ -5671,18 +5671,18 @@
     "job_title": "Chức danh",
     "departments": {
       "title": "Phòng ban",
-      "description": "Danh sách phòng ban dùng chung cho nhân viên, giao khoá và báo cáo. Tên được chuẩn hoá khi nhập: khác chữ hoa hay khoảng trắng vẫn là một phòng ban.",
+      "description": "Danh sách phòng ban dùng chung cho nhân viên, giao khóa và báo cáo. Tên được chuẩn hóa khi nhập: khác chữ hoa hay khoảng trắng vẫn là một phòng ban.",
       "empty": "Chưa có phòng ban nào",
       "active_employees": "Đang làm / tổng",
       "save": "Lưu",
-      "delete": "Xoá phòng ban",
-      "merge_hint": "Đổi tên trùng với một phòng ban khác sẽ gộp hai phòng ban làm một. Chỉ xoá được phòng ban không còn nhân viên.",
+      "delete": "Xóa phòng ban",
+      "merge_hint": "Đổi tên trùng với một phòng ban khác sẽ gộp hai phòng ban làm một. Chỉ xóa được phòng ban không còn nhân viên.",
       "renamed": "Đã đổi tên phòng ban",
       "merged": "Đã gộp vào phòng ban có cùng tên",
-      "deleted": "Đã xoá phòng ban",
+      "deleted": "Đã xóa phòng ban",
       "errors": {
         "missing": "Không tìm thấy phòng ban",
-        "not_empty": "Phòng ban vẫn còn nhân viên nên không xoá được"
+        "not_empty": "Phòng ban vẫn còn nhân viên nên không xóa được"
       }
     }
   },
@@ -5764,9 +5764,9 @@
       "every": "Học lại mỗi {months} tháng"
     },
     "assign_subtitle_course": "Chọn những người cần hoàn thành \"{course}\". Người đã được giao sẽ được bỏ qua.",
-    "assign_subtitle_people": "Chọn khoá học cho {people}. Tiến độ đã có được giữ nguyên.",
-    "pick_courses_title": "Chọn khoá học",
-    "recipients": "Ai cần học khoá này?",
+    "assign_subtitle_people": "Chọn khóa học cho {people}. Tiến độ đã có được giữ nguyên.",
+    "pick_courses_title": "Chọn khóa học",
+    "recipients": "Ai cần học khóa này?",
     "mode": {
       "individual": "Chọn từng người",
       "groups": "Theo nhóm",
@@ -5779,7 +5779,7 @@
     "already_assigned": "Đã được giao",
     "groups_hint": "Nhân viên thuộc ít nhất một phòng ban hoặc chức danh đã chọn sẽ được giao.",
     "everyone_title": "Toàn bộ {count} nhân viên",
-    "everyone_hint": "Gồm cả nhân viên chưa kích hoạt tài khoản. Họ sẽ thấy khoá học khi đăng nhập.",
+    "everyone_hint": "Gồm cả nhân viên chưa kích hoạt tài khoản. Họ sẽ thấy khóa học khi đăng nhập.",
     "due_presets": {
       "none": "Không hạn",
       "week": "1 tuần",
@@ -5791,12 +5791,12 @@
     "due_none_hint": "Học viên tự sắp xếp thời gian hoàn thành.",
     "batch_hint": "Không bắt buộc. Dùng để gom nhóm và lọc báo cáo theo đợt.",
     "message_placeholder": "VD: Vui lòng hoàn thành trước đợt kiểm tra quý.",
-    "summary_pick_course": "Chọn ít nhất một khoá học",
+    "summary_pick_course": "Chọn ít nhất một khóa học",
     "summary_pick_people": "Chọn người cần học",
-    "summary": "{people} người · {courses} khoá học",
+    "summary": "{people} người · {courses} khóa học",
     "summary_existing": "{count} lượt đã giao trước đó sẽ được bỏ qua",
     "submit_count": "Giao cho {count} người",
-    "no_courses": "Không tìm thấy khoá học đã xuất bản",
+    "no_courses": "Không tìm thấy khóa học đã xuất bản",
     "no_employees": "Không có nhân viên đang hoạt động phù hợp",
     "people_count": "{count} người"
   },
@@ -5840,7 +5840,7 @@
     "days": "{count} ngày",
     "search": "Tìm tên, mã NV, mã chứng chỉ",
     "filters": {
-      "all_courses": "Tất cả khoá học"
+      "all_courses": "Tất cả khóa học"
     },
     "columns": {
       "code": "Mã chứng chỉ",
@@ -5855,9 +5855,9 @@
     "open_verify": "Mở trang xác minh",
     "revoke": "Thu hồi",
     "restore": "Khôi phục",
-    "cancel": "Huỷ",
+    "cancel": "Hủy",
     "revoke_title": "Thu hồi chứng chỉ",
-    "revoke_description": "Chứng chỉ khoá \"{course}\" của {name} sẽ báo đã thu hồi trên trang xác minh, và nhân viên không tải được nữa. Bạn có thể khôi phục lại sau.",
+    "revoke_description": "Chứng chỉ khóa \"{course}\" của {name} sẽ báo đã thu hồi trên trang xác minh, và nhân viên không tải được nữa. Bạn có thể khôi phục lại sau.",
     "revoke_reason": "Lý do thu hồi",
     "revoke_placeholder": "Ví dụ: cấp nhầm người, gian lận khi làm bài kiểm tra",
     "revoke_hint": "Lý do được lưu vào nhật ký của nhân viên.",
@@ -5871,7 +5871,7 @@
     "load_error": "Không tải được sổ chứng chỉ.",
     "no_results": "Không có chứng chỉ phù hợp",
     "empty_title": "Chưa có chứng chỉ nào",
-    "empty_description": "Chứng chỉ được cấp tự động khi nhân viên hoàn thành khoá học có bật chứng chỉ."
+    "empty_description": "Chứng chỉ được cấp tự động khi nhân viên hoàn thành khóa học có bật chứng chỉ."
   },
   "auth": {
     "auth_failed": {
