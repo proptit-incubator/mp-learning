@@ -29,12 +29,10 @@ import { auth } from '@cio/db/auth';
 import { communityRouter } from '@api/routes/community';
 import { courseRouter } from '@api/routes/course';
 import { dashAnalyticsRouter } from '@api/routes/dash';
-import { domainRouter } from '@api/routes/domain/domain';
 import { internalRouter } from '@api/routes/internal';
 import { inviteRouter } from '@api/routes/invite';
 import { certificateRouter } from '@api/routes/certificate';
 import { jobsRouter } from '@api/routes/jobs';
-import { licenseRouter } from '@api/routes/license';
 import { logger } from 'hono/logger';
 // ROUTES
 import { hlsRouter } from '@api/routes/hls';
@@ -42,21 +40,14 @@ import { mailRouter } from '@api/routes/mail';
 import { mediaRouter } from '@api/routes/media';
 import { transcriptsRouter } from '@api/routes/transcripts';
 import { mountQueueDashboard } from '@api/routes/admin/queues';
-import { onboardingRouter } from '@api/routes/onboarding';
 import { organizationRouter } from '@api/routes/organization';
-import { organizationSsoRouter } from '@api/routes/organization/sso';
-import { organizationTokenAuthRouter } from '@api/routes/organization/token-auth';
 import { prettyJSON } from 'hono/pretty-json';
-import { orgSiteOgRouter } from '@api/routes/org-site';
-import { publicWidgetsRouter } from '@api/routes/widgets';
 import { reportRouter } from '@api/routes/report';
 import rateLimiter from '@api/middlewares/rate-limiter';
 import { secureHeaders } from 'hono/secure-headers';
 import { signupGuard } from '@api/middlewares/signup-guard';
 import { internalLearning } from '@api/middlewares/internal-learning';
 import { learningInstance } from '@api/middlewares/learning-instance';
-import { ssoDiscoveryRouter } from '@api/routes/sso/discovery';
-import { unsplashRouter } from '@api/routes/unsplash/unsplash';
 import { publicApiRouter } from '@api/routes/public-api';
 
 // Create Hono app with chaining for RPC support
@@ -292,28 +283,19 @@ export const app = new Hono()
       user
     });
   })
-  .route('/onboarding', onboardingRouter)
   .route('/account', accountRouter)
   .route('/employees', employeesRouter)
   .route('/course', courseRouter)
   .route('/certificate', certificateRouter)
-  .route('/domain', domainRouter)
   .route('/hls', hlsRouter)
   .route('/transcripts', transcriptsRouter)
   .route('/mail', mailRouter)
   .route('/media', mediaRouter)
   .route('/jobs', jobsRouter)
-  .route('/license', licenseRouter)
   .route('/organization', organizationRouter)
-  .route('/organization/sso', organizationSsoRouter)
-  .route('/organization/token-auth', organizationTokenAuthRouter)
-  .route('/sso', ssoDiscoveryRouter)
   .route('/dash', dashAnalyticsRouter)
   .route('/community', communityRouter)
   .route('/invite', inviteRouter)
-  .route('/org-site/og', orgSiteOgRouter)
-  .route('/unsplash', unsplashRouter)
-  .route('/widgets', publicWidgetsRouter)
   .route('/report', reportRouter)
   .route('/internal', internalRouter)
   .route('/agent', agentRouter)

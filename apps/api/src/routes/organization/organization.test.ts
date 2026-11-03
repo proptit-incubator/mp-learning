@@ -55,7 +55,6 @@ vi.mock('@api/routes/organization/member-email-notifications', () => ({
 vi.mock('@api/routes/organization/quiz', () => ({ quizRouter: new Hono() }));
 vi.mock('@api/routes/organization/search', () => ({ searchRouter: new Hono() }));
 vi.mock('@api/routes/organization/tags', () => ({ tagsRouter: new Hono() }));
-vi.mock('@api/routes/organization/widgets', () => ({ widgetsRouter: new Hono() }));
 
 import { organizationRouter } from './organization';
 

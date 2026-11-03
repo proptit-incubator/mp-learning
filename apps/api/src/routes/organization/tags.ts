@@ -11,12 +11,10 @@ import {
   assignTagsToCoursesByName,
   createOrganizationTag,
   createOrganizationTagGroup,
-  getPublicOrganizationTagGroups,
   getOrganizationTagGroups,
   updateOrganizationTag,
   updateOrganizationTagGroup
 } from '@api/services/tag';
-import { ZGetCoursesBySiteName } from '@cio/utils/validation/organization';
 
 import { Hono } from '@api/utils/hono';
 import { authMiddleware } from '@api/middlewares/auth';
@@ -29,22 +27,6 @@ import { assertMcpAutomationUsageAllowed, recordMcpAutomationUsage } from '@api/
 import { zValidator } from '@hono/zod-validator';
 
 export const tagsRouter = new Hono()
-  .get('/public', zValidator('query', ZGetCoursesBySiteName), async (c) => {
-    try {
-      const { siteName } = c.req.valid('query');
-      const groups = await getPublicOrganizationTagGroups(siteName);
-
-      return c.json(
-        {
-          success: true,
-          data: groups
-        },
-        200
-      );
-    } catch (error) {
-      return handleError(c, error, 'Failed to fetch public tags');
-    }
-  })
   .get('/', authMiddleware, orgMemberMiddleware, async (c) => {
     try {
       const orgId = c.req.header('cio-org-id')!;

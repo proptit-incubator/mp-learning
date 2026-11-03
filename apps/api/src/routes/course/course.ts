@@ -8,7 +8,6 @@ import {
   ZCourseDownloadParam,
   ZInternalCourseEnrollBody,
   ZCourseEnrollParam,
-  ZCourseGetBySlugParam,
   ZCourseGetParam,
   ZCourseGetQuery,
   ZCourseLandingPageUpdateValidated,
@@ -61,7 +60,6 @@ import { generateCoursePdf } from '@api/utils/course';
 import { getCourseById, getCourseOrganizationId } from '@db/queries';
 import { ROLE } from '@cio/utils/constants';
 import { AppError, ErrorCodes, handleError } from '@api/utils/errors';
-import { invitesRouter } from '@api/routes/course/invite';
 import { katexRouter } from '@api/routes/course/katex';
 import { lessonRouter } from '@api/routes/course/lesson';
 import { markRouter } from '@api/routes/course/mark';
@@ -69,7 +67,6 @@ import { membersRouter } from '@api/routes/course/people';
 import { newsfeedRouter } from '@api/routes/course/newsfeed';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
 import { orgTeamMemberMiddleware } from '@api/middlewares/org-team-member';
-import { paymentRequestRouter } from '@api/routes/course/payment-request';
 import { presignRouter } from '@api/routes/course/presign';
 import { assertMcpAutomationUsageAllowed, recordMcpAutomationUsage } from '@api/services/organization/automation-usage';
 import { sectionRouter } from '@api/routes/course/section';
@@ -114,31 +111,6 @@ export const courseRouter = new Hono()
   .route('/template', courseTemplateRouter)
   .route('/:courseId/template', courseTemplateActionsRouter)
   .route('/:courseId/template-updates', courseTemplateUpdatesRouter)
-  /**
-   * GET /course/slug/:slug
-   * Gets a course by slug (public route, no authentication required)
-   * Used for public course landing pages
-   */
-  .get('/slug/:slug', zValidator('param', ZCourseGetBySlugParam), async (c) => {
-    try {
-      const { slug } = c.req.valid('param');
-      const course = await getCourse(undefined, slug);
-
-      if (!course.isPublished) {
-        throw new AppError('Course not found', ErrorCodes.COURSE_NOT_FOUND, 404);
-      }
-
-      return c.json(
-        {
-          success: true,
-          data: course
-        },
-        200
-      );
-    } catch (error) {
-      return handleError(c, error, 'Failed to fetch course by slug');
-    }
-  })
   /**
    * POST /course
    * Creates a new course with group, group member, and default newsfeed
@@ -662,7 +634,6 @@ export const courseRouter = new Hono()
     }
   )
   .route('/katex', katexRouter)
-  .route('/:courseId/payment-request', paymentRequestRouter)
   .route('/:courseId/content', contentRouter)
   .route('/:courseId/section', sectionRouter)
   .route('/:courseId/lesson', lessonRouter)
@@ -672,7 +643,6 @@ export const courseRouter = new Hono()
   .route('/:courseId/mark', markRouter)
   .route('/:courseId/newsfeed', newsfeedRouter)
   .route('/:courseId/members', membersRouter)
-  .route('/:courseId/invites', invitesRouter)
   .route('/:courseId/ai-tutor', courseAiTutorRouter)
   .route('/:courseId/live-session-reminders', liveSessionReminderRouter)
   .route('/presign', presignRouter);
