@@ -15,6 +15,10 @@ vi.mock('@api/services/dash', () => ({
   getStudentLoginActivity: vi.fn().mockResolvedValue([])
 }));
 
+vi.mock('@api/services/learning-analytics', () => ({
+  resolveLearningAnalyticsScope: vi.fn().mockResolvedValue({ kind: 'organization' })
+}));
+
 vi.mock('@api/services/analytics', () => ({
   getCountryBreakdown: vi.fn().mockResolvedValue([]),
   getCourseFunnel: vi.fn().mockResolvedValue({ steps: [] }),
@@ -24,6 +28,7 @@ vi.mock('@api/services/analytics', () => ({
 }));
 
 import { getOrganisationAnalytics, getStudentLoginActivity } from '@api/services/dash';
+import { resolveLearningAnalyticsScope } from '@api/services/learning-analytics';
 import { getCountryBreakdown, getCourseFunnel, getLandingStats } from '@api/services/analytics';
 import { dashAnalyticsRouter } from '@api/routes/dash';
 
@@ -41,8 +46,9 @@ describe('dash analytics routes read the org verified by the middleware', () => 
     await get(`/stats?orgId=${OTHER_ORG}`);
     await get('/stats?siteName=someone-else');
 
-    expect(getOrganisationAnalytics).toHaveBeenNthCalledWith(1, OWN_ORG, undefined, false);
-    expect(getOrganisationAnalytics).toHaveBeenNthCalledWith(2, OWN_ORG, undefined, false);
+    expect(resolveLearningAnalyticsScope).toHaveBeenCalledWith(OWN_ORG, 'user-1');
+    expect(getOrganisationAnalytics).toHaveBeenNthCalledWith(1, OWN_ORG, { kind: 'organization' }, false);
+    expect(getOrganisationAnalytics).toHaveBeenNthCalledWith(2, OWN_ORG, { kind: 'organization' }, false);
   });
 
   it.each([

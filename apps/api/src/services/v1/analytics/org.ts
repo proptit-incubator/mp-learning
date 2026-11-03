@@ -26,7 +26,7 @@ async function readSection(
 
   switch (section) {
     case 'overview': {
-      const entry = await cachedRead(key(), TTL, () => getOrganisationAnalytics(orgId, undefined, true));
+      const entry = await cachedRead(key(), TTL, () => getOrganisationAnalytics(orgId, { kind: 'organization' }, true));
       const { topCourses, recentCertifications, ...totals } = entry.data;
       return {
         ...entry,

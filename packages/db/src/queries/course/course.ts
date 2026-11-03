@@ -58,7 +58,7 @@ export interface TAdminCourse extends TBaseCourse {
 /**
  * Student course type - extends TBaseCourse with progress fields
  * Used for student dashboard and enrolled courses views
- * progressRate = lessons completed, exercisesCompleted = exercises submitted
+ * progressRate = lessons completed, exercisesCompleted = exercises completed under their completion policy
  */
 export interface TStudentCourse extends TBaseCourse {
   enrollment: LearnerEnrollmentSummary | null;

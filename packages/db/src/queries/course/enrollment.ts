@@ -2,6 +2,7 @@ import { and, eq, inArray, sql, type SQL } from 'drizzle-orm';
 import { db, type DbOrTxClient } from '@db/drizzle';
 import * as schema from '@db/schema';
 import { chunk } from '@cio/utils/functions/array';
+import { submissionMeetsCompletionPolicySql } from './progression';
 
 export type EnrollmentKind = 'ASSIGNED' | 'SELF';
 export type EnrollmentStatus = 'ACTIVE' | 'WAIVED' | 'REVOKED';
@@ -306,9 +307,10 @@ export async function listEmployeeEnrollments(employeeId: string, client: DbOrTx
     + (select count(*) from exercise ex left join lesson l on ex.lesson_id = l.id where ex.course_id = ce.course_id or l.course_id = ce.course_id))`;
   const completedItems = sql`((select count(*) from lesson_completion lc join lesson l on l.id = lc.lesson_id
       where l.course_id = ce.course_id and lc.profile_id = ${profile} and lc.is_complete = true)
-    + (select count(distinct s.exercise_id) from submission s join exercise ex on ex.id = s.exercise_id
-      left join lesson l on l.id = ex.lesson_id join groupmember gm on gm.id = s.submitted_by
-      where (ex.course_id = ce.course_id or l.course_id = ce.course_id) and gm.profile_id = ${profile} and gm.group_id = co.group_id))`;
+    + (select count(distinct cs.exercise_id) from submission cs join exercise ex on ex.id = cs.exercise_id
+      left join lesson l on l.id = ex.lesson_id join groupmember gm on gm.id = cs.submitted_by
+      where (ex.course_id = ce.course_id or l.course_id = ce.course_id) and gm.profile_id = ${profile} and gm.group_id = co.group_id
+        and ${submissionMeetsCompletionPolicySql('ex', 'cs')}))`;
   const rows = await client.execute<EmployeeEnrollmentRow>(sql`select ${enrollmentRowSelect},
       co.title "courseTitle", coalesce(co.is_published, false) "isPublished", co.recertification_months "recertificationMonths",
       latest.completed_at "completedAt", latest.score,

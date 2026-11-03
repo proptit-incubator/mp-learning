@@ -6,6 +6,7 @@ import type { SQL } from 'drizzle-orm';
 import { AUDIENCE_ACTIVITY_WINDOW_DAYS } from '@cio/utils/validation/organization';
 import { ROLE } from '@cio/utils/constants';
 import { type DbOrTxClient, db } from '@db/drizzle';
+import { submissionMeetsCompletionPolicySql } from '@db/queries/course/progression';
 import type {
   EmployeeListQuery,
   TAudienceActivityWindow,
@@ -92,12 +93,13 @@ const enrolmentSummaryLateral = (orgId: string): SQL => sql`(
         WHERE l.course_id = c.id
       )
         + (
-          SELECT COUNT(DISTINCT s.exercise_id)
-          FROM submission s
-          JOIN exercise e ON e.id = s.exercise_id
-          LEFT JOIN lesson el ON el.id = e.lesson_id
-          WHERE (e.course_id = c.id OR el.course_id = c.id)
-            AND s.submitted_by = gm.id
+          SELECT COUNT(DISTINCT cs.exercise_id)
+          FROM submission cs
+          JOIN exercise ex ON ex.id = cs.exercise_id
+          LEFT JOIN lesson el ON el.id = ex.lesson_id
+          WHERE (ex.course_id = c.id OR el.course_id = c.id)
+            AND cs.submitted_by = gm.id
+            AND ${submissionMeetsCompletionPolicySql('ex', 'cs')}
         ) AS completed_items
     FROM groupmember gm
     JOIN "group" g ON g.id = gm.group_id AND g.organization_id = ${orgId}

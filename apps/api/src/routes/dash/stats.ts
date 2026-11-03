@@ -9,6 +9,7 @@ import {
 } from '@cio/utils/validation/dash';
 import { authMiddleware } from '@api/middlewares/auth';
 import { getCurrentUserLoginStreak, getOrganisationAnalytics, getStudentLoginActivity } from '@api/services/dash';
+import { resolveLearningAnalyticsScope } from '@api/services/learning-analytics';
 import { handleError } from '@api/utils/errors';
 import { orgAdminMiddleware } from '@api/middlewares/org-admin';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
@@ -44,7 +45,8 @@ export const dashAnalyticsRouter = new Hono()
       const { bust } = c.req.valid('query');
       const orgId = c.get('orgId')!;
 
-      const result = await getOrganisationAnalytics(orgId, undefined, bust);
+      const scope = await resolveLearningAnalyticsScope(orgId, c.get('user')!.id);
+      const result = await getOrganisationAnalytics(orgId, scope, bust);
 
       return c.json({ success: true, data: result }, 200);
     } catch (error) {

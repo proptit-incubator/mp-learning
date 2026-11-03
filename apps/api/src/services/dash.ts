@@ -1,13 +1,12 @@
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { env } from '@cio/core/config/env';
 import {
-  getCourseStats,
-  getDashOrgStats,
+  getLearningAnalyticsSnapshot,
   getOrgStudentLoginsByDayOfWeek,
-  getUserLoginStreak,
-  getRecentCertifications,
-  getTotalCertificatesIssued
+  getRecentLearningCompletions,
+  getUserLoginStreak
 } from '@cio/db/queries/dash';
+import type { LearningAnalyticsScope } from '@cio/db/queries/dash/learning-analytics';
 import { dashLoginActivityKey } from '@api/utils/redis/key-generators';
 import { logRedisUnavailableOnce, redis } from '@cio/core/utils/redis/redis';
 import {
@@ -17,70 +16,61 @@ import {
 } from '@cio/core/utils/redis/org-stats-cache';
 
 import type { OrganisationAnalytics } from '@api/types';
-import { getOrgIdBySiteName } from '@cio/db/queries';
 
-async function loadOrganisationAnalyticsFromDatabase(orgId: string): Promise<OrganisationAnalytics> {
-  const [stats, topCourses, recentCertificationRows, certificateCountRows] = await Promise.all([
-    getDashOrgStats(orgId),
-    getCourseStats(orgId),
-    getRecentCertifications(orgId),
-    getTotalCertificatesIssued(orgId)
+const TOP_COURSE_COUNT = 5;
+
+async function loadOrganisationAnalyticsFromDatabase(
+  orgId: string,
+  scope: LearningAnalyticsScope
+): Promise<OrganisationAnalytics> {
+  const [snapshot, completions] = await Promise.all([
+    getLearningAnalyticsSnapshot(orgId, scope),
+    getRecentLearningCompletions(orgId, scope, TOP_COURSE_COUNT)
   ]);
+  const topCourses = [...snapshot.courses].sort((a, b) => b.assigned - a.assigned).slice(0, TOP_COURSE_COUNT);
 
-  const analytics: OrganisationAnalytics = {
-    totalCertificates: certificateCountRows[0]?.count ?? 0,
-    numberOfCourses: stats?.[0]?.noOfCourses ?? 0,
-    totalStudents: stats?.[0]?.enrolledStudents ?? 0,
+  return {
+    totalCertificates: completions.total,
+    numberOfCourses: snapshot.courses.length,
+    totalStudents: snapshot.enrolledEmployees,
     topCourses: topCourses.map((course) => ({
-      id: course.courseId,
-      title: course.courseTitle,
-      enrollments: course.totalStudents,
-      completion: course.completionPercentage,
-      certification: course.certificationPercentage
+      id: course.id,
+      title: course.title,
+      enrollments: course.assigned,
+      completion: course.progress ?? 0,
+      certification: course.assigned > 0 ? Math.round((course.completed / course.assigned) * 100) : 0
     })),
-    recentCertifications: recentCertificationRows.map((row) => ({
-      id: row.profileId,
+    recentCertifications: completions.recent.map((row) => ({
+      id: row.profileId ?? '',
       avatarUrl: row.avatarUrl,
       name: row.fullname,
       courseId: row.courseId,
       course: row.courseTitle,
-      date: row.earnedAt ?? ''
+      date: row.completedAt
     }))
   };
-
-  return analytics;
 }
 
+/**
+ * Overview numbers on the same population as the learning analytics page, narrowed to `scope`. Only the
+ * organization-wide result is cached, since scoped results differ per viewer.
+ */
 export async function getOrganisationAnalytics(
-  orgId?: string,
-  siteName?: string,
+  orgId: string,
+  scope: LearningAnalyticsScope = { kind: 'organization' },
   bustCache = false
 ): Promise<OrganisationAnalytics> {
-  let resolvedOrgId = orgId;
-
-  if (!resolvedOrgId && siteName) {
-    const [org] = await getOrgIdBySiteName(siteName);
-
-    if (org) {
-      resolvedOrgId = org.id;
-    } else {
-      throw new AppError('Organization not found for the given site name', ErrorCodes.ORG_NOT_FOUND, 404);
-    }
-  }
-
-  if (!resolvedOrgId) {
-    throw new AppError('Organization not found', ErrorCodes.ORG_NOT_FOUND, 404);
-  }
-
   try {
-    const { version, data: cached } = await readOrgStatsVersionAndCache<OrganisationAnalytics>(resolvedOrgId);
+    if (scope.kind !== 'organization') return await loadOrganisationAnalyticsFromDatabase(orgId, scope);
+
+    const { version, data: cached } = await readOrgStatsVersionAndCache<OrganisationAnalytics>(orgId);
 
     if (!bustCache && cached) {
       return cached;
     }
 
-    const analytics = await loadOrganisationAnalyticsFromDatabase(resolvedOrgId);
-    await writeOrgStatsCache(resolvedOrgId, version, analytics);
+    const analytics = await loadOrganisationAnalyticsFromDatabase(orgId, scope);
+    await writeOrgStatsCache(orgId, version, analytics);
 
     return analytics;
   } catch (error) {

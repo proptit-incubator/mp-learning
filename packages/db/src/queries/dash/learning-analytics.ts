@@ -2,6 +2,7 @@ import { db, type DbOrTxClient } from '@db/drizzle';
 import { sql } from 'drizzle-orm';
 import { ROLE } from '@cio/utils/constants';
 import { enrollmentStateSql, type EnrollmentState } from '../course/enrollment';
+import { submissionMeetsCompletionPolicySql } from '../course/progression';
 import { reportingLineSql } from '../organization/employees';
 
 export type LearningAnalyticsScope =
@@ -160,11 +161,12 @@ export async function getLearningAnalyticsSnapshot(
       GROUP BY en.enrollment_id
     ),
     exercise_progress AS (
-      SELECT en.enrollment_id, COUNT(DISTINCT s.exercise_id)::int AS completed
-      FROM enrollments en JOIN submission s ON s.submitted_by = en.member_id
-      JOIN exercise ex ON ex.id = s.exercise_id
+      SELECT en.enrollment_id, COUNT(DISTINCT cs.exercise_id)::int AS completed
+      FROM enrollments en JOIN submission cs ON cs.submitted_by = en.member_id
+      JOIN exercise ex ON ex.id = cs.exercise_id
       LEFT JOIN lesson el ON el.id = ex.lesson_id
-      WHERE ex.course_id = en.course_id OR el.course_id = en.course_id
+      WHERE (ex.course_id = en.course_id OR el.course_id = en.course_id)
+        AND ${submissionMeetsCompletionPolicySql('ex', 'cs')}
       GROUP BY en.enrollment_id
     ),
     learning_state AS (
@@ -290,4 +292,56 @@ export async function getLearningAnalyticsActivity(
   if (!activity) throw new Error('Learning activity unavailable');
 
   return activity;
+}
+
+export type LearningCompletionRow = {
+  profileId: string | null;
+  fullname: string;
+  avatarUrl: string | null;
+  courseId: string;
+  courseTitle: string;
+  completedAt: string;
+};
+
+/**
+ * The latest completion of each assignment in `scope`, newest first, with the number of completed assignments.
+ * Uses the same population as the analytics snapshot so the overview and analytics pages agree.
+ */
+export async function getRecentLearningCompletions(
+  orgId: string,
+  scope: LearningAnalyticsScope,
+  limit: number,
+  dbClient: DbOrTxClient = db
+) {
+  const population = learningPopulation(orgId, scope);
+  const rows = await dbClient.execute<LearningCompletionRow & { total: number }>(sql`
+    WITH ${population}
+    SELECT emp.profile_id AS "profileId", emp.fullname, emp.avatar_url AS "avatarUrl", ac.id AS "courseId",
+      ac.title AS "courseTitle", latest.completed_at AS "completedAt", COUNT(*) OVER ()::int AS total
+    FROM enrollments en
+    JOIN employees emp ON emp.employee_id = en.employee_id
+    JOIN active_courses ac ON ac.id = en.course_id
+    JOIN LATERAL (
+      SELECT completed_at FROM course_completion_record
+      WHERE course_id = en.course_id AND profile_id = en.profile_id
+      ORDER BY cycle_number DESC LIMIT 1
+    ) latest ON true
+    ORDER BY latest.completed_at DESC
+    LIMIT ${limit}
+  `);
+  const list = [...rows] as Array<LearningCompletionRow & { total: number }>;
+
+  return {
+    total: list[0]?.total ?? 0,
+    recent: list.map(
+      (row): LearningCompletionRow => ({
+        profileId: row.profileId,
+        fullname: row.fullname,
+        avatarUrl: row.avatarUrl,
+        courseId: row.courseId,
+        courseTitle: row.courseTitle,
+        completedAt: row.completedAt
+      })
+    )
+  };
 }

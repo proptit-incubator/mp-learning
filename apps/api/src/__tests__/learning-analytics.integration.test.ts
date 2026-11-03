@@ -4,7 +4,12 @@ import { randomUUID } from 'node:crypto';
 import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
 import { eq } from 'drizzle-orm';
-import { getLearningAnalyticsActivity, getLearningAnalyticsSnapshot } from '@cio/db/queries/dash/learning-analytics';
+import {
+  getLearningAnalyticsActivity,
+  getLearningAnalyticsSnapshot,
+  getRecentLearningCompletions
+} from '@cio/db/queries/dash/learning-analytics';
+import { listEmployeeEnrollments } from '@cio/db/queries/course/enrollment';
 
 const ORGANIZATION_SCOPE = { kind: 'organization' } as const;
 
@@ -139,6 +144,58 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
       const completed = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
       expect(completed.completed).toBe(1);
       expect(completed.rows[0]).toMatchObject({ state: 'completed', progress: 100 });
+    });
+  });
+
+  it('counts an exercise that must be passed only once a graded submission passes it', async () => {
+    await withRollback(async (transaction) => {
+      const { organizationId, employeeId } = await createPopulation(transaction);
+      const { courseId, memberId } = await createCourse(transaction, organizationId, employeeId);
+      const [exercise] = await transaction
+        .insert(schema.exercise)
+        .values({ title: 'Quiz', slug: 'quiz', courseId, order: 0, completionPolicy: 'passed', passThreshold: 80 })
+        .returning();
+      await transaction
+        .insert(schema.question)
+        .values({ exerciseId: exercise.id, title: 'Q1', points: 10, questionTypeId: 1 });
+      const [submission] = await transaction
+        .insert(schema.submission)
+        .values({ exerciseId: exercise.id, submittedBy: memberId, courseId, total: 5, gradingState: 'completed' })
+        .returning();
+
+      const failed = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
+      expect(failed.courses[0].progress).toBe(0);
+      expect((await listEmployeeEnrollments(employeeId, transaction))[0].progressPercent).toBe(0);
+
+      await transaction.update(schema.submission).set({ total: 9 }).where(eq(schema.submission.id, submission.id));
+      const passed = await getLearningAnalyticsSnapshot(organizationId, ORGANIZATION_SCOPE, transaction);
+      expect(passed.courses[0].progress).toBe(100);
+      expect((await listEmployeeEnrollments(employeeId, transaction))[0].progressPercent).toBe(100);
+    });
+  });
+
+  it('lists the latest completion of each assignment for the overview', async () => {
+    await withRollback(async (transaction) => {
+      const { organizationId, profileId, employeeId } = await createPopulation(transaction);
+      const { courseId, memberId } = await createCourse(transaction, organizationId, employeeId);
+      expect(await getRecentLearningCompletions(organizationId, ORGANIZATION_SCOPE, 5, transaction)).toEqual({
+        total: 0,
+        recent: []
+      });
+
+      await recordCourseCompletion(
+        {
+          courseId,
+          groupMemberId: memberId,
+          profileId,
+          completedAt: new Date().toISOString(),
+          recertificationMonths: null
+        },
+        transaction
+      );
+      const completions = await getRecentLearningCompletions(organizationId, ORGANIZATION_SCOPE, 5, transaction);
+      expect(completions.total).toBe(1);
+      expect(completions.recent[0]).toMatchObject({ courseId, profileId, fullname: 'Learner' });
     });
   });
 

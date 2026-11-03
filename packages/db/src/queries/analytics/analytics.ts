@@ -3,6 +3,7 @@ import * as schema from '@db/schema';
 import { and, asc, desc, eq, inArray, isNull, lt, or, sql } from 'drizzle-orm';
 
 import { db } from '@db/drizzle';
+import { submissionMeetsCompletionPolicySql } from '@db/queries/course/progression';
 
 function toIsoTimestamp(value: string | Date | null | undefined): string | null {
   if (!value) {
@@ -401,7 +402,8 @@ export async function getProfileCourseProgress(
       .where(
         and(
           or(eq(schema.exercise.courseId, courseId), eq(schema.lesson.courseId, courseId)),
-          eq(schema.submission.submittedBy, groupMember[0].id)
+          eq(schema.submission.submittedBy, groupMember[0].id),
+          submissionMeetsCompletionPolicySql('exercise', 'submission')
         )
       );
 
