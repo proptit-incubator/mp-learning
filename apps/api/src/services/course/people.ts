@@ -7,7 +7,6 @@ import {
   getCourseMember,
   hasCourseLearnerHistory,
   getPaginatedCourseMembers,
-  getCourseTeachers,
   updateCourseMember
 } from '@cio/db/queries/course/people';
 import { resetStudentCourseProgress } from '@cio/db/queries/course/reset-progress';
@@ -147,6 +146,13 @@ export async function updateMember(courseId: string, memberId: string, data: Par
     const existingMember = await getCourseMember(courseId, memberId);
     if (!existingMember) {
       throw new AppError('Course member not found', ErrorCodes.NOT_FOUND, 404);
+    }
+    if (data.roleId !== undefined && data.roleId !== existingMember.roleId && data.roleId !== ROLE.STUDENT) {
+      throw new AppError(
+        'Courses have no instructors: administrators and L&D already manage every course',
+        ErrorCodes.VALIDATION_ERROR,
+        400
+      );
     }
 
     const updated = await updateCourseMember(courseId, memberId, data);

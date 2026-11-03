@@ -41,7 +41,7 @@ export async function notifyCourseExerciseService(courseId: string, exerciseId: 
 
   const quizUrl = `${baseUrl}/courses/${courseId}/exercises/${exerciseId}`;
 
-  const orgName = orgData.orgName || 'ClassroomIO';
+  const orgName = orgData.orgName || 'MP Learning';
 
   const jobId = await enqueueNotifyCourseExercise({
     courseId,
@@ -50,7 +50,7 @@ export async function notifyCourseExerciseService(courseId: string, exerciseId: 
     courseName: course.title,
     orgName,
     organizationId: orgData.orgId,
-    fromName: buildEmailFromName(`${orgName} (via ClassroomIO.com)`),
+    fromName: buildEmailFromName(orgName),
     quizUrl,
     branding: buildEmailBranding({
       name: orgData.orgName,

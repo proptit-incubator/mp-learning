@@ -34,7 +34,7 @@ export type EmailNotificationSection<TKey extends string = EmailNotificationTogg
 export const PERSONAL_EMAIL_NOTIFICATION_SECTIONS: EmailNotificationSection<PersonalEmailNotificationToggleKey>[] = [
   {
     id: 'course',
-    keys: ['newStudent', 'newSubmission', 'gradingResult', 'newsfeed', 'quizAssigned', 'session', 'courseCompletion']
+    keys: ['newSubmission', 'gradingResult', 'newsfeed', 'quizAssigned', 'session', 'courseCompletion']
   },
   {
     id: 'assignment',
@@ -45,7 +45,7 @@ export const PERSONAL_EMAIL_NOTIFICATION_SECTIONS: EmailNotificationSection<Pers
 export const ORG_EMAIL_NOTIFICATION_SECTIONS: EmailNotificationSection[] = [
   {
     id: 'course',
-    keys: ['newStudent', 'newSubmission', 'gradingResult', 'newsfeed', 'quizAssigned', 'session', 'courseCompletion']
+    keys: ['newSubmission', 'gradingResult', 'newsfeed', 'quizAssigned', 'session', 'courseCompletion']
   },
   {
     id: 'assignment',

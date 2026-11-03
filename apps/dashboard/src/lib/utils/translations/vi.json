@@ -67,7 +67,7 @@
       "groundingScope": "Phạm vi kiến thức",
       "requireCitations": "Bắt buộc trích dẫn tài liệu khóa học",
       "escalationEnabled": "Cho phép chuyển cho người hỗ trợ",
-      "escalationEmail": "Email liên hệ giảng viên",
+      "escalationEmail": "Email liên hệ bộ phận đào tạo",
       "inheritFromOrg": "Dùng mặc định của không gian làm việc"
     },
     "persona": {
@@ -100,7 +100,7 @@
     "takeABreak": {
       "title": "Trợ giảng AI đang tạm nghỉ",
       "learnerCap": "Bạn đã dùng hết số tin nhắn với trợ giảng trong tháng này. Hạn mức sẽ được đặt lại vào ngày 1 tháng sau.",
-      "poolExhausted": "Không gian làm việc đã dùng hết hạn mức trợ giảng AI của tháng này. Vui lòng quay lại sau hoặc liên hệ giảng viên.",
+      "poolExhausted": "Tổ chức đã dùng hết hạn mức trợ giảng AI của tháng này. Vui lòng quay lại sau hoặc liên hệ bộ phận đào tạo.",
       "disabled": "Trợ giảng AI chưa được bật cho không gian làm việc này."
     }
   },
@@ -290,8 +290,7 @@
       "token_auth_tab": "Xác thực token",
       "customize_lms_tab": "Không gian học tập",
       "emails_tab": "Email",
-      "domains_tab": "Tên miền",
-      "teams_tab": "Quản trị viên & giảng viên"
+      "domains_tab": "Tên miền"
     },
     "emails": {
       "page_title": "Mẫu email",
@@ -310,10 +309,10 @@
         "expires_at": "Ngày hết hạn",
         "course_name": "Tên khóa học",
         "student_name": "Tên học viên",
-        "course_message": "Lời nhắn của giảng viên",
+        "course_message": "Lời nhắn của bộ phận đào tạo",
         "course_names": "Các khóa học",
-        "teacher_name": "Tên giảng viên",
-        "teacher_email": "Email giảng viên",
+        "teacher_name": "Tên người gửi",
+        "teacher_email": "Email người gửi",
         "goal_title": "Mục tiêu",
         "due_status": "Tình trạng hạn",
         "completed_count": "Số mục đã hoàn thành",
@@ -439,11 +438,11 @@
       "toggles": {
         "newStudent": {
           "label": "Có học viên mới tham gia",
-          "description": "Gửi email cho giảng viên khi học viên ghi danh vào khóa học."
+          "description": "Gửi email cho L&D khi có nhân viên được giao hoặc tự ghi danh vào khóa học."
         },
         "newSubmission": {
           "label": "Bài nộp mới cần chấm",
-          "description": "Gửi email cho giảng viên khi học viên nộp bài cần chấm điểm."
+          "description": "Gửi email cho L&D khi học viên nộp bài cần chấm điểm."
         },
         "gradingResult": {
           "label": "Kết quả chấm điểm",
@@ -1170,7 +1169,7 @@
         "drag": "kéo thẻ để sắp xếp",
         "no_lesson": "Chưa có bài học nào",
         "content_locked_title": "Nội dung này đang bị khóa",
-        "content_locked_description": "Giảng viên chưa mở khóa nội dung này. Hãy hoàn thành nội dung trước đó hoặc quay lại sau.",
+        "content_locked_description": "Nội dung này chưa được mở. Hãy hoàn thành nội dung trước đó hoặc quay lại sau.",
         "content_progression_locked_title": "Hãy hoàn thành nội dung trước",
         "content_progression_locked_description_lesson": "Bài học này sẽ mở khóa sau khi bạn hoàn thành mục bắt buộc trước đó trong khóa học.",
         "content_progression_locked_description_exercise": "Bài tập này sẽ mở khóa sau khi bạn hoàn thành mục bắt buộc trước đó trong khóa học.",
@@ -1476,7 +1475,7 @@
                 "vimeo_privacy_error_other_hint": "Các cài đặt quyền riêng tư khác của Vimeo",
                 "vimeo_retry_label": "Thử phát lại",
                 "vimeo_learner_error_title": "Video không khả dụng",
-                "vimeo_learner_error_description": "Video này tạm thời không khả dụng. Vui lòng báo cho giảng viên.",
+                "vimeo_learner_error_description": "Video này tạm thời không khả dụng. Vui lòng báo cho bộ phận đào tạo.",
                 "invalid_link": "Liên kết không hợp lệ",
                 "search_library": "Tìm trong thư viện tệp",
                 "search_library_action": "Tìm kiếm",
@@ -1642,7 +1641,7 @@
             "settings_pass_threshold": "Ngưỡng đạt (%)",
             "settings_completion_passed_helper": "Học viên phải đạt điểm tối thiểu thì bài tập mới được tính là hoàn thành.",
             "settings_manual_grading_warning": "Bài nộp cần chấm thủ công phải được chấm xong mới có thể tính là đạt.",
-            "settings_single_attempt_warning": "Nếu chỉ cho làm một lần, học viên không đạt cần giảng viên xử lý mới có thể học tiếp.",
+            "settings_single_attempt_warning": "Nếu chỉ cho làm một lần, học viên không đạt cần L&D xử lý mới có thể học tiếp.",
             "settings_existing_submissions_warning": "Thay đổi tiêu chí đạt có thể ảnh hưởng đến trạng thái hoàn thành và tiến độ hiện có.",
             "settings_save": "Lưu cài đặt",
             "save": "Lưu",
@@ -1775,7 +1774,7 @@
               "passed_completion_result_description": "Bạn đạt {scorePercent}%. Bài tập này yêu cầu {requiredPercent}% để được tính là hoàn thành.",
               "not_passed_completion_result_title": "Chưa đạt",
               "not_passed_completion_result_description": "Bạn đạt {scorePercent}%. Bài tập này yêu cầu {requiredPercent}% để được tính là hoàn thành.",
-              "instructor_feedback": "Nhận xét của giảng viên",
+              "instructor_feedback": "Nhận xét của người chấm",
               "show_more": "Xem thêm",
               "show_less": "Thu gọn",
               "back": "Quay lại",
@@ -2269,9 +2268,6 @@
         "delete_profile": "Xóa hồ sơ",
         "invite_modal": {
           "title": "Mời thành viên",
-          "invite": "Mời giảng viên",
-          "select": "Chọn giảng viên trong tổ chức...",
-          "to_add": "Để thêm giảng viên vào tổ chức,",
           "go_to": "hãy vào cài đặt tổ chức",
           "invite_students": "Thêm học viên",
           "student_limit_reached": "Tổ chức đã đạt giới hạn số học viên. Liên hệ quản trị viên để mời thêm.",
@@ -2385,7 +2381,7 @@
         },
         "roles": {
           "admin": "Quản trị viên",
-          "tutor": "Giảng viên",
+          "tutor": "L&D",
           "student": "Học viên",
           "filter": "Lọc"
         },
@@ -2448,8 +2444,8 @@
         "unlocked_certificate": "Chúc mừng bạn! 🎉 Chứng chỉ đã sẵn sàng",
         "unlocked_certificate_subtitle": "Bạn đã hoàn thành khóa học này với nhiều nỗ lực. Hãy tải chứng chỉ và chia sẻ với đồng nghiệp như minh chứng cho kỹ năng mới của bạn",
         "locked_certificate": "Chưa có chứng chỉ",
-        "instructor_unlock": "Giảng viên cần mở khóa chứng chỉ cho bạn.",
-        "contact_instructor": "Nếu cần chứng chỉ, vui lòng liên hệ giảng viên của bạn.",
+        "instructor_unlock": "Bộ phận đào tạo cần mở khóa chứng chỉ cho bạn.",
+        "contact_instructor": "Nếu cần chứng chỉ, vui lòng liên hệ bộ phận đào tạo.",
         "download_certificate": "Tải xuống chứng chỉ",
         "download_image": "Tải xuống dạng hình ảnh",
         "complete_to_download_title": "Bạn chưa hoàn thành khóa học 😔",
@@ -2839,7 +2835,6 @@
       "button": "Về trang chủ"
     },
     "employee_enrollment": {
-      "instructors": "Thêm giảng viên",
       "search": "Tìm theo mã nhân viên, tên hoặc email",
       "empty": "Không tìm thấy nhân viên đang hoạt động phù hợp.",
       "manage_hint": "Tạo và kích hoạt tài khoản mới tại tab Nhân viên.",
@@ -3035,7 +3030,6 @@
       "progress_distribution_card_description": "Số học viên ở từng mức hoàn thành.",
       "grade_distribution_card_description": "Số học viên ở từng khoảng điểm.",
       "students_table_description": "Bảng tổng quan có thể sắp xếp, kèm liên kết đến hồ sơ học viên.",
-      "kpi_team_tutors": "{count, plural, one {# giảng viên phụ trách khóa học} other {# giảng viên phụ trách khóa học}}",
       "kpi_lessons_exercises": "{count, plural, one {# bài tập} other {# bài tập}} gắn với bài học",
       "kpi_progress_grade": "Điểm bài tập trung bình {grade}% của học viên đã ghi danh"
     },
@@ -3072,7 +3066,7 @@
     "coming_soon": "Sắp ra mắt",
     "permissions": {
       "disabled_title": "Chỉ có quyền xem",
-      "disabled_description": "Chỉ quản trị viên tổ chức mới có thể tạo, đổi hoặc thu hồi khóa tự động hóa. Giảng viên có thể xem hướng dẫn thiết lập tại đây."
+      "disabled_description": "Chỉ quản trị viên tổ chức mới có thể tạo, đổi hoặc thu hồi khóa tự động hóa. L&D có thể xem hướng dẫn thiết lập tại đây."
     },
     "tabs": {
       "mcp": "MCP",
@@ -4036,7 +4030,7 @@
       "settings": "Cài đặt",
       "certificate": "Có cấp chứng chỉ",
       "sequential": "Mở bài học lần lượt theo thứ tự",
-      "grading": "Giảng viên chấm bài nộp",
+      "grading": "L&D chấm bài nộp",
       "comments_off": "Đã tắt bình luận bài học",
       "lesson_download": "Học viên có thể tải xuống bài học",
       "self_enrollment": "Học viên có thể tự ghi danh",
@@ -4508,7 +4502,7 @@
     "settings_self_enrollment": "Cho phép nhân viên tự đăng ký",
     "settings_self_enrollment_hint": "Khóa đã xuất bản sẽ xuất hiện trong thư viện khi bật tùy chọn này. Tắt không thu hồi quyền người đã đăng ký.",
     "enrolled_success": "Đăng ký khóa học thành công.",
-    "assigned_only_hint": "Khóa học này do bộ phận đào tạo phân công. Liên hệ HR/L&D hoặc giảng viên để được cấp quyền học."
+    "assigned_only_hint": "Khóa học này do bộ phận đào tạo phân công. Liên hệ HR hoặc L&D để được cấp quyền học."
   },
   "training_assignment": {
     "learners": "Người học",

@@ -685,44 +685,22 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
     ).rejects.toThrow('employees.errors.forbidden');
   });
 
-  it('keeps course team membership to administrators and L&D', async () => {
+  it('adds only learners to a course, since administrators and L&D already run every course', async () => {
     const courses = await import('@api/services/course/employees');
     const fixture = await courseFixture();
-    const tutor = await activateDraft({ roles: ['LND'] });
-    const secondTutor = await activateDraft({ roles: ['LND'] });
-    const humanResources = await activateDraft({ roles: ['HR'] });
+    const lnd = await activateDraft({ roles: ['LND'] });
     const learner = await activateDraft();
-    await courses.enrollExistingCourseEmployees(
-      fixture.courseId,
-      administratorId,
-      [{ profileId: tutor.profileId, roleId: 2 }],
-      false
-    );
-    await courses.enrollExistingCourseEmployees(
-      fixture.courseId,
-      tutor.profileId,
-      [{ profileId: secondTutor.profileId, roleId: 2 }],
-      false
-    );
     await expect(
       courses.enrollExistingCourseEmployees(
         fixture.courseId,
         administratorId,
-        [{ profileId: humanResources.profileId, roleId: 2 }],
+        [{ profileId: lnd.profileId, roleId: 2 }],
         false
       )
-    ).rejects.toThrow('instructor role');
-    await expect(
-      courses.enrollExistingCourseEmployees(
-        fixture.courseId,
-        administratorId,
-        [{ profileId: learner.profileId, roleId: 2 }],
-        false
-      )
-    ).rejects.toThrow('instructor role');
+    ).rejects.toMatchObject({ statusCode: 400 });
     const added = await courses.enrollExistingCourseEmployees(
       fixture.courseId,
-      tutor.profileId,
+      lnd.profileId,
       [{ profileId: learner.profileId, roleId: 3 }],
       false
     );

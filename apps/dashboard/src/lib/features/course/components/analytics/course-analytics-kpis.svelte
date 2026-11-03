@@ -13,7 +13,6 @@
 
   let { data }: Props = $props();
 
-  const tutorsCount = $derived(data.totalTutors ?? 0);
   const exerciseTotal = $derived(data.totalExercises ?? 0);
   const avgGrade = $derived(data.averageGrade ?? 0);
   const lessonRate = $derived(data.lessonCompletionRate ?? 0);
@@ -24,7 +23,6 @@
   <KpiCard
     title={$t('analytics.students')}
     value={(data.totalStudents ?? 0).toLocaleString()}
-    description={$t('analytics.course_metrics.kpi_team_tutors', { count: tutorsCount })}
     icon={UsersIcon}
     accent="primary"
   />

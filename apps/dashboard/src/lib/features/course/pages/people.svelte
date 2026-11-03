@@ -23,7 +23,6 @@
   import TruncatedWithTooltip from '$features/course/components/truncated-with-tooltip.svelte';
   import EnrollmentCell from '$features/course/components/people/enrollment-cell.svelte';
   import { AssignCoursesModal } from '$features/enrollment';
-  import InvitationModal from '$features/course/components/people/invitation-modal.svelte';
   import DeleteConfirmation from '$features/course/components/people/delete-confirmation.svelte';
   import { isStudentLimitReached } from '$lib/utils/store/org';
 
@@ -249,8 +248,6 @@
   }
 </script>
 
-<InvitationModal onMembersChanged={refreshCurrentPage} />
-
 <AssignCoursesModal
   bind:open={() => isAssignOpen, setAssignOpen}
   courseIds={courseApi.course?.id ? [courseApi.course.id] : []}
@@ -265,31 +262,6 @@
 <DeleteConfirmation email={member.email || (member.profile && member.profile.email)} {deletePerson} />
 
 <section class="space-y-5">
-  <div
-    class="ui:border-border flex flex-wrap gap-1 border-b pb-3"
-    role="group"
-    aria-label={$t('course.navItem.people.title')}
-  >
-    <Button
-      size="sm"
-      variant={!query.audience || query.audience === 'learners' ? 'default' : 'outline'}
-      onclick={() => handleFilterChange({ audience: 'learners', roleId: undefined })}
-      >{$t('training_assignment.learners')}</Button
-    >
-    <Button
-      size="sm"
-      variant={query.audience === 'staff' ? 'default' : 'outline'}
-      onclick={() => handleFilterChange({ audience: 'staff', roleId: undefined })}
-      >{$t('training_assignment.staff')}</Button
-    >
-    {#if query.audience === 'staff'}
-      <RoleBasedSecurity allowedRoles={[1]}>
-        <Button size="sm" variant="secondary" class="ml-auto" href={`${page.url.pathname}?add=staff`}
-          >{$t('course.employee_enrollment.instructors')}</Button
-        >
-      </RoleBasedSecurity>
-    {/if}
-  </div>
   <div class="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
     <Search
       placeholder={$t('course.navItem.people.search')}

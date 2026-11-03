@@ -430,3 +430,23 @@ export async function employeeLearningReport(orgId: string, employeeId: string, 
 
   return listEmployeeEnrollments(employeeId, client);
 }
+
+/**
+ * Who hears about training work that needs a person, such as a submission to grade: the active L&D staff, or the
+ * administrators when the organization has no L&D.
+ */
+export async function listTrainingStaffEmails(organizationId: string, client: DbOrTxClient = db): Promise<string[]> {
+  const rows = await client
+    .select({ email: schema.employee.email, roles: schema.employee.roles })
+    .from(schema.employee)
+    .where(
+      and(
+        eq(schema.employee.organizationId, organizationId),
+        eq(schema.employee.status, 'ACTIVE'),
+        sql`${schema.employee.roles} && ARRAY['LND', 'ADMIN']::text[]`
+      )
+    );
+  const learningAndDevelopment = rows.filter((row) => row.roles.includes('LND'));
+
+  return (learningAndDevelopment.length ? learningAndDevelopment : rows).map((row) => row.email);
+}

@@ -11,8 +11,7 @@
 
   const SHARED_HEADER_TITLES: Record<string, string> = {
     '/settings/customize-lms': 'mp_learning.settings.preferences',
-    '/settings/domains': 'settings.tabs.domains_tab',
-    '/settings/teams': 'settings.tabs.teams_tab'
+    '/settings/domains': 'settings.tabs.domains_tab'
   };
 
   const sharedHeaderTitleKey = $derived(

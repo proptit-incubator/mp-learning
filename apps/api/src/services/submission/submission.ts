@@ -44,7 +44,8 @@ import {
   requiresManualGrading
 } from '@cio/question-types';
 import { getCourseById, getCourseWithOrgData } from '@cio/db/queries/course';
-import { getCourseTeachers, getProfileByGroupMemberId } from '@cio/db/queries/course/people';
+import { getProfileByGroupMemberId } from '@cio/db/queries/course/people';
+import { listTrainingStaffEmails } from '@cio/db/queries/organization';
 import { getExerciseById, getExerciseWithRelationsOptimized } from '@cio/db/queries/exercise';
 import { canAccessCourseSubmissions, getGroupMemberIdByCourseAndProfile } from '@cio/db/queries/group';
 
@@ -1203,7 +1204,7 @@ async function sendSubmissionUpdateEmail(submissionId: string, newStatusId: numb
   // Get organization name and URL info
   const orgResult = await getCourseWithOrgData(fullSubmission.courseId || '');
 
-  const orgName = orgResult?.orgName || 'ClassroomIO';
+  const orgName = orgResult?.orgName || 'MP Learning';
 
   const baseUrl = getDashboardBaseUrl({
     siteName: orgResult?.orgSiteName,
@@ -1238,7 +1239,7 @@ async function sendSubmissionUpdateEmail(submissionId: string, newStatusId: numb
           theme: orgResult?.orgTheme
         })
       },
-      from: buildEmailFromName(`${orgName} (via ClassroomIO.com)`),
+      from: buildEmailFromName(orgName),
       idempotencyKey: `submission-update:${submissionId}:${newStatusId}`,
       preference: {
         organizationId: orgResult?.orgId,
@@ -1250,9 +1251,7 @@ async function sendSubmissionUpdateEmail(submissionId: string, newStatusId: numb
   }
 }
 
-/**
- * Sends email notification to teachers when a student submits an exercise
- */
+/** Tells the organization's L&D staff that a submission is waiting to be graded. */
 async function sendExerciseSubmissionUpdateEmail(courseId: string, exerciseId: string, submittedBy: string) {
   // Get course and exercise data
   const course = await getCourseById(courseId);
@@ -1273,17 +1272,13 @@ async function sendExerciseSubmissionUpdateEmail(courseId: string, exerciseId: s
     return;
   }
 
-  // Get tutors (ADMIN or TUTOR role) from the course's group
-  const tutorsResult = await getCourseTeachers({ courseId });
-
-  if (tutorsResult.length === 0) {
-    return;
-  }
-
-  // Get organization name and URL info
   const orgResult = await getCourseWithOrgData(courseId);
+  if (!orgResult?.orgId) return;
 
-  const orgName = orgResult?.orgName || 'ClassroomIO';
+  const staffEmails = await listTrainingStaffEmails(orgResult.orgId);
+  if (staffEmails.length === 0) return;
+
+  const orgName = orgResult?.orgName || 'MP Learning';
 
   const baseUrl = getDashboardBaseUrl({
     siteName: orgResult?.orgSiteName,
@@ -1295,12 +1290,9 @@ async function sendExerciseSubmissionUpdateEmail(courseId: string, exerciseId: s
 
   const studentName = student.fullname || student.username || 'A student';
 
-  const tutorEmails = tutorsResult.map((tutor) => tutor.email).filter((email): email is string => Boolean(email));
-  if (tutorEmails.length === 0) return;
-
   try {
     await enqueueTransactionalEmail('submissionReceived', {
-      to: tutorEmails,
+      to: staffEmails,
       fields: {
         orgName,
         studentName,
@@ -1313,7 +1305,7 @@ async function sendExerciseSubmissionUpdateEmail(courseId: string, exerciseId: s
           theme: orgResult?.orgTheme
         })
       },
-      from: buildEmailFromName(`${orgName} (via ClassroomIO.com)`),
+      from: buildEmailFromName(orgName),
       idempotencyKey: `exercise-submitted:${courseId}:${exerciseId}:${submittedBy}`,
       preference: { organizationId: orgResult?.orgId }
     });

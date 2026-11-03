@@ -422,7 +422,7 @@ async function sendNewsfeedPostEmail(feedId: string, authorId: string) {
       return;
     }
 
-    const orgName = feedData.organization?.name || 'ClassroomIO';
+    const orgName = feedData.organization?.name || 'MP Learning';
     const orgSiteName = feedData.organization?.siteName || 'app';
     const branding = buildEmailBranding({
       name: feedData.organization?.name,
@@ -477,7 +477,7 @@ async function sendNewsfeedCommentEmail(feedId: string, commentContent: string, 
       return;
     }
 
-    const orgName = feedData.organization?.name || 'ClassroomIO';
+    const orgName = feedData.organization?.name || 'MP Learning';
     const orgSiteName = feedData.organization?.siteName || 'app';
     const branding = buildEmailBranding({
       name: feedData.organization?.name,

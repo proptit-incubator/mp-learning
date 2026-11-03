@@ -423,58 +423,6 @@ export async function getCourseGroupId(courseId: string): Promise<string | null>
 }
 
 /**
- * Gets teachers (ADMIN or TUTOR role) for a course
- * @param options.courseId Course ID (optional if groupId provided)
- * @param options.groupId Group ID (optional if courseId provided)
- * @param options.limit Optional limit (default: no limit, returns all)
- * @returns Array of teachers with profile data
- */
-type TeacherProfile = {
-  id: string;
-  email: string | null;
-  fullname: string | null;
-  username: string | null;
-  avatarUrl: string | null;
-};
-
-export async function getCourseTeachers(options: {
-  courseId?: string;
-  groupId?: string;
-  limit?: number;
-}): Promise<Array<TeacherProfile>> {
-  const { courseId, groupId, limit } = options;
-
-  if (!courseId && !groupId) {
-    throw new Error('Either courseId or groupId must be provided');
-  }
-
-  const profileSelect = {
-    id: schema.profile.id,
-    email: schema.profile.email,
-    fullname: schema.profile.fullname,
-    username: schema.profile.username,
-    avatarUrl: schema.profile.avatarUrl
-  };
-
-  const isTeacherRole = or(eq(schema.groupmember.roleId, ROLE.ADMIN), eq(schema.groupmember.roleId, ROLE.TUTOR));
-
-  const baseQuery = db
-    .select(profileSelect)
-    .from(schema.groupmember)
-    .innerJoin(schema.profile, eq(schema.groupmember.profileId, schema.profile.id));
-
-  const query = courseId
-    ? baseQuery
-        .innerJoin(schema.course, eq(schema.course.groupId, schema.groupmember.groupId))
-        .where(and(eq(schema.course.id, courseId), isTeacherRole))
-    : baseQuery.where(and(eq(schema.groupmember.groupId, groupId!), isTeacherRole));
-
-  const result = await (limit ? query.limit(limit) : query);
-
-  return result;
-}
-
-/**
  * Adds a course member (person) to a course
  * @param courseId Course ID
  * @param memberData Member data (profileId, roleId, email)

@@ -39,3 +39,17 @@ describe('changing a member email to one already in the course', () => {
     });
   });
 });
+
+describe('course instructors', () => {
+  it('refuses to turn a learner into a course instructor', async () => {
+    vi.mocked(getCourseMember).mockResolvedValue({ id: 'member-1', roleId: ROLE.STUDENT } as Awaited<
+      ReturnType<typeof getCourseMember>
+    >);
+    vi.mocked(updateCourseMember).mockReset();
+
+    await expect(updateMember('course-1', 'member-1', { roleId: ROLE.TUTOR })).rejects.toMatchObject({
+      statusCode: 400
+    });
+    expect(updateCourseMember).not.toHaveBeenCalled();
+  });
+});

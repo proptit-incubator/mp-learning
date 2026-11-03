@@ -2,7 +2,7 @@ import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
 import { and, eq, inArray } from 'drizzle-orm';
 import type { TGroupmember } from '@cio/db/types';
-import { findCourseEmployees, getCourseEmployeeContext, insertCourseEmployees } from '@cio/db/queries/course/employees';
+import { findCourseEmployees, getCourseEmployeeContext } from '@cio/db/queries/course/employees';
 import { getCourseWithOrgData } from '@cio/db/queries/course';
 import { getEmployeeAccess, lockEmployeeOrganization } from '@cio/db/queries/organization';
 import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
@@ -11,7 +11,6 @@ import { getDashboardBaseUrl } from '@cio/core/config/dashboard-url';
 import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
 import { emitCourseMemberAddedWebhookEvent, buildMemberSource } from '@cio/core/services/webhook/emit';
 import { ROLE } from '@cio/utils/constants';
-import { getEmployeeCapabilities } from '@cio/utils/functions/employee-access';
 import type { TWebhookMemberSource } from '@cio/core/services/webhook/emit';
 import type { TEventSource } from '@cio/core/services/posthog';
 import { captureLearnersEnrolled } from '@api/services/product-events';
@@ -55,8 +54,12 @@ export async function enrollExistingCourseEmployees(
       throw new AppError('Course unavailable', ErrorCodes.FORBIDDEN, 403);
     }
 
-    if (members.some((member) => member.roleId !== ROLE.STUDENT) && !access.canManageCourses) {
-      throw new AppError('Only administrators and L&D can add course team members', ErrorCodes.UNAUTHORIZED, 403);
+    if (members.some((member) => member.roleId !== ROLE.STUDENT)) {
+      throw new AppError(
+        'Courses have no instructors: administrators and L&D already manage every course',
+        ErrorCodes.VALIDATION_ERROR,
+        400
+      );
     }
 
     const profileIds = members.flatMap((member) => (member.profileId ? [member.profileId] : []));
@@ -74,28 +77,7 @@ export async function enrollExistingCourseEmployees(
     }
 
     const employeeByProfile = new Map(employees.map((employee) => [employee.profileId, employee]));
-    if (
-      members.some(
-        (member) =>
-          member.roleId !== ROLE.STUDENT &&
-          !getEmployeeCapabilities(employeeByProfile.get(member.profileId!)!.roles).canManageCourses
-      )
-    ) {
-      throw new AppError('Select an employee with an instructor role', ErrorCodes.VALIDATION_ERROR, 400);
-    }
-
-    const staffValues = members
-      .filter((member) => member.roleId !== ROLE.STUDENT)
-      .map((member) => ({
-        groupId,
-        profileId: member.profileId!,
-        roleId: member.roleId,
-        email: employeeByProfile.get(member.profileId!)!.email
-      }));
-    const addedStaff = staffValues.length ? await insertCourseEmployees(staffValues, transaction) : [];
-    const learnerEmployeeIds = members.flatMap((member) =>
-      member.roleId === ROLE.STUDENT ? [employeeByProfile.get(member.profileId!)!.id] : []
-    );
+    const learnerEmployeeIds = members.map((member) => employeeByProfile.get(member.profileId!)!.id);
     const created = await createEnrollments(
       { courseIds: [courseId], employeeIds: learnerEmployeeIds, kind: 'ASSIGNED', assignedBy: actorProfileId },
       transaction
@@ -113,7 +95,7 @@ export async function enrollExistingCourseEmployees(
     const assignmentIdByProfile = new Map(
       created.map((row) => [employees.find((employee) => employee.id === row.employeeId)?.profileId ?? '', row.id])
     );
-    return { addedMembers: [...addedStaff, ...learners], assignmentIdByProfile };
+    return { addedMembers: learners, assignmentIdByProfile };
   });
 
   captureLearnersEnrolled(result.addedMembers, 'admin', eventSource);

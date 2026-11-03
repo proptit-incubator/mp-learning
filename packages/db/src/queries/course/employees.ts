@@ -60,10 +60,3 @@ export async function findCourseEmployees(
     .orderBy(asc(schema.employee.employeeCode))
     .limit(options.profileIds ? options.profileIds.length : 100);
 }
-
-export async function insertCourseEmployees(
-  members: (typeof schema.groupmember.$inferInsert)[],
-  client: DbOrTxClient = db
-) {
-  return client.insert(schema.groupmember).values(members).onConflictDoNothing().returning();
-}

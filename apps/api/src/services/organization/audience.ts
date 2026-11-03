@@ -211,7 +211,7 @@ async function enrollAudienceStudentProfilesInCourses(
               customMessage: courseGroup?.welcomeEmailMessage ?? undefined,
               branding: buildEmailBranding(organization)
             },
-            from: buildEmailFromName(`${organization.name} (via ClassroomIO.com)`),
+            from: buildEmailFromName(organization.name),
             idempotencyKey: `audience-course-welcome:${courseGroup?.groupId ?? p.courseId}:${p.profileId}`,
             ics: icsByCourseId.get(p.courseId),
             preference: { organizationId: orgId, recipientProfileId: p.profileId }
@@ -316,7 +316,7 @@ async function createStudentOrgInvitesAndSendEmails(input: {
             courseNames: accessNamesLabel,
             branding: buildEmailBranding(organization)
           },
-          from: buildEmailFromName(`${organization.name} (via ClassroomIO.com)`),
+          from: buildEmailFromName(organization.name),
           organizationId: orgId,
           idempotencyKey: `student-org-invite:${invite.id}`
         });
@@ -681,7 +681,7 @@ export async function resendAudienceInvite(orgId: string, data: TAudienceInviteB
         courseNames: accessNamesLabel,
         branding: buildEmailBranding(organization)
       },
-      from: buildEmailFromName(`${organization.name} (via ClassroomIO.com)`),
+      from: buildEmailFromName(organization.name),
       organizationId: orgId,
       idempotencyKey: `student-org-invite:${invite.id}`
     });

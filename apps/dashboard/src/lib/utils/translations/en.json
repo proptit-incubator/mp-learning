@@ -67,7 +67,7 @@
       "groundingScope": "Grounding scope",
       "requireCitations": "Require citations to course material",
       "escalationEnabled": "Offer human escalation",
-      "escalationEmail": "Instructor contact email",
+      "escalationEmail": "Training team contact email",
       "inheritFromOrg": "Use workspace defaults"
     },
     "persona": {
@@ -100,7 +100,7 @@
     "takeABreak": {
       "title": "Your AI tutor is taking a break",
       "learnerCap": "You've hit this month's tutor message limit. Your messages reset on the 1st of next month.",
-      "poolExhausted": "Your workspace has run out of AI tutor capacity for this month. Please check back later or contact your instructor.",
+      "poolExhausted": "Your organization has run out of AI tutor capacity for this month. Please check back later or contact the training team.",
       "disabled": "AI tutor isn't enabled for this workspace."
     }
   },
@@ -290,8 +290,7 @@
       "token_auth_tab": "Token Auth",
       "customize_lms_tab": "Learning space",
       "emails_tab": "Emails",
-      "domains_tab": "Domains",
-      "teams_tab": "Admins & instructors"
+      "domains_tab": "Domains"
     },
     "emails": {
       "page_title": "Email templates",
@@ -310,10 +309,10 @@
         "expires_at": "Expiry date",
         "course_name": "Course name",
         "student_name": "Student name",
-        "course_message": "Instructor message",
+        "course_message": "Training team message",
         "course_names": "Courses",
-        "teacher_name": "Teacher name",
-        "teacher_email": "Teacher email",
+        "teacher_name": "Sender name",
+        "teacher_email": "Sender email",
         "goal_title": "Goal",
         "due_status": "Due status",
         "completed_count": "Completed count",
@@ -439,11 +438,11 @@
       "toggles": {
         "newStudent": {
           "label": "New student joins",
-          "description": "Email tutors when a student enrolls in a course."
+          "description": "Email L&D when an employee is assigned or enrolls in a course."
         },
         "newSubmission": {
           "label": "New submissions to grade",
-          "description": "Email tutors when a student submits work that needs grading."
+          "description": "Email L&D when a learner submits work that needs grading."
         },
         "gradingResult": {
           "label": "Grading results",
@@ -1170,7 +1169,7 @@
         "drag": "drag a card to reorder",
         "no_lesson": "No lessons yet",
         "content_locked_title": "This content is locked",
-        "content_locked_description": "Your instructor has not unlocked this content yet. Complete previous content or check back later.",
+        "content_locked_description": "This content is not unlocked yet. Complete previous content or check back later.",
         "content_progression_locked_title": "Complete previous content first",
         "content_progression_locked_description_lesson": "This lesson unlocks after you finish the previous required item in the course.",
         "content_progression_locked_description_exercise": "This exercise unlocks after you finish the previous required item in the course.",
@@ -1476,7 +1475,7 @@
                 "vimeo_privacy_error_other_hint": "Other Vimeo privacy settings",
                 "vimeo_retry_label": "Retry playback",
                 "vimeo_learner_error_title": "Video unavailable",
-                "vimeo_learner_error_description": "This video is temporarily unavailable. Please let your instructor know.",
+                "vimeo_learner_error_description": "This video is temporarily unavailable. Please let the training team know.",
                 "invalid_link": "Invalid link(s)",
                 "search_library": "Search library",
                 "search_library_action": "Search",
@@ -1642,7 +1641,7 @@
             "settings_pass_threshold": "Pass threshold (%)",
             "settings_completion_passed_helper": "Students must reach the passing score before this exercise counts as complete.",
             "settings_manual_grading_warning": "Manually graded submissions must be graded before they can count as passed.",
-            "settings_single_attempt_warning": "With one attempt, failed students need instructor action before they can continue.",
+            "settings_single_attempt_warning": "With one attempt, failed learners need L&D action before they can continue.",
             "settings_existing_submissions_warning": "Changing pass criteria can affect existing completion and progression.",
             "settings_save": "Save settings",
             "save": "Save",
@@ -1775,7 +1774,7 @@
               "passed_completion_result_description": "You scored {scorePercent}%. This exercise required {requiredPercent}% to count as complete.",
               "not_passed_completion_result_title": "Not passed yet",
               "not_passed_completion_result_description": "You scored {scorePercent}%. This exercise requires {requiredPercent}% to count as complete.",
-              "instructor_feedback": "Instructor feedback",
+              "instructor_feedback": "Grader feedback",
               "show_more": "Show more",
               "show_less": "Show less",
               "back": "Back",
@@ -2269,9 +2268,6 @@
         "delete_profile": "Delete profile",
         "invite_modal": {
           "title": "Invite people",
-          "invite": "Invite Tutors",
-          "select": "Select tutors in organization...",
-          "to_add": "To add tutor to your organization,",
           "go_to": "go to organization settings",
           "invite_students": "Add Students",
           "student_limit_reached": "You've reached your plan's student limit. Upgrade to invite more students.",
@@ -2385,7 +2381,7 @@
         },
         "roles": {
           "admin": "Admin",
-          "tutor": "Tutor",
+          "tutor": "L&D",
           "student": "Student",
           "filter": "Filter"
         },
@@ -2448,8 +2444,8 @@
         "unlocked_certificate": "Congrats! 🎉 your certificate is ready",
         "unlocked_certificate_subtitle": "You have completed this course, and your dedication is evident. Download certificate and share with your network as a prove of your newly acquired skill",
         "locked_certificate": "Certificates not available",
-        "instructor_unlock": "Your instructor needs to unlock your certificate.",
-        "contact_instructor": "If you need your certificate, please contact your instructor.",
+        "instructor_unlock": "The training team needs to unlock your certificate.",
+        "contact_instructor": "If you need your certificate, please contact the training team.",
         "download_certificate": "Download Certificate",
         "download_image": "Download as image",
         "complete_to_download_title": "Course not complete 😔",
@@ -2839,7 +2835,6 @@
       "button": "Go home"
     },
     "employee_enrollment": {
-      "instructors": "Add instructors",
       "search": "Search by employee code, name or email",
       "empty": "No matching active employees.",
       "manage_hint": "Create and activate new accounts in the Employees tab.",
@@ -3035,7 +3030,6 @@
       "progress_distribution_card_description": "How many students fall into each completion band.",
       "grade_distribution_card_description": "How many students fall into each grade band.",
       "students_table_description": "Sortable overview with links to student profiles.",
-      "kpi_team_tutors": "{count, plural, one {# tutor on the course team} other {# tutors on the course team}}",
       "kpi_lessons_exercises": "{count, plural, one {# exercise} other {# exercises}} mapped to lessons",
       "kpi_progress_grade": "{grade}% average exercise grade across enrolled students"
     },
@@ -3072,7 +3066,7 @@
     "coming_soon": "Coming soon",
     "permissions": {
       "disabled_title": "Read-only access",
-      "disabled_description": "Only organization admins can create, rotate, or revoke automation keys. Teachers can review the setup instructions here."
+      "disabled_description": "Only organization admins can create, rotate, or revoke automation keys. L&D can review the setup instructions here."
     },
     "tabs": {
       "mcp": "MCP",
@@ -4036,7 +4030,7 @@
       "settings": "Settings",
       "certificate": "Certificate enabled",
       "sequential": "Lessons unlock in order",
-      "grading": "A tutor grades submissions",
+      "grading": "L&D grades submissions",
       "comments_off": "Lesson comments are off",
       "lesson_download": "Learners can download lessons",
       "self_enrollment": "Learners can join themselves",
@@ -4508,7 +4502,7 @@
     "settings_self_enrollment": "Allow employee self-enrollment",
     "settings_self_enrollment_hint": "Published courses with this option enabled appear in the training library. Disabling it preserves existing enrollments.",
     "enrolled_success": "You have enrolled successfully.",
-    "assigned_only_hint": "This course is assigned by the training team. Contact HR/L&D or the instructor for access."
+    "assigned_only_hint": "This course is assigned by the training team. Contact HR or L&D for access."
   },
   "training_assignment": {
     "learners": "Learners",

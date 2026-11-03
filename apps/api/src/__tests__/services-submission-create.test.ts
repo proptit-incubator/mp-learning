@@ -26,9 +26,9 @@ vi.mock('@cio/db/queries/exercise', () => ({
 }));
 vi.mock('@cio/db/queries/course', () => ({ getCourseById: vi.fn(), getCourseWithOrgData: vi.fn() }));
 vi.mock('@cio/db/queries/course/people', () => ({
-  getCourseTeachers: vi.fn(),
   getProfileByGroupMemberId: vi.fn()
 }));
+vi.mock('@cio/db/queries/organization', () => ({ listTrainingStaffEmails: vi.fn() }));
 vi.mock('@cio/db/queries/group', () => ({
   canAccessCourseSubmissions: vi.fn(),
   getGroupMemberIdByCourseAndProfile: vi.fn()
@@ -52,8 +52,11 @@ import {
   insertQuestionAnswersBatch,
   lockSubmissionAttempt
 } from '@cio/db/queries/submission';
-import { getExerciseWithRelationsOptimized } from '@cio/db/queries/exercise';
-import { getCourseById } from '@cio/db/queries/course';
+import { getExerciseById, getExerciseWithRelationsOptimized } from '@cio/db/queries/exercise';
+import { getCourseById, getCourseWithOrgData } from '@cio/db/queries/course';
+import { getProfileByGroupMemberId } from '@cio/db/queries/course/people';
+import { listTrainingStaffEmails } from '@cio/db/queries/organization';
+import { enqueueTransactionalEmail } from '@api/services/jobs';
 import { createSubmissionService } from '@api/services/submission/submission';
 
 const COURSE_ID = 'course-1';
@@ -210,5 +213,24 @@ describe('createSubmissionService answer checks', () => {
       ])
     ).resolves.toMatchObject({ id: 'submission-1' });
     expect(insertQuestionAnswersBatch).toHaveBeenCalledWith(expect.arrayContaining([expect.anything()]), TX);
+  });
+});
+
+describe('createSubmissionService notifications', () => {
+  it("tells the organization's L&D staff that a submission is waiting", async () => {
+    vi.mocked(getExerciseById).mockResolvedValue({ id: EXERCISE_ID, title: 'Bài tập 1' } as never);
+    vi.mocked(getProfileByGroupMemberId).mockResolvedValue({ fullname: 'Nguyễn Văn A' } as never);
+    vi.mocked(getCourseWithOrgData).mockResolvedValue({ orgId: 'org-1', orgName: 'MP Transformation' } as never);
+    vi.mocked(listTrainingStaffEmails).mockResolvedValue(['lnd@mp.test']);
+
+    await submitAnswers([{ questionId: 7, optionId: 70 }]);
+
+    await vi.waitFor(() =>
+      expect(enqueueTransactionalEmail).toHaveBeenCalledWith(
+        'submissionReceived',
+        expect.objectContaining({ to: ['lnd@mp.test'] })
+      )
+    );
+    expect(listTrainingStaffEmails).toHaveBeenCalledWith('org-1');
   });
 });
