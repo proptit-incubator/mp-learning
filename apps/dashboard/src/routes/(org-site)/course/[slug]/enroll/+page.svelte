@@ -9,7 +9,6 @@
   import { t } from '$lib/utils/functions/translations';
   import { profile } from '$lib/utils/store/user';
   import { snackbar } from '$features/ui/snackbar/store';
-  import { capturePosthogEvent } from '$lib/utils/services/posthog';
   import { resolve } from '$app/paths';
   import { authClient } from '$lib/utils/services/auth/client';
   import { appInitApi } from '$features/app/init.svelte';
@@ -124,16 +123,6 @@
       }
 
       enrollmentSucceeded = true;
-
-      const studentId = $profile.id || sessionUser?.id || '';
-      const studentEmail = $profile.email || sessionUser?.email || '';
-
-      capturePosthogEvent('student_joined_course', {
-        course_name: data.course?.title,
-        student_id: studentId,
-        student_email: studentEmail,
-        already_joined: result.data.alreadyJoined
-      });
 
       if (!isEmailVerified) {
         enrolledPendingVerification = true;

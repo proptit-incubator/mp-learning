@@ -7,10 +7,7 @@ const saasDefaults = {
     'https://assets.cdn.clsrio.com',
     'https://embed.classroomio.com',
     'https://cdnjs.cloudflare.com',
-    'https://cdn.userjot.com',
-    'https://*.posthog.com',
     'https://*.senja.io',
-    'https://umami.hz.oncws.com',
     'https://www.youtube.com',
     'https://youtube.com',
     'https://google.com',
@@ -33,9 +30,6 @@ const saasDefaults = {
     'wss://*.classroomio.com',
     'https://assets.cdn.clsrio.com',
     'https://cdn.plyr.io',
-    'https://widget.userjot.com',
-    'https://*.posthog.com',
-    'https://umami.hz.oncws.com',
     'https://*.r2.cloudflarestorage.com',
     'https://*.senja.io',
     'https://*.ytimg.com',
@@ -83,8 +77,7 @@ const saasDefaults = {
     'https://www.slideshare.net',
     'https://slideshare.net',
     'https://www.beautiful.ai',
-    'https://beautiful.ai',
-    'https://widget.userjot.com'
+    'https://beautiful.ai'
   ],
   fontSrc: ['https://fonts.gstatic.com', 'https://cdn.plyr.io'],
   mediaSrc: ['https:']

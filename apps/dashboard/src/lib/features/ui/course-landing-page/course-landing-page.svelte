@@ -15,8 +15,6 @@
   import PaymentModal from './components/payment-modal.svelte';
   import { buildCourseLandingPageProps } from './utils';
   import { handleOpenWidget } from './store';
-  import { calcCourseCost, isCourseFree } from '$lib/utils/functions/course';
-  import { capturePosthogEvent } from '$lib/utils/services/posthog';
   import { appInitApi } from '$features/app/init.svelte';
   import {
     getPreviewOrgLandingAuthAction,
@@ -77,21 +75,12 @@
   const enrollmentsOpen = $derived(isSelfEnrollmentAllowed(courseData?.metadata));
   const enrollDisabled = $derived(editMode || !enrollmentsOpen);
 
-  const calculatedCost = $derived(calcCourseCost(courseData));
-  const isFree = $derived(isCourseFree(calculatedCost));
-
   function handlePaidEnrollClick(event: MouseEvent) {
     event.preventDefault();
 
     if (editMode || !activeOrg.siteName) {
       return;
     }
-
-    capturePosthogEvent('join_course', {
-      course_id: courseData.id,
-      course_title: courseData.title,
-      course_free: isFree
-    });
 
     openPaymentModal = true;
   }

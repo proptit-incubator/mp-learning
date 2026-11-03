@@ -61,7 +61,6 @@ const configuration = [
   'OBJECT_STORAGE_BUCKET_MEDIA=media',
   'OBJECT_STORAGE_BUCKET_DOCUMENTS=documents',
   'OBJECT_STORAGE_BUCKET_VIDEOS=videos',
-  'CIO_TELEMETRY_DISABLED=true',
   'SMTP_HOST=',
   'SMTP_PORT=587',
   'SMTP_USER=',

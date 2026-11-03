@@ -5,7 +5,6 @@
   import { authValidation, getConfirmPasswordError, getDisableSubmit } from '$lib/utils/functions/validator';
   import { PASSWORD_MIN_LENGTH } from '@cio/utils/validation/auth/password';
   import { page } from '$app/state';
-  import { capturePosthogEvent } from '$lib/utils/services/posthog';
   import { globalStore } from '$lib/utils/store/app';
   import { currentOrg, isFreePlan } from '$lib/utils/store/org';
   import { authClient } from '$lib/utils/services/auth/client';
@@ -157,19 +156,6 @@
               if (!welcomeEmailPending) {
                 throw new Error('Unable to prepare welcome email');
               }
-            }
-            capturePosthogEvent('user_signed_up', {
-              distinct_id: ctx.data.user.id || '',
-              email: ctx.data.user.email,
-              username: name
-            });
-
-            if ($globalStore.isOrgSite) {
-              capturePosthogEvent('student_signed_up', {
-                distinct_id: ctx.data.user.id || '',
-                email: ctx.data.user.email,
-                username: name
-              });
             }
           }
         }

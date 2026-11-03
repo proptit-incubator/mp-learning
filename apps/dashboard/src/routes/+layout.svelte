@@ -6,7 +6,6 @@
   import { appInitApi } from '$features/app/init.svelte';
   import PendingInviteModal from '$features/invite/components/pending-invite-modal.svelte';
   import { resolveAppOrgParams } from '$features/app/resolve-app-org-params';
-  import { setupCloudAnalytics } from '$lib/utils/functions/appSetup';
   import { globalStore } from '$lib/utils/store/app';
   import { currentOrg, mergeAccountOrgFromServer } from '$lib/utils/store/org';
   import { get } from 'svelte/store';
@@ -31,12 +30,6 @@
   const metaTags = $derived(merge(data.baseMetaTags, page.data.pageMetaTags));
 
   onMount(() => {
-    const sessionUser = data?.locals?.user;
-    setupCloudAnalytics(
-      sessionUser ? { id: sessionUser.id, email: sessionUser.email, name: sessionUser.name } : undefined,
-      data.isOrgSite
-    );
-
     if (data?.locals?.user) {
       user.set({
         ...$user,

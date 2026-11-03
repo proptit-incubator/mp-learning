@@ -1,14 +1,6 @@
 import { getCourseOrganizationId } from '@cio/db/queries/tag';
 import { PLAN } from '@cio/utils/plans';
 
-import { env } from '../config/env';
-
-export const POSTHOG_PROJECT_KEY = 'phc_JfdHOZ6v0cVlGELBYx1Tmoen2nxNOrAzvgvrPA6Ksov';
-export const POSTHOG_CAPTURE_URL = 'https://eu.i.posthog.com/capture/';
-export const POSTHOG_TIMEOUT_MS = 10_000;
-const POSTHOG_BATCH_URL = 'https://eu.i.posthog.com/batch/';
-const POSTHOG_BATCH_SIZE = 500;
-
 export type TEventSource =
   | 'dashboard'
   | 'public_api'
@@ -28,54 +20,16 @@ export type TServerEvent = {
   properties?: Record<string, unknown>;
 };
 
-export function isServerEventsEnabled(): boolean {
-  return env.NODE_ENV === 'production' && env.PUBLIC_IS_SELFHOSTED !== 'true' && env.CIO_TELEMETRY_DISABLED !== 'true';
-}
-
-function toPosthogEvent({ event, distinctId, orgId, properties }: TServerEvent) {
-  const timestamp = new Date().toISOString();
-  const deployment = env.PUBLIC_IS_SELFHOSTED === 'true' ? 'self_hosted' : 'cloud';
-
-  return {
-    event,
-    distinct_id: distinctId || `org_${orgId}`,
-    timestamp,
-    properties: {
-      ...properties,
-      deployment,
-      ...(orgId && { $groups: { organization: orgId } }),
-      ...(!distinctId && { $process_person_profile: false })
-    }
-  };
-}
-
 /**
- * Sends events to PostHog and resolves once they are sent. Never throws.
- * An event without a user is attributed to the org and creates no person.
+ * MP Learning sends no product analytics anywhere. The capture helpers below stay so the call sites shared with upstream
+ * keep compiling, and all of them stop here.
  */
+export function isServerEventsEnabled(): boolean {
+  return false;
+}
+
 export async function recordServerEvents(inputs: TServerEvent[]): Promise<void> {
-  if (!isServerEventsEnabled()) return;
-
-  const events = inputs.filter((input) => input.distinctId || input.orgId).map(toPosthogEvent);
-
-  for (let start = 0; start < events.length; start += POSTHOG_BATCH_SIZE) {
-    const batch = events.slice(start, start + POSTHOG_BATCH_SIZE);
-
-    try {
-      const response = await fetch(POSTHOG_BATCH_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(POSTHOG_TIMEOUT_MS),
-        body: JSON.stringify({ api_key: POSTHOG_PROJECT_KEY, batch })
-      });
-
-      if (!response.ok) {
-        console.error('PostHog batch failed:', { event: batch[0].event, status: response.status });
-      }
-    } catch (error) {
-      console.error('PostHog batch error:', { event: batch[0].event, error });
-    }
-  }
+  void inputs;
 }
 
 export function captureServerEvents(inputs: TServerEvent[]): void {

@@ -4,7 +4,6 @@ import { Queue, Worker } from 'bullmq';
 
 import { runAnalyticsRollupDaily } from '@cio/analytics';
 import { purgeAssetStorage } from '@cio/core/services/assets/assets';
-import { sendInstanceTelemetry } from '@cio/core/services/instance-telemetry';
 import { reconcileCourseRolesToOrgRole } from '@cio/core/services/organization/course-roles';
 import { pruneDeadLetterJobsOlderThan, reapStuckHlsEncodes, reapStuckMediaJobs } from '@cio/db/queries';
 import { deleteExpiredWebhookEvents, listWebhookIdsWithDueDeliveries } from '@cio/db/queries/webhook';
@@ -168,12 +167,6 @@ const worker = new Worker(
       return { reminded };
     }
 
-    if (job.name === JOB_NAMES.maintenance.instanceTelemetry) {
-      const result = await sendInstanceTelemetry();
-      log.info('instance-telemetry-done', result);
-      return result;
-    }
-
     if (job.name === JOB_NAMES.maintenance.webhookRetention) {
       const data = ZWebhookRetentionPayload.parse(job.data ?? {});
       const cutoff = new Date(Date.now() - data.olderThanDays * 86_400 * 1_000);
@@ -204,7 +197,6 @@ const worker = new Worker(
  * boot. Without this, stuck `media_job` rows would never get cleaned up.
  */
 const MEDIA_JOB_REAP_INTERVAL_MS = 5 * 60 * 1_000;
-const INSTANCE_TELEMETRY_INTERVAL_MS = 7 * 86_400_000;
 // BullMQ requires a dedicated connection per Worker; give the Queue its own
 // so the scheduler upsert doesn't piggyback on the worker's blocking client.
 const schedulerConnection = createRedisConnection();
@@ -262,22 +254,8 @@ async function registerSchedulers(): Promise<void> {
       everyMs: 86_400_000
     });
 
-    // BullMQ runs a new `every` scheduler immediately, then keeps its slot across restarts,
-    // so the first run is the instance's first_start ping and later runs are weekly.
-    // Retries cover a first run that lands before the api has applied migrations.
-    await maintenanceQueue.upsertJobScheduler(
-      'instance-telemetry-scheduler',
-      { every: INSTANCE_TELEMETRY_INTERVAL_MS },
-      {
-        name: JOB_NAMES.maintenance.instanceTelemetry,
-        data: {},
-        opts: { attempts: 6, backoff: { type: 'exponential', delay: 60_000 } }
-      }
-    );
-    log.info('instance-telemetry-scheduler-registered', {
-      name: JOB_NAMES.maintenance.instanceTelemetry,
-      everyMs: INSTANCE_TELEMETRY_INTERVAL_MS
-    });
+    // Installs from before MP Learning removed telemetry still hold this scheduler in Redis.
+    await maintenanceQueue.removeJobScheduler('instance-telemetry-scheduler');
 
     await maintenanceQueue.upsertJobScheduler(
       'webhook-retention-scheduler',
