@@ -426,6 +426,10 @@
           "heading": "Course",
           "description": "Enrollments, submissions, lessons, announcements, and completions in your courses."
         },
+        "assignment": {
+          "heading": "Course assignments",
+          "description": "Reminders for courses assigned to employees."
+        },
         "enrollment": {
           "heading": "Enrollment",
           "description": "Welcome emails sent when staff add members to courses or cohorts."

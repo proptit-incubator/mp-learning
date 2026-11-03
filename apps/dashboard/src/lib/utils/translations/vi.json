@@ -426,6 +426,10 @@
           "heading": "Khóa học",
           "description": "Ghi danh, bài nộp, bài học, thông báo và hoàn thành trong các khóa học của bạn."
         },
+        "assignment": {
+          "heading": "Lượt giao khóa học",
+          "description": "Nhắc hạn cho những khóa học được giao."
+        },
         "enrollment": {
           "heading": "Ghi danh",
           "description": "Email chào mừng gửi khi nhân viên được giao một khóa học."

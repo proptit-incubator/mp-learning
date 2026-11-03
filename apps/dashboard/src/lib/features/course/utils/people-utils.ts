@@ -34,7 +34,7 @@ export function formatPeopleShortDate(value: string | null | undefined): string 
   const date = dayjs(value);
   if (!date.isValid()) return '—';
 
-  return date.format('MMM D, YYYY');
+  return date.format('DD/MM/YYYY');
 }
 
 export function isStudentMember(member: CourseMember): boolean {
