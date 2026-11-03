@@ -5,8 +5,7 @@
   import LoaderIcon from '@lucide/svelte/icons/loader';
   import CopyIcon from '@lucide/svelte/icons/copy';
   import FileTextIcon from '@lucide/svelte/icons/file-text';
-  import { renderMarkdown } from '$features/ai-assistant/utils/markdown';
-  import { renderMentions } from '$features/ai-assistant/utils/mentions';
+  import { renderChatMessage } from '$features/ai-assistant/utils/markdown';
   import PlanView from '$features/ai-assistant/plan-view.svelte';
   import TemplateFormCard from '$features/ai-assistant/template-form-card.svelte';
   import { isTemplateFormResolved } from '$features/ai-assistant/utils/template-form-resolved';
@@ -163,7 +162,7 @@
               'user' && 'ui:text-primary-foreground!'}"
           >
             <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-            {@html renderMentions(renderMarkdown(part.text as string), courseId)}
+            {@html renderChatMessage(part.text as string, courseId)}
           </div>
         {/if}
       {/each}

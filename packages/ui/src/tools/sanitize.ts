@@ -10,7 +10,7 @@ const browser = typeof window !== 'undefined' && typeof window.document !== 'und
  * Sanitizes HTML content using DOMPurify to prevent XSS attacks
  * This provides robust client-side protection against XSS attacks
  */
-export function sanitizeHtml(html: string): string {
+export function sanitizeHtml(html: string, options: { allowAttributes?: readonly string[] } = {}): string {
   if (typeof html !== 'string') return '';
 
   // Only run DOMPurify in the browser
@@ -18,7 +18,10 @@ export function sanitizeHtml(html: string): string {
     return fallbackSanitize(html);
   }
 
-  let sanitized = String(DOMPurify.sanitize(html, createSanitizeHtmlConfig()));
+  const config = createSanitizeHtmlConfig();
+  let sanitized = String(
+    DOMPurify.sanitize(html, { ...config, ADD_ATTR: [...config.ADD_ATTR, ...(options.allowAttributes ?? [])] })
+  );
 
   // Additional post-processing to remove any SVG data URLs that might have slipped through
   sanitized = stripSvgDataUrls(sanitized);

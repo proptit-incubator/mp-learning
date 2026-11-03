@@ -1,4 +1,5 @@
 import { generateText } from 'ai';
+import { sanitizeHtml } from '@cio/core/utils/sanitize-html';
 import { AIProvider, type AIProviderConfig, createModel } from '@cio/ai-assistant';
 
 const TEXT_GEN_MODELS: Record<AIProvider, string> = {
@@ -60,7 +61,7 @@ export async function generateFieldText(
   );
 
   return {
-    text: text.trim(),
+    text: format === 'html' ? sanitizeHtml(text.trim()) : text.trim(),
     usage: {
       promptTokens: usage.inputTokens ?? 0,
       completionTokens: usage.outputTokens ?? 0,
