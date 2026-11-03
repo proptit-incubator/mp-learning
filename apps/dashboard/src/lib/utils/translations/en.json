@@ -1,17 +1,10 @@
 {
   "landing": {
     "learner_menu": {
-      "trigger_label": "Account menu, signed in as {email}",
-      "trigger_label_anonymous": "Account menu",
-      "my_courses": "My Courses",
-      "my_certificates": "My Certificates",
-      "account_settings": "Account Settings",
       "theme": "Theme",
       "theme_light": "Light",
       "theme_dark": "Dark",
-      "theme_system": "System",
-      "continue_learning": "Continue Learning",
-      "not_enrolled_note": "Not enrolled in this academy yet — learner destinations appear after joining."
+      "theme_system": "System"
     }
   },
   "aiTutor": {
@@ -111,29 +104,6 @@
       "disabled": "AI tutor isn't enabled for this workspace."
     }
   },
-  "account": {
-    "workspaces": {
-      "page_title": "Workspaces",
-      "page_description": "Manage the workspaces under your account. Workspaces share a single subscription and pooled usage.",
-      "create_cta": "Create workspace",
-      "create_cta_used": "{used} of {allowance} used",
-      "create_cta_disabled_limit": "You've reached the {allowance}-workspace limit. Contact us to expand.",
-      "create_cta_disabled_upgrade": "Multi-workspace is an Enterprise feature.",
-      "upgrade_link": "Upgrade",
-      "primary_badge": "Primary",
-      "delete_action": "Delete",
-      "delete_confirm_title": "Delete this workspace?",
-      "delete_confirm_body": "This permanently removes the workspace, its members, and its courses. This cannot be undone.",
-      "name_label": "Workspace name",
-      "site_name_label": "Academy subdomain",
-      "create_modal_title": "Create a new workspace",
-      "create_modal_submit": "Create workspace",
-      "cancel": "Cancel",
-      "read_only_badge": "Read-only",
-      "usage_banner": "{students} students and {tokens} AI tokens used across {workspaces} workspaces this month",
-      "secondary_billing_notice": "Billing is managed by your primary workspace ({primaryName})."
-    }
-  },
   "verify_email_modal": {
     "heading": "Verify your Email",
     "loading": "Loading...",
@@ -186,135 +156,9 @@
     "no": "No",
     "yes": "Yes"
   },
-  "public_course": {
-    "header": {
-      "explore_courses": "Explore courses",
-      "sign_in": "Sign in"
-    },
-    "footer_nav": {
-      "previous": "Previous",
-      "next": "Next"
-    },
-    "exercise": {
-      "submit": "Check my answers",
-      "try_again": "Try again",
-      "practice_again": "Practice again",
-      "attempt_option": "Attempt {attemptNumber} - {correct}/{total}",
-      "attempts_select_aria": "Your attempts",
-      "privacy_hint": "Graded instantly in your browser — nothing is submitted.",
-      "summary_template": "You got [[correct]] / [[total]] correct."
-    },
-    "copy_page": {
-      "copy": "Copy Page",
-      "copied": "Copied",
-      "view_as_markdown": "View as Markdown",
-      "open_in_chatgpt": "Open in ChatGPT",
-      "open_in_claude": "Open in Claude",
-      "more_actions": "More copy page actions",
-      "copy_failed": "Could not copy this lesson as Markdown"
-    },
-    "rail": {
-      "copy_as_markdown": "Copy as Markdown",
-      "open_in_chat": "Open in chat"
-    },
-    "share": {
-      "label": "Share this course",
-      "facebook": "Facebook",
-      "linkedin": "LinkedIn",
-      "x": "X",
-      "instagram": "Instagram",
-      "instagram_copied": "Link copied. Paste it in Instagram."
-    },
-    "outline": {
-      "label": "On this page"
-    }
-  },
   "onboarding": {
-    "step_labels": {
-      "use_cases": "Use case",
-      "learning_methods": "Training today",
-      "company_size": "Company size",
-      "job_role": "Role",
-      "source": "Discovery"
-    },
-    "other": "Other (tell us)",
     "other_required": "Please tell us more",
-    "ai_required": "Please select an AI assistant",
-    "ai_providers": {
-      "chatgpt": "ChatGPT",
-      "claude": "Claude",
-      "gemini": "Gemini",
-      "grok": "Grok",
-      "perplexity": "Perplexity"
-    },
-    "use_cases": {
-      "label": "What do you want to use MP Learning for?",
-      "subtitle": "Choose all that apply. We'll shape your organization around it.",
-      "customer_training": "Train my customers on my product",
-      "customer_certification": "Certify customers or partners",
-      "partner_training": "Train partners or resellers",
-      "team_training": "Train my own team",
-      "sell_courses": "Sell courses to the public"
-    },
-    "learning_methods": {
-      "label": "How do your customers learn your product today?",
-      "subtitle": "Pick the one closest to how it works right now.",
-      "self_serve": "They figure it out on their own",
-      "live_onboarding": "Live onboarding sessions or calls",
-      "help_docs": "Help docs and support",
-      "no_training": "We don't have training yet"
-    },
-    "company_sizes": {
-      "label": "How big is your company?",
-      "subtitle": "Count everyone at the company, not just your team.",
-      "solo": {
-        "label": "Just me",
-        "description": "Solo"
-      },
-      "small": {
-        "label": "2–9",
-        "description": "people"
-      },
-      "medium": {
-        "label": "10–50",
-        "description": "people"
-      },
-      "large": {
-        "label": "51–200",
-        "description": "people"
-      },
-      "enterprise": {
-        "label": "200+",
-        "description": "people"
-      }
-    },
-    "job_roles": {
-      "label": "What's your role?",
-      "subtitle": "This helps us tailor your setup.",
-      "founder": "Founder or CEO",
-      "product_ops": "Product or operations",
-      "cs_education": "Customer success, education, or enablement",
-      "developer": "Developer or engineer"
-    },
-    "sources": {
-      "label": "How did you hear about us?",
-      "subtitle": "Optional, but it helps a small team know what's working.",
-      "blog": "Blog or article",
-      "ai": "AI assistant",
-      "search_engine": "Search engine",
-      "github": "GitHub or open source",
-      "youtube": "YouTube or podcast",
-      "social_media": "Social media",
-      "product_hunt": "Product Hunt or a review site",
-      "friends_family": "Friends, family, or a colleague"
-    },
-    "testimonials": {
-      "eyebrow": "From the teams using it",
-      "headline": "Stop training every customer {highlight}.",
-      "headline_highlight": "by hand",
-      "subtitle": "Set it up once, bulk enrol your customers through the API. Then track their progress with analytics.",
-      "footer": "Open source · Self-host or cloud"
-    }
+    "ai_required": "Please select an AI assistant"
   },
   "welcome_modal": {
     "we_at": "At",
@@ -326,8 +170,6 @@
   },
   "app": {
     "cancel": "Cancel",
-    "save": "Save",
-    "next": "Next",
     "previous": "Previous",
     "search": {
       "placeholder": "Search",
@@ -357,7 +199,6 @@
     }
   },
   "common": {
-    "loading": "Loading…",
     "loading_states": {
       "opening_course": {
         "title": "Loading course…",
@@ -382,13 +223,7 @@
     "restricted_page": {
       "title": "Restricted page",
       "description": "This organization is restricted. In the meantime, you can check out our features.",
-      "home": "Go home",
-      "learning_paths_heading": "Learning paths",
-      "learning_path_label": "Learning path",
-      "tracks_label": "{count, plural, one {# track} other {# tracks}}",
-      "included": "Included",
-      "untitled_lesson": "Untitled lesson",
-      "format": "Format"
+      "home": "Go home"
     },
     "not_found": {
       "title": "Page not found",
@@ -397,7 +232,6 @@
       "home": "Back to home"
     },
     "user_avatar_alt": "User avatar",
-    "course_count": "{count, plural, one {# course} other {# courses}}",
     "save": "Save"
   },
   "login": {
@@ -413,7 +247,6 @@
     "create_account": "Create Account",
     "fields": {
       "email": "Your Email",
-      "full_name": "Full Name",
       "password": "Your Password",
       "confirm_password": "Confirm Password",
       "password_helper_message": "Password must be 8 or more characters"
@@ -575,7 +408,6 @@
       "logout": "Log out"
     },
     "account": {
-      "language": "Language",
       "select_language": "Select a language"
     },
     "notifications": {
@@ -642,69 +474,10 @@
         }
       }
     },
-    "organization": {
-      "organization_profile": {
-        "organization_name": "Organization Name",
-        "theme": {
-          "heading": "Theme",
-          "sub_heading": "Set your brand color",
-          "blue_label": "Blue",
-          "green_label": "Green",
-          "orange_label": "Orange",
-          "purple_label": "Purple",
-          "rose_label": "Rose"
-        },
-        "custom_domain": {
-          "heading": "Custom Domain",
-          "body": "Create a custom URL so your audience can get to your organization easily"
-        },
-        "team": {
-          "heading": "Team"
-        }
-      }
-    },
-    "token_auth": {
-      "heading": "Token Auth",
-      "description": "Let users sign in from your app with a JWT—no password needed. Generate a signing secret and use it in your backend to issue short-lived JWTs.",
-      "status": "Status",
-      "active": "Active",
-      "inactive": "Inactive",
-      "secret_last4": "Secret (last 4):",
-      "created_at": "Created",
-      "generate": "Generate secret",
-      "rotate": "Rotate secret",
-      "delete": "Remove token auth",
-      "delete_confirm": "Are you sure you want to remove token auth? This action cannot be undone.",
-      "activate": "Enable",
-      "deactivate": "Disable",
-      "secret_shown_once": "Save this secret now. It won't be shown again.",
-      "integration_guide": "Integration guide",
-      "integration_description": "Sign a JWT with the secret and redirect users to the token-exchange URL.",
-      "no_config": "No token auth configured. Generate a signing secret to get started.",
-      "actions_menu": "Token auth actions"
-    },
-    "teams": {
-      "permission": {
-        "title": "You don’t have permission to view this page",
-        "description": "Only organization administrators can view and manage the team. Contact an administrator if you need access."
-      },
-      "invite": {
-        "confirm_title": "{count, plural, =1 {Invite this student to the team?} other {Invite these students to the team?}}",
-        "confirm_description": "{count, plural, =1 {This person is already a student in this organization: {emails}. Send them an invitation to become {role}? Their role will change only after they accept.} other {These people are already students in this organization: {emails}. Send them an invitation to become {role}? Their roles will change only after they accept.}}",
-        "existing": "Already on the team: {members}. Use the role control in Team members to change their role."
-      }
-    },
     "auth": {
       "page_subtitle": "Control sign-up, login, SSO, and token-based access for this org.",
       "title": "Authentication",
-      "tabs": {
-        "general": "General",
-        "sso": "SSO",
-        "token_auth": "Token Auth"
-      },
       "login": {
-        "sso_required": "Please sign in with SSO. Password login is disabled.",
-        "sign_in_with_sso": "Sign in with {provider}",
         "email_password_disabled": "Email/password login is disabled. Please use SSO.",
         "email_password_disabled_message": "Email/password login is disabled for this organization.",
         "signup_disabled_error": "Signup is disabled for this organization. Please contact your administrator."
@@ -719,315 +492,6 @@
           "label": "Disable Google Auth",
           "description": "Prevent users from signing in with Google accounts."
         }
-      },
-      "sso": {
-        "connection": {
-          "heading": "SSO Connection",
-          "description": "Manage your SSO connection status",
-          "active": "Active",
-          "inactive": "Inactive",
-          "activate_button": "Activate Connection",
-          "delete_button": "Delete",
-          "delete_confirm": "Are you sure you want to delete this SSO connection?",
-          "callback_url_label": "Callback URL:",
-          "callback_url_description": "Copy this URL to your IdP's callback/redirect URL configuration."
-        },
-        "policies": {
-          "heading": "Access Policies",
-          "description": "Configure how users access your organization",
-          "force_sso": {
-            "label": "Force SSO",
-            "description": "Require all users to sign in via SSO. Email/password login will be disabled."
-          },
-          "auto_join": {
-            "label": "Auto-join",
-            "description": "Allow users with matching email domains to automatically join your organization."
-          },
-          "break_glass": {
-            "label": "Break-glass Access",
-            "description": "Allow admins to bypass SSO with email/password in case of emergency."
-          }
-        },
-        "setup": {
-          "heading": "Setup SSO",
-          "description": "Configure Single Sign-On for your organization. This feature requires an Enterprise plan.",
-          "provider_label": "Provider",
-          "display_name_label": "Display Name",
-          "display_name_placeholder": "e.g., Acme Corp SSO",
-          "issuer_label": "Issuer URL",
-          "issuer_placeholder": "https://accounts.google.com",
-          "issuer_help": "OIDC issuer (no trailing slash). Examples: Google Workspace — https://accounts.google.com; Okta — https://your-org.okta.com; Azure AD — https://login.microsoftonline.com/your-tenant-id/v2.0",
-          "domain_label": "Email Domain",
-          "domain_placeholder": "yourcompany.com",
-          "client_id_label": "Client ID",
-          "client_id_placeholder": "From your IdP",
-          "client_secret_label": "Client Secret",
-          "client_secret_placeholder": "From your IdP",
-          "create_button": "Create Connection",
-          "providers": {
-            "okta": "Okta",
-            "google_workspace": "Google Workspace",
-            "auth0": "Auth0"
-          }
-        },
-        "messages": {
-          "created": "SSO connection created successfully",
-          "activated": "SSO connection activated",
-          "deleted": "SSO connection deleted",
-          "load_failed": "Could not load the SSO settings."
-        }
-      }
-    },
-    "landing_page": {
-      "show_section": "Show Section",
-      "hide_section": "Hide Section",
-      "theme": {
-        "cards": {
-          "minimal": {
-            "title": "Minimal",
-            "description": "Clean, bright, and course-focused"
-          },
-          "bold": {
-            "title": "Bold",
-            "description": "High contrast, editorial, and striking"
-          },
-          "classic": {
-            "title": "Classic",
-            "description": "Traditional layout with balanced hierarchy"
-          },
-          "saas": {
-            "title": "SaaS",
-            "description": "Dotted line frame, soft accents, modern product feel"
-          },
-          "tech": {
-            "title": "Tech",
-            "description": "Bold brand band, monospace nav, engineering academy feel"
-          },
-          "studio": {
-            "title": "Studio",
-            "description": "Hairline borders, gradient hero glow, product-craft polish"
-          },
-          "corporate": {
-            "title": "Corporate",
-            "description": "Sober typography, bordered grids, audit-ready look"
-          },
-          "terminal": {
-            "title": "Terminal",
-            "description": "Dark surface, ghosted wordmark, CLI-inspired catalog"
-          },
-          "editorial": {
-            "title": "Editorial",
-            "description": "Warm cream palette, painterly hero, refined magazine feel"
-          },
-          "vibrant": {
-            "title": "Vibrant",
-            "description": "Bold primary panels, sunset gradient hero, energetic poster look"
-          },
-          "quartz": {
-            "title": "Quartz",
-            "description": "Monochrome hairline grid, ruled course rows, sticky enrolment rail"
-          }
-        }
-      },
-      "current": {
-        "title": "Current theme",
-        "description": "This is the theme your visitors see. Customize the content or pick a different look below.",
-        "field_theme": "Theme",
-        "field_hero": "Hero heading",
-        "field_nav": "Navigation",
-        "field_nav_count_one": "{count} link",
-        "field_nav_count_other": "{count} links",
-        "hero_empty": "—",
-        "customize": "Customize landing page"
-      },
-      "gallery": {
-        "heading": "Popular themes",
-        "description": "Made with core features you can easily customize — no coding needed.",
-        "by_platform": "by MP Learning",
-        "add": "Add",
-        "upgrade": "Upgrade",
-        "apply_theme": "Apply Theme",
-        "preview": "Preview",
-        "card_menu_label": "Theme options"
-      },
-      "preview_tabs": {
-        "label": "Preview page",
-        "home": "Home",
-        "course": "Course"
-      },
-      "editor": {
-        "save": "Save",
-        "page_builder": "Page Builder",
-        "sections": {
-          "hero": "Hero",
-          "navigation": "Navigation",
-          "callout": "Callout",
-          "embed": "Embed",
-          "links": "Links",
-          "links_desc": "Optional block of external links (help center, community, webinars) shown after courses.",
-          "footer": "Footer",
-          "courses": "Courses",
-          "courses_desc": "Drag to set the order of published courses on the landing page."
-        },
-        "hero": {
-          "eyebrow": "Eyebrow",
-          "eyebrow_placeholder": "// engineering academy",
-          "eyebrow_description": "Optional label above the heading (used by templates that support it, e.g. Tech). Leave blank to hide.",
-          "heading": "Heading",
-          "subheading": "Subheading",
-          "primary_label": "Primary Button Label",
-          "primary_href": "Primary Button Link",
-          "secondary_toggle": "Show secondary action",
-          "secondary_label": "Secondary Button Label",
-          "secondary_href": "Secondary Button Link",
-          "image": "Hero Image",
-          "upload": "Upload Image",
-          "clear": "Clear Image",
-          "stats": {
-            "label": "Stats",
-            "description": "Optional stats displayed alongside the hero (used by templates that support it, e.g. Corporate).",
-            "add": "Add stat",
-            "remove": "Remove stat",
-            "label_field": "Label",
-            "value_field": "Value",
-            "label_placeholder": "Active students",
-            "value_placeholder": "1,200"
-          }
-        },
-        "navigation": {
-          "add": "Add Navigation Link",
-          "default_label": "New link",
-          "link_label": "Link label",
-          "link_href": "Link URL",
-          "remove": "Remove navigation link"
-        },
-        "callout": {
-          "toggle": "Show callout section",
-          "heading": "Heading",
-          "heading_default": "Ready to start learning?",
-          "heading_placeholder": "Enter a heading",
-          "description": "Description",
-          "description_placeholder": "Add a short description or leave empty",
-          "action_label": "Button label",
-          "action_label_default": "Get Started",
-          "action_label_placeholder": "Button text",
-          "action_href": "Button link",
-          "action_href_placeholder": "https://..."
-        },
-        "embed": {
-          "toggle": "Show embed section",
-          "title": "Section title",
-          "title_placeholder": "Section title",
-          "description": "Description",
-          "description_placeholder": "Optional description",
-          "code": "Embed code",
-          "code_placeholder": "Paste embed code here",
-          "code_description": "Paste the full embed snippet or iframe code.",
-          "secondary_label": "Secondary Button Label",
-          "secondary_href": "Secondary Button Link"
-        },
-        "links": {
-          "toggle": "Show links section",
-          "heading": "Section heading",
-          "heading_default": "Explore more",
-          "heading_placeholder": "Explore more",
-          "description": "Description",
-          "description_placeholder": "Optional description",
-          "bold_visit_label": "Bold theme — button label",
-          "bold_visit_default": "Visit",
-          "classic_learn_more_label": "Classic theme — link label",
-          "classic_learn_more_default": "Learn more",
-          "card_title": "Card title",
-          "card_title_placeholder": "e.g. Help Center",
-          "card_placeholder_help": "Help Center",
-          "card_placeholder_webinars": "Webinars",
-          "card_placeholder_community": "Community",
-          "card_description": "Card description",
-          "card_description_placeholder": "e.g. Browse guides and FAQs",
-          "card_href": "Link URL",
-          "card_href_placeholder": "https://...",
-          "card_icon": "Icon",
-          "add_card": "Add link card",
-          "remove_card": "Remove card",
-          "max_reached": "Up to 3 cards",
-          "icons": {
-            "help_circle": "Help & support",
-            "life_buoy": "Support",
-            "book_open": "Documentation",
-            "video": "Video / webinars",
-            "users": "Community",
-            "message_circle": "Chat",
-            "newspaper": "News",
-            "rocket": "Get started",
-            "calendar": "Events",
-            "mail": "Email"
-          }
-        },
-        "footer": {
-          "text": "Footer text",
-          "default_label": "New link",
-          "link_label": "Link label",
-          "remove": "Remove footer link",
-          "brand": {
-            "legend": "Brand",
-            "tagline": "Tagline",
-            "tagline_placeholder": "Small line under your brand",
-            "copyright": "Copyright",
-            "copyright_placeholder": "© 2026 Your Organization",
-            "social_label": "Social links",
-            "add_social": "Add social link",
-            "remove_social": "Remove social link",
-            "platforms": {
-              "instagram": "Instagram",
-              "x": "X",
-              "linkedin": "LinkedIn",
-              "facebook": "Facebook",
-              "youtube": "YouTube",
-              "github": "GitHub",
-              "tiktok": "TikTok",
-              "website": "Website"
-            }
-          },
-          "columns": {
-            "legend": "Link columns",
-            "empty_hint": "No columns yet — add one to show a multi-column footer beside your brand.",
-            "add": "Add column",
-            "heading_placeholder": "e.g. Company",
-            "add_link": "Add link",
-            "remove_link": "Remove link",
-            "cta_toggle": "Add CTA link",
-            "cta_label": "CTA label",
-            "cta_default_label": "Explore more"
-          },
-          "bottom": {
-            "legend": "Bottom row",
-            "add_link": "Add bottom link"
-          }
-        },
-        "courses": {
-          "drag_hint": "Drag to reorder the courses shown on your landing page.",
-          "empty": "No courses selected.",
-          "load_failed": "Failed to load courses.",
-          "add_button": "Add",
-          "popover_title": "Select courses",
-          "popover_empty": "No published courses available.",
-          "search_no_results": "No courses match your search.",
-          "search_placeholder": "Search courses..."
-        }
-      },
-      "defaults": {
-        "footer_contact": "Contact",
-        "footer_privacy": "Privacy",
-        "footer_terms": "Terms",
-        "hero_heading": "Learn today, grow tomorrow",
-        "hero_primary_label": "Browse courses",
-        "hero_secondary_label": "Sign in",
-        "hero_subheading": "Internal training for employees."
-      },
-      "theme_preview": {
-        "close": "Close",
-        "description": "Preview the theme before applying it.",
-        "title": "Theme preview"
       }
     },
     "integrations": {
@@ -1040,15 +504,6 @@
       "connect_button": "Connect",
       "success_message": "Integration Successful",
       "disconnect": "Disconnect"
-    },
-    "billing": {
-      "page_subtitle": "Your plan, billing portal, and how you pay for MP Learning.",
-      "sub_title": "Billing details",
-      "manage": "Manage your billing",
-      "active": "You don't have any active billing",
-      "provider": "We use Polar to help manage your billing",
-      "open_billing": "Open billing",
-      "error": "An error occurred while opening billing"
     },
     "ai_credits": {
       "sub_title": "AI credits",
@@ -1290,31 +745,6 @@
       "no_groups": "Create a tag group before creating tags"
     }
   },
-  "public_courses": {
-    "heading": "Courses",
-    "subtitle": "Browse all published courses",
-    "clear_filters": "Clear Filters",
-    "filters": {
-      "title": "Filter",
-      "help": "Filter courses by type, tags, or search by name",
-      "tags_title": "Tags",
-      "pricing_title": "Pricing",
-      "pricing_free": "Free",
-      "pricing_paid": "Paid",
-      "search_placeholder": "Search courses...",
-      "clear_search": "Clear search",
-      "selected": "Selected:",
-      "save_changes": "Save Changes"
-    },
-    "empty": {
-      "title": "No courses found",
-      "description": "Try clearing your filters or check back later."
-    },
-    "catalog_empty": {
-      "title": "No courses published yet",
-      "description": "Check back soon for new courses."
-    }
-  },
   "org_navigation": {
     "content": "Training content",
     "people": "People",
@@ -1325,11 +755,8 @@
     "tags": "Tags",
     "community": "Q&A",
     "media": "Document library",
-    "setup": "Setup",
     "automation": "Integrations",
     "settings": "Settings",
-    "upgrade_label": "Upgrade",
-    "upgrade_count": "{studentCount}/{studentLimit}",
     "exit_course": "Exit this course",
     "ai_studio": "AI course studio",
     "reports": "Reports",
@@ -1349,268 +776,13 @@
     }
   },
   "widgets": {
-    "heading": "Widgets",
-    "subtitle": "Publish branded course collections for external websites.",
-    "empty": {
-      "heading": "No widgets yet",
-      "description": "Create a widget to generate an embeddable course block for external websites."
-    },
-    "tabs": {
-      "active": "Active",
-      "archived": "Archived",
-      "select_courses": "Select Courses",
-      "layout": "Layout",
-      "design": "Design",
-      "embed": "Embed Code"
-    },
-    "editor": {
-      "sources": "Widget Source",
-      "available_courses": "Available Courses",
-      "layout": "Layout",
-      "content": "Content",
-      "design": "Design",
-      "version_history": "Version History",
-      "current_version": "Current Version",
-      "active_badge": "Active",
-      "active_badge_description": "This version is currently live on your embed",
-      "save_changes": "Save changes",
-      "rename_widget": "Rename widget",
-      "continue_to_layout": "Continue to layout",
-      "pick_layout": "Choose a layout",
-      "pick_design": "Appearance",
-      "upgrade_callout": "Upgrade to unlock custom themes, colors, typography, and styling.",
-      "panel_subtitle": "Configure how your widget looks and behaves.",
-      "embed_share": "Embed & share",
-      "discard_short": "Discard",
-      "finish_editing_name": "Done",
-      "waiting_org": "Loading organization…",
-      "load_failed": "Could not load this widget. Try again from the widgets list."
-    },
-    "selection": {
-      "manual": "Manual selection",
-      "published": "All published courses"
-    },
-    "layout": {
-      "card_grid": "Card grid",
-      "tag_filter": "Tag filter",
-      "carousel": "Carousel",
-      "primary_course": "Primary course",
-      "compact_list": "Compact list",
-      "editorial_spotlight": "Editorial spotlight",
-      "category_shelf": "Category shelf"
-    },
-    "layoutOptions": {
-      "section": "Layout options",
-      "columns": "Columns",
-      "max_count": "Max courses",
-      "show_rating": "Show rating",
-      "tag_source": "Tag source",
-      "tag_source_auto": "Auto from courses",
-      "tag_source_manual": "Manual selection",
-      "show_all_option": "Show \"All\" option",
-      "visible_cards": "Visible cards",
-      "auto_play": "Auto play",
-      "auto_play_interval": "Auto play interval (ms)",
-      "show_dots": "Show dots",
-      "show_arrows": "Show arrows",
-      "loop": "Loop",
-      "featured_course": "Featured course",
-      "featured_course_required": "A featured course is required for this layout.",
-      "main_course": "Main spotlight course",
-      "main_course_required": "Pick a course to spotlight.",
-      "eyebrow_label": "Eyebrow label",
-      "cta_label": "CTA label",
-      "secondary_max_count": "Secondary courses",
-      "density": "Density",
-      "density_comfortable": "Comfortable",
-      "density_compact": "Compact",
-      "show_thumbnail": "Show thumbnail",
-      "show_tags": "Show tags",
-      "title_style": "Title style",
-      "title_style_serif": "Serif",
-      "title_style_sans": "Sans",
-      "category_tags": "Category tags",
-      "category_tags_required": "Select at least one tag for the category shelf.",
-      "show_all_tab": "Show \"All\" tab",
-      "max_per_category": "Max courses per category",
-      "none": "None"
-    },
-    "sort": {
-      "manual": "Manual",
-      "newest": "Newest",
-      "title": "Title"
-    },
     "status": {
-      "draft": "Draft",
-      "published": "Published",
-      "archived": "Archived",
-      "live": "Live"
-    },
-    "plan": {
-      "free": "Free plan",
-      "paid": "Paid plan"
-    },
-    "preview": {
-      "heading": "Preview",
-      "load_failed": "Preview could not load. Try refreshing the page.",
-      "empty": "Preview unavailable.",
-      "lessons_suffix": "lessons",
-      "exercises_suffix": "exercises",
-      "render_failed": "Could not render the widget."
-    },
-    "actions": {
-      "create": "Create Widget",
-      "edit": "Edit",
-      "back": "Back to widgets",
-      "publish": "Publish",
-      "archive": "Archive",
-      "restore": "Restore",
-      "copy_embed": "Copy embed",
-      "copy_url": "Copy URL",
-      "rename": "Rename",
-      "delete_permanently": "Delete permanently"
-    },
-    "delete_modal": {
-      "title": "Delete widget permanently",
-      "description": "Are you sure you want to permanently delete \"{name}\"? This action cannot be undone."
-    },
-    "embed": {
-      "tabs": {
-        "html": "HTML",
-        "url": "URL"
-      },
-      "url_label": "Hosted embed URL",
-      "url_helper": "Use this URL on platforms like Notion or Confluence that only accept a link."
-    },
-    "create": {
-      "description": "Give your widget a name to get started."
-    },
-    "form": {
-      "name": "Widget name",
-      "selection_mode": "Selection mode",
-      "course_search": "Search courses",
-      "layout_type": "Layout type",
-      "sort_by": "Sort by",
-      "cta_label": "CTA label",
-      "load_more_label": "Load more label",
-      "show_course_image": "Show course image",
-      "show_type_badge": "Show course type badge",
-      "show_lessons_count": "Show lessons count",
-      "show_description": "Show description excerpt",
-      "shorten_long_description": "Shorten long description",
-      "show_price": "Show price",
-      "show_rating": "Show rating",
-      "theme_preset": "Theme preset",
-      "primary_color": "Primary color",
-      "background_color": "Background color",
-      "text_color": "Text color",
-      "border_color": "Border color",
-      "border_radius": "Border radius",
-      "font_family": "Font family",
-      "font_scale": "Font size scale",
-      "custom_css": "Custom CSS",
-      "custom_css_locked": "Upgrade to enable custom CSS.",
-      "custom_css_hint": "Max 5,000 characters.",
-      "border_radius_hint": "0 – 32 px.",
-      "font_scale_hint": "0.8 – 1.4 (1 = default).",
-      "embed_code": "Embed code"
-    },
-    "notifications": {
-      "created": "Widget created",
-      "saved": "Widget saved",
-      "published": "Widget published",
-      "rolled_back": "Widget restored",
-      "archived": "Widget archived",
-      "archive_failed": "Couldn't archive widget",
-      "permanently_deleted": "Widget permanently deleted",
-      "delete_failed": "Couldn't delete widget",
-      "restored": "Widget restored",
-      "restore_failed": "Couldn't restore widget",
-      "validation_failed": "Some fields are invalid. Check the highlighted inputs."
-    },
-    "archived": {
-      "empty": "No archived widgets",
-      "empty_description": "Widgets you archive will appear here. You can restore them at any time."
+      "published": "Published"
     },
     "filter": {
       "status": "Status",
       "all": "All",
       "unpublished": "Unpublished"
-    },
-    "filters": {
-      "filter": "Filter",
-      "popover_title": "Filters",
-      "clear_all": "Clear all",
-      "search_placeholder": "Search by name",
-      "status": "Status",
-      "layout_type": "Layout type",
-      "selection_mode": "Selection mode",
-      "no_results_title": "No widgets match your filters",
-      "no_results_description": "Try a different search term or clear your filters to see everything again.",
-      "no_results_page_title": "Nothing on this page",
-      "no_results_page_description": "These filters match fewer widgets than this page starts at.",
-      "back_to_first_page": "Back to first page"
-    },
-    "card_options_aria": "Widget options"
-  },
-  "setup": {
-    "your_checklist": "Your Checklist",
-    "get_started": "Get Started",
-    "description": "Complete these steps to set up your learning platform",
-    "done": "Done",
-    "todo": "Todo",
-    "personal_profile": {
-      "title": "Upload a profile picture and update username",
-      "desc": "Personalize and add a human touch making interactions more personal and memorable",
-      "button_label": "Update Profile"
-    },
-    "organization_profile": {
-      "title": "Update organisation profile picture",
-      "desc": "Establish a professional and recognizable identity for your organization",
-      "button_label": "Update Org Profile"
-    },
-    "course": {
-      "title": "Create Course",
-      "desc": "Create a course that you will share with your students",
-      "button_label": "Create Course"
-    },
-    "lesson": {
-      "title": "Create a lesson",
-      "desc": "Break your course into lesson that your students can easily understand",
-      "button_label": "Create Lesson"
-    },
-    "exercise": {
-      "title": "Create an exercise",
-      "desc": "Test your students allow them to demonstarte their understanding of the subject matter",
-      "button_label": "Create Assignment"
-    },
-    "publish_course": {
-      "title": "Publish a course",
-      "desc": "Make your course public and purchaseable",
-      "button_label": "Publish Course"
-    },
-    "progress_count": "{completed} of {total} done"
-  },
-  "add_org": {
-    "sitename": "Academy subdomain already exists"
-  },
-  "navigation": {
-    "goto": "Go to",
-    "courses": "Courses",
-    "home": "Home",
-    "mp_home": "MP Learning Home",
-    "goto_lms": "Go to LMS",
-    "goto_dashboard": "Dashboard",
-    "join_academy": "Join Academy",
-    "goto_home": "Go to MP Learning Home",
-    "login": "Login",
-    "signup": "Sign Up",
-    "loading_state": "Taking you to the next page, please wait.",
-    "goto_org_home": "Go to the {orgName} home page",
-    "mobile_menu": {
-      "close": "Close menu",
-      "title": "Menu",
-      "toggle": "Open menu"
     }
   },
   "components": {
@@ -1644,52 +816,6 @@
       "interactive": "Create interactive quizzes with scoreboard for your students."
     },
     "settings": {
-      "domains": {
-        "add": "Add",
-        "update": "Update Domain",
-        "custom": "Custom domain",
-        "save": "Save",
-        "your_domain": "Your Domain",
-        "dns_description": "Set the following record on your DNS provider to continue:",
-        "dns_value": "Value",
-        "dns_name": "Name",
-        "record_active": "Detected",
-        "record_pending": "Pending",
-        "ssl_pending_heading": "SSL certificate is being issued",
-        "ssl_pending_body": "Your domain is pointing to us. We're now waiting for the SSL certificate to be issued and deployed. This usually takes a few minutes once all DNS records below are in place.",
-        "validation_errors_heading": "Certificate issuance is blocked",
-        "refresh": "Refresh",
-        "reconnect": "Reconnect domain",
-        "reconnect_hint": "Reconnect this domain to generate fresh setup records.",
-        "remove": "Remove",
-        "status_verified": "Verified",
-        "verified_snackbar": "Custom domain verified",
-        "status_pending_dns": "Pending DNS",
-        "status_pending_verification": "Pending verification",
-        "status_reconnect_required": "Reconnect required",
-        "status_error": "Needs attention",
-        "status_removed": "Removed",
-        "verified_description": "This custom domain is active and verified.",
-        "pending_dns_description": "Add the DNS records below, then refresh verification.",
-        "pending_verification_description": "DNS records were found. SSL issuance or validation is still in progress.",
-        "reconnect_description": "This domain needs to be connected again to generate new setup records.",
-        "error_description": "This custom domain exists, but verification is not complete yet.",
-        "custom_favicon": "Custom favicon",
-        "custom_favicon_description": "Shown in browser tabs when visitors open your public school site. Falls back to your organization logo when unset.",
-        "custom_favicon_save": "Save favicon",
-        "custom_favicon_remove": "Remove favicon",
-        "custom_favicon_saved": "Favicon updated",
-        "custom_code": "Custom code",
-        "connect_failed": "Could not connect the domain.",
-        "copy_field": "Copy {field}",
-        "example_prefix": "Example:",
-        "paid_plan_only": "Available on paid plans only.",
-        "reconnect_failed": "Could not reconnect the domain.",
-        "record_count": "Record {current} of {total}",
-        "refresh_failed": "Could not refresh the domain status.",
-        "remove_failed": "Could not remove the domain.",
-        "request_failed": "Could not send the domain request."
-      },
       "customize_lms": {
         "language": {
           "title": "Language",
@@ -1813,7 +939,6 @@
         "view_course_site": "View course site",
         "publish_course": "Publish course"
       },
-      "error_message": "An error occurred.",
       "lessons_number": "lessons",
       "exercise": "exercise",
       "students": "students",
@@ -1821,7 +946,6 @@
       "unpublished": "Unpublished",
       "continue_course": "Continue",
       "learn_more": "Learn more",
-      "public_badge": "Public",
       "actions_menu_aria": "Course actions",
       "updated_at": "Updated {date}",
       "lessons_count": "{count, plural, one {# lesson} other {# lessons}}",
@@ -3783,97 +2907,36 @@
   "audience": {
     "name": "Name",
     "email": "Email",
-    "search_placeholder": "Search…",
-    "status": "Status",
     "status_active": "Active",
     "status_pending": "Pending",
     "status_expired": "Expired",
     "status_revoked": "Revoked",
-    "date_joined": "Date Joined",
-    "certificate_earned": "{count} certificate earned",
-    "certificates_earned": "{count} certificates earned",
-    "select_all": "Select all",
-    "selected_count": "{count} selected",
-    "assign_courses": "Assign to Courses",
     "delete": {
-      "action": "Delete",
-      "title": "Delete member",
-      "description": "This removes the member from your organization and revokes their access to all assigned courses and cohorts.",
-      "confirmation": "Are you sure you want to delete {name} ({email})? This action cannot be undone.",
-      "cancel": "Cancel",
-      "confirm": "Delete",
       "snackbar_success": "Member deleted"
     },
     "user_analytics": {
-      "in_progress": "In progress",
-      "not_started": "Not started",
       "awaiting_grade": "Awaiting grade",
       "not_submitted": "Not submitted",
       "course_level_exercise": "Course-level exercise",
-      "score": "Score",
-      "status": "Status",
       "export_progress": "Export progress",
       "student_actions": "Student actions",
       "no_exercises_title": "No exercises in this course",
       "no_exercises_description": "Add an exercise to a lesson and each student's attempts show up here.",
       "load_failed_title": "Unable to load this student",
       "load_failed_description": "Something went wrong while loading this student. Please try again.",
-      "retry": "Retry",
-      "exercise": "Exercise",
-      "exercise_load_failed": "Could not load exercises for this course."
+      "retry": "Retry"
     },
     "import": {
-      "emails_label": "Email Addresses",
-      "emails_placeholder": "Enter emails separated by commas, newlines, or semicolons\ne.g. alice@example.com, bob@example.com",
-      "all_courses": "All courses",
-      "send_email": "Send invitation email to imported users",
       "back": "Back",
-      "snackbar_success": "{imported} new invites, {assigned} existing students given access, {pendingInvitesRenewed} pending invites renewed ({emailsSent} emails sent)",
-      "snackbar_no_emails": "Please enter at least one email address",
-      "snackbar_failed": "Failed to import users",
-      "status": {
-        "ready": "Ready",
-        "already_member": "Already in audience",
-        "invite_resent": "Invite resent",
-        "invalid_email": "Invalid email",
-        "duplicate_in_file": "Duplicate in file",
-        "is_staff": "Staff, not a student",
-        "over_seat_limit": "No seats left",
-        "missing_email": "No email"
-      }
+      "snackbar_success": "{imported} new invites, {assigned} existing students given access, {pendingInvitesRenewed} pending invites renewed ({emailsSent} emails sent)"
     },
     "assign": {
-      "title": "Assign to Courses",
-      "description": "Give the selected users access to courses and optionally notify them by email.",
-      "select_courses": "Select courses",
-      "select_courses_placeholder": "Choose courses...",
-      "send_email": "Send notification email",
-      "submit": "Assign",
-      "cancel": "Cancel",
-      "snackbar_success": "Assigned {assigned} users ({alreadyEnrolled} already had access, {emailsSent} emails sent)",
-      "snackbar_no_courses": "Please select at least one course",
-      "snackbar_failed": "Failed to assign courses"
+      "snackbar_success": "Assigned {assigned} users ({alreadyEnrolled} already had access, {emailsSent} emails sent)"
     },
     "invite": {
-      "row_actions_aria": "Open actions",
-      "resend": "Resend invite",
-      "revoke": "Revoke pending invite",
       "resend_snackbar_success": "Invitation email sent",
       "resend_snackbar_email_failed": "Invite was renewed but the email could not be sent",
       "revoke_snackbar_success": "Pending invitation revoked"
-    },
-    "never": "Never",
-    "progress": "Progress",
-    "learner_count": "{count} students",
-    "enrolled_ratio": "{completed} / {total}",
-    "views": {
-      "all": "All students",
-      "never_logged_in": "Never logged in",
-      "inactive_90d": "Inactive 90+ days",
-      "inactive_180d": "Inactive 180+ days",
-      "enrolled_not_started": "Enrolled, never started",
-      "archived": "Archived",
-      "custom": "Custom filters"
     },
     "filter": {
       "status": "Member status",
@@ -3907,53 +2970,12 @@
       "invite_status": "Invite status"
     },
     "bulk": {
-      "actions": "Actions",
-      "select_all_matching": "Select all {count} matching",
-      "all_matching_selected": "All {count} matching students selected",
-      "clear": "Clear",
-      "action": {
-        "archive": "Archive {count} students",
-        "deactivate": "Deactivate {count} students",
-        "reactivate": "Reactivate {count} students",
-        "unarchive": "Unarchive {count} students",
-        "delete": "Delete {count} students"
-      },
-      "confirm_title": {
-        "archive": "Archive {count} students?",
-        "deactivate": "Deactivate {count} students?",
-        "reactivate": "Reactivate {count} students?",
-        "unarchive": "Unarchive {count} students?",
-        "delete": "Permanently remove {count} students?"
-      },
-      "confirm_body": {
-        "archive": "They lose access and free up a seat on your plan. You can unarchive them at any time.",
-        "deactivate": "They lose access but keep their seat on your plan. You can reactivate them at any time.",
-        "reactivate": "They regain access to your organization and its courses.",
-        "unarchive": "They regain access and take a seat on your plan again.",
-        "delete": "This removes them from this organization and cannot be undone. Their account, submissions and results are kept."
-      },
-      "confirm_action": {
-        "archive": "Archive",
-        "deactivate": "Deactivate",
-        "reactivate": "Reactivate",
-        "unarchive": "Unarchive",
-        "delete": "Delete permanently"
-      },
-      "sample_heading": "Includes",
-      "sample_more": "and {count} more",
-      "export_first": "Export this list first",
-      "reason_label": "Reason (optional)",
-      "reason_hint": "Recorded on the audit trail so this is answerable later.",
-      "type_count_label": "Type {count} to confirm",
-      "delete_is_permanent": "Deleting cannot be undone.",
-      "not_archived_blocker": "{count} of these students are not archived. Archive them first.",
       "undo_success": "Reverted"
     }
   },
   "analytics": {
     "title": "Analytics",
     "progress": "Progress",
-    "completed": "Completed",
     "last_seen": "Last seen",
     "a_while_ago": "a while ago",
     "just_now": "just now",
@@ -3964,8 +2986,6 @@
     "years_ago": "{count, plural, one {# year ago} other {# years ago}}",
     "exercises": "Exercises",
     "graded": "Graded",
-    "enrolled_courses": "Enrolled Courses",
-    "overall_course_progress": "Overall Course Progress",
     "total_average_grade": "Total Average Grade",
     "assignment_completion": "Assignment Completion",
     "students": "Students",
@@ -4015,20 +3035,6 @@
       "90d": "Last 90 days"
     },
     "refresh": "Refresh",
-    "kpi": {
-      "landing_views": "Course overview views",
-      "unique_visitors": "Viewers",
-      "course_page_views": "Course page views",
-      "enrollments": "Enrollments",
-      "range_description": "In selected range"
-    },
-    "trend": {
-      "heading": "Traffic over time",
-      "description": "Page views and enrollments by day",
-      "empty": "No traffic in the selected range",
-      "views": "Views",
-      "enrollments": "Enrollments"
-    },
     "funnel": {
       "heading": "Learning journey",
       "description": "From first visit to course completion",
@@ -4040,36 +3046,17 @@
         "course_completed": "Completions"
       }
     },
-    "countries": {
-      "heading": "Top countries",
-      "subtitle": "{total} visitors total",
-      "empty": "No location data yet",
-      "country": "Country",
-      "visitors": "Viewers",
-      "enrollments_short": "enrolled"
-    },
-    "topCourses": {
-      "heading": "Top courses by views",
-      "description": "Courses ranked by page views",
-      "subtitle": "Ranked by page views in this range",
-      "empty": "No course page views yet",
-      "course": "Course",
-      "views": "Views"
-    },
     "course_progress": "Course progress",
     "exercises_completed": "Exercises Completed"
   },
   "upgrade": {
     "certificate": "Upgrade your plan to generate certificates",
-    "team": "Upgrade your plan to add team members",
-    "domain": "Upgrade your plan to add custom domains",
     "download_lessons": "Upgrade to download lessons",
     "download_course": "Upgrade to download course",
     "required": "Upgrade Required",
     "enterprise_required": "This feature requires an Enterprise plan.",
     "public_api_required": "Upgrade to Early Adopter or Enterprise to access the public API.",
-    "webhooks_required": "Upgrade to Early Adopter or Enterprise to use webhooks.",
-    "unlock_field": "Upgrade to unlock this setting"
+    "webhooks_required": "Upgrade to Early Adopter or Enterprise to use webhooks."
   },
   "automation": {
     "coming_soon": "Coming soon",
@@ -4374,25 +3361,9 @@
       "rotated": "Automation key rotated. Save the new secret now because it will not be shown again.",
       "revoked": "Automation key revoked."
     },
-    "token_auth": {
-      "created": "Signing secret created. Save it now—it won't be shown again.",
-      "rotated": "Signing secret rotated. Save the new secret—it won't be shown again.",
-      "deleted": "Token auth removed.",
-      "activated": "Token auth enabled.",
-      "deactivated": "Token auth disabled."
-    },
     "ai_credits": {
       "purchase_success": "AI credit pack added to your balance.",
       "checkout_failed": "Could not start checkout. Please try again."
-    },
-    "account": {
-      "workspaceCreated": "Workspace created",
-      "workspaceDeleted": "Workspace deleted",
-      "workspace_limit_reached": "You've reached your workspace limit. Contact us to expand.",
-      "plan_upgrade_required": "Multi-workspace is an Enterprise feature. Upgrade to add more workspaces.",
-      "workspace_is_primary": "You can't delete the primary workspace.",
-      "workspace_not_found": "Workspace not found.",
-      "not_primary_workspace": "Switch to your primary workspace to manage account workspaces."
     },
     "report": {
       "success": "Thanks. We’ll review this report.",
@@ -4509,20 +3480,6 @@
         "username_exists": "username already exists"
       }
     },
-    "team_members": {
-      "invite_sent": "Invite Sent!",
-      "invite_fail": "Failed to send invite, please try again",
-      "remove_fail": "Failed to remove user, please try again",
-      "remove_success": "Member removed successfully",
-      "role_updated": "Role updated",
-      "role_update_failed": "Failed to update role",
-      "last_admin": "This organization needs at least one admin"
-    },
-    "link_invite": {
-      "generated": "Link invite generated",
-      "enabled": "Link invite enabled",
-      "disabled": "Link invite disabled"
-    },
     "tags": {
       "group_created": "Tag group created",
       "group_updated": "Tag group updated",
@@ -4536,12 +3493,10 @@
       "error": {
         "file_size": "File Size must not be greater than 500kb",
         "try_again": "Try Again",
-        "upload_failed": "Failed to upload image. Please try again.",
-        "courses_reorder_failed": "Failed to update course order. Please try again."
+        "upload_failed": "Failed to upload image. Please try again."
       },
       "success": {
-        "complete": "Complete :)",
-        "courses_reordered": "Course order updated"
+        "complete": "Complete :)"
       }
     },
     "lessons": {
@@ -4604,10 +3559,6 @@
     "upgrade": {
       "failed": "Failed, please try again later"
     },
-    "setup": {
-      "info_lesson": "You Need to Create a lesson",
-      "info_course": "You need to create a course"
-    },
     "generic": {
       "success_delete": "Deleted successfully"
     },
@@ -4634,9 +3585,6 @@
       "exercise_template_create_failed": "Could not create the exercise from the template.",
       "exercise_update_failed": "Could not save the exercise.",
       "grades_update_failed": "Could not save the grades.",
-      "invite_audit_failed": "Could not load the invitation history.",
-      "invite_revoke_failed": "Could not revoke the invitation.",
-      "invites_list_failed": "Could not load the invitations.",
       "member_remove_failed": "Could not remove the member.",
       "member_removed": "Member removed",
       "member_update_failed": "Could not update the member.",
@@ -4644,7 +3592,6 @@
       "members_add_failed": "Could not add the members.",
       "members_added": "Added {count} members",
       "members_list_failed": "Could not load the members.",
-      "payment_request_failed": "Could not send the payment request.",
       "post_create_failed": "Could not publish the post.",
       "post_created": "Post published",
       "post_delete_failed": "Could not delete the post.",
@@ -4654,51 +3601,11 @@
       "progress_fetch_failed": "Could not load your progress.",
       "reaction_update_failed": "Could not save the reaction.",
       "replies_load_failed": "Could not load the replies.",
-      "student_invite_failed": "Could not send the invitation.",
       "submission_delete_failed": "Could not delete the submission.",
       "submission_deleted": "Submission deleted",
       "submission_update_failed": "Could not update the submission.",
       "submission_updated": "Submission updated",
       "user_analytics_failed": "Could not load the employee analytics."
-    }
-  },
-  "invite": {
-    "organization": {
-      "page_title": "Join {orgName} on MP Learning",
-      "invitation_student": "You've been invited into {orgName} as a student.",
-      "invitation_teacher": "You've been invited into {orgName} as a teacher.",
-      "invitation_admin": "You've been invited into {orgName} as an admin.",
-      "invitation_fallback": "You've been invited into {orgName} as {role}.",
-      "email_line": "Email: {email}",
-      "accept_button": "Accept invitation",
-      "go_to_dashboard": "Go to Dashboard",
-      "messages": {
-        "email_mismatch": "You are logged in with a different email from this invite.",
-        "expired": "This invite link has expired.",
-        "revoked": "This invite link has been revoked.",
-        "accepted": "This invite has already been used.",
-        "invalid": "This invite link is not valid.",
-        "joined": "Joined organization",
-        "join_failed": "Failed to join organization",
-        "try_again": "Try again"
-      },
-      "limit_reached": {
-        "title": "This academy is full right now",
-        "description": "{orgName} has reached its student limit on its current plan, so we couldn't add you. Your account is fine and nothing you did caused this.",
-        "technical_details": "Technical details",
-        "error_code": "Error"
-      }
-    },
-    "link": {
-      "page_title": "Join {orgName} on MP Learning",
-      "invitation_student": "You've been invited to join {orgName} as a student.",
-      "invitation_teacher": "You've been invited to join {orgName} as a teacher.",
-      "invitation_admin": "You've been invited to join {orgName} as an admin.",
-      "invitation_fallback": "You've been invited to join {orgName} as {role}.",
-      "accept_button": "Join organization",
-      "disabled": "This invite link has been disabled by the organization.",
-      "join_failed": "Failed to join organization",
-      "joined": "Joined organization"
     }
   },
   "content": {
@@ -5051,51 +3958,6 @@
       "ai_assistant": "AI Assistant"
     }
   },
-  "invite_link": {
-    "title": "Invite link",
-    "description": "Anyone with this link can join. Share it instead of entering emails one by one.",
-    "generate": "Create invite link",
-    "copy": "Copy invite link",
-    "copied": "Invite link copied",
-    "copy_failed": "Could not copy the invite link",
-    "toggle_label": "Link is active",
-    "disabled_notice": "This link is disabled. Nobody can join with it until you turn it back on.",
-    "join_count": "{count} people have joined with this link",
-    "load_failed": "Could not load the invite link",
-    "generate_failed": "Could not create the invite link",
-    "toggle_failed": "Could not update the invite link",
-    "join": {
-      "page_title": "Join {resourceName} on MP Learning",
-      "invitation": "You've been invited to join {resourceName} at {orgName}.",
-      "course_button": "Join course",
-      "disabled": "This invite link has been disabled.",
-      "closed": "This is no longer accepting new members.",
-      "succeeded": "You have joined",
-      "failed": "Could not join. Please try again."
-    },
-    "snackbar": {
-      "enabled": "Invite link enabled",
-      "disabled": "Invite link disabled"
-    }
-  },
-  "notifications": {
-    "title": "Notifications",
-    "empty_title": "No Notifications",
-    "empty_description": "You're all caught up. New notifications will appear here.",
-    "refresh": "Refresh",
-    "pending_invite": {
-      "heading": "Organization invite",
-      "body": "{orgName} invited you to join as {role}."
-    },
-    "latest": "Latest",
-    "unread": "Unread",
-    "tabs": {
-      "direct": "Direct",
-      "watching": "Watching"
-    },
-    "watching_empty_title": "Nothing to watch yet",
-    "watching_empty_description": "Updates on items you follow will show up here."
-  },
   "report": {
     "menu": "Report",
     "title": "Report content",
@@ -5126,16 +3988,7 @@
     "more_formats": "More export formats",
     "pdf_too_many_rows": "Too many rows — use CSV or Excel above {limit}",
     "nothing_to_export": "There is nothing to export",
-    "failed": "Export failed",
-    "label": "Export",
-    "copy": "Copy",
-    "format_csv": "CSV",
-    "format_excel": "Excel",
-    "format_pdf": "PDF",
-    "format_html": "HTML",
-    "format_json": "JSON",
-    "copied": "Copied to clipboard",
-    "copy_failed": "Could not copy to clipboard"
+    "failed": "Export failed"
   },
   "course_templates": {
     "row": {
@@ -5304,29 +4157,7 @@
       "browse": "Browse all templates"
     }
   },
-  "early_adopter_claim": {
-    "page": {
-      "title": "Payment received. One step left.",
-      "body": "Create your account, or log in, and we connect your Early Adopter plan to your academy automatically.",
-      "sign_up": "Create my account",
-      "log_in": "Log in",
-      "continue": "Continue to my academy"
-    },
-    "success": {
-      "title": "Your Early Adopter plan is active",
-      "body": "Your rate is locked in and every Early Adopter feature is now unlocked for your academy.",
-      "continue": "Start building"
-    },
-    "errors": {
-      "invalid": "This link is not valid. Check the email we sent you, or contact support.",
-      "expired": "This link has expired. Contact support and we will help you connect your plan.",
-      "unavailable": "This plan link has already been used or is no longer active. Contact support if this is a mistake.",
-      "conflict": "This academy already has a paid plan, so we could not connect this one. Contact support and we will help."
-    }
-  },
   "whats_new": {
-    "new_badge": "New",
-    "read_full": "Read the full changelog",
     "close": "Close"
   },
   "mp_learning": {
@@ -5364,23 +4195,17 @@
     "explore": "Training library",
     "exercises": "Exercises",
     "certificates": "Certificates",
-    "billing": "Billing",
     "ai_credits": "AI credits",
-    "teams": "Teams",
-    "custom_domain": "Custom domain",
     "ai_tutor_settings": "AI tutor settings",
     "email_verification_error": "Email verification error",
-    "setup": "Setup",
     "reset_password": "Reset password",
     "settings": "Settings",
-    "organization_settings": "Organization settings",
     "customize_lms": "Customize LMS",
     "courses": "Courses",
     "home": "Home",
     "course": "Course",
     "quiz": "Quiz",
     "join_platform": "Join MP Learning",
-    "join_course": "Join {title} on MP Learning",
     "forgot_password": "Forgot password"
   },
   "ui_shell": {
@@ -5389,33 +4214,8 @@
       "navigate_to": "Go to",
       "navigate_description": "Choose a page in this path"
     },
-    "course_landing": {
-      "about_this_course": "About this course",
-      "anonymous": "Anonymous",
-      "before_you_start": "Before you start",
-      "bonus": "Bonus",
-      "curriculum_summary": "{modules} sections · {lessons} lessons",
-      "instructor_courses": "{count} courses",
-      "instructor_role_placeholder": "For example: Head of Training",
-      "lesson_duration": "{minutes} min",
-      "on_completion": "On completion",
-      "outcomes": "What you will learn",
-      "reviewer": "Reviewer",
-      "reviews_average": "{count} reviews",
-      "tools": "Tools"
-    },
     "image": {
       "failed_to_load": "Image failed to load"
-    },
-    "media_player": {
-      "muse_title": "Muse video"
-    },
-    "payment_modal": {
-      "email_placeholder": "Your email",
-      "fullname_placeholder": "Full name",
-      "go_to_payment": "Go to payment",
-      "redirect_notice": "You will be redirected to the payment page.",
-      "title": "Enroll in this course"
     }
   },
   "lms_home": {
@@ -5932,15 +4732,7 @@
     },
     "play": {
       "exit_preview": "Exit preview",
-      "lets_go": "Let's go",
-      "no_question": "No question yet",
-      "players": "Players",
-      "podium": "Podium",
-      "question": "Question",
-      "scoreboard": "Scoreboard",
-      "step_enter_pin": "Enter the PIN",
-      "step_visit": "Visit",
-      "view_players": "View players"
+      "no_question": "No question yet"
     }
   }
 }

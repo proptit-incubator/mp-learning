@@ -4,11 +4,9 @@ import type {
   Course,
   CourseAnalytics,
   CreateCourseRequest,
-  CreatePaymentRequestRequest,
   DeleteCourseRequest,
   EnrollCourseRequest,
   GetCourseAnalyticsRequest,
-  GetCourseBySlugRequest,
   GetCertificationEvaluationRequest,
   GetCourseProgressRequest,
   GetCourseRequest,
@@ -372,34 +370,6 @@ export class CourseApi extends BaseApiWithErrors {
         }
       }
     });
-  }
-
-  /**
-   * Gets a course by slug (public route)
-   * @param slug Course slug
-   * @returns The course data or null on error
-   */
-  async getBySlug(slug: string) {
-    await this.execute<GetCourseBySlugRequest>({
-      requestFn: () =>
-        classroomio.course.slug?.[':slug'].$get({
-          param: { slug }
-        }),
-      logContext: 'fetching course by slug',
-      onSuccess: (response) => {
-        if (response.data) {
-          this.course = response.data;
-          this.success = true;
-          this.errors = {};
-        }
-      },
-      onError: (result) => {
-        if (typeof result === 'string') {
-          snackbar.error('snackbar.course_api.course_fetch_failed');
-        }
-      }
-    });
-    return this.course;
   }
 
   /**
@@ -771,35 +741,6 @@ export class CourseApi extends BaseApiWithErrors {
 
     // Set the course data
     this.course = data;
-  }
-
-  /**
-   * Creates a payment request
-   * @param courseId Course ID
-   * @param studentEmail Student email address
-   * @param studentFullname Student full name
-   */
-  async createPaymentRequest(courseId: string, studentEmail: string, studentFullname: string) {
-    return this.execute<CreatePaymentRequestRequest>({
-      requestFn: () =>
-        classroomio.course[':courseId']['payment-request']['$post']({
-          param: { courseId },
-          json: {
-            studentEmail,
-            studentFullname
-          }
-        }),
-      logContext: 'creating payment request',
-      onSuccess: () => {
-        this.success = true;
-        this.errors = {};
-      },
-      onError: (result) => {
-        if (typeof result === 'string') {
-          snackbar.error('snackbar.course_api.payment_request_failed');
-        }
-      }
-    });
   }
 }
 

@@ -6,13 +6,12 @@
   import { Button } from '@cio/ui/base/button';
   import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
   import { page } from '$app/state';
-  import { currentOrg, currentOrgDomain } from '$lib/utils/store/org';
+  import { currentOrgDomain } from '$lib/utils/store/org';
   import { isStudentExperience, isCourseLearnerView } from '$lib/utils/store/app';
   import { isMobileStore } from '@cio/ui/hooks/is-mobile.svelte';
   import { getCourseProgress } from '$features/course/utils/content';
   import { isCourseMobileBottomNavVisible } from '$features/course/utils/mobile-bottom-nav';
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
-  import { setupProgressApi } from '$features/setup/api/setup-progress.svelte';
   import { courseApi } from '$features/course/api';
   import { getActiveCourseNavKey } from '$features/course/utils/functions';
   import { toggleAiAssistant } from '$features/ai-assistant/utils/store';
@@ -24,7 +23,6 @@
   import CourseContextMenuContent from './course-context-menu-content.svelte';
   import ViewAsStudentModal from './view-as-student-modal.svelte';
 
-  const siteName = $derived($currentOrg.siteName);
   const showCoursePublishBadge = $derived(!$isStudentExperience);
   const activeNavKey = $derived(getActiveCourseNavKey(page.url.pathname, courseApi.course?.id ?? ''));
   const isPublished = $derived(courseApi.course?.isPublished ?? false);
@@ -40,12 +38,6 @@
   );
 
   let viewAsStudentOpen = $state(false);
-
-  $effect(() => {
-    if (!siteName) return;
-
-    setupProgressApi.fetchSetupProgress(siteName);
-  });
 </script>
 
 <header

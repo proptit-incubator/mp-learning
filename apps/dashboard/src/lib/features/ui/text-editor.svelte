@@ -21,7 +21,6 @@
   import type { Snippet } from 'svelte';
   import { cn } from '@cio/ui/tools';
   import { uploadImage } from '$lib/utils/services/upload';
-  import { queryUnsplash } from './upload-widget/utils';
 
   interface Props {
     placeholder?: string | ((node: any) => string);
@@ -94,7 +93,6 @@
     onEditorReady={onReady}
     {onEditorDestroy}
     onImageUpload={uploadImage}
-    onSearchUnsplash={queryUnsplash}
     {expandable}
     bind:expanded
     {expandedTitle}

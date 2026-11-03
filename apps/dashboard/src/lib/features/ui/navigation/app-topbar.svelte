@@ -1,13 +1,7 @@
 <script lang="ts">
-  import { onMount, type Snippet } from 'svelte';
+  import type { Snippet } from 'svelte';
   import * as Sidebar from '@cio/ui/base/sidebar';
-  import * as Popover from '@cio/ui/base/popover';
-  import { Button } from '@cio/ui/base/button';
-  import BellIcon from '@lucide/svelte/icons/bell';
   import Search from '$features/ui/search.svelte';
-  import { notificationsApi } from '$features/notifications/api/notifications.svelte';
-  import NotificationsPanel from '$features/notifications/components/notifications-panel.svelte';
-  import { t } from '$lib/utils/functions/translations';
 
   interface Props {
     breadcrumbs: Snippet;
@@ -17,12 +11,6 @@
   }
 
   let { breadcrumbs, actions, searchScope, hideSearch = false }: Props = $props();
-
-  const notificationCount = $derived(notificationsApi.unreadCount);
-
-  onMount(() => {
-    notificationsApi.fetchOnce();
-  });
 </script>
 
 <header
@@ -41,32 +29,5 @@
     {#if !hideSearch}
       <Search scope={searchScope} />
     {/if}
-
-    <Popover.Root>
-      <Popover.Trigger>
-        {#snippet child({ props })}
-          <Button
-            {...props}
-            variant="secondary"
-            size="icon"
-            class="relative"
-            aria-label={$t('settings.tabs.notifications_tab')}
-            testId="app-notifications-trigger"
-          >
-            <BellIcon class="ui:text-muted-foreground size-[18px]" />
-            {#if notificationCount > 0}
-              <span
-                class="ui:bg-danger ui:ring-background absolute top-1.5 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold text-white ring-2"
-              >
-                {notificationCount}
-              </span>
-            {/if}
-          </Button>
-        {/snippet}
-      </Popover.Trigger>
-      <Popover.Content align="end" sideOffset={8} class="ui:p-0! w-[min(420px,calc(100vw-2rem))] rounded-xl">
-        <NotificationsPanel />
-      </Popover.Content>
-    </Popover.Root>
   </div>
 </header>

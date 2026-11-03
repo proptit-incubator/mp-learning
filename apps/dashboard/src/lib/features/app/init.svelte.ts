@@ -1,16 +1,15 @@
 import { BaseApi, classroomio } from '$lib/utils/services/api';
-import { currentOrg, getAppOrigin, mergeAccountOrgFromServer, orgs } from '$lib/utils/store/org';
+import { currentOrg, mergeAccountOrgFromServer, orgs } from '$lib/utils/store/org';
 import { defaultProfileState, defaultUserState, profile, user } from '$lib/utils/store/user';
 
 import type { AccountResponse, AccountSuccess } from './types';
 import type { AppOrgParams as AppSetupParams } from './resolve-app-org-params';
-import type { PendingOrgInvite } from '$features/lms/utils/types';
 import type { TUser } from '@cio/db/types';
 import { authClient } from '$lib/utils/services/auth/client';
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { activateLocale, handleLocaleChange } from '$lib/utils/functions/translations';
-import { isOrgStudent, globalStore } from '$lib/utils/store/app';
+import { isOrgStudent } from '$lib/utils/store/app';
 import { isPublicRoute } from '$lib/utils/functions/routes/isPublicRoute';
 import { licenseApi } from '$features/license/api/license.svelte';
 import { logout } from '$lib/utils/functions/logout';
@@ -38,8 +37,6 @@ function tenantSyncKey(params: AppSetupParams): string | null {
 class AppInitApi extends BaseApi {
   data = $state<AccountResponse>(null);
   session = $state<App.Locals | null>(null);
-  pendingOrgInvite = $state<PendingOrgInvite | null>(null);
-  showPendingInviteModal = $state(false);
   private syncedTenantKey: string | null = null;
 
   get loading() {
@@ -69,18 +66,10 @@ class AppInitApi extends BaseApi {
       const needsTenantMembership = params.isOrgSite && params.orgId && !this.isMemberOfOrg(locals, params.orgId);
 
       if (needsTenantMembership && params.orgId) {
-        const orgId = params.orgId;
-        const [pendingInvite, accountData] = await Promise.all([
-          this.fetchPendingOrgInvite(orgId),
-          this.fetchAccountData()
-        ]);
+        const accountData = await this.fetchAccountData();
 
         if (!accountData) {
           return false;
-        }
-
-        if (pendingInvite) {
-          this.showPendingOrgInvite(pendingInvite);
         }
 
         this.applyAccountData(accountData, params);
@@ -144,26 +133,6 @@ class AppInitApi extends BaseApi {
     }
   }
 
-  private showPendingOrgInvite(pendingInvite: PendingOrgInvite) {
-    this.pendingOrgInvite = pendingInvite;
-    this.showPendingInviteModal = true;
-  }
-
-  private async fetchPendingOrgInvite(orgId: string): Promise<PendingOrgInvite | null> {
-    try {
-      const response = await classroomio.invite.organization.pending.$get({}, { headers: { 'cio-org-id': orgId } });
-      const result = await response.json();
-
-      if (result.success && result.data) {
-        return result.data;
-      }
-    } catch (error) {
-      console.warn('pending org invite check failed', error);
-    }
-
-    return null;
-  }
-
   /**
    * Re-pin org context after setupApp when the URL org changes.
    *
@@ -179,14 +148,6 @@ class AppInitApi extends BaseApi {
     const nextTenantKey = tenantSyncKey(params);
     if (nextTenantKey && nextTenantKey === this.syncedTenantKey) {
       return;
-    }
-
-    const isMember = this.data.organizations.some((org) => org.siteName === params.orgSiteName);
-    if (params.isOrgSite && params.orgId && !isMember) {
-      const pendingInvite = await this.fetchPendingOrgInvite(params.orgId);
-      if (pendingInvite) {
-        this.showPendingOrgInvite(pendingInvite);
-      }
     }
 
     this.setOrgStore(params);
@@ -258,7 +219,6 @@ class AppInitApi extends BaseApi {
     if (!this.data?.success) return;
 
     const path = window.location.pathname;
-    if (this.pendingOrgInvite) return;
 
     if (!this.data.organizations.length) {
       if (!isPublicRoute(path) || shouldRedirectOnAuth(path)) {
@@ -315,39 +275,10 @@ class AppInitApi extends BaseApi {
     this.setupStores();
   }
 
-  async handlePendingInviteAccepted(redirectTo?: string): Promise<void> {
-    this.showPendingInviteModal = false;
-    this.pendingOrgInvite = null;
-
-    await authClient.getSession({ query: { disableCookieCache: true } });
-
-    const response = await classroomio.account.$get();
-    const accountData = (await response.json()) as AccountResponse;
-    if (accountData?.success) {
-      this.data = accountData;
-      this.setupStores();
-    }
-
-    const isOnOrgSite = get(globalStore).isOrgSite;
-    if (redirectTo?.startsWith('/org/') && isOnOrgSite) {
-      window.location.href = `${getAppOrigin()}${redirectTo}`;
-      return;
-    }
-
-    if (redirectTo) {
-      window.location.href = redirectTo;
-      return;
-    }
-
-    window.location.reload();
-  }
-
   reset() {
     super.reset();
     this.data = null;
     this.syncedTenantKey = null;
-    this.pendingOrgInvite = null;
-    this.showPendingInviteModal = false;
     licenseApi.reset();
 
     user.set(defaultUserState);

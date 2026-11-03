@@ -1,4 +1,13 @@
 import { classroomio, type InferRequestType, type InferResponseType } from '$lib/utils/services/api';
+import type { TLocale } from '@cio/db/types';
+import type {
+  TCoursePeopleActivityWindow,
+  TCoursePeopleEnrolledWindow,
+  TCoursePeopleMembership,
+  TCoursePeopleProgress,
+  TCoursePeopleSortBy,
+  TCoursePeopleSortOrder
+} from '@cio/utils/validation/course/people';
 export type CourseEnrollmentsRequest = (typeof classroomio.course)[':courseId']['members']['enrollments']['$get'];
 export type CourseEnrollments = Extract<InferResponseType<CourseEnrollmentsRequest>, { success: true }>['data'];
 export type CourseEnrollment = CourseEnrollments[number];
@@ -14,16 +23,6 @@ export type AvailableCourseEmployeesSuccess = Extract<
   { success: true }
 >;
 export type AvailableCourseEmployees = AvailableCourseEmployeesSuccess['data'];
-import type { TCourseInvitePreset } from '@cio/utils/validation/course/invite';
-import type { TLocale } from '@cio/db/types';
-import type {
-  TCoursePeopleActivityWindow,
-  TCoursePeopleEnrolledWindow,
-  TCoursePeopleMembership,
-  TCoursePeopleProgress,
-  TCoursePeopleSortBy,
-  TCoursePeopleSortOrder
-} from '@cio/utils/validation/course/people';
 
 // List lessons types
 export type ListLessonsRequest = (typeof classroomio.course)[':courseId']['lesson']['$get'];
@@ -130,12 +129,6 @@ export type UpdateLessonCommentRequest =
 export type UpdateLessonCommentResponse = InferResponseType<UpdateLessonCommentRequest>;
 export type UpdateLessonCommentSuccess = Extract<UpdateLessonCommentResponse, { success: true }>;
 export type UpdateLessonCommentData = UpdateLessonCommentSuccess['data'];
-
-// Payment request types
-export type CreatePaymentRequestRequest = (typeof classroomio.course)[':courseId']['payment-request']['$post'];
-export type CreatePaymentRequestResponse = InferResponseType<CreatePaymentRequestRequest>;
-export type CreatePaymentRequestSuccess = Extract<CreatePaymentRequestResponse, { success: true }>;
-export type PaymentRequestData = CreatePaymentRequestSuccess['data'];
 
 // Get lesson completion types
 export type GetLessonCompletionRequest =
@@ -358,22 +351,7 @@ export type UpdateSubmissionGradesRequest =
 // Course types
 export type CreateCourseRequest = typeof classroomio.course.$post;
 export type GetCourseRequest = (typeof classroomio.course)[':courseId']['$get'];
-export type GetCourseBySlugRequest = (typeof classroomio.course)['slug'][':slug']['$get'];
-export type GetCourseBySlugSuccess = Extract<InferResponseType<GetCourseBySlugRequest>, { success: true }>;
-export type GetCourseBySlugData = GetCourseBySlugSuccess['data'];
 
-/** Org snippet returned with course slug payload for org-site flows */
-export type CourseSlugPayloadOrg = {
-  id: string;
-  name: string;
-  siteName: string | null;
-  theme?: unknown;
-};
-
-/** Slug course shape including optional org (RPC unions omit `org` on some branches). */
-export type CourseBySlugWithOrg = GetCourseBySlugData & {
-  org?: CourseSlugPayloadOrg | null;
-};
 export type UpdateCourseRequest = (typeof classroomio.course)[':courseId']['$put'];
 export type DeleteCourseRequest = (typeof classroomio.course)[':courseId']['$delete'];
 export type UpdateCourseContentRequest = (typeof classroomio.course)[':courseId']['content']['$put'];
@@ -469,49 +447,6 @@ export type AddPeopleRequest = (typeof classroomio.course)[':courseId']['members
 export type AddPeopleResponse = InferResponseType<AddPeopleRequest>;
 export type AddPeopleSuccess = Extract<AddPeopleResponse, { success: true }>;
 export type AddPeopleData = AddPeopleSuccess['data'];
-
-export type CreateStudentInviteRequest = (typeof classroomio.course)[':courseId']['invites']['$post'];
-export type CreateStudentInviteResponse = InferResponseType<CreateStudentInviteRequest>;
-export type CreateStudentInviteSuccess = Extract<CreateStudentInviteResponse, { success: true }>;
-export type CreateStudentInviteData = CreateStudentInviteSuccess['data'];
-
-/** Payload accepted by `POST /course/:courseId/invites` (the email-invite path). */
-export type CreateStudentInvitePayload = {
-  preset?: TCourseInvitePreset;
-  expiresAt?: string;
-  maxUses?: number;
-  allowedEmails?: string[];
-  allowedDomains?: string[];
-  recipientEmails?: string[];
-  recipientCsv?: string;
-  sendEmail?: boolean;
-  metadata?: Record<string, unknown>;
-};
-
-export type GetCourseInviteLinkRequest = (typeof classroomio.course)[':courseId']['invites']['link']['$get'];
-export type CreateCourseInviteLinkRequest = (typeof classroomio.course)[':courseId']['invites']['link']['$post'];
-export type ToggleCourseInviteLinkRequest = (typeof classroomio.course)[':courseId']['invites']['link']['$patch'];
-type GetCourseInviteLinkSuccess = Extract<InferResponseType<GetCourseInviteLinkRequest>, { success: true }>;
-export type CourseInviteLink = GetCourseInviteLinkSuccess['data'];
-
-export type ListStudentInvitesRequest = (typeof classroomio.course)[':courseId']['invites']['$get'];
-export type ListStudentInvitesResponse = InferResponseType<ListStudentInvitesRequest>;
-export type ListStudentInvitesSuccess = Extract<ListStudentInvitesResponse, { success: true }>;
-export type ListStudentInvitesData = ListStudentInvitesSuccess['data'];
-export type StudentInviteListItem = ListStudentInvitesData[number];
-
-export type RevokeStudentInviteRequest =
-  (typeof classroomio.course)[':courseId']['invites'][':inviteId']['revoke']['$post'];
-export type RevokeStudentInviteResponse = InferResponseType<RevokeStudentInviteRequest>;
-export type RevokeStudentInviteSuccess = Extract<RevokeStudentInviteResponse, { success: true }>;
-export type RevokeStudentInviteData = RevokeStudentInviteSuccess['data'];
-
-export type GetStudentInviteAuditRequest =
-  (typeof classroomio.course)[':courseId']['invites'][':inviteId']['audit']['$get'];
-export type GetStudentInviteAuditResponse = InferResponseType<GetStudentInviteAuditRequest>;
-export type GetStudentInviteAuditSuccess = Extract<GetStudentInviteAuditResponse, { success: true }>;
-export type StudentInviteAuditData = GetStudentInviteAuditSuccess['data'];
-export type StudentInviteAuditItem = StudentInviteAuditData[number];
 
 export type UpdatePeopleRequest = (typeof classroomio.course)[':courseId']['members'][':memberId']['$put'];
 export type UpdatePeopleResponse = InferResponseType<UpdatePeopleRequest>;
