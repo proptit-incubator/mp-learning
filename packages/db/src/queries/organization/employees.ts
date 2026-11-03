@@ -4,6 +4,7 @@ import { db, type DbOrTxClient } from '@db/drizzle';
 import * as schema from '@db/schema';
 import type { EmployeeListQuery, EmployeeRole } from '@cio/utils/validation/organization';
 import { getEmployeeCapabilities } from '@cio/utils/functions/employee-access';
+import { departmentNameKey } from '@cio/utils/functions/department';
 import { employeeLearningMemberIds } from './audience';
 
 function employeeProfiles(client: DbOrTxClient) {
@@ -199,7 +200,7 @@ export async function listEmployees(
       ? sql`${schema.employee.memberId} in (select id from organizationmember where profile_id = ${query.profileId} and organization_id = ${orgId})`
       : undefined,
     managerId ? sql`${schema.employee.id} IN ${reportingLineSql(managerId)}` : undefined,
-    query.department ? ilike(schema.department.name, `%${query.department}%`) : undefined,
+    query.department ? eq(schema.department.nameKey, departmentNameKey(query.department)) : undefined,
     query.jobTitle ? ilike(schema.employee.jobTitle, `%${query.jobTitle}%`) : undefined,
     query.status ? eq(schema.employee.status, query.status) : undefined,
     query.search

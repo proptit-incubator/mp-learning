@@ -6336,7 +6336,9 @@
         "overdue": "Overdue",
         "not_started": "Not started",
         "completion": "Completed"
-      }
+      },
+      "viewing": "Viewing: {name}",
+      "clear": "Show all departments"
     },
     "my_team_title": "My team report"
   },

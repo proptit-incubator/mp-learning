@@ -6376,7 +6376,9 @@
         "overdue": "Quá hạn",
         "not_started": "Chưa bắt đầu",
         "completion": "Hoàn thành"
-      }
+      },
+      "viewing": "Đang xem: {name}",
+      "clear": "Xem tất cả phòng ban"
     },
     "my_team_title": "Báo cáo đội của tôi"
   },

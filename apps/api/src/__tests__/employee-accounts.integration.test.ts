@@ -407,9 +407,14 @@ integration('employee accounts on an isolated PostgreSQL database', () => {
     expect(administratorResult.rows.map((staff) => staff.id)).toEqual([report.id]);
     const departmentResult = await services.getEmployees(organizationId, administratorId, {
       ...query,
-      department: 'oper'
+      department: ' OPERATIONS '
     });
     expect(departmentResult.rows.map((staff) => staff.id)).toEqual([report.id]);
+    const partialDepartment = await services.getEmployees(organizationId, administratorId, {
+      ...query,
+      department: 'oper'
+    });
+    expect(partialDepartment.rows).toEqual([]);
     const managerResult = await services.getEmployees(organizationId, manager.profileId, query);
     expect(managerResult.rows.map((staff) => staff.id)).toEqual([report.id]);
     const forbiddenResult = await services.getEmployees(organizationId, manager.profileId, {

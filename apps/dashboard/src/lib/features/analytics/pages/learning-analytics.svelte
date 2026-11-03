@@ -27,6 +27,8 @@
   import RefreshButton from '$features/analytics/components/refresh-button.svelte';
   import LearningActivityChart from '$features/analytics/components/learning-activity-chart.svelte';
   import ChevronLeftIcon from '@lucide/svelte/icons/chevron-left';
+  import Building2Icon from '@lucide/svelte/icons/building-2';
+  import XIcon from '@lucide/svelte/icons/x';
   import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
   import { LearningAnalyticsApi, LearningAssignmentsApi } from '$features/analytics/api/learning-analytics.svelte';
   import {
@@ -87,6 +89,10 @@
         ?.department ?? $t('learning_analytics.departments.all')
     );
   });
+  function viewDepartment(departmentId: string) {
+    learningApi.selectDepartment(departmentId);
+    document.getElementById('learning-report-snapshot')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
   async function loadAssignmentExport() {
     const rows = await assignmentsApi.loadAll(assignmentFilters);
     return buildAssignmentExport(
@@ -216,6 +222,22 @@
       <Page.Eyebrow>{$t('learning_analytics.eyebrow')}</Page.Eyebrow>
       <Page.Title>{$t(reportTitle)}</Page.Title>
       <Page.Subtitle>{$t('learning_analytics.subtitle')}</Page.Subtitle>
+      {#if learningApi.departmentId}
+        <div
+          class="ui:bg-accent ui:text-accent-foreground mt-1 inline-flex w-fit items-center gap-2 rounded-full py-1 pr-1 pl-3 text-xs font-medium"
+          data-testid="learning-report-department-chip"
+        >
+          <Building2Icon class="custom size-3.5" />{$t('learning_analytics.departments.viewing', {
+            name: departmentLabel
+          })}
+          <button
+            type="button"
+            class="ui:hover:bg-background/70 rounded-full p-1"
+            aria-label={$t('learning_analytics.departments.clear')}
+            onclick={() => learningApi.selectDepartment('')}><XIcon class="custom size-3.5" /></button
+          >
+        </div>
+      {/if}
       {#if report && report.scope !== 'organization'}
         <p class="ui:text-muted-foreground text-xs" data-testid="learning-report-scope">
           {$t(`learning_analytics.scope.${report.scope}`)}
@@ -244,7 +266,12 @@
         </div>
       {/if}
       {#if initialLoading || report}
-        <section class="space-y-3" aria-label={$t('learning_analytics.snapshot_title')} aria-busy={initialLoading}>
+        <section
+          id="learning-report-snapshot"
+          class="scroll-mt-20 space-y-3"
+          aria-label={$t('learning_analytics.snapshot_title')}
+          aria-busy={initialLoading}
+        >
           <div class="flex flex-wrap items-end justify-between gap-2">
             <div class="space-y-1">
               <h2 class="text-sm font-semibold">{$t('learning_analytics.snapshot_title')}</h2>
@@ -530,14 +557,17 @@
                 {$t('learning_analytics.departments.note')}
               </p>
             </div>
-            <Table.Root class="min-w-[720px]">
+            <Table.Root>
               <Table.Header
                 ><Table.Row
-                  ><Table.Head>{$t('employees.department')}</Table.Head><Table.Head class="text-right"
+                  ><Table.Head>{$t('employees.department')}</Table.Head><Table.Head
+                    class="hidden text-right sm:table-cell"
                     >{$t('learning_analytics.departments.columns.employees')}</Table.Head
-                  ><Table.Head class="text-right">{$t('learning_analytics.departments.columns.assignments')}</Table.Head
+                  ><Table.Head class="hidden text-right sm:table-cell"
+                    >{$t('learning_analytics.departments.columns.assignments')}</Table.Head
                   ><Table.Head class="text-right">{$t('learning_analytics.departments.columns.overdue')}</Table.Head
-                  ><Table.Head class="text-right">{$t('learning_analytics.departments.columns.not_started')}</Table.Head
+                  ><Table.Head class="hidden text-right sm:table-cell"
+                    >{$t('learning_analytics.departments.columns.not_started')}</Table.Head
                   ><Table.Head>{$t('learning_analytics.departments.columns.completion')}</Table.Head></Table.Row
                 ></Table.Header
               >
@@ -545,23 +575,32 @@
                 {#each snapshot.departments as department (department.departmentId ?? 'none')}
                   {@const rate = departmentCompletionRate(department)}
                   <Table.Row
-                    ><Table.Cell
+                    class="ui:hover:bg-muted/50 cursor-pointer"
+                    onclick={() => viewDepartment(department.departmentId ?? 'none')}
+                    ><Table.Cell class="ui:whitespace-normal"
                       ><button
                         type="button"
-                        class="ui:hover:text-primary text-left font-medium"
-                        onclick={() => learningApi.selectDepartment(department.departmentId ?? 'none')}
-                        >{department.department || $t('learning_analytics.departments.none')}</button
+                        class="ui:hover:text-primary inline-flex items-center gap-1 text-left font-medium"
+                        onclick={(event) => {
+                          event.stopPropagation();
+                          viewDepartment(department.departmentId ?? 'none');
+                        }}
+                        >{department.department || $t('learning_analytics.departments.none')}<ArrowRightIcon
+                          class="ui:text-muted-foreground size-3.5"
+                        /></button
                       ></Table.Cell
-                    ><Table.Cell class="text-right tabular-nums">{department.employees}</Table.Cell><Table.Cell
-                      class="text-right tabular-nums">{department.assigned}</Table.Cell
+                    ><Table.Cell class="hidden text-right tabular-nums sm:table-cell">{department.employees}</Table.Cell
+                    ><Table.Cell class="hidden text-right tabular-nums sm:table-cell">{department.assigned}</Table.Cell
                     ><Table.Cell class="text-right tabular-nums"
                       >{#if department.overdue}<Badge variant="warning">{department.overdue}</Badge
                         >{:else}0{/if}</Table.Cell
-                    ><Table.Cell class="text-right tabular-nums">{department.not_started}</Table.Cell><Table.Cell
+                    ><Table.Cell class="hidden text-right tabular-nums sm:table-cell"
+                      >{department.not_started}</Table.Cell
+                    ><Table.Cell
                       >{#if rate === null}<span class="ui:text-muted-foreground">—</span>{:else}<div
                           class="flex items-center gap-3"
                         >
-                          <Progress value={rate} class="h-1.5 min-w-16 flex-1" /><span
+                          <Progress value={rate} class="hidden h-1.5 min-w-16 flex-1 sm:block" /><span
                             class="w-9 text-right text-xs tabular-nums">{rate}%</span
                           >
                         </div>{/if}</Table.Cell

@@ -73,13 +73,6 @@
       void api.load();
     }
   });
-  const department = new DebouncedSearch({
-    onApply: (value) => {
-      api.department = value;
-      api.page = 1;
-      void api.load();
-    }
-  });
   const jobTitle = new DebouncedSearch({
     onApply: (value) => {
       api.jobTitle = value;
@@ -124,7 +117,6 @@
   });
   onDestroy(() => {
     search.destroy();
-    department.destroy();
     jobTitle.destroy();
   });
 
@@ -143,9 +135,10 @@
     api.status = query.status ?? '';
     api.page = query.page;
     search.sync(api.search);
-    department.sync(api.department);
     jobTitle.sync(api.jobTitle);
     await api.load();
+    const access = api.roster?.access;
+    if (!api.options && (access?.canManagePeople || access?.canAssignTraining)) await api.loadOptions();
     if (loadedLocation !== location) return;
 
     if (api.profileId && api.roster?.rows[0]) await api.view(api.roster.rows[0]);
@@ -236,14 +229,35 @@
               oninput={(event) => search.input(event.currentTarget.value)}
             />
           </div>
-          <Input
-            id="employee-department-filter"
-            class="department-filter"
-            aria-label={$t('employees.department')}
-            placeholder={$t('employees.department')}
-            value={department.draft}
-            oninput={(event) => department.input(event.currentTarget.value)}
-          />
+          {#if api.options?.departments.length}<Select.Root
+              type="single"
+              value={api.department}
+              onValueChange={(value) => {
+                api.department = value ?? '';
+                api.page = 1;
+                void api.load();
+              }}
+            >
+              <Select.Trigger
+                id="employee-department-filter"
+                class="department-filter"
+                aria-label={$t('employees.department')}
+                data-testid="employee-department-filter"
+                ><span class:ui:text-muted-foreground={!api.department} class="truncate"
+                  >{api.department || $t('learning_analytics.departments.all')}</span
+                ></Select.Trigger
+              >
+              <Select.Content>
+                <Select.Item value="">{$t('learning_analytics.departments.all')}</Select.Item>
+                {#each api.options?.departments ?? [] as name (name)}
+                  <Select.Item value={name}
+                    >{name}<span class="ui:text-muted-foreground ml-auto pl-3 text-xs tabular-nums"
+                      >{api.options?.departmentCounts[name] ?? 0}</span
+                    ></Select.Item
+                  >
+                {/each}
+              </Select.Content>
+            </Select.Root>{/if}
           <Input
             id="employee-job-title-filter"
             class="department-filter"
@@ -264,7 +278,6 @@
                 api.status = '';
                 api.page = 1;
                 search.reset();
-                department.reset();
                 jobTitle.reset();
                 void api.load();
               }}>{$t('employees.clear_filters')}</Button
@@ -443,7 +456,13 @@
   </Page.Body>
 </Page.Root>
 
-<DepartmentsDialog bind:open={departmentsOpen} onChanged={() => void api.load()} />
+<DepartmentsDialog
+  bind:open={departmentsOpen}
+  onChanged={() => {
+    void api.load();
+    void api.loadOptions();
+  }}
+/>
 
 <Dialog.Root bind:open={api.editorOpen}>
   <Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
