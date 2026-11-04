@@ -19,6 +19,9 @@ export type TAgentRunStatus = z.infer<typeof ZAgentRunStatus>;
 
 // ─── POST /agent/chat ────────────────────────────────────────────────────────
 
+/** How many documents one chat message can carry. */
+export const MAX_CHAT_ATTACHMENTS = 5;
+
 export const ZAgentChatBody = z.object({
   courseId: ZAgentCourseId,
   conversationId: z.string().uuid().optional(),
@@ -28,7 +31,8 @@ export const ZAgentChatBody = z.object({
     .object({
       lessonId: z.string().uuid().optional(),
       exerciseId: z.string().uuid().optional(),
-      documentId: z.string().optional()
+      documentId: z.string().optional(),
+      documentIds: z.array(z.string()).max(MAX_CHAT_ATTACHMENTS).optional()
     })
     .optional()
 });

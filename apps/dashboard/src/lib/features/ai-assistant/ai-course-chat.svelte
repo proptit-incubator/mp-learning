@@ -30,12 +30,15 @@
     clearChatDraft,
     initialChatModel,
     initialChatPrompt,
+    initialChatFiles,
     initialChatTemplateId,
     clearInitialChatModel,
     clearInitialChatPrompt,
     clearInitialChatTemplateId
   } from '$features/ai-assistant/utils/store';
   import { get } from 'svelte/store';
+  import { snackbar } from '$features/ui/snackbar/store';
+  import { MAX_CHAT_ATTACHMENTS } from '@cio/utils/validation/agent';
   import { page } from '$app/state';
   import { goto } from '$app/navigation';
   import { Chat } from '@ai-sdk/svelte';
@@ -111,7 +114,7 @@
   const currentExerciseId = $derived(page.params?.exerciseId as string | undefined);
 
   let inputValue = $state('');
-  let uploadedDocument: UploadedDocument | null = $state(null);
+  let uploadedDocuments: UploadedDocument[] = $state([]);
   let isUploading = $state(false);
 
   let pendingInitialTemplateId: CourseTemplateId | null = $state(null);
@@ -398,14 +401,13 @@
         context: {
           lessonId: page.params?.lessonId,
           exerciseId: page.params?.exerciseId,
-          documentId: uploadedDocument?.id
+          documentIds: uploadedDocuments.map((document) => document.id)
         }
       }),
       fetch: (input, init) => apiClient.request(input, init)
     }),
     onFinish: () => {
-      // Clear document attachment after message is processed
-      uploadedDocument = null;
+      uploadedDocuments = [];
 
       refreshCourseStateAfterChat();
       void persistFinishedChat(chat.messages as AiAssistantMessage[], activeConversationId);
@@ -460,17 +462,10 @@
     const userMessageCount = chat.messages.filter((message) => message.role === 'user').length;
     const templateForFirstMessage = userMessageCount === 0 ? pendingInitialTemplateId : null;
 
-    const messageAttachment = uploadedDocument
-      ? {
-          documentId: uploadedDocument.id,
-          name: uploadedDocument.name
-        }
-      : undefined;
-
     const metadata: AiAssistantMessageMetadata = {};
 
-    if (messageAttachment) {
-      metadata.attachment = messageAttachment;
+    if (uploadedDocuments.length) {
+      metadata.attachments = uploadedDocuments.map((document) => ({ documentId: document.id, name: document.name }));
     }
 
     if (templateForFirstMessage) {
@@ -548,24 +543,29 @@
     return created.id;
   }
 
-  async function handleFileSelect(file: File) {
+  async function handleFilesSelect(files: File[]) {
     if (!courseId) return;
 
     const conversationId = await ensureActiveConversation(courseId);
 
     if (!conversationId) return;
 
-    isUploading = true;
-    const result = await aiAssistantApi.uploadDocument(file, courseId, conversationId);
-    isUploading = false;
+    const room = MAX_CHAT_ATTACHMENTS - uploadedDocuments.length;
+    if (files.length > room) snackbar.error('ai_assistant.too_many_documents');
 
-    if (result) {
-      uploadedDocument = { id: result.documentId, name: result.fileName };
+    isUploading = true;
+    try {
+      for (const file of files.slice(0, Math.max(0, room))) {
+        const result = await aiAssistantApi.uploadDocument(file, courseId, conversationId);
+        if (result) uploadedDocuments = [...uploadedDocuments, { id: result.documentId, name: result.fileName }];
+      }
+    } finally {
+      isUploading = false;
     }
   }
 
-  function handleRemoveDocument() {
-    uploadedDocument = null;
+  function handleRemoveDocument(documentId: string) {
+    uploadedDocuments = uploadedDocuments.filter((document) => document.id !== documentId);
   }
 
   function handleQuickAction(action: string) {
@@ -1247,6 +1247,8 @@
 
     const model = $initialChatModel;
     const templateFromHome = $initialChatTemplateId;
+    const files = get(initialChatFiles);
+    initialChatFiles.set([]);
     clearInitialChatPrompt();
     clearInitialChatModel();
     clearInitialChatTemplateId();
@@ -1264,7 +1266,7 @@
       }
 
       inputValue = prompt;
-      void handleSend();
+      void (files.length ? handleFilesSelect(files) : Promise.resolve()).then(() => handleSend());
     });
   });
 
@@ -1354,7 +1356,7 @@
       {isStreaming}
       {exhausted}
       {isUploading}
-      {uploadedDocument}
+      {uploadedDocuments}
       {mentionItems}
       {selectedModel}
       {isStudent}
@@ -1363,7 +1365,7 @@
       error={chat.error}
       onSend={handleSend}
       onStop={handleStop}
-      onFileSelect={handleFileSelect}
+      onFilesSelect={handleFilesSelect}
       onRemoveDocument={handleRemoveDocument}
       onSelectModel={handleSelectModel}
       onLockedModelSelect={handleLockedModelSelect}

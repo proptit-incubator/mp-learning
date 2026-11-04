@@ -12,10 +12,16 @@
   import { courseApi } from '$features/course/api';
   import HomeTemplateSection from '$features/course/components/home-template-section.svelte';
   import {
+    initialChatFiles,
     setInitialChatModel,
     setInitialChatPrompt,
     setInitialChatTemplateId
   } from '$features/ai-assistant/utils/store';
+  import PaperclipIcon from '@lucide/svelte/icons/paperclip';
+  import FileTextIcon from '@lucide/svelte/icons/file-text';
+  import XIcon from '@lucide/svelte/icons/x';
+  import { MAX_CHAT_ATTACHMENTS } from '@cio/utils/validation/agent';
+  import { snackbar } from '$features/ui/snackbar/store';
   import { DISPLAY_BY_ID } from '$features/ai-assistant/utils/template-display';
   import { COURSE_TEMPLATES, type CourseTemplate, type CourseTemplateId } from '@cio/ai-assistant';
   import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
@@ -24,7 +30,7 @@
   import { currentOrgPath, isFreePlan } from '$lib/utils/store/org';
   import { aiEnabled } from '$lib/utils/store/ai';
   import { openUpgradeModal } from '$lib/utils/store/upgrade-modal';
-  import { AI_CHAT_MODEL_STORAGE_KEY } from '$features/ai-assistant/utils/constants';
+  import { AI_CHAT_MODEL_STORAGE_KEY, AI_DOCUMENT_ACCEPT } from '$features/ai-assistant/utils/constants';
   import {
     AGENT_MODELS,
     DEFAULT_PICKER_MODEL_ID,
@@ -56,6 +62,23 @@
   let selectedTemplateId: CourseTemplateId | null = $state(null);
   let selectedModel: AgentModelId = $state(DEFAULT_PICKER_MODEL_ID);
   const paidModelIds = UI_PICKER_MODEL_IDS.filter((id) => !AGENT_MODELS[id].isFree);
+
+  let attachedFiles = $state<File[]>([]);
+  let fileInput = $state<HTMLInputElement | null>(null);
+
+  function handleFilesPicked(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    const picked = Array.from(input.files ?? []);
+    input.value = '';
+
+    const room = MAX_CHAT_ATTACHMENTS - attachedFiles.length;
+    if (picked.length > room) snackbar.error('ai_assistant.too_many_documents');
+    attachedFiles = [...attachedFiles, ...picked.slice(0, Math.max(0, room))];
+  }
+
+  function removeAttachedFile(index: number) {
+    attachedFiles = attachedFiles.filter((_, position) => position !== index);
+  }
 
   function isAgentModelId(value: unknown): value is AgentModelId {
     return typeof value === 'string' && (UI_PICKER_MODEL_IDS as readonly string[]).includes(value);
@@ -159,8 +182,9 @@
     }
 
     creatingStep = 'building';
-    setInitialChatPrompt(`${prompt}\n\nCourse type: Self-paced. Level: ${level}.`);
+    setInitialChatPrompt(`${prompt}\n\nLevel: ${level}.`);
     setInitialChatModel(selectedModel);
+    initialChatFiles.set(attachedFiles);
 
     if (selectedTemplateId) {
       setInitialChatTemplateId(selectedTemplateId);
@@ -248,7 +272,48 @@
         onModelChange={handleModelChange}
         onLockedModelSelect={handleLockedModelSelect}
         onsubmit={handleCreate}
-      />
+      >
+        {#snippet attachments()}
+          {#if attachedFiles.length}
+            <ul class="mt-2 flex flex-wrap gap-2" aria-label={$t('course.creator.attachments_label')}>
+              {#each attachedFiles as file, index (`${file.name}-${index}`)}
+                <li class="ui:bg-muted flex max-w-full items-center gap-1.5 rounded-md py-1 pr-1 pl-2 text-xs">
+                  <FileTextIcon size={12} class="ui:text-primary shrink-0" />
+                  <span class="max-w-[16rem] truncate">{file.name}</span>
+                  <button
+                    type="button"
+                    class="ui:text-muted-foreground ui:hover:text-foreground rounded p-0.5"
+                    aria-label={$t('ai_assistant.remove_document', { name: file.name })}
+                    onclick={() => removeAttachedFile(index)}
+                  >
+                    <XIcon size={12} />
+                  </button>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+        {/snippet}
+        {#snippet toolbar()}
+          <input
+            bind:this={fileInput}
+            type="file"
+            multiple
+            accept={AI_DOCUMENT_ACCEPT}
+            class="hidden"
+            onchange={handleFilesPicked}
+          />
+          <button
+            type="button"
+            class="ui:text-muted-foreground ui:hover:bg-muted ui:hover:text-foreground flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors disabled:pointer-events-none disabled:opacity-40"
+            disabled={attachedFiles.length >= MAX_CHAT_ATTACHMENTS}
+            title={$t('course.creator.attach_hint')}
+            onclick={() => fileInput?.click()}
+          >
+            <PaperclipIcon size={16} />
+            <span class="hidden sm:inline">{$t('course.creator.attach')}</span>
+          </button>
+        {/snippet}
+      </CourseCreator>
 
       <p class="ui:text-muted-foreground my-3 text-center text-sm font-medium">
         {$t('course.creator.template.heading')}

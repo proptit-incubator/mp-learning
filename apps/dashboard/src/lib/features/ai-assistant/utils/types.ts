@@ -81,7 +81,9 @@ export interface AiAssistantRunSummaryMetadata {
 }
 
 export interface AiAssistantMessageMetadata {
+  /** One document, as older messages stored it. */
   attachment?: AiAssistantMessageAttachment;
+  attachments?: AiAssistantMessageAttachment[];
   tokenUsage?: AiAssistantMessageTokenUsage;
   continuation?: AiAssistantMessageContinuation;
   template?: AiAssistantTemplateMetadata;

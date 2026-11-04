@@ -469,7 +469,10 @@ const agentCoreRouter = new Hono()
         await enforceTokenBalance(orgId, user.id);
       }
 
-      const documentIds = collectDocumentIds(messages, context?.documentId);
+      const documentIds = collectDocumentIds(messages, [
+        ...(context?.documentIds ?? []),
+        ...(context?.documentId ? [context.documentId] : [])
+      ]);
       const [documentText, documentAssets] = await Promise.all([
         documentIds.length > 0 ? loadDocumentsText(documentIds, user.id) : Promise.resolve(undefined),
         documentIds.length > 0 ? loadDocumentsMeta(documentIds) : Promise.resolve([])

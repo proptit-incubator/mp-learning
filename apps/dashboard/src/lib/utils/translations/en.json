@@ -980,7 +980,10 @@
             "hint": "We'll read this site to ground the course in your real product."
           }
         }
-      }
+      },
+      "attach": "Attach documents",
+      "attach_hint": "Attach procedures, policies… (PDF, Word, PowerPoint; up to 5 files) for the AI to build the course from",
+      "attachments_label": "Attached documents"
     },
     "navItems": {
       "nav_news_feed": "News Feed",
@@ -3650,7 +3653,9 @@
     "error_ai_disabled": "AI is turned off for this organization.",
     "error_ai_not_configured": "AI is not configured on this server.",
     "error_course_access": "You are not enrolled in this course, so the AI tutor is not available.",
-    "error_content_locked": "This content is not unlocked for you yet, so the AI tutor cannot read it."
+    "error_content_locked": "This content is not unlocked for you yet, so the AI tutor cannot read it.",
+    "remove_document": "Remove {name}",
+    "too_many_documents": "You can attach up to 5 files at a time."
   },
   "side_panel": {
     "close_aria": "Close panel",

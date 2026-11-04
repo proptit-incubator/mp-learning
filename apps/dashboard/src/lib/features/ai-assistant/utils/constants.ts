@@ -50,3 +50,7 @@ export const STUDENT_QUICK_ACTION_ENTRIES = [
     prompt: 'What should I review next?'
   }
 ] as const;
+
+/** Document types the AI assistant can read: PDF, Word, PowerPoint and OpenDocument text. */
+export const AI_DOCUMENT_ACCEPT =
+  '.pdf,.docx,.pptx,.odt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.oasis.opendocument.text';

@@ -102,18 +102,21 @@ export async function verifySectionBelongsToCourse(sectionId: string, courseId: 
   }
 }
 
-type AttachedMessage = { metadata?: { attachment?: { documentId?: string } } };
+type AttachedDocument = { documentId?: string };
+type AttachedMessage = { metadata?: { attachment?: AttachedDocument; attachments?: AttachedDocument[] } };
 
-export function collectDocumentIds(messages: unknown[], currentDocumentId?: string): string[] {
+/** Every document attached in the conversation, from messages with one (`attachment`) or several (`attachments`). */
+export function collectDocumentIds(messages: unknown[], currentDocumentIds: string[] = []): string[] {
   const ids = new Set<string>();
 
   for (const msg of messages as AttachedMessage[]) {
-    const id = msg?.metadata?.attachment?.documentId;
-
-    if (id) ids.add(id);
+    const attached = [msg?.metadata?.attachment, ...(msg?.metadata?.attachments ?? [])];
+    for (const document of attached) {
+      if (document?.documentId) ids.add(document.documentId);
+    }
   }
 
-  if (currentDocumentId) ids.add(currentDocumentId);
+  for (const id of currentDocumentIds) ids.add(id);
 
   return Array.from(ids);
 }

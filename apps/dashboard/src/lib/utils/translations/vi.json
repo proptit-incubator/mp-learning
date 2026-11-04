@@ -980,7 +980,10 @@
             "hint": "Hệ thống sẽ đọc trang này để nội dung khóa học sát với sản phẩm thực tế."
           }
         }
-      }
+      },
+      "attach": "Đính kèm tài liệu",
+      "attach_hint": "Đính kèm quy trình, chính sách… (PDF, Word, PowerPoint; tối đa 5 tệp) để AI soạn khóa học dựa trên đó",
+      "attachments_label": "Tài liệu đính kèm"
     },
     "navItems": {
       "nav_news_feed": "Bảng tin",
@@ -3650,7 +3653,9 @@
     "error_ai_disabled": "AI đang tắt cho tổ chức này.",
     "error_ai_not_configured": "Máy chủ chưa được cấu hình AI.",
     "error_course_access": "Bạn chưa được giao khóa học này nên chưa dùng được trợ giảng AI.",
-    "error_content_locked": "Nội dung này chưa được mở cho bạn, nên trợ giảng AI chưa thể đọc."
+    "error_content_locked": "Nội dung này chưa được mở cho bạn, nên trợ giảng AI chưa thể đọc.",
+    "remove_document": "Bỏ tệp {name}",
+    "too_many_documents": "Mỗi lần chỉ đính kèm được tối đa 5 tệp."
   },
   "side_panel": {
     "close_aria": "Đóng bảng",

@@ -90,7 +90,10 @@
     }
   }
 
-  const messageAttachment = $derived((message.metadata as AiAssistantMessageMetadata | undefined)?.attachment);
+  const messageAttachments = $derived.by(() => {
+    const metadata = message.metadata as AiAssistantMessageMetadata | undefined;
+    return [...(metadata?.attachment ? [metadata.attachment] : []), ...(metadata?.attachments ?? [])];
+  });
   const tokenUsage = $derived((message.metadata as AiAssistantMessageMetadata | undefined)?.tokenUsage);
 
   /** Tool parts rendered in a second pass so narrative text always appears above them (stream order often emits tools first). */
@@ -126,7 +129,9 @@
   const deferredPlanParts = $derived(
     (message.parts ?? []).filter((part) => isDeferredPlanPart(part as Record<string, unknown>))
   );
-  const hasBubbleContent = $derived(inlineParts.length > 0 || deferredPlanParts.length > 0 || !!messageAttachment);
+  const hasBubbleContent = $derived(
+    inlineParts.length > 0 || deferredPlanParts.length > 0 || messageAttachments.length > 0
+  );
   const showStreamingSpinner = $derived(message.role === 'assistant' && !hasBubbleContent && isStreaming && isLast);
 </script>
 
@@ -144,16 +149,16 @@
       {#if showStreamingSpinner}
         <LoaderIcon size={16} class="ui:text-muted-foreground animate-spin" />
       {/if}
-      {#if messageAttachment}
+      {#each messageAttachments as attachment (attachment.documentId)}
         <div
           class="mb-2 flex items-center gap-2 rounded-md px-2 py-1 text-xs {message.role === 'user'
             ? 'bg-white/15 text-white/90'
             : 'ui:bg-background/70 ui:text-muted-foreground'}"
         >
           <FileTextIcon size={12} class="custom shrink-0" />
-          <span class="min-w-0 truncate">{messageAttachment.name}</span>
+          <span class="min-w-0 truncate">{attachment.name}</span>
         </div>
-      {/if}
+      {/each}
 
       {#each inlineParts as part, partIndex (partIndex)}
         {#if part.type === 'text'}

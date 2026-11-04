@@ -51,6 +51,9 @@ export function clearInitialChatModel() {
   initialChatModel.set(null);
 }
 
+/** Documents picked on the home page course creator, uploaded once the new course's chat opens. */
+export const initialChatFiles = writable<File[]>([]);
+
 /** Opens the AI assistant panel and sends `prompt` as the next user message. */
 export function sendPromptToAssistant(prompt: string) {
   const trimmed = prompt.trim();

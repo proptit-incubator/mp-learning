@@ -612,7 +612,7 @@ export function buildAgentTools(
 
     attach_document_to_lesson: tool({
       description:
-        'Attach an uploaded document from this conversation to a lesson as a downloadable material. Use this to create the Course Materials lesson — create the lesson first (with no content), then call this tool.',
+        'Attach an uploaded document from this conversation to a lesson as a downloadable material. Use this to fill the reference materials lesson ("Tài liệu tham khảo") — create the lesson first (with no content), then call this tool.',
       inputSchema: attachDocumentToLessonParam,
       execute: async (args) => {
         return executeAgentTool('attach_document_to_lesson', { orgId, userId, courseId, args }, async () => {

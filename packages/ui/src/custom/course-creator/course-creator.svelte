@@ -6,6 +6,7 @@
   import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
   import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
   import { DEFAULT_PICKER_MODEL_ID, type AgentModelId } from '@cio/utils/agent-models';
+  import type { Snippet } from 'svelte';
 
   interface SelectOption {
     value: string;
@@ -29,6 +30,10 @@
     onLockedModelSelect?: (model: AgentModelId) => void;
     onsubmit?: (payload: SubmitPayload) => void;
     prompt?: string;
+    /** Shown between the prompt and the controls, e.g. the files attached to the request. */
+    attachments?: Snippet;
+    /** Extra controls after the model picker, e.g. an attach button. */
+    toolbar?: Snippet;
   }
 
   let {
@@ -41,7 +46,9 @@
     onModelChange,
     onLockedModelSelect,
     onsubmit,
-    prompt = $bindable('')
+    prompt = $bindable(''),
+    attachments,
+    toolbar
   }: Props = $props();
 
   let level = $state('beginner');
@@ -90,6 +97,8 @@
       class="ui:w-full ui:max-h-64 ui:resize-none ui:overflow-y-auto ui:border-0! ui:focus-visible:ring-0! ui:focus-visible:ring-offset-0! ui:dark:bg-card!"
     />
 
+    {@render attachments?.()}
+
     <div class="ui:mt-3 ui:flex ui:items-center ui:gap-2">
       <Select.Root type="single" bind:value={level} disabled={loading}>
         <Select.Trigger>
@@ -112,6 +121,8 @@
         onChange={handleModelChange}
         onLockedSelect={onLockedModelSelect}
       />
+
+      {@render toolbar?.()}
 
       <div class="ui:ml-auto">
         <Button variant="default" size="icon" disabled={!canSubmit} onclick={handleSubmit}>

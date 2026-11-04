@@ -78,7 +78,7 @@ Every question passed to \`create_exercise\` or \`add_questions\` MUST include a
 
 The \`generate_course_plan\` result renders as an interactive plan card (sections, lessons, exercises, outcomes, Approve / Ask-for-changes). Restating it in markdown is pure token waste — the teacher already sees the card.
 
-When calling \`generate_course_plan\` (initial, revision, or re-show), the assistant text in the same turn MUST be at most ONE short sentence with ZERO plan content. Allowed: "Here is the plan.", "Here's the revised plan.", "Plan attached — please review.", or a one-line description of what changed ("Updated to add Day 6.").
+When calling \`generate_course_plan\` (initial, revision, or re-show), the assistant text in the same turn MUST be at most ONE short sentence with ZERO plan content. Allowed, in the course language: "Đây là kế hoạch.", "Đây là kế hoạch đã chỉnh.", "Mời bạn xem kế hoạch.", or a one-line description of what changed ("Đã thêm ngày 6.").
 
 Forbidden in the same turn: outcome/lesson/section bullet lists, "Plan Structure" headings, recapping lesson titles, or a closing "Do you approve?" — the card already exposes those actions.
 
@@ -454,7 +454,7 @@ export function buildTeacherContextMessage(
 
     const courseMaterialsInstruction =
       assetLines.length > 0
-        ? `\n\nWhen implementing a course plan, create a lesson titled **"Course Materials"** as the **first lesson of the first section**. Give it no text content. Then immediately call \`attach_document_to_lesson\` for each document listed below to attach the original file to that lesson:\n${assetLines}`
+        ? `\n\nWhen implementing a course plan, create a lesson titled **"Tài liệu tham khảo"** (or "Course Materials" when the course language is English) as the **first lesson of the first section**. Give it no text content. Then immediately call \`attach_document_to_lesson\` for each document listed below to attach the original file to that lesson:\n${assetLines}`
         : '';
 
     contextLines.push(

@@ -6,6 +6,8 @@
   import { ChatTextarea, type MentionItem } from '@cio/ui/custom/chat-textarea';
   import { LessonIcon, ExerciseIcon } from '@cio/ui/custom/moving-icons';
   import PaperclipIcon from '@lucide/svelte/icons/paperclip';
+  import { MAX_CHAT_ATTACHMENTS } from '@cio/utils/validation/agent';
+  import { AI_DOCUMENT_ACCEPT } from '$features/ai-assistant/utils/constants';
   import SquareIcon from '@lucide/svelte/icons/square';
   import XIcon from '@lucide/svelte/icons/x';
   import FileTextIcon from '@lucide/svelte/icons/file-text';
@@ -32,7 +34,7 @@
     isUploading: boolean;
     error: Error | null | undefined;
     mentionItems: MentionItem[];
-    uploadedDocument: UploadedDocument | null;
+    uploadedDocuments: UploadedDocument[];
     selectedModel: AgentModelId;
     lockedModelIds?: readonly AgentModelId[];
     isStudent?: boolean;
@@ -40,8 +42,8 @@
     tutorBlocked?: 'LEARNER_CAP_REACHED' | 'POOL_EXHAUSTED' | 'AI_TUTOR_DISABLED' | null;
     onSend: () => void;
     onStop: () => void;
-    onFileSelect: (file: File) => void;
-    onRemoveDocument: () => void;
+    onFilesSelect: (files: File[]) => void;
+    onRemoveDocument: (documentId: string) => void;
     onSelectModel: (id: AgentModelId) => void;
     onLockedModelSelect?: (id: AgentModelId) => void;
   }
@@ -53,14 +55,14 @@
     isUploading,
     error,
     mentionItems,
-    uploadedDocument,
+    uploadedDocuments,
     selectedModel,
     lockedModelIds = [],
     isStudent = false,
     tutorBlocked = null,
     onSend,
     onStop,
-    onFileSelect,
+    onFilesSelect,
     onRemoveDocument,
     onSelectModel,
     onLockedModelSelect
@@ -133,11 +135,9 @@
 
   function handleFileChange(e: Event) {
     const target = e.currentTarget as HTMLInputElement;
-    const file = target.files?.[0];
-    if (file) {
-      onFileSelect(file);
-      target.value = '';
-    }
+    const files = Array.from(target.files ?? []);
+    if (files.length) onFilesSelect(files);
+    target.value = '';
   }
 
   function getTypeLabel(item: MentionItem) {
@@ -188,8 +188,9 @@
 <input
   bind:this={fileInputEl}
   type="file"
-  accept=".pdf,.docx,.pptx,.odt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.oasis.opendocument.text"
+  accept={AI_DOCUMENT_ACCEPT}
   class="hidden"
+  multiple
   onchange={handleFileChange}
 />
 
@@ -247,21 +248,23 @@
         </div>
       {/if}
 
-      {#if isUploading}
-        <div class="mb-2 flex items-center gap-2 rounded border px-3 py-2 text-xs">
-          <LoaderIcon size={12} class="animate-spin" />
-          <span class="ui:text-muted-foreground">{$t('ai_assistant.uploading_document')}</span>
-        </div>
-      {:else if uploadedDocument}
+      {#each uploadedDocuments as document (document.id)}
         <div class="mb-2 flex items-center gap-2 rounded border px-3 py-2 text-xs">
           <FileTextIcon size={12} class="ui:text-primary shrink-0" />
-          <span class="min-w-0 flex-1 truncate">{uploadedDocument.name}</span>
+          <span class="min-w-0 flex-1 truncate">{document.name}</span>
           <button
-            onclick={onRemoveDocument}
+            onclick={() => onRemoveDocument(document.id)}
+            aria-label={$t('ai_assistant.remove_document', { name: document.name })}
             class="ui:text-muted-foreground ui:hover:text-foreground shrink-0 rounded p-0.5 transition-colors"
           >
             <XIcon size={12} />
           </button>
+        </div>
+      {/each}
+      {#if isUploading}
+        <div class="mb-2 flex items-center gap-2 rounded border px-3 py-2 text-xs">
+          <LoaderIcon size={12} class="animate-spin" />
+          <span class="ui:text-muted-foreground">{$t('ai_assistant.uploading_document')}</span>
         </div>
       {/if}
 
@@ -292,7 +295,7 @@
             {#if !isStudent}
               <button
                 onclick={handlePaperclipClick}
-                disabled={isUploading}
+                disabled={isUploading || uploadedDocuments.length >= MAX_CHAT_ATTACHMENTS}
                 class="ui:text-muted-foreground ui:hover:bg-muted shrink-0 rounded-md p-1.5 transition-colors disabled:pointer-events-none disabled:opacity-40"
                 title={$isFreePlan ? $t('ai_assistant.upgrade_to_upload') : $t('ai_assistant.attach_document')}
               >
