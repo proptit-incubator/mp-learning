@@ -80,7 +80,7 @@ class CommunityApi extends BaseApiWithErrors {
       },
       onError: (result) => {
         console.error('Error loading community questions:', result);
-        goto(resolve(get(basePath), {}));
+        goto(resolve(`${get(basePath)}/community`, {}));
       }
     });
   }
@@ -104,7 +104,7 @@ class CommunityApi extends BaseApiWithErrors {
       onError: (result) => {
         const isStudent = get(isStudentExperience);
         console.error(`[${isStudent ? 'LMS' : 'ORG'}] Error loading community`, result);
-        goto(resolve(get(basePath), {}));
+        goto(resolve(`${get(basePath)}/community`, {}));
       }
     });
   }

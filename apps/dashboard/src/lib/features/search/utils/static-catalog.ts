@@ -19,7 +19,7 @@ export function buildStaticCatalog(
       continue;
     }
 
-    const url = navItem.path === '' ? currentOrgPath : `${currentOrgPath}${navItem.path}`;
+    const url = `${currentOrgPath}${navItem.path}`;
 
     if (!navItem.useHashUrl && !navItem.disabled) {
       items.push({

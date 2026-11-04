@@ -21,7 +21,7 @@
   <Sidebar.MenuItem>
     <Sidebar.MenuButton size="lg" tooltipContent={BRAND.product} class="ui:hover:bg-sidebar-accent gap-3">
       {#snippet child({ props })}
-        <a href={$basePath} {...props}>
+        <a href={$basePath || '/dash'} {...props}>
           <span
             class="grid size-9 shrink-0 place-items-center rounded-lg bg-white shadow-[0_1px_0_rgb(255_255_255/40%)_inset,0_4px_12px_-4px_rgb(0_0_0/45%)] group-data-[collapsible=icon]:size-8"
           >

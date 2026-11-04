@@ -304,13 +304,13 @@
           />
           <button
             type="button"
-            class="ui:text-muted-foreground ui:hover:bg-muted ui:hover:text-foreground flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors disabled:pointer-events-none disabled:opacity-40"
+            class="ui:text-muted-foreground ui:hover:bg-muted ui:hover:text-foreground flex size-9 items-center justify-center rounded-md transition-colors disabled:pointer-events-none disabled:opacity-40"
             disabled={attachedFiles.length >= MAX_CHAT_ATTACHMENTS}
             title={$t('course.creator.attach_hint')}
+            aria-label={$t('course.creator.attach')}
             onclick={() => fileInput?.click()}
           >
             <PaperclipIcon size={16} />
-            <span class="hidden sm:inline">{$t('course.creator.attach')}</span>
           </button>
         {/snippet}
       </CourseCreator>

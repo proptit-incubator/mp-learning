@@ -46,7 +46,7 @@ export const isCourseLearnerView = derived(
 );
 
 /**
- * The root path for navigation: '/lms' for students, '/org/{siteName}' for admin/teacher
+ * The prefix for shared links: '/lms' for students, none for admins (their pages sit at the root)
  */
 export const basePath = derived([isStudentExperience, currentOrgPath], ([$isStudent, $orgPath]) =>
   $isStudent ? '/lms' : $orgPath

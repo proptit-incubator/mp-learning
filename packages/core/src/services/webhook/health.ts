@@ -35,7 +35,7 @@ export async function notifyWebhookHealthChange(
     if (!organization) return;
 
     const admins = await getOrganizationAdminEmails(endpoint.organizationId);
-    const webhooksUrl = `${getAppBaseUrl()}/org/${organization.siteName}/automation/webhooks`;
+    const webhooksUrl = `${getAppBaseUrl()}/automation/webhooks`;
     const baseFields = {
       orgName: organization.name,
       webhookName: endpoint.name,

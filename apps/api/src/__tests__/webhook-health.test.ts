@@ -49,7 +49,8 @@ describe('notifyWebhookHealthChange', () => {
     expect(payload.fields.destination).toBe('hooks.example.com');
     expect(payload.fields.failureCount).toBe(20);
     expect(payload.fields.disableAfter).toBe(100);
-    expect(payload.fields.webhooksUrl).toContain('/org/acme/automation/webhooks');
+    expect(payload.fields.webhooksUrl).toMatch(/\/automation\/webhooks$/);
+    expect(payload.fields.webhooksUrl).not.toContain('/org/');
     expect(options.idempotencyKey).toBe('webhookFailing:delivery-1:a@acme.test');
   });
 

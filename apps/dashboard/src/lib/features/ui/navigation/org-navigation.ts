@@ -9,6 +9,7 @@ import SettingsIcon from '@lucide/svelte/icons/settings';
 import SparklesIcon from '@lucide/svelte/icons/sparkles';
 import TagsIcon from '@lucide/svelte/icons/tags';
 
+import { ORG_HOME_PATH } from '$lib/utils/functions/routes/org-routes';
 import type { AccountOrg } from '$features/app/types';
 import type { Component } from 'svelte';
 import { isActive } from '$lib/utils/functions/app';
@@ -97,7 +98,7 @@ export const baseNavConfig: NavItemConfig[] = [
     titleKey: 'org_navigation.dashboard',
     path: '/dash',
     icon: LayoutDashboardIcon,
-    matchPattern: '^/org/[^/]+/dash(/.*)?$'
+    matchPattern: '^/dash(/.*)?$'
   },
   {
     group: 'content',
@@ -105,15 +106,15 @@ export const baseNavConfig: NavItemConfig[] = [
     path: '/courses',
     icon: BookOpenIcon,
     countKey: 'courses',
-    matchPattern: '^/org/[^/]+/courses(/.*)?$',
+    matchPattern: '^/courses(/.*)?$',
     nestedRoutes: [{ titleKey: 'course_templates.gallery.title', path: 'templates' }]
   },
   {
     group: 'content',
     titleKey: 'org_navigation.ai_studio',
-    path: '',
+    path: ORG_HOME_PATH,
     icon: SparklesIcon,
-    matchPattern: '^/org/[^/]+/?$'
+    matchPattern: '^/studio/?$'
   },
   {
     group: 'content',
@@ -121,7 +122,7 @@ export const baseNavConfig: NavItemConfig[] = [
     path: '/media',
     icon: FolderOpenIcon,
     countKey: 'media',
-    matchPattern: '^/org/[^/]+/media(/.*)?$'
+    matchPattern: '^/media(/.*)?$'
   },
   {
     group: 'content',
@@ -129,14 +130,14 @@ export const baseNavConfig: NavItemConfig[] = [
     path: '/tags',
     icon: TagsIcon,
     countKey: 'tags',
-    matchPattern: '^/org/[^/]+/tags(/.*)?$'
+    matchPattern: '^/tags(/.*)?$'
   },
   {
     group: 'people',
     titleKey: 'employees.title',
     path: '/employees',
     icon: ContactRoundIcon,
-    matchPattern: '^/org/[^/]+/employees(/.*)?$'
+    matchPattern: '^/employees(/.*)?$'
   },
   {
     group: 'people',
@@ -144,7 +145,7 @@ export const baseNavConfig: NavItemConfig[] = [
     path: '/community',
     icon: MessagesSquareIcon,
     supportsDynamicSegment: true,
-    matchPattern: '^/org/[^/]+/community(/.*)?$',
+    matchPattern: '^/community(/.*)?$',
     nestedRoutes: [
       {
         path: 'ask',
@@ -157,7 +158,7 @@ export const baseNavConfig: NavItemConfig[] = [
     titleKey: 'org_navigation.analytics',
     path: '/analytics',
     icon: ChartColumnIcon,
-    matchPattern: '^/org/[^/]+/analytics(/.*)?$'
+    matchPattern: '^/analytics(/.*)?$'
   },
   {
     group: 'system',
@@ -165,7 +166,7 @@ export const baseNavConfig: NavItemConfig[] = [
     path: '/automation/mcp',
     icon: PlugIcon,
     requiresAdmin: true,
-    matchPattern: '^/org/[^/]+/(automation|mcp|api|zapier)(/.*)?$',
+    matchPattern: '^/(automation|mcp|api|zapier)(/.*)?$',
     nestedRoutes: [
       { path: 'mcp', titleKey: 'automation.tabs.mcp' },
       { path: 'api', titleKey: 'automation.tabs.api' },
@@ -177,7 +178,7 @@ export const baseNavConfig: NavItemConfig[] = [
     titleKey: 'org_navigation.settings',
     path: '/settings',
     icon: SettingsIcon,
-    matchPattern: '^/org/[^/]+/settings(/.*)?$',
+    matchPattern: '^/settings(/.*)?$',
     nestedRoutes: [
       {
         path: 'notifications',
@@ -202,7 +203,7 @@ function isAiSettingsPath(path: string | undefined): boolean {
 }
 
 function isHomePath(path: string): boolean {
-  return path === '';
+  return path === ORG_HOME_PATH;
 }
 
 /**
@@ -246,7 +247,7 @@ export function getOrgNavigationItems(
     }
 
     const url = config.path === '' ? currentOrgPath : `${currentOrgPath}${config.path}`;
-    const fullPath = config.path === '' ? `/org/${currentOrg.siteName}` : `/org/${currentOrg.siteName}${config.path}`;
+    const fullPath = config.path;
 
     // Extract match pattern (handle function case)
     const matchPattern =
@@ -341,7 +342,7 @@ export function getOrgNavigationGroups(
     }
 
     const url = config.path === '' ? currentOrgPath : `${currentOrgPath}${config.path}`;
-    const fullPath = config.path === '' ? `/org/${currentOrg.siteName}` : `/org/${currentOrg.siteName}${config.path}`;
+    const fullPath = config.path;
     const matchPattern =
       typeof config.matchPattern === 'function' ? config.matchPattern(currentOrg.siteName!) : config.matchPattern;
 

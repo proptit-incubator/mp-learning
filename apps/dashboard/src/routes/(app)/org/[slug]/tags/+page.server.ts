@@ -18,7 +18,7 @@ export const load = async ({ parent, cookies, params }) => {
   );
 
   if (!result.ok && (result.status === 401 || result.status === 403)) {
-    throw redirect(302, `/org/${params.slug}`);
+    throw redirect(302, '/dash');
   }
 
   return {

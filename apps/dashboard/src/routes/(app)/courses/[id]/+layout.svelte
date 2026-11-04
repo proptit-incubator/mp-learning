@@ -226,7 +226,7 @@
         <div class="mt-5 flex justify-center">
           <Button
             onclick={() => {
-              goto('/org/*');
+              goto('/dash');
             }}
           >
             {$t('course.not_permitted.button')}

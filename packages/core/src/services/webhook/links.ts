@@ -1,5 +1,4 @@
 import type { TWebhookEventType } from '@cio/utils/constants/webhook';
-import { ROLE } from '@cio/utils/constants';
 
 import { getAppBaseUrl, getDashboardBaseUrl, type DashboardOrg } from '../../config/dashboard-url';
 
@@ -34,14 +33,8 @@ function buildCourseDashboardPath(eventType: TWebhookEventType, courseId: string
   return `/courses/${courseId}`;
 }
 
-function buildOrganizationDashboardPath(eventType: TWebhookEventType, data: Record<string, unknown>, siteName: string) {
-  const orgPath = `/org/${siteName}`;
-
-  if (eventType.startsWith('organization.invite.')) return `${orgPath}/settings/teams`;
-
-  const roleId = typeof data.roleId === 'number' ? data.roleId : null;
-
-  return roleId === ROLE.STUDENT ? `${orgPath}/audience` : `${orgPath}/settings/teams`;
+function buildOrganizationDashboardPath() {
+  return '/employees';
 }
 
 /**
@@ -66,7 +59,7 @@ export function buildWebhookLinks(
 
   if (org?.siteName) {
     return {
-      dashboard: `${appBaseUrl}${buildOrganizationDashboardPath(eventType, data, org.siteName)}`,
+      dashboard: `${appBaseUrl}${buildOrganizationDashboardPath()}`,
       student: null
     };
   }

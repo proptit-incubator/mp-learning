@@ -24,7 +24,7 @@
 
   const isInLearnerSpace = $derived(page.url.pathname.startsWith('/lms'));
   const canSwitchSpace = $derived($isOrgStudent === false && !!$currentOrg.siteName);
-  const switchSpaceHref = $derived(isInLearnerSpace ? `/org/${$currentOrg.siteName}/dash` : '/lms');
+  const switchSpaceHref = $derived(isInLearnerSpace ? '/dash' : '/lms');
   const accountBasePath = $derived(isInLearnerSpace ? '/lms' : $basePath);
 
   function getRoleLabel(roleId: number): string {

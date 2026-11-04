@@ -39,7 +39,7 @@ export async function notifyStudentMilestone(notification: StudentMilestoneNotif
 
   const admins = await getOrganizationAdminEmails(orgId);
   if (admins.length) {
-    const upgradeUrl = `${getDashboardBaseUrl()}/org/${org.siteName}?upgrade=true`;
+    const upgradeUrl = `${getDashboardBaseUrl()}/dash?upgrade=true`;
     const template = milestone === 'reached' ? 'studentLimitReached' : 'studentLimitApproaching';
 
     await enqueueTransactionalEmail(template, {

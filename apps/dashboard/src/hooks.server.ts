@@ -3,6 +3,7 @@ import { applyCspExtensions } from '$lib/utils/csp';
 import { proxyRequestToApi, shouldForwardToApi } from '$lib/utils/proxy-api-request';
 import { type Handle, type HandleServerError, error, isRedirect, redirect } from '@sveltejs/kit';
 import { isEmployeeContentPage, isRetiredPage } from '$lib/utils/functions/routes/internal-routes';
+import { legacyOrgPathRedirect } from '$lib/utils/functions/routes/org-routes';
 import { isPublicApiRoute, isPublicRoute } from '$lib/utils/functions/routes/isPublicRoute';
 import { ROUTE } from '$lib/utils/constants/routes';
 import { isCustomDomainHost } from '$lib/utils/functions/custom-domain';
@@ -181,6 +182,9 @@ const handlePagesRoutes: Handle = async ({ event, resolve: resolvePage }) => {
   const { pathname } = event.url;
   const resolve = (pageEvent: typeof event) =>
     resolvePage(pageEvent, { transformPageChunk: excludeScriptsFromRocketLoader });
+
+  const shortPath = legacyOrgPathRedirect(pathname);
+  if (shortPath) redirect(308, shortPath + event.url.search);
 
   if (isRetiredPage(pathname)) error(404, 'Not found');
 

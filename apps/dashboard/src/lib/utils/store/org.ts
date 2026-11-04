@@ -102,9 +102,8 @@ export const isOrgTeamMember = derived(currentOrg, ($currentOrg) => {
 
 export const currentOrgPlan = derived(currentOrg, ($currentOrg) => getActiveOrgPlan($currentOrg.plans));
 
-export const currentOrgPath = derived(currentOrg, ($currentOrg) =>
-  $currentOrg.siteName ? `/org/${$currentOrg.siteName}` : '#'
-);
+/** Prefix for admin links. MP Learning has one organization, so its pages need none; `#` until it loads. */
+export const currentOrgPath = derived(currentOrg, ($currentOrg) => ($currentOrg.siteName ? '' : '#'));
 
 type OrgPublicOrigin = Pick<AccountOrg, 'customDomain' | 'isCustomDomainVerified' | 'siteName'>;
 

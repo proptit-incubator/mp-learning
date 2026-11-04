@@ -1,4 +1,5 @@
 import type { TLocale } from '@cio/db/types';
+import { ORG_ROUTE_SLUG } from '$lib/utils/functions/routes/org-routes';
 
 export type AppOrgParams = {
   isOrgSite: boolean;
@@ -12,14 +13,18 @@ export type AppOrgParams = {
 type LayoutOrgData = {
   isOrgSite: boolean;
   orgSiteName: string;
-  org: { id?: string; settings?: { language?: { locale?: TLocale; enforced?: boolean } } } | null;
+  org: {
+    id?: string;
+    siteName?: string | null;
+    settings?: { language?: { locale?: TLocale; enforced?: boolean } };
+  } | null;
 };
 
 /**
  * Resolve which organization the dashboard should treat as "current" for API calls.
  *
  * - Org sites: subdomain/custom domain from `getOrgSiteInfo`.
- * - App host: `/org/[slug]` when the user is in the admin dashboard.
+ * - App host: the admin pages, served at short paths through the `/org/[slug]` routes.
  */
 export function resolveAppOrgParams(layoutData: LayoutOrgData, pathname: string, slugParam?: string): AppOrgParams {
   if (layoutData.isOrgSite) {
@@ -32,7 +37,7 @@ export function resolveAppOrgParams(layoutData: LayoutOrgData, pathname: string,
     };
   }
 
-  const adminOrgSlug = pathname.startsWith('/org/') && slugParam && slugParam !== '*' ? slugParam : '';
+  const adminOrgSlug = slugParam === ORG_ROUTE_SLUG ? (layoutData.org?.siteName ?? '') : '';
 
   return {
     isOrgSite: false,

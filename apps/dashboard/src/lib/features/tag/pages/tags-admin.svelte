@@ -58,7 +58,7 @@
   }
 
   function getTagCoursesHref(tagSlug: string) {
-    return `/org/${orgSlug}/courses?tags=${encodeURIComponent(tagSlug)}`;
+    return `/courses?tags=${encodeURIComponent(tagSlug)}`;
   }
 </script>
 
