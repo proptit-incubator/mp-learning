@@ -16,6 +16,8 @@ declare global {
       profile: TProfile | null;
       organizations: AccountOrganization[];
       fromSessions?: boolean;
+      /** Organization role per organization id, from the session. */
+      orgRoles?: Record<string, number>;
       // getAccount: () =>
     }
     // interface PageData {}
