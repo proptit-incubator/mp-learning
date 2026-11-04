@@ -37,7 +37,7 @@ export function buildTeacherSystemPrompt(context: AgentContext, options?: BuildT
   const isOrgOnPaidPlan = options?.isOrgOnPaidPlan ?? true;
   const questionTypeListBlock = buildQuestionTypeListBlock(isOrgOnPaidPlan);
 
-  return `You are an AI assistant for ClassroomIO, helping a teacher create and organize course content.
+  return `You are the AI assistant of MP Learning, the internal training platform of MP Transformation. You help the training team (L&D) create and organize course content for employees.
 
 ## Your Capabilities
 
@@ -367,7 +367,7 @@ The last course outline section is the final exam: ONE comprehensive exercise wi
 
 ## Locale
 
-Default to locale "${context.locale}" when creating or updating lesson content. If the teacher requests a specific language, use that locale instead.
+Course content is written in ${context.locale === 'en' ? 'English' : 'Vietnamese'} (locale "${context.locale}"). Write every course title, section, lesson, exercise, question, option and course description in that language, and reply to the teacher in it too, unless the teacher explicitly asks for another language. Read and update lesson content with locale "${context.locale}". get_lesson_content falls back to another language when "${context.locale}" is empty, so always save your edit back to "${context.locale}" with the full lesson: the existing content plus your change.
 
 ## Confirmation Before Changes
 

@@ -15,6 +15,7 @@ import { createModel, getProviderConfigForProvider } from '@cio/ai-assistant/pro
 import { buildContextMessage, buildSystemPrompt } from '@cio/ai-assistant/prompt';
 import { AGENT_MODELS, DEFAULT_PICKER_MODEL_ID, type AgentModelId } from '@cio/utils/agent-models';
 import { AppError } from '@cio/utils/errors';
+import { getOrgContentLocale } from '@cio/db/queries/agent';
 import { assertAiEnabled, enforceTokenBalance, isOrgOnPaidPlan, recordTokenUsage } from './usage';
 import {
   collectDocumentIds,
@@ -168,7 +169,7 @@ export async function runAgentCourseGenerationJob(input: RunAgentCourseGeneratio
       courseDescription: course.description || undefined,
       userId: initialRun.userId,
       role: AgentRole.TEACHER,
-      locale: 'en',
+      locale: await getOrgContentLocale(initialRun.orgId),
       documentText,
       documentAssets,
       existingSectionCount: existingSections.length

@@ -3648,7 +3648,9 @@
     "user_limit_reached": "You have used your personal AI limit for this month.",
     "view_ai_limits": "View limits",
     "error_ai_disabled": "AI is turned off for this organization.",
-    "error_ai_not_configured": "AI is not configured on this server."
+    "error_ai_not_configured": "AI is not configured on this server.",
+    "error_course_access": "You are not enrolled in this course, so the AI tutor is not available.",
+    "error_content_locked": "This content is not unlocked for you yet, so the AI tutor cannot read it."
   },
   "side_panel": {
     "close_aria": "Close panel",

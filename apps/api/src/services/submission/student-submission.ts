@@ -2,6 +2,7 @@ import { getExercise } from '@cio/core/services/exercise/exercise';
 import { verifyExerciseBelongsToCourse } from '@cio/core/services/agent/chat-context';
 import { getGroupMemberIdByCourseAndProfile } from '@cio/db/queries/group';
 import { getSubmissionsByCourseIdWithDetails } from '@cio/db/queries/submission';
+import { canRevealAnswers } from '@api/services/exercise/learner-view';
 
 type StudentAnswerOption = { id: number | string; label: string | null };
 
@@ -45,7 +46,8 @@ function formatStudentAnswer(answerData: unknown, options: StudentAnswerOption[]
 }
 
 /**
- * Returns a learner's own exercise result without answer keys or other learner data.
+ * Returns a learner's own exercise result without answer keys or other learner data. Until the exercise's answer
+ * visibility allows it, per-question results are left out too, so retrying cannot reveal the correct answers.
  */
 export async function getStudentSubmissionReview({
   courseId,
@@ -61,7 +63,7 @@ export async function getStudentSubmissionReview({
   }
 
   const [exercise, submissions] = await Promise.all([
-    getExercise(exerciseId),
+    getExercise(exerciseId, undefined, profileId),
     getSubmissionsByCourseIdWithDetails(courseId, exerciseId, groupMemberId)
   ]);
   const orderedSubmissions = [...submissions].sort(
@@ -81,6 +83,7 @@ export async function getStudentSubmissionReview({
   }
 
   const isGraded = submission.gradingState === 'completed' || submission.statusId === 3;
+  const answersRevealed = canRevealAnswers(exercise, orderedSubmissions.length);
   const answerByQuestionId = new Map((submission.answers ?? []).map((answer) => [answer.questionId, answer]));
   const orderedQuestions = [...(exercise.questions ?? [])].sort(
     (left, right) => Number(left.order ?? 0) - Number(right.order ?? 0)
@@ -102,9 +105,9 @@ export async function getStudentSubmissionReview({
       id: question.id,
       question: question.title,
       submittedAnswer: formatStudentAnswer(answer?.answerData, question.options ?? []),
-      earnedPoints,
+      earnedPoints: answersRevealed ? earnedPoints : null,
       maxPoints: isGraded ? maxPoints : null,
-      result
+      result: answersRevealed ? result : 'hidden_until_answers_are_shown'
     };
   });
 
@@ -113,6 +116,7 @@ export async function getStudentSubmissionReview({
     exerciseTitle: exercise.title,
     attemptCount: orderedSubmissions.length,
     selectedAttempt,
+    answersRevealed,
     submission: {
       id: submission.id,
       submittedAt: submission.createdAt,

@@ -3648,7 +3648,9 @@
     "user_limit_reached": "Bạn đã dùng hết hạn mức AI cá nhân của tháng này.",
     "view_ai_limits": "Xem hạn mức",
     "error_ai_disabled": "AI đang tắt cho tổ chức này.",
-    "error_ai_not_configured": "Máy chủ chưa được cấu hình AI."
+    "error_ai_not_configured": "Máy chủ chưa được cấu hình AI.",
+    "error_course_access": "Bạn chưa được giao khóa học này nên chưa dùng được trợ giảng AI.",
+    "error_content_locked": "Nội dung này chưa được mở cho bạn, nên trợ giảng AI chưa thể đọc."
   },
   "side_panel": {
     "close_aria": "Đóng bảng",

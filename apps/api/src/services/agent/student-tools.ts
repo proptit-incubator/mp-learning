@@ -15,6 +15,8 @@ import { getStudentSubmissionReview } from '@api/services/submission/student-sub
 import { AppError } from '@api/utils/errors';
 import { AgentEvent, trackAgentEvent } from '@cio/core/utils/tinybird';
 import { verifyExerciseBelongsToCourse, verifyLessonBelongsToCourse } from '@cio/core/services/agent/chat-context';
+import { assertEnrolledStudentContentAccess } from '@api/services/course/access';
+import { ContentType } from '@cio/utils/constants/content';
 
 /**
  * Student agent tools — read-only, course-scoped.
@@ -136,6 +138,15 @@ const searchCourseParam = z.object({
 
 /** Builds the read-only student tools scoped to one course and learner. */
 export function buildStudentAgentTools(orgId: string, userId: string, courseId: string, _settings: AiTutorSettings) {
+  /** The same gate the lesson and exercise pages use: published course, unlocked item, progression reached. */
+  const assertCanOpen = (contentId: string, type: ContentType.Lesson | ContentType.Exercise) =>
+    assertEnrolledStudentContentAccess({ courseId, profileId: userId, contentId, type });
+  const canOpen = (contentId: string, type: ContentType.Lesson | ContentType.Exercise) =>
+    assertCanOpen(contentId, type).then(
+      () => true,
+      () => false
+    );
+
   return {
     list_course_outline: tool({
       description:
@@ -157,6 +168,7 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
       execute: async (args) => {
         return executeStudentTool('read_lesson', { orgId, userId, courseId, args }, async () => {
           await verifyLessonBelongsToCourse(args.lessonId, courseId);
+          await assertCanOpen(args.lessonId, ContentType.Lesson);
           const lesson = await getLesson(args.lessonId);
           const lessonWithLangs = lesson as {
             id: string;
@@ -186,6 +198,7 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
       execute: async (args) => {
         return executeStudentTool('read_lesson_transcript', { orgId, userId, courseId, args }, async () => {
           await verifyLessonBelongsToCourse(args.lessonId, courseId);
+          await assertCanOpen(args.lessonId, ContentType.Lesson);
 
           return getLessonVideoTranscript(args.lessonId, orgId, { userId, courseId });
         });
@@ -199,6 +212,7 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
       execute: async (args) => {
         return executeStudentTool('read_exercise', { orgId, userId, courseId, args }, async () => {
           await verifyExerciseBelongsToCourse(args.exerciseId, courseId);
+          await assertCanOpen(args.exerciseId, ContentType.Exercise);
           const exercise = await getExercise(args.exerciseId);
 
           const questions = (exercise.questions ?? []).map((q) =>
@@ -302,7 +316,13 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
             snippet: makeSnippet(em.description ?? em.title ?? '', args.query)
           }));
 
-          const merged = [...lessonsResult, ...exercisesResult].slice(0, limit);
+          const candidates = [...lessonsResult, ...exercisesResult];
+          const openable = await Promise.all(
+            candidates.map((result) =>
+              canOpen(result.id, result.type === 'lesson' ? ContentType.Lesson : ContentType.Exercise)
+            )
+          );
+          const merged = candidates.filter((_, index) => openable[index]).slice(0, limit);
 
           return { query: args.query, results: merged };
         });

@@ -11,6 +11,7 @@ vi.mock('@cio/core/utils/tinybird', () => ({
   AgentEvent: { TOOL_CALLED: 'tool_called', TOOL_COMPLETED: 'tool_completed' },
   trackAgentEvent: vi.fn()
 }));
+vi.mock('@api/services/course/access', () => ({ assertEnrolledStudentContentAccess: vi.fn() }));
 vi.mock('@cio/core/services/agent/chat-context', () => ({
   verifyExerciseBelongsToCourse: vi.fn(),
   verifyLessonBelongsToCourse: vi.fn()
@@ -20,6 +21,8 @@ import { getExercise } from '@cio/core/services/exercise/exercise';
 import { getGroupMemberIdByCourseAndProfile } from '@cio/db/queries/group';
 import { getSubmissionsByCourseIdWithDetails } from '@cio/db/queries/submission';
 import { verifyExerciseBelongsToCourse } from '@cio/core/services/agent/chat-context';
+import { getLesson } from '@cio/core/services/lesson/lesson';
+import { assertEnrolledStudentContentAccess } from '@api/services/course/access';
 import { buildStudentAgentTools } from './student-tools';
 
 const exercise = {
@@ -234,5 +237,62 @@ describe('read_my_submissions', () => {
         ]
       }
     });
+  });
+});
+
+describe('tutor access to course content', () => {
+  const tools = () => buildStudentAgentTools('org-1', 'profile-1', 'course-1', {} as never);
+
+  it('refuses a lesson the learner could not open themselves', async () => {
+    vi.mocked(assertEnrolledStudentContentAccess).mockRejectedValueOnce(new Error('Content is locked'));
+
+    await expect(tools().read_lesson.execute!({ lessonId: 'lesson-1' }, {} as never)).rejects.toThrow(
+      'Content is locked'
+    );
+    expect(getLesson).not.toHaveBeenCalled();
+    expect(assertEnrolledStudentContentAccess).toHaveBeenCalledWith(
+      expect.objectContaining({ courseId: 'course-1', profileId: 'profile-1', contentId: 'lesson-1' })
+    );
+  });
+
+  it('refuses an exercise the learner could not open themselves', async () => {
+    vi.mocked(assertEnrolledStudentContentAccess).mockRejectedValueOnce(new Error('Content is locked'));
+
+    await expect(tools().read_exercise.execute!({ exerciseId: 'exercise-1' }, {} as never)).rejects.toThrow(
+      'Content is locked'
+    );
+  });
+});
+
+describe('read_my_submissions while answers are hidden', () => {
+  it('reports the score but not which questions were right', async () => {
+    vi.mocked(getGroupMemberIdByCourseAndProfile).mockResolvedValue('member-1');
+    vi.mocked(getExercise).mockResolvedValue({
+      ...exercise,
+      answerVisibility: 'never',
+      allowMultipleAttempts: true,
+      maxAttempts: null,
+      completionPolicy: 'passed',
+      isComplete: false
+    } as unknown as Awaited<ReturnType<typeof getExercise>>);
+    vi.mocked(getSubmissionsByCourseIdWithDetails).mockResolvedValue([
+      {
+        id: 'submission-1',
+        createdAt: '2026-11-04T08:00:00.000Z',
+        gradingState: 'completed',
+        statusId: 3,
+        total: 2,
+        feedback: null,
+        answers: [
+          { questionId: 10, point: 2, answerData: { type: 'RADIO', optionId: 101 } },
+          { questionId: 11, point: 0, answerData: { type: 'RADIO', optionId: 111 } }
+        ]
+      }
+    ] as never);
+
+    const result = await readMySubmissions({ exerciseId: 'exercise-1' });
+
+    expect(result).toMatchObject({ answersRevealed: false, submission: { score: 2 } });
+    expect(JSON.stringify(result)).not.toMatch(/"(correct|incorrect|partially_correct)"/);
   });
 });

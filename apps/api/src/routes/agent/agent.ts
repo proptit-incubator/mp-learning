@@ -42,9 +42,12 @@ import { getStudentSubmissionReview } from '@api/services/submission/student-sub
 import { parseAndStoreDocument } from '@cio/core/services/agent/document';
 import { generateCourseMeta } from '@api/services/agent/title-generation';
 import { generateFieldText } from '@api/services/agent/text-generation';
-import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
+import { isCourseTeamMemberOrOrgAdmin, isUserCourseMemberOrOrgAdmin } from '@cio/db/queries/group';
+import { assertEnrolledStudentContentAccess, assertEnrolledStudentCourseAccess } from '@api/services/course/access';
+import { ContentType } from '@cio/utils/constants/content';
 import { ROLE } from '@cio/utils/constants';
-import { getChatConversation } from '@cio/db/queries/agent';
+import { getChatConversation, getOrgContentLocale } from '@cio/db/queries/agent';
+import { pickLessonContent } from '@cio/utils/functions/lesson-content';
 import {
   AgentRole,
   AIProvider,
@@ -79,6 +82,37 @@ import { buildModelContextMessages } from '@cio/core/services/agent/model-contex
 import { summarizeConversation } from '@cio/core/services/agent/summarize';
 import { agentHistoryRouter } from './history';
 import { agentRunsRouter } from './runs';
+
+/**
+ * The tutor reads the course for the learner, so it opens only what the learner could open themselves: a course they
+ * belong to, published, and the lesson or exercise in view when it is unlocked for them.
+ */
+async function assertLearnerCanUseTutor(
+  courseId: string,
+  profileId: string,
+  context: { lessonId?: string; exerciseId?: string } | undefined
+) {
+  if (!(await isUserCourseMemberOrOrgAdmin(courseId, profileId))) {
+    throw new AppError('You are not enrolled in this course', 'COURSE_ACCESS_DENIED', 403);
+  }
+  await assertEnrolledStudentCourseAccess({ courseId, profileId });
+  if (context?.lessonId) {
+    await assertEnrolledStudentContentAccess({
+      courseId,
+      profileId,
+      contentId: context.lessonId,
+      type: ContentType.Lesson
+    });
+  }
+  if (context?.exerciseId) {
+    await assertEnrolledStudentContentAccess({
+      courseId,
+      profileId,
+      contentId: context.exerciseId,
+      type: ContentType.Exercise
+    });
+  }
+}
 
 /** Writing course content with AI is for L&D and the people who run the course. */
 async function requireAiAuthor(userRole: number | null | undefined, userId: string, courseId?: string) {
@@ -422,6 +456,10 @@ const agentCoreRouter = new Hono()
         throw new AppError('Upgrade required to use this AI model', 'UPGRADE_REQUIRED', 403);
       }
 
+      if (role === AgentRole.STUDENT) {
+        await assertLearnerCanUseTutor(courseId, user.id, context);
+      }
+
       // Students go through tutor policy (workspace toggle, pool, per-learner cap).
       // Teachers continue to use the existing pool-only check.
       const studentPolicy =
@@ -437,7 +475,10 @@ const agentCoreRouter = new Hono()
         documentIds.length > 0 ? loadDocumentsMeta(documentIds) : Promise.resolve([])
       ]);
 
-      const existingSections = await listCourseSections(courseId);
+      const [existingSections, contentLocale] = await Promise.all([
+        listCourseSections(courseId),
+        getOrgContentLocale(orgId)
+      ]);
 
       let lessonTitle: string | undefined;
       let lessonContent: string | undefined;
@@ -449,8 +490,11 @@ const agentCoreRouter = new Hono()
           const lessonWithLangs = lesson as {
             lessonLanguages?: Array<{ locale: string; content: string | null }>;
           };
-          const langContent = lessonWithLangs.lessonLanguages?.find((ll) => ll.locale === 'en');
-          lessonContent = langContent?.content || undefined;
+          lessonContent =
+            pickLessonContent(
+              Object.fromEntries((lessonWithLangs.lessonLanguages ?? []).map((ll) => [ll.locale, ll.content])),
+              contentLocale
+            ) || undefined;
         } catch {
           // Lesson not found or doesn't belong — continue without lesson context
         }
@@ -489,7 +533,7 @@ const agentCoreRouter = new Hono()
         courseDescription: courseRow.description || undefined,
         userId: user.id,
         role,
-        locale: 'en',
+        locale: contentLocale,
         lessonId: context?.lessonId,
         lessonTitle,
         lessonContent,

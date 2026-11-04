@@ -38,3 +38,14 @@ export async function setOrgAiPolicy(orgId: string, policy: StoredAiPolicy): Pro
     throw new Error('Failed to update org AI policy');
   }
 }
+
+/** The language course content is written in: the organization's enforced interface language, else Vietnamese. */
+export async function getOrgContentLocale(orgId: string): Promise<'vi' | 'en'> {
+  const [row] = await db
+    .select({ settings: schema.organization.settings })
+    .from(schema.organization)
+    .where(eq(schema.organization.id, orgId))
+    .limit(1);
+
+  return row?.settings?.language?.locale === 'en' ? 'en' : 'vi';
+}

@@ -151,7 +151,9 @@
     USER_AI_LIMIT_REACHED: 'ai_assistant.user_limit_reached',
     TOKEN_LIMIT_REACHED: 'ai_assistant.tokens_exhausted',
     AI_DISABLED: 'ai_assistant.error_ai_disabled',
-    AI_NOT_CONFIGURED: 'ai_assistant.error_ai_not_configured'
+    AI_NOT_CONFIGURED: 'ai_assistant.error_ai_not_configured',
+    COURSE_ACCESS_DENIED: 'ai_assistant.error_course_access',
+    'Content is locked': 'ai_assistant.error_content_locked'
   };
 
   function getUserFriendlyErrorMessage(errorMessage: string): string {

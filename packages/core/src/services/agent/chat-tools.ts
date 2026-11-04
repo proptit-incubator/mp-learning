@@ -19,6 +19,7 @@ import type { TCourseLandingPageUpdate } from '@cio/utils/validation/course';
 import { listCourseSections, createCourseSection, updateCourseSectionService } from '../course/section';
 import { createLesson, getLesson, updateLessonService } from '../lesson/lesson';
 import { upsertLessonLanguageService } from '../lesson-language';
+import { pickLessonContent } from '@cio/utils/functions/lesson-content';
 import {
   createExercise,
   getExercise,
@@ -478,8 +479,11 @@ export function buildAgentTools(
             title: string;
             lessonLanguages?: Array<{ locale: string; content: string | null }>;
           };
-          const langContent = lessonWithLangs.lessonLanguages?.find((ll) => ll.locale === args.locale);
-          return { id: lesson.id, title: lesson.title, content: langContent?.content || null, locale: args.locale };
+          const content = pickLessonContent(
+            Object.fromEntries((lessonWithLangs.lessonLanguages ?? []).map((ll) => [ll.locale, ll.content])),
+            args.locale
+          );
+          return { id: lesson.id, title: lesson.title, content: content || null, locale: args.locale };
         });
       }
     }),
@@ -592,7 +596,7 @@ export function buildAgentTools(
           const normalizedContent = normalizeAgentLessonContent(args.content, lesson.title);
 
           await upsertLessonLanguageService(args.lessonId, {
-            locale: args.locale as 'en',
+            locale: args.locale,
             content: normalizedContent
           });
           return {

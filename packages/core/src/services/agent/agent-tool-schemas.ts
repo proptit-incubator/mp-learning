@@ -29,7 +29,8 @@ const zEnabledQuestionTypeId = z
 // This prevents prompt injection from tricking the LLM into targeting another course.
 
 export const emptyParam = z.object({});
-export const lessonReadParam = z.object({ lessonId: z.string(), locale: z.string().default('en') });
+export const ZContentLocale = z.enum(['vi', 'en']);
+export const lessonReadParam = z.object({ lessonId: z.string(), locale: ZContentLocale.default('vi') });
 export const lessonTranscriptParam = z.object({ lessonId: z.string() });
 export const exerciseReadParam = z.object({ exerciseId: z.string() });
 const TOP_LEVEL_ORDER_NOTE =
@@ -95,7 +96,7 @@ export const updateLessonParam = z
   );
 export const updateContentParam = z.object({
   lessonId: z.string(),
-  locale: z.string().default('en'),
+  locale: ZContentLocale.default('vi'),
   content: z.string().min(1)
 });
 
