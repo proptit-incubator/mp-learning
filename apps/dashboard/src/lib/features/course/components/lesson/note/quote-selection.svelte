@@ -13,7 +13,7 @@
 
   let { root = undefined, enabled: requested = false }: Props = $props();
 
-  const enabled = $derived(requested && $aiEnabled);
+  const enabled = $derived(requested && $aiEnabled === true);
 
   let top = $state(0);
   let left = $state(0);

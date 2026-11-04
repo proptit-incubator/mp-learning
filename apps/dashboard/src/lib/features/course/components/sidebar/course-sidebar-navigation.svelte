@@ -164,7 +164,7 @@
         url: getNavItemRoute(id, 'ai-tutor'),
         isActive: currentPath === getNavItemRoute(id, 'ai-tutor'),
         show() {
-          return !isStudent && $aiEnabled;
+          return !isStudent && $aiEnabled === true;
         },
         icon: getNavIcon(NAV_IDS.AI_ASSISTANT)
       },

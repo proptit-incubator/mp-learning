@@ -12,7 +12,7 @@
   import { aiEnabled } from '$lib/utils/store/ai';
 
   const navItems = $derived(
-    getOrgNavigationItems($currentOrgPath, $currentOrg, $isOrgAdmin, $t, page.url.pathname, $aiEnabled)
+    getOrgNavigationItems($currentOrgPath, $currentOrg, $isOrgAdmin, $t, page.url.pathname, $aiEnabled === true)
   );
 
   const breadcrumbs = $derived(

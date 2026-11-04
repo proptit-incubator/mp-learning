@@ -17,7 +17,7 @@
       page.url.pathname + page.url.search,
       {},
       orgNavCountsApi.counts,
-      $aiEnabled
+      $aiEnabled === true
     )
   );
 </script>

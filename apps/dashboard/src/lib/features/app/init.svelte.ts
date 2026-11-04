@@ -103,9 +103,9 @@ class AppInitApi extends BaseApi {
     this.resetErrors();
     this.success = true;
     this.data = accountData;
+    aiConfigured.set(accountData.aiConfigured);
     this.setupStores(params);
     licenseApi.syncFromAccount(accountData.licenseFeatures, get(currentOrg));
-    aiConfigured.set(accountData.aiConfigured);
     this.setUserAnalytics();
     this.routeUserToNextPage(params);
   }
@@ -152,9 +152,9 @@ class AppInitApi extends BaseApi {
       return;
     }
 
+    aiConfigured.set(this.data.aiConfigured);
     this.setOrgStore(params);
     licenseApi.syncFromAccount(this.data.licenseFeatures, get(currentOrg));
-    aiConfigured.set(this.data.aiConfigured);
   }
 
   /*
