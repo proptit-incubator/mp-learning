@@ -1541,26 +1541,11 @@
         },
         "exercises": {
           "new_exercise_modal": {
-            "options": {
-              "from_scratch": "From Scratch",
-              "from_scratch_subtitle": "Create your exercise from scratch if you have your questions already prepared",
-              "use_template": "Use a Template",
-              "use_template_subtitle": "Select from 100+ templates of predefined exercise to help you get started",
-              "use_ai": "Use AI",
-              "use_ai_subtitle": "You can generate an exercise with AI from your notes"
-            },
-            "how": "How do you want to create your exercise",
             "coming_soon": "Coming soon",
-            "next": "Next",
             "title": "Give your exercise a title",
             "title_placeholder": "Exercise name",
             "finish": "Finish",
-            "select_template": "Select a template",
-            "points": "Points",
-            "no_templates_for_tag": "No templates available for this tag.",
-            "errors": {
-              "template_fetch": "Error fetching templates. Please try again."
-            }
+            "points": "Points"
           },
           "all_exercises": {
             "heading": "All Exercise",

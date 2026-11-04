@@ -3,19 +3,6 @@ export const ROUTES = {
   LESSONS: 'lessons'
 };
 
-export const EXERCISE_TEMPLATE_TAGS = {
-  HTML: 'HTML',
-  CSS: 'CSS',
-  JS: 'JS',
-  Typescript: 'Typescript',
-  ReactJS: 'ReactJS',
-  VueJS: 'VueJS',
-  NodeJS: 'NodeJS',
-  Python: 'Python',
-  PHP: 'PHP',
-  GIT: 'GIT'
-};
-
 /** Named sort keys for course lists (URL `sort`, localStorage, filter UI). */
 export const CourseSortBy = {
   DateCreated: 'date_created',

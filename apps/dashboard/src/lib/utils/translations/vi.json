@@ -1541,26 +1541,11 @@
         },
         "exercises": {
           "new_exercise_modal": {
-            "options": {
-              "from_scratch": "Tạo từ đầu",
-              "from_scratch_subtitle": "Tạo bài tập từ đầu nếu bạn đã chuẩn bị sẵn câu hỏi",
-              "use_template": "Dùng mẫu",
-              "use_template_subtitle": "Chọn từ hơn 100 mẫu bài tập có sẵn để bắt đầu nhanh",
-              "use_ai": "Dùng AI",
-              "use_ai_subtitle": "Dùng AI để tạo bài tập từ ghi chú của bạn"
-            },
-            "how": "Bạn muốn tạo bài tập theo cách nào",
             "coming_soon": "Sắp ra mắt",
-            "next": "Tiếp theo",
             "title": "Đặt tiêu đề cho bài tập",
             "title_placeholder": "Tên bài tập",
             "finish": "Hoàn tất",
-            "select_template": "Chọn mẫu",
-            "points": "Điểm",
-            "no_templates_for_tag": "Chưa có mẫu nào cho thẻ này.",
-            "errors": {
-              "template_fetch": "Không tải được danh sách mẫu. Vui lòng thử lại."
-            }
+            "points": "Điểm"
           },
           "all_exercises": {
             "heading": "Tất cả bài tập",

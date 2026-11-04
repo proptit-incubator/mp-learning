@@ -30,7 +30,7 @@ export const LESSON_STEPPER_DEFAULT_STATE: StepperState = {
 /** Default state for the exercise create stepper (label set at runtime from i18n) */
 export const EXERCISE_STEPPER_DEFAULT_STATE: StepperState = {
   currentStep: 0,
-  totalSteps: 2,
+  totalSteps: 1,
   canProceed: false,
   isSubmitting: false,
   primaryActionLabel: ''
@@ -59,14 +59,6 @@ export const CONTENT_OPTIONS = [
 ] as const;
 
 /** Exercise creation flow type (from scratch, template, or AI) */
-export const EXERCISE_CREATE_TYPE = {
-  SCRATCH: 0,
-  TEMPLATE: 1,
-  AI: 2
-} as const;
-
-export type ExerciseCreateType = (typeof EXERCISE_CREATE_TYPE)[keyof typeof EXERCISE_CREATE_TYPE];
-
 /** Success message translation keys keyed by created ContentType */
 export const SUCCESS_SENTENCE_KEYS: Record<ContentType, string> = {
   [ContentType.Section]: 'course.navItem.lessons.add_content_created_section',
