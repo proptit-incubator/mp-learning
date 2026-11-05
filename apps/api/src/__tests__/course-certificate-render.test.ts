@@ -123,3 +123,14 @@ describe('course certificate rendering', () => {
     await expect(verifyCertificate('UNKNOWN123')).rejects.toMatchObject({ statusCode: 404 });
   });
 });
+
+describe('default certificate template', () => {
+  it('uses the MP Transformation template unless a design was chosen in the editor', async () => {
+    const { resolveCertificateDesign } = await import('@cio/certificates');
+
+    expect(resolveCertificateDesign({}).templateId).toBe('mp');
+    expect(resolveCertificateDesign({ theme: 'professional' }).templateId).toBe('mp');
+    expect(resolveCertificateDesign({ theme: 'classique' }).templateId).toBe('mp');
+    expect(resolveCertificateDesign({ design: { templateId: 'noir' } } as never).templateId).toBe('noir');
+  });
+});

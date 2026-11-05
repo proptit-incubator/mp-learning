@@ -108,14 +108,26 @@ const FIELDS = {
   }
 } as const;
 
+/** Corner ribbons: parallel bands that each run from the top edge to the right edge of the facet box. */
+const FACET_SLOPE = facetHeight / 270;
+const FACET_BANDS = [
+  { from: 0, to: 96, color: BRAND.navy },
+  { from: 96, to: 176, color: BRAND.blue },
+  { from: 176, to: 236, color: BRAND.cyan },
+  { from: 236, to: 270, color: BRAND.sky }
+] as const;
+
+function facetBand(from: number, to: number): string {
+  const top = (offset: number) => `${facetWidth - offset},0`;
+  const side = (offset: number) => `${facetWidth},${Math.round(offset * FACET_SLOPE)}`;
+  return from === 0 ? `${facetWidth},0 ${top(to)} ${side(to)}` : `${top(from)} ${top(to)} ${side(to)} ${side(from)}`;
+}
+
 function renderFacets(): string {
   return `
     <svg class="facets" viewBox="0 0 ${facetWidth} ${facetHeight}" aria-hidden="true">
-      <polygon points="${facetWidth},0 ${facetWidth - 96},0 ${facetWidth},150" fill="${BRAND.navy}" />
-      <polygon points="${facetWidth - 96},0 ${facetWidth - 176},0 ${facetWidth},230 ${facetWidth},150" fill="${BRAND.blue}" />
-      <polygon points="${facetWidth - 176},0 ${facetWidth - 236},0 ${facetWidth - 30},${facetHeight} ${facetWidth},${facetHeight} ${facetWidth},230" fill="${BRAND.cyan}" />
-      <polygon points="${facetWidth - 236},0 ${facetWidth - 270},0 ${facetWidth - 86},${facetHeight} ${facetWidth - 30},${facetHeight}" fill="${BRAND.sky}" />
-      <polygon points="${facetWidth - 96},0 ${facetWidth - 120},0 ${facetWidth - 18},128" fill="${BRAND.navy}" opacity="0.35" />
+      ${FACET_BANDS.map((band) => `<polygon points="${facetBand(band.from, band.to)}" fill="${band.color}" />`).join('')}
+      <polygon points="${facetBand(96, 120)}" fill="${BRAND.navy}" opacity="0.35" />
     </svg>
   `;
 }

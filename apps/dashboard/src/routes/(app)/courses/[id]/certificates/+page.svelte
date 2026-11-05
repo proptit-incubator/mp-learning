@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { DEFAULT_CERTIFICATE_DESIGN } from '@cio/certificates';
   import { page } from '$app/state';
   import { replaceState } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -95,7 +96,7 @@
       description: courseApi.course.description ?? '',
       certificate: {
         isDownloadable: courseApi.course.certificate?.isDownloadable ?? false,
-        theme: certificateTheme || 'classique',
+        theme: certificateTheme || DEFAULT_CERTIFICATE_DESIGN.templateId,
         design: courseApi.course.certificate?.design,
         emailMessage: courseApi.course.certificate?.emailMessage ?? null
       }

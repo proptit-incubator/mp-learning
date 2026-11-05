@@ -37,13 +37,13 @@ export function resolveTemplateId(value: string | undefined | null): Certificate
 }
 
 /**
- * Coerces a stored `course.certificate` record, resolving legacy themes and
- * missing fields into a complete `CertificateDesign` suitable for `renderCertificate`.
+ * Coerces a stored `course.certificate` record into a complete `CertificateDesign` for `renderCertificate`.
+ * The template comes only from a design someone chose in the editor; courses that never chose one, including
+ * those carrying an upstream `theme` default, use the MP Transformation template.
  */
 export function resolveCertificateDesign(stored?: StoredCertificateRecord | null): CertificateDesign {
   const design = stored?.design;
-  const legacyTheme = stored?.theme ?? undefined;
-  const templateId = resolveTemplateId(design?.templateId ?? legacyTheme);
+  const templateId = resolveTemplateId(design?.templateId);
 
   const accentColor =
     design?.accentColor && /^#[0-9a-fA-F]{6}$/.test(design.accentColor)
