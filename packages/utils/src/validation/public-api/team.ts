@@ -7,7 +7,7 @@ import { ZPublicApiPaginationQuery } from './pagination';
 const ZPublicApiTeamRoleId = z
   .union([z.literal(ROLE.ADMIN), z.literal(ROLE.TUTOR)])
   .describe(
-    "1 = admin, 2 = tutor. You cannot change your own role, and the organization must keep at least one admin. A pending member's invite is updated to match."
+    "1 = admin, 2 = L&D. You cannot change your own role, and the organization must keep at least one admin. A pending member's invite is updated to match."
   );
 
 export const ZPublicApiTeamQuery = ZPublicApiPaginationQuery;

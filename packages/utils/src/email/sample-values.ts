@@ -11,7 +11,7 @@ const localizedSamples: Record<EmailLocale, Record<string, string>> = {
     status: 'Reviewed',
     score: '8/10',
     lesson_title: 'Example lesson',
-    course_message: 'A note from your instructor.',
+    course_message: 'A note from your training team.',
     course_names: 'Example course',
     post_content: 'An example course post.'
   },
@@ -25,7 +25,7 @@ const localizedSamples: Record<EmailLocale, Record<string, string>> = {
     status: 'Đã chấm',
     score: '8/10',
     lesson_title: 'Bài học mẫu',
-    course_message: 'Lời nhắn từ giảng viên của bạn.',
+    course_message: 'Lời nhắn từ bộ phận đào tạo.',
     course_names: 'Khóa học mẫu',
     post_content: 'Một bài đăng mẫu trong khóa học.'
   }

@@ -2,7 +2,7 @@ import { ClassroomIoApiClient, ClassroomIoApiError } from './api-client';
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { getConfig } from './config';
+import { getConfig, MCP_VERSION } from './config';
 import { registerAnalyticsTools } from './tools/analytics';
 import { registerAudienceTools } from './tools/audience';
 import { registerLessonTools } from './tools/lessons';
@@ -18,15 +18,14 @@ import { registerCourseSubmissionTools } from './tools/course-submissions';
 import { registerCourseTools } from './tools/courses';
 import { registerCourseTemplateTools } from './tools/course-templates';
 import { registerEmailTemplateTools } from './tools/email-templates';
-import { registerLandingPageTools } from './tools/landing-page';
 import { registerTeamTools } from './tools/team';
 
 async function main() {
   const config = getConfig();
   const apiClient = new ClassroomIoApiClient(config);
   const server = new McpServer({
-    name: 'classroomio-course-authoring',
-    version: '0.0.1'
+    name: 'mp-learning',
+    version: MCP_VERSION
   });
 
   registerCourseDraftTools(server, apiClient);
@@ -45,7 +44,6 @@ async function main() {
   registerAudienceTools(server, apiClient);
   registerTeamTools(server, apiClient);
   registerEmailTemplateTools(server, apiClient);
-  registerLandingPageTools(server, apiClient);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

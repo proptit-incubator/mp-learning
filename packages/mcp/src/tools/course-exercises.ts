@@ -27,8 +27,8 @@ const CREATE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, i
 const UPDATE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, idempotentHint: true };
 const DESTRUCTIVE: ToolAnnotations = { readOnlyHint: false, destructiveHint: true, idempotentHint: false };
 
-const COURSE_TEAM_RULE = 'the API key creator must be a course tutor/admin or an org admin';
-const ORG_TEAM_RULE = 'the API key creator must be an org admin or tutor';
+const COURSE_TEAM_RULE = 'the API key creator must be an org admin or L&D';
+const ORG_TEAM_RULE = 'the API key creator must be an org admin or L&D';
 const LIVE_EDIT_NOTE = 'Changes apply immediately, also on published courses.';
 
 export const ZListCourseExercisesToolInput = ZPublicApiCourseExercisesQuery.extend({

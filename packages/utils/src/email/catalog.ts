@@ -15,7 +15,7 @@ const en: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: 'You have access to {{course_name}}',
-      body: '<p>Hi there,</p><p>You now have access to <strong>{{course_name}}</strong> in <strong>{{org_name}}</strong>.</p><p>If you run into any issues, reach out to your instructor.</p><p>Due date: <strong>{{due_date}}</strong></p><p>Training batch: {{batch_label}}</p><p>Cheers,<br>{{org_name}}</p>',
+      body: '<p>Hi there,</p><p>You now have access to <strong>{{course_name}}</strong> in <strong>{{org_name}}</strong>.</p><p>If you run into any issues, reach out to your training team.</p><p>Due date: <strong>{{due_date}}</strong></p><p>Training batch: {{batch_label}}</p><p>Cheers,<br>{{org_name}}</p>',
       cta: 'Open course'
     },
     studentCourseCompletion: {
@@ -91,7 +91,7 @@ const vi: StudentEmailLocaleCopy = {
     },
     studentCourseWelcome: {
       subject: 'Bạn đã có quyền truy cập {{course_name}}',
-      body: '<p>Xin chào,</p><p>Bạn đã có quyền truy cập <strong>{{course_name}}</strong> tại <strong>{{org_name}}</strong>.</p><p>Nếu gặp vấn đề, hãy liên hệ với giảng viên.</p><p>Hạn hoàn thành: <strong>{{due_date}}</strong></p><p>Đợt đào tạo: {{batch_label}}</p><p>Thân mến,<br>{{org_name}}</p>',
+      body: '<p>Xin chào,</p><p>Bạn đã có quyền truy cập <strong>{{course_name}}</strong> tại <strong>{{org_name}}</strong>.</p><p>Nếu gặp vấn đề, hãy liên hệ bộ phận đào tạo.</p><p>Hạn hoàn thành: <strong>{{due_date}}</strong></p><p>Đợt đào tạo: {{batch_label}}</p><p>Thân mến,<br>{{org_name}}</p>',
       cta: 'Mở khóa học'
     },
     studentCourseCompletion: {

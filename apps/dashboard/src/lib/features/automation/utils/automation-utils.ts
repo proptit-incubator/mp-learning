@@ -5,6 +5,8 @@ const PUBLIC_API_SETUP_SECRET_PLACEHOLDER = '<paste-your-api-key>';
 
 const API_SERVER_URL = (env.PUBLIC_SERVER_URL || '').replace(/\/$/, '');
 const PUBLIC_API_BASE_URL = `${API_SERVER_URL}/public-api/v1`;
+/** Built from packages/mcp and served by the dashboard (see docker/Dockerfile.dashboard). */
+const MCP_PACKAGE_URL = `${API_SERVER_URL}/mcp/mp-learning-mcp.tgz`;
 
 export const MCP_DOCS_URL = '/help/automation/mcp';
 export const PUBLIC_API_DOCS_URL = '/help/automation/api-keys';
@@ -12,7 +14,7 @@ export const WEBHOOKS_DOCS_URL = '/help/automation/webhooks';
 export const WEBHOOKS_VERIFY_SIGNATURE_DOCS_URL = `${WEBHOOKS_DOCS_URL}#xac-thuc-chu-ky`;
 
 function getServerPath() {
-  return 'npx -y @classroomio/mcp';
+  return `npx -y ${MCP_PACKAGE_URL}`;
 }
 
 export function getPublicApiSetupSecret(secret: string | null) {
@@ -109,7 +111,7 @@ export function getClaudeCodeSnippet(secret: string | null) {
 
   return `claude mcp add-json mp-learning '{
   "command": "npx",
-  "args": ["-y", "@classroomio/mcp"],
+  "args": ["-y", "${MCP_PACKAGE_URL}"],
   "env": {
     "CLASSROOMIO_API_URL": "${API_SERVER_URL}",
     "CLASSROOMIO_API_KEY": "${apiKey}"
@@ -123,7 +125,7 @@ export function getCodexSnippet(secret: string | null) {
   return `codex mcp add mp-learning \\
   --env CLASSROOMIO_API_URL=${API_SERVER_URL} \\
   --env CLASSROOMIO_API_KEY=${apiKey} \\
-  -- npx -y @classroomio/mcp`;
+  -- npx -y ${MCP_PACKAGE_URL}`;
 }
 
 export function getOpenCodeSnippet(secret: string | null) {
@@ -134,7 +136,7 @@ export function getOpenCodeSnippet(secret: string | null) {
   "mcp": {
     "mp-learning": {
       "type": "local",
-      "command": ["npx", "-y", "@classroomio/mcp"],
+      "command": ["npx", "-y", "${MCP_PACKAGE_URL}"],
       "enabled": true,
       "environment": {
         "CLASSROOMIO_API_URL": "${API_SERVER_URL}",
@@ -153,7 +155,7 @@ export function getCursorSnippet(secret: string | null) {
   "mcpServers": {
     "mp-learning": {
       "command": "npx",
-      "args": ["-y", "@classroomio/mcp"],
+      "args": ["-y", "${MCP_PACKAGE_URL}"],
       "env": {
         "CLASSROOMIO_API_URL": "${API_SERVER_URL}",
         "CLASSROOMIO_API_KEY": "${apiKey}"

@@ -110,7 +110,7 @@ function withRedirectFallbackBody(response: Response, request: Request): Respons
 export const handle: Handle = async (args) => {
   const { event } = args;
 
-  if (shouldForwardToApi(event.url.pathname)) {
+  if (shouldForwardToApi(event.url.pathname, event.request.headers.get('authorization'))) {
     return proxyRequestToApi(event.request, event.getClientAddress());
   }
 

@@ -17,7 +17,7 @@ const CREATE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, i
 const UPDATE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, idempotentHint: true };
 const DESTRUCTIVE: ToolAnnotations = { readOnlyHint: false, destructiveHint: true, idempotentHint: false };
 
-const COURSE_TEAM_RULE = 'the API key creator must be a course tutor/admin or an org admin';
+const COURSE_TEAM_RULE = 'the API key creator must be an org admin or L&D';
 
 export const ZListCourseSectionsToolInput = ZPublicApiCourseSectionsQuery.extend({
   courseId: ZPublicApiCourseParam.shape.courseId

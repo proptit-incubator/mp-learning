@@ -61,7 +61,7 @@ export function registerEmailTemplateTools(server: McpServer, apiClient: Classro
 
   server.tool(
     'update_email_template',
-    `Save the body and, optionally, the subject of a student email in one language; ${ORG_ADMIN_RULE}. Requires a paid plan.`,
+    `Save the body and, optionally, the subject of a student email in one language; ${ORG_ADMIN_RULE}.`,
     updateEmailTemplateShape,
     WRITE,
     async (args) => {
@@ -76,7 +76,7 @@ export function registerEmailTemplateTools(server: McpServer, apiClient: Classro
 
   server.tool(
     'reset_email_template',
-    `Reset a student email in one language to the default, permanently deleting the saved version; ${ORG_ADMIN_RULE}. Requires a paid plan.`,
+    `Reset a student email in one language to the default, permanently deleting the saved version; ${ORG_ADMIN_RULE}.`,
     resetEmailTemplateShape,
     DESTRUCTIVE,
     async (args) => {

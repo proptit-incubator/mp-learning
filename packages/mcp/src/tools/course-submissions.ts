@@ -16,7 +16,7 @@ const READ_ONLY: ToolAnnotations = { readOnlyHint: true, destructiveHint: false 
 const UPDATE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, idempotentHint: true };
 const DESTRUCTIVE: ToolAnnotations = { readOnlyHint: false, destructiveHint: true, idempotentHint: false };
 
-const COURSE_TEAM_RULE = 'the API key creator must be a course tutor/admin or an org admin';
+const COURSE_TEAM_RULE = 'the API key creator must be an org admin or L&D';
 const COURSE_MEMBER_RULE =
   'the API key creator must be a course member (directly or through a program) or an org admin';
 

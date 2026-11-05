@@ -11,7 +11,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 
-const ORG_TEAM_RULE = 'the API key creator must be an org admin or tutor';
+const ORG_TEAM_RULE = 'the API key creator must be an org admin or L&D';
 const ORG_ADMIN_RULE = 'the API key creator must be an org admin';
 
 const READ_ONLY: ToolAnnotations = { readOnlyHint: true, destructiveHint: false };
@@ -56,7 +56,7 @@ export function registerCourseTemplateTools(server: McpServer, apiClient: Classr
 
   server.tool(
     'create_course_from_template',
-    `Create an unpublished course from a template, copying its content and settings; ${ORG_ADMIN_RULE}. The key creator is added to the new course as a tutor.`,
+    `Create an unpublished course from a template, copying its content and settings; ${ORG_ADMIN_RULE}. The key creator is added to the new course's team.`,
     shape(ZCreateCourseFromTemplateToolInput),
     CREATE,
     async (args) => {

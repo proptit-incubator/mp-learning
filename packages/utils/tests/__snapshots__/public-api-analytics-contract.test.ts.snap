@@ -10,7 +10,7 @@ exports[`public API analytics request contract > ZPublicApiCourseAnalyticsQuery 
       "type": "number",
     },
     "include": {
-      "description": "Comma-separated sections to return: summary, funnel. Default: summary. summary: totals (tutors, students, lessons, exercises) and per-student averages for progress, exercise completion and grade. funnel: course page view → enrollment → completion for this course over days.",
+      "description": "Comma-separated sections to return: summary, funnel. Default: summary. summary: totals (L&D, learners, lessons, exercises) and per-student averages for progress, exercise completion and grade. funnel: course page view → enrollment → completion for this course over days.",
       "items": {
         "enum": [
           "summary",

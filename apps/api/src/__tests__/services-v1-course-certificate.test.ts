@@ -260,11 +260,11 @@ describe('services/v1/courses/certificates', () => {
       expect(toEffectiveCertificateSettings(course({}))).toEqual(toEffectiveCertificateSettings(course(null)));
     });
 
-    it('maps a legacy theme-only record to a full design and keeps the stored theme', () => {
+    it('gives a legacy theme-only record the default design and keeps the stored theme', () => {
       const effective = toEffectiveCertificateSettings(course({ theme: 'noir' }));
 
       expect(effective.theme).toBe('noir');
-      expect(effective.design.templateId).toBe('noir');
+      expect(effective.design.templateId).toBe('mp');
       expect(effective.design.signatories).toHaveLength(2);
     });
 

@@ -44,7 +44,7 @@ export const ZPublicApiCreateAudienceResponse = z.object({
           'missing_email'
         ])
         .describe(
-          'ready: added to the organization and invited. already_member: a student who has joined; enrolled in courseIds directly. invite_resent: invited earlier but not joined; earlier invites are revoked and a new one is created. invalid_email, missing_email: skipped. duplicate_in_file: the address appears earlier in the request; skipped. is_staff: an admin or tutor of the organization; skipped. over_seat_limit: no student seats left on the plan; skipped'
+          'ready: added to the organization and invited. already_member: a student who has joined; enrolled in courseIds directly. invite_resent: invited earlier but not joined; earlier invites are revoked and a new one is created. invalid_email, missing_email: skipped. duplicate_in_file: the address appears earlier in the request; skipped. is_staff: an admin or L&D member of the organization; skipped. over_seat_limit: no student seats left on the plan; skipped'
         )
     })
   ),
@@ -63,7 +63,7 @@ export const ZPublicApiAssignAudienceCoursesResponse = z.object({
 export const ZPublicApiRemoveAudienceMemberResponse = z.object({
   id: z.number(),
   organizationId: z.string().uuid(),
-  roleId: z.number().describe('1 = admin, 2 = tutor, 3 = student'),
+  roleId: z.number().describe('1 = admin, 2 = L&D, 3 = learner'),
   profileId: z.string().uuid().nullable(),
   email: z.string().nullable(),
   verified: z.boolean().nullable(),

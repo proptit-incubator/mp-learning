@@ -9,7 +9,10 @@ export function generateSlug(source: string | null | undefined, options: Generat
   const base =
     (source ?? fallback)
       .trim()
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
+      .replace(/đ/g, 'd')
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')

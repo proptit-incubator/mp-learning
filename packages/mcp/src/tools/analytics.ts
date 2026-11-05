@@ -11,8 +11,8 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import { READ_ONLY, jsonContent } from './tool-text';
 
-const ORG_TEAM_RULE = 'the API key creator must be an org admin or tutor';
-const COURSE_TEAM_RULE = 'the API key creator must be a course tutor/admin or an org admin';
+const ORG_TEAM_RULE = 'the API key creator must be an org admin or L&D';
+const COURSE_TEAM_RULE = 'the API key creator must be an org admin or L&D';
 const FRESHNESS = 'each section may be up to 10 minutes old (login activity: 24 hours), and meta.generatedAt says when';
 
 export const ZOrgAnalyticsToolInput = ZPublicApiOrgAnalyticsQuery;

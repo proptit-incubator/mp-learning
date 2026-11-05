@@ -6,7 +6,7 @@ import { ZCourseImportDraftPayload } from '../course-import/course-import';
 // Response shapes for OpenAPI docs only; handlers don't validate against them. Timestamps are Postgres text, not strict ISO.
 const nullableTimestamp = z.string().nullable();
 
-const roleId = z.number().describe('1 = admin, 2 = tutor, 3 = student');
+const roleId = z.number().describe('3 = learner. Courses have no instructors, so 1 and 2 are refused');
 
 const ZCourseMetadata = z
   .object({
@@ -224,7 +224,7 @@ export const ZPublicApiCourseDetailResponse = ZPublicApiCourseResponse.extend({
 export const ZPublicApiCreateCourseResponse = z.object({
   course: ZPublicApiCourseResponse,
   groupId: z.string().uuid(),
-  memberId: z.string().uuid().describe("The key creator's course member id; they are added as a tutor")
+  memberId: z.string().uuid().describe("The key creator's course member id; they are added to the course team")
 });
 
 export const ZPublicApiCourseStructureResponse = z.object({

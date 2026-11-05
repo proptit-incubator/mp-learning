@@ -17,13 +17,19 @@ COPY . .
 
 RUN --mount=type=cache,id=cio-pnpm-store,target=/pnpm/store,sharing=locked \
     pnpm install --frozen-lockfile --ignore-scripts \
-    --store-dir /pnpm/store --filter @cio/dashboard...
+    --store-dir /pnpm/store --filter @cio/dashboard... --filter @classroomio/mcp...
 RUN find . -name 'tsconfig.tsbuildinfo' -delete
 RUN NODE_OPTIONS="--max-old-space-size=8072" \
     PUBLIC_IS_SELFHOSTED="${PUBLIC_IS_SELFHOSTED}" \
     pnpm -r --filter @cio/dashboard... build
 
 RUN test -f apps/dashboard/build/index.js || (echo "ERROR: Dashboard build output not found at apps/dashboard/build/index.js" && exit 1)
+
+# MCP clients install the server with `npx -y <dashboard>/mcp/mp-learning-mcp.tgz`.
+RUN pnpm --filter @classroomio/mcp build:standalone \
+    && mkdir -p apps/dashboard/build/client/mcp /tmp/mcp-pack \
+    && (cd packages/mcp/dist/standalone && npm pack --pack-destination /tmp/mcp-pack) \
+    && mv /tmp/mcp-pack/mp-learning-mcp-*.tgz apps/dashboard/build/client/mcp/mp-learning-mcp.tgz
 RUN find . -name node_modules -type d -prune -exec rm -rf {} + \
     && rm -rf apps/dashboard/.svelte-kit
 

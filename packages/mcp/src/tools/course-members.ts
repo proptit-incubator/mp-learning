@@ -1,13 +1,10 @@
+import * as z from 'zod';
+
 import {
   ZPublicApiAddCourseMember,
-  ZPublicApiCourseInviteParam,
-  ZPublicApiCourseInviteRevokeParam,
-  ZPublicApiCourseInvitesQuery,
-  ZPublicApiCourseMemberAnalyticsQuery,
   ZPublicApiCourseMemberParam,
   ZPublicApiCourseMembersQuery,
   ZPublicApiCourseParam,
-  ZPublicApiCreateCourseInvite,
   ZPublicApiUpdateCourseMember
 } from '@cio/utils/validation/public-api';
 
@@ -16,7 +13,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 
-const COURSE_TEAM_RULE = 'the API key creator must be a course tutor/admin or an org admin';
+const COURSE_TEAM_RULE = 'the API key creator must be an org admin or L&D';
 
 const READ_ONLY: ToolAnnotations = { readOnlyHint: true, destructiveHint: false };
 const WRITE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false };
@@ -41,20 +38,11 @@ export const ZDeleteCourseMemberToolInput = ZPublicApiCourseMemberParam;
 
 export const ZResetCourseMemberProgressToolInput = ZPublicApiCourseMemberParam;
 
-export const ZGetCourseMemberAnalyticsToolInput = ZPublicApiCourseMemberAnalyticsQuery.safeExtend({
+export const ZGetCourseMemberAnalyticsToolInput = z.object({
   courseId: ZPublicApiCourseMemberParam.shape.courseId,
-  memberId: ZPublicApiCourseMemberParam.shape.memberId
+  memberId: ZPublicApiCourseMemberParam.shape.memberId,
+  includeProgressImpact: z.boolean().optional().describe('Also return how each lesson and exercise moves progress')
 });
-
-export const ZListCourseInvitesToolInput = ZPublicApiCourseInvitesQuery.safeExtend({
-  courseId: ZPublicApiCourseInviteParam.shape.courseId
-});
-
-export const ZCreateCourseInviteToolInput = ZPublicApiCreateCourseInvite.safeExtend({
-  courseId: ZPublicApiCourseInviteParam.shape.courseId
-});
-
-export const ZRevokeCourseInviteToolInput = ZPublicApiCourseInviteRevokeParam;
 
 const listCourseMembersShape = ZListCourseMembersToolInput.shape as unknown as ZodRawShapeCompat;
 const addCourseMemberShape = ZAddCourseMemberToolInput.shape as unknown as ZodRawShapeCompat;
@@ -63,14 +51,11 @@ const updateCourseMemberShape = ZUpdateCourseMemberToolInput.shape as unknown as
 const deleteCourseMemberShape = ZDeleteCourseMemberToolInput.shape as unknown as ZodRawShapeCompat;
 const resetCourseMemberProgressShape = ZResetCourseMemberProgressToolInput.shape as unknown as ZodRawShapeCompat;
 const getCourseMemberAnalyticsShape = ZGetCourseMemberAnalyticsToolInput.shape as unknown as ZodRawShapeCompat;
-const listCourseInvitesShape = ZListCourseInvitesToolInput.shape as unknown as ZodRawShapeCompat;
-const createCourseInviteShape = ZCreateCourseInviteToolInput.shape as unknown as ZodRawShapeCompat;
-const revokeCourseInviteShape = ZRevokeCourseInviteToolInput.shape as unknown as ZodRawShapeCompat;
 
 export function registerCourseMemberTools(server: McpServer, apiClient: ClassroomIoApiClient) {
   server.tool(
     'list_course_members',
-    `List everyone with access to a course, students and tutors alike, with role and progress; ${COURSE_TEAM_RULE}.`,
+    `List everyone on a course, learners and the admin or L&D member who created it, with role and progress; ${COURSE_TEAM_RULE}.`,
     listCourseMembersShape,
     READ_ONLY,
     async (args) => {
@@ -82,7 +67,7 @@ export function registerCourseMemberTools(server: McpServer, apiClient: Classroo
 
   server.tool(
     'add_course_member',
-    `Give someone already in the organization access to a course, by profileId or email; ${COURSE_TEAM_RULE}. Fails with 409 if they are already a member; to onboard someone new, use create_course_invite.`,
+    `Assign a course to an employee already in the organization, by profileId or email, as a learner (roleId 3); ${COURSE_TEAM_RULE}. Courses have no instructors, so other roles are refused. Fails with 409 if they are already a member; to add someone new, use add_audience_member.`,
     addCourseMemberShape,
     WRITE,
     async (args) => {
@@ -106,7 +91,7 @@ export function registerCourseMemberTools(server: McpServer, apiClient: Classroo
 
   server.tool(
     'update_course_member',
-    `Change a course member's role or email; ${COURSE_TEAM_RULE}.`,
+    `Change a course learner's email; ${COURSE_TEAM_RULE}. Courses have no instructors, so roleId can only be 3.`,
     updateCourseMemberShape,
     WRITE,
     async (args) => {
@@ -122,7 +107,7 @@ export function registerCourseMemberTools(server: McpServer, apiClient: Classroo
 
   server.tool(
     'delete_course_member',
-    `Remove a teaching-team member; learner records are retained and return a conflict; ${COURSE_TEAM_RULE}.`,
+    `Remove a non-learner course member; ${COURSE_TEAM_RULE}. Learners are refused with a conflict so their history is kept: cancel the assignment that gave them the course instead.`,
     deleteCourseMemberShape,
     DESTRUCTIVE,
     async (args) => {
@@ -150,44 +135,8 @@ export function registerCourseMemberTools(server: McpServer, apiClient: Classroo
     getCourseMemberAnalyticsShape,
     READ_ONLY,
     async (args) => {
-      const { courseId, memberId, ...query } = ZGetCourseMemberAnalyticsToolInput.parse(args);
-      const result = await apiClient.getCourseMemberAnalytics(courseId, memberId, query);
-      return jsonContent(result);
-    }
-  );
-
-  server.tool(
-    'list_course_invites',
-    `List a course's invites of any status (active, revoked, expired or used up); ${COURSE_TEAM_RULE}.`,
-    listCourseInvitesShape,
-    READ_ONLY,
-    async (args) => {
-      const { courseId, ...query } = ZListCourseInvitesToolInput.parse(args);
-      const result = await apiClient.listCourseInvites(courseId, query);
-      return jsonContent(result);
-    }
-  );
-
-  server.tool(
-    'create_course_invite',
-    `Invite one or more people to a course by email or CSV, including people not yet in the organization; ${COURSE_TEAM_RULE}. Requires recipientEmails or recipientCsv, and is limited to 60 requests per hour per key creator per course.`,
-    createCourseInviteShape,
-    WRITE,
-    async (args) => {
-      const { courseId, ...payload } = ZCreateCourseInviteToolInput.parse(args);
-      const result = await apiClient.createCourseInvite(courseId, payload);
-      return jsonContent(result);
-    }
-  );
-
-  server.tool(
-    'revoke_course_invite',
-    `Revoke a pending course invite so its link stops working, which cannot be undone; ${COURSE_TEAM_RULE}.`,
-    revokeCourseInviteShape,
-    DESTRUCTIVE,
-    async (args) => {
-      const { courseId, inviteId } = ZRevokeCourseInviteToolInput.parse(args);
-      const result = await apiClient.revokeCourseInvite(courseId, inviteId);
+      const { courseId, memberId, includeProgressImpact } = ZGetCourseMemberAnalyticsToolInput.parse(args);
+      const result = await apiClient.getCourseMemberAnalytics(courseId, memberId, includeProgressImpact);
       return jsonContent(result);
     }
   );

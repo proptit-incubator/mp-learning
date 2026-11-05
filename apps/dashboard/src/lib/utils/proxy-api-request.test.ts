@@ -10,6 +10,18 @@ describe('shouldForwardToApi', () => {
     expect(shouldForwardToApi('/api/auth/get-session')).toBe(true);
   });
 
+  it('forwards the public API that automation keys call', () => {
+    expect(shouldForwardToApi('/public-api/v1/courses')).toBe(true);
+    expect(shouldForwardToApi('/public-apix')).toBe(false);
+  });
+
+  it('forwards the internal API routes the MCP server calls only with an automation key', () => {
+    expect(shouldForwardToApi('/organization/course-import/drafts', 'Bearer cio_mcp_key')).toBe(true);
+    expect(shouldForwardToApi('/course/abc/landing-page', 'Bearer cio_mcp_key')).toBe(true);
+    expect(shouldForwardToApi('/organization/course-import/drafts', null)).toBe(false);
+    expect(shouldForwardToApi('/courses', 'Bearer cio_mcp_key')).toBe(false);
+  });
+
   it('does not forward unrelated paths', () => {
     expect(shouldForwardToApi('/login')).toBe(false);
     expect(shouldForwardToApi('/api/csp-report')).toBe(false);

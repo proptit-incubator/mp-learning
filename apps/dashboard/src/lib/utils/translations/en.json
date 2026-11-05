@@ -2956,7 +2956,7 @@
       },
       "keys": {
         "title": "MCP keys",
-        "description": "These keys authenticate the current organization when an MCP client calls MP Learning through `@classroomio/mcp`.",
+        "description": "These keys authenticate the current organization when an MCP client calls MP Learning through its MCP server.",
         "generate": "Generate MCP key",
         "reveal_title": "Your new MCP key",
         "modal": {

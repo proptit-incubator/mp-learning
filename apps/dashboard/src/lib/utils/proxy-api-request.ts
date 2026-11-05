@@ -9,6 +9,8 @@
 
 const PROXY_PREFIX = '/proxy';
 const AUTH_PREFIX = '/api/auth';
+/** The public API that automation keys (MCP, scripts) call on the dashboard's own domain. */
+const PUBLIC_API_PREFIX = '/public-api';
 
 /** Hop-by-hop, connection-specific, and encoding headers that must not be forwarded to the browser (forbidden in HTTP/2). */
 const RESPONSE_HEADERS_TO_STRIP = [
@@ -25,12 +27,21 @@ const RESPONSE_HEADERS_TO_STRIP = [
   'content-length'
 ] as const;
 
-export function shouldForwardToApi(pathname: string): boolean {
+/** API routes the MCP server calls with an automation key besides the public API. No dashboard page lives here. */
+const AUTOMATION_KEY_PATHS = /^\/(course|organization)\//;
+
+/**
+ * Whether a dashboard request belongs to the API. Automation keys (MCP, scripts) call the API on the dashboard's
+ * domain, so a bearer-authenticated request to an API-only path is forwarded too.
+ */
+export function shouldForwardToApi(pathname: string, authorization?: string | null): boolean {
   return (
     pathname === PROXY_PREFIX ||
     pathname.startsWith(`${PROXY_PREFIX}/`) ||
     pathname === AUTH_PREFIX ||
-    pathname.startsWith(`${AUTH_PREFIX}/`)
+    pathname.startsWith(`${AUTH_PREFIX}/`) ||
+    pathname.startsWith(`${PUBLIC_API_PREFIX}/`) ||
+    (!!authorization?.startsWith('Bearer ') && AUTOMATION_KEY_PATHS.test(pathname))
   );
 }
 

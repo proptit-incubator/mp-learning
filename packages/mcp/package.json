@@ -18,7 +18,8 @@
     "typecheck": "tsc --noEmit",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "build:standalone": "node ./scripts/build.mjs --standalone"
   },
   "repository": {
     "type": "git",

@@ -64,7 +64,7 @@ export const ZPublicApiUpdateAudience = z
     path: ['name']
   })
   .describe(
-    "Send email for a pending member or name for a joined member. A joined member's own email, password, username and avatar cannot be changed here; to change an admin's or tutor's role, use PUT /team/{memberId}."
+    "Send email for a pending member or name for a joined member. A joined member's own email, password, username and avatar cannot be changed here; to change an admin's or L&D member's role, use PUT /team/{memberId}."
   );
 export type TPublicApiUpdateAudience = z.infer<typeof ZPublicApiUpdateAudience>;
 

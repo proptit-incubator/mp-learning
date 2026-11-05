@@ -6,7 +6,7 @@ import { ZPublicApiPaginationQuery } from './pagination';
 
 const ZPublicApiCourseRoleId = z
   .union([z.literal(ROLE.ADMIN), z.literal(ROLE.TUTOR), z.literal(ROLE.STUDENT)])
-  .describe('1 = admin, 2 = tutor, 3 = student');
+  .describe('3 = learner. Courses have no instructors, so 1 and 2 are refused');
 
 export const ZPublicApiCourseMemberParam = ZPublicApiCourseParam.extend({
   memberId: z.string().uuid()
@@ -27,9 +27,9 @@ export const ZPublicApiAddCourseMember = z
       .email()
       .optional()
       .describe(
-        "Must belong to someone already in your organization; it is linked to that person's profile. To onboard someone new, use the invites endpoints."
+        "Must belong to someone already in your organization; it is linked to that person's profile. To add someone new, add them to the organization first."
       ),
-    name: z.string().optional().describe('Used in the welcome email sent to added tutors/admins')
+    name: z.string().optional().describe('Display name for the welcome email')
   })
   .refine((data) => Boolean(data.profileId) || Boolean(data.email), {
     message: 'Either profileId or email must be provided',

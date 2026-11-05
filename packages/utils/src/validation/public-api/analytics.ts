@@ -40,7 +40,7 @@ const ORG_SECTION_DETAILS = [
 ].join(' ');
 
 const COURSE_SECTION_DETAILS = [
-  'summary: totals (tutors, students, lessons, exercises) and per-student averages for progress, exercise completion and grade.',
+  'summary: totals (L&D, learners, lessons, exercises) and per-student averages for progress, exercise completion and grade.',
   'funnel: course page view → enrollment → completion for this course over days.'
 ].join(' ');
 

@@ -42,7 +42,7 @@ const removeAudienceMemberShape = ZRemoveAudienceMemberToolInput.shape as unknow
 export function registerAudienceTools(server: McpServer, apiClient: ClassroomIoApiClient) {
   server.tool(
     'list_audience_members',
-    `List the organization's audience (students), with invite state, enrollment counts and progress; ${ORG_ADMIN_RULE}. Admins and tutors are listed by list_team_members.`,
+    `List the organization's audience (students), with invite state, enrollment counts and progress; ${ORG_ADMIN_RULE}. Admins and L&D are listed by list_team_members.`,
     listAudienceMembersShape,
     READ_ONLY,
     async (args) => {
@@ -90,7 +90,7 @@ export function registerAudienceTools(server: McpServer, apiClient: ClassroomIoA
 
   server.tool(
     'update_audience_member',
-    `Correct a pending student's email or set a joined student's name; ${ORG_ADMIN_RULE}. To change an admin's or tutor's role, use update_team_member.`,
+    `Correct a pending student's email or set a joined student's name; ${ORG_ADMIN_RULE}. Admins and L&D are managed with update_team_member.`,
     updateAudienceMemberShape,
     WRITE,
     async (args) => {

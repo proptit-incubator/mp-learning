@@ -16,7 +16,7 @@ const shape = (schema: { shape: unknown }) => schema.shape as unknown as ZodRawS
 export function registerCourseTools(server: McpServer, apiClient: ClassroomIoApiClient) {
   server.tool(
     'clone_course',
-    'Copy a course with its sections, lessons and exercises, without its students, and add the API key creator as its tutor; the API key creator must be an org admin or tutor.',
+    'Copy a course with its sections, lessons and exercises, without its students, and add the API key creator to its team; the API key creator must be an org admin or L&D.',
     shape(ZCloneCourseToolInput),
     CREATE,
     async (args) => {

@@ -29,7 +29,7 @@ const updateTeamMemberShape = ZUpdateTeamMemberToolInput.shape as unknown as Zod
 export function registerTeamTools(server: McpServer, apiClient: ClassroomIoApiClient) {
   server.tool(
     'list_team_members',
-    `List the organization's admins and tutors, including pending invites; ${ORG_ADMIN_RULE}. Students are listed by list_audience_members.`,
+    `List the organization's admins and L&D, including pending invites; ${ORG_ADMIN_RULE}. Students are listed by list_audience_members.`,
     listTeamMembersShape,
     READ_ONLY,
     async (args) => {
@@ -41,7 +41,7 @@ export function registerTeamTools(server: McpServer, apiClient: ClassroomIoApiCl
 
   server.tool(
     'get_team_member',
-    `Get an admin or tutor by their organization member id (from list_team_members); ${ORG_ADMIN_RULE}.`,
+    `Get an admin or L&D member by their organization member id (from list_team_members); ${ORG_ADMIN_RULE}.`,
     getTeamMemberShape,
     READ_ONLY,
     async (args) => {

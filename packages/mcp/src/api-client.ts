@@ -36,11 +36,9 @@ import type {
   TPublicApiAssignAudienceCourses,
   TPublicApiAudienceQuery,
   TPublicApiCertificateFileFormat,
-  TPublicApiCourseInvitesQuery,
   TPublicApiCourseLessonCommentsQuery,
   TPublicApiCourseLessonHistoryQuery,
   TPublicApiCourseLessonsQuery,
-  TPublicApiCourseMemberAnalyticsQuery,
   TPublicApiCourseAnalyticsQuery,
   TPublicApiCourseAnalyticsStudentsQuery,
   TPublicApiCourseMembersQuery,
@@ -50,7 +48,6 @@ import type {
   TPublicApiLessonLocale,
   TPublicApiReorderCourseContent,
   TPublicApiCloneCourse,
-  TPublicApiSetFeaturedCourses,
   TPublicApiSetCourseLessonTranslation,
   TPublicApiUpdateCourseContentLock,
   TPublicApiUpdateCourseLessonComment,
@@ -61,7 +58,6 @@ import type {
   TPublicApiEmailTemplateQuery,
   TPublicApiSaveEmailTemplate,
   TPublicApiSendTestEmailTemplate,
-  TPublicApiCreateCourseInvite,
   TPublicApiCreateLesson,
   TPublicApiOrgAnalyticsQuery,
   TPublicApiListCourseCertificatesQuery,
@@ -545,10 +541,6 @@ export class ClassroomIoApiClient {
     return this.request(`/public-api/v1/courses/${courseId}/clone`, { method: 'POST', body: payload });
   }
 
-  async setFeaturedCourses(payload: TPublicApiSetFeaturedCourses) {
-    return this.request('/public-api/v1/organization/landing-page/featured-courses', { method: 'PUT', body: payload });
-  }
-
   async reorderCourseContent(courseId: string, payload: TPublicApiReorderCourseContent) {
     return this.request(`/public-api/v1/courses/${courseId}/content/reorder`, { method: 'PUT', body: payload });
   }
@@ -681,42 +673,11 @@ export class ClassroomIoApiClient {
     });
   }
 
-  async getCourseMemberAnalytics(
-    courseId: string,
-    memberId: string,
-    query: Partial<TPublicApiCourseMemberAnalyticsQuery> = {}
-  ) {
-    const searchParams = new URLSearchParams();
-    for (const [key, value] of Object.entries(query)) {
-      if (value !== undefined) searchParams.set(key, String(value));
-    }
-
-    const querySuffix = searchParams.toString() ? `?${searchParams.toString()}` : '';
+  async getCourseMemberAnalytics(courseId: string, memberId: string, includeProgressImpact?: boolean) {
+    const querySuffix = includeProgressImpact === undefined ? '' : `?includeProgressImpact=${includeProgressImpact}`;
     return this.request(`/public-api/v1/courses/${courseId}/members/${memberId}/analytics${querySuffix}`, {
       method: 'GET'
     });
-  }
-
-  // ─── Course Invites (public API) ────────────────────────────────────────
-
-  async listCourseInvites(courseId: string, query: Partial<TPublicApiCourseInvitesQuery> = {}) {
-    const searchParams = new URLSearchParams();
-    if (query.page) searchParams.set('page', String(query.page));
-    if (query.limit) searchParams.set('limit', String(query.limit));
-
-    const querySuffix = searchParams.toString() ? `?${searchParams.toString()}` : '';
-    return this.requestPaginated(`/public-api/v1/courses/${courseId}/invites${querySuffix}`, { method: 'GET' });
-  }
-
-  async createCourseInvite(courseId: string, payload: TPublicApiCreateCourseInvite) {
-    return this.request(`/public-api/v1/courses/${courseId}/invites`, {
-      method: 'POST',
-      body: payload
-    });
-  }
-
-  async revokeCourseInvite(courseId: string, inviteId: string) {
-    return this.request(`/public-api/v1/courses/${courseId}/invites/${inviteId}/revoke`, { method: 'POST' });
   }
 
   async getOrgAnalytics(query: Partial<TPublicApiOrgAnalyticsQuery> = {}) {
@@ -738,7 +699,7 @@ export class ClassroomIoApiClient {
   }
 
   private send(path: string, options: RequestOptions) {
-    return fetch(new URL(path, this.config.CLASSROOMIO_API_URL), {
+    return fetch(`${this.config.CLASSROOMIO_API_URL.replace(/\/+$/, '')}${path}`, {
       method: options.method,
       headers: {
         Authorization: `Bearer ${this.config.CLASSROOMIO_API_KEY}`,

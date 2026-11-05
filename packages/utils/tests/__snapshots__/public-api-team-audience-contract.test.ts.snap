@@ -247,7 +247,7 @@ exports[`public API team and audience update contract > ZPublicApiTeamMemberResp
       "description": "null until the invited person creates an account",
     },
     "roleId": {
-      "description": "1 = admin, 2 = tutor",
+      "description": "1 = admin, 2 = L&D",
       "type": "number",
     },
     "verified": {
@@ -293,7 +293,7 @@ exports[`public API team and audience update contract > ZPublicApiTeamQuery keep
 exports[`public API team and audience update contract > ZPublicApiUpdateAudience keeps its published shape > ZPublicApiUpdateAudience 1`] = `
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Send email for a pending member or name for a joined member. A joined member's own email, password, username and avatar cannot be changed here; to change an admin's or tutor's role, use PUT /team/{memberId}.",
+  "description": "Send email for a pending member or name for a joined member. A joined member's own email, password, username and avatar cannot be changed here; to change an admin's or L&D member's role, use PUT /team/{memberId}.",
   "properties": {
     "email": {
       "description": "Pending members only: corrects the invited email and re-sends the invite unless sendEmail is false",
@@ -339,7 +339,7 @@ exports[`public API team and audience update contract > ZPublicApiUpdateTeamMemb
           "type": "number",
         },
       ],
-      "description": "1 = admin, 2 = tutor. You cannot change your own role, and the organization must keep at least one admin. A pending member's invite is updated to match.",
+      "description": "1 = admin, 2 = L&D. You cannot change your own role, and the organization must keep at least one admin. A pending member's invite is updated to match.",
     },
   },
   "type": "object",

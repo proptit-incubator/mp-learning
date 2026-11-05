@@ -58,8 +58,8 @@ export async function resolveCourseUrl(organizationId: string, courseId: string,
     throw new AppError('Organization not found', ErrorCodes.ORG_NOT_FOUND, 404);
   }
 
-  const slug = await ensureCourseSlug(courseId, title);
-  return `${getDashboardBaseUrl(organization)}/course/${encodeURIComponent(slug)}`;
+  await ensureCourseSlug(courseId, title);
+  return `${getDashboardBaseUrl(organization)}/courses/${courseId}`;
 }
 
 async function resolveUnsplashBannerImage(courseTitle: string, query?: string) {

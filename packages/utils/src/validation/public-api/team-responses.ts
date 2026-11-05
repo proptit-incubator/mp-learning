@@ -6,6 +6,6 @@ export const ZPublicApiTeamMemberResponse = z.object({
   profileId: z.string().uuid().nullable().describe('null until the invited person creates an account'),
   name: z.string().describe('Empty until the invited person creates an account'),
   email: z.string(),
-  roleId: z.number().describe('1 = admin, 2 = tutor'),
+  roleId: z.number().describe('1 = admin, 2 = L&D'),
   verified: z.boolean().describe('false while the invite is still pending')
 });

@@ -6,7 +6,7 @@ import { CoursePeopleProgress } from '../course';
 const timestamp = z.string();
 const nullableTimestamp = z.string().nullable();
 
-const roleId = z.number().describe('1 = admin, 2 = tutor, 3 = student');
+const roleId = z.number().describe('3 = learner. Courses have no instructors, so 1 and 2 are refused');
 
 export const ZPublicApiCourseMemberResponse = z.object({
   id: z.string().uuid(),

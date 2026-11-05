@@ -16,7 +16,7 @@ const WRITE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, id
 
 const COURSE_MEMBER_RULE =
   'the API key creator must be a course member (directly or through a program) or an org admin';
-const COURSE_TEAM_RULE = 'the API key creator must be a course tutor/admin or an org admin';
+const COURSE_TEAM_RULE = 'the API key creator must be an org admin or L&D';
 
 export const ZGetCourseCertificateToolInput = ZPublicApiCourseParam;
 
@@ -52,7 +52,7 @@ export function registerCourseCertificateTools(server: McpServer, apiClient: Cla
 
   server.tool(
     'update_course_certificate',
-    `Partially update a course's certificate settings and design; ${COURSE_TEAM_RULE}. design is replaced whole, so read it with get_course_certificate first; on the Basic (free) plan this fails with 403 UPGRADE_REQUIRED.`,
+    `Partially update a course's certificate settings and design; ${COURSE_TEAM_RULE}. design is replaced whole, so read it with get_course_certificate first.`,
     updateCourseCertificateShape,
     WRITE,
     async (args) => {

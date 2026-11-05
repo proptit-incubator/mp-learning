@@ -1141,7 +1141,7 @@ exports[`public API audience and course response contract > ZPublicApiCourseDeta
                     ],
                   },
                   "roleId": {
-                    "description": "1 = admin, 2 = tutor, 3 = student",
+                    "description": "3 = learner. Courses have no instructors, so 1 and 2 are refused",
                     "type": "number",
                   },
                 },
@@ -3395,7 +3395,7 @@ exports[`public API audience and course response contract > ZPublicApiCreateAudi
             "type": "string",
           },
           "status": {
-            "description": "ready: added to the organization and invited. already_member: a student who has joined; enrolled in courseIds directly. invite_resent: invited earlier but not joined; earlier invites are revoked and a new one is created. invalid_email, missing_email: skipped. duplicate_in_file: the address appears earlier in the request; skipped. is_staff: an admin or tutor of the organization; skipped. over_seat_limit: no student seats left on the plan; skipped",
+            "description": "ready: added to the organization and invited. already_member: a student who has joined; enrolled in courseIds directly. invite_resent: invited earlier but not joined; earlier invites are revoked and a new one is created. invalid_email, missing_email: skipped. duplicate_in_file: the address appears earlier in the request; skipped. is_staff: an admin or L&D member of the organization; skipped. over_seat_limit: no student seats left on the plan; skipped",
             "enum": [
               "ready",
               "already_member",
@@ -3931,7 +3931,7 @@ exports[`public API audience and course response contract > ZPublicApiCreateCour
       "type": "string",
     },
     "memberId": {
-      "description": "The key creator's course member id; they are added as a tutor",
+      "description": "The key creator's course member id; they are added to the course team",
       "format": "uuid",
       "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
       "type": "string",
@@ -4059,7 +4059,7 @@ exports[`public API audience and course response contract > ZPublicApiRemoveAudi
       ],
     },
     "roleId": {
-      "description": "1 = admin, 2 = tutor, 3 = student",
+      "description": "1 = admin, 2 = L&D, 3 = learner",
       "type": "number",
     },
     "status": {
