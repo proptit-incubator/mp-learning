@@ -6,10 +6,10 @@ const PUBLIC_API_SETUP_SECRET_PLACEHOLDER = '<paste-your-api-key>';
 const API_SERVER_URL = (env.PUBLIC_SERVER_URL || '').replace(/\/$/, '');
 const PUBLIC_API_BASE_URL = `${API_SERVER_URL}/public-api/v1`;
 
-export const MCP_DOCS_URL = `${API_SERVER_URL}/docs`;
-export const PUBLIC_API_DOCS_URL = `${API_SERVER_URL}/docs`;
-export const WEBHOOKS_DOCS_URL = `${API_SERVER_URL}/docs`;
-export const WEBHOOKS_VERIFY_SIGNATURE_DOCS_URL = `${WEBHOOKS_DOCS_URL}#verify-the-signature`;
+export const MCP_DOCS_URL = '/help/automation/mcp';
+export const PUBLIC_API_DOCS_URL = '/help/automation/api-keys';
+export const WEBHOOKS_DOCS_URL = '/help/automation/webhooks';
+export const WEBHOOKS_VERIFY_SIGNATURE_DOCS_URL = `${WEBHOOKS_DOCS_URL}#xac-thuc-chu-ky`;
 
 function getServerPath() {
   return 'npx -y @classroomio/mcp';

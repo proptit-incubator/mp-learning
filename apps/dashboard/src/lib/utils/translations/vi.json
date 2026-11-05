@@ -3889,7 +3889,8 @@
     "access": {
       "title": "Chưa được cấp quyền truy cập",
       "description": "Vui lòng liên hệ quản trị đào tạo MP Transformation để được cấp quyền truy cập MP Learning."
-    }
+    },
+    "help_center": "Trung tâm trợ giúp"
   },
   "page_titles": {
     "ask_community": "Đặt câu hỏi",

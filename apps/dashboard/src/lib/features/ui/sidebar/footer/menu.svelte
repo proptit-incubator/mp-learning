@@ -11,6 +11,7 @@
   import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
   import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
   import LayoutDashboardIcon from '@lucide/svelte/icons/layout-dashboard';
+  import LifeBuoyIcon from '@lucide/svelte/icons/life-buoy';
   import LogOutIcon from '@lucide/svelte/icons/log-out';
   import UserRoundIcon from '@lucide/svelte/icons/user-round';
   import ThemeToggle from './theme-toggle.svelte';
@@ -93,6 +94,12 @@
             {/if}
           </DropdownMenu.Item>
         {/if}
+
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item onclick={() => window.open('/help', '_blank', 'noopener')}>
+          <LifeBuoyIcon class="size-4" />
+          {$t('mp_learning.help_center')}
+        </DropdownMenu.Item>
 
         <DropdownMenu.Separator />
         <DropdownMenu.Label class="ui:py-0 font-normal">

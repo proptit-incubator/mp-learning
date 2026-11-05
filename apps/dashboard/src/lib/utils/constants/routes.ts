@@ -39,7 +39,9 @@ export const PUBLIC_ROUTES = [
   '/404',
   `^${ROUTE.VERIFY_EMAIL_ERROR}$`,
   ROUTE.AUTH_FAILED,
-  '^/csp-report$'
+  '^/csp-report$',
+  '^/help(/.*)?$',
+  '^/docs(/.*)?$'
 ];
 
 export const PUBLIC_API_ROUTES = ['/api/polar/webhook', '/api/polar/lock-in', '/api/lmz', '/api/verify'];
