@@ -13,6 +13,7 @@ export * from './mail';
 export * from './media';
 export * from './newsfeed';
 export * from './organization';
+export * from './practice';
 export * from './public-api';
 export * from './report';
 export * from './submission';

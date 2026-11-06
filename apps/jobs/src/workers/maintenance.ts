@@ -26,6 +26,7 @@ import {
   enqueueWebhookDelivery
 } from '@cio/jobs';
 
+import { runPracticeRecordingRetention } from '../processors/practice/recording';
 import { errorMessage } from '../utils/cancel';
 import { log } from '../utils/logger';
 
@@ -98,6 +99,12 @@ const worker = new Worker(
       }
 
       return { reaped: reaped.length, strandedEncodes: strandedEncodes.length };
+    }
+
+    if (job.name === JOB_NAMES.maintenance.practiceRecordingRetention) {
+      const result = await runPracticeRecordingRetention();
+      log.info('practice-recording-retention-done', result);
+      return result;
     }
 
     if (job.name === JOB_NAMES.maintenance.assetStorageCleanup) {
@@ -220,6 +227,16 @@ async function registerSchedulers(): Promise<void> {
     // Installs from before MP Learning removed telemetry and Early Adopter claims still hold these schedulers in Redis.
     await maintenanceQueue.removeJobScheduler('instance-telemetry-scheduler');
     await maintenanceQueue.removeJobScheduler('early-adopter-claim-reminder-scheduler');
+
+    await maintenanceQueue.upsertJobScheduler(
+      'practice-recording-retention-scheduler',
+      { every: 86_400_000 },
+      { name: JOB_NAMES.maintenance.practiceRecordingRetention, data: {} }
+    );
+    log.info('practice-recording-retention-scheduler-registered', {
+      name: JOB_NAMES.maintenance.practiceRecordingRetention,
+      everyMs: 86_400_000
+    });
 
     await maintenanceQueue.upsertJobScheduler(
       'webhook-retention-scheduler',

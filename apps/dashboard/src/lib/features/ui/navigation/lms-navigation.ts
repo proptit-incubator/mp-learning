@@ -4,6 +4,7 @@ import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
 import HouseIcon from '@lucide/svelte/icons/house';
 import LibraryBigIcon from '@lucide/svelte/icons/library-big';
 import MessagesSquareIcon from '@lucide/svelte/icons/messages-square';
+import PhoneCallIcon from '@lucide/svelte/icons/phone-call';
 import SettingsIcon from '@lucide/svelte/icons/settings';
 
 import type { AccountOrg } from '$features/app/types';
@@ -62,6 +63,13 @@ export const baseNavConfig: NavItemConfig[] = [
     supportsDynamicSegment: true,
     icon: LibraryBigIcon,
     matchPattern: '^/lms/explore(/.*)?$'
+  },
+  {
+    titleKey: 'lms_navigation.practice',
+    path: '/practice',
+    icon: PhoneCallIcon,
+    supportsDynamicSegment: true,
+    matchPattern: '^/lms/practice(/.*)?$'
   },
   {
     titleKey: 'lms_navigation.exercise',

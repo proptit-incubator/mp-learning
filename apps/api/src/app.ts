@@ -49,6 +49,7 @@ import { internalLearning } from '@api/middlewares/internal-learning';
 import { healthHandler } from '@api/routes/health';
 import { learningInstance } from '@api/middlewares/learning-instance';
 import { publicApiRouter } from '@api/routes/public-api';
+import { practiceRouter } from '@api/routes/practice';
 
 // Create Hono app with chaining for RPC support
 export const app = new Hono()
@@ -296,6 +297,7 @@ export const app = new Hono()
   .route('/report', reportRouter)
   .route('/internal', internalRouter)
   .route('/agent', agentRouter)
+  .route('/practice', practiceRouter)
 
   // Error handling
   .onError((err, c) => {

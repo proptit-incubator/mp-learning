@@ -5,7 +5,9 @@
   import ServerOffIcon from '@lucide/svelte/icons/server-off';
   import type { TAiPolicy } from '@cio/utils/validation/agent';
   import { UnsavedChanges } from '$features/ui';
+  import AiModelSettings from '$features/settings/components/ai/ai-model-settings.svelte';
   import AiPolicyForm from '$features/settings/components/ai/ai-policy-form.svelte';
+  import { aiTutorApi } from '$features/ai-tutor-settings/api/ai-tutor.svelte';
   import TeamLeaderboard from '$features/settings/components/ai/team-leaderboard.svelte';
   import UsageChart from '$features/settings/components/ai/usage-chart.svelte';
   import UsageSummaryCards from '$features/settings/components/ai/usage-summary-cards.svelte';
@@ -15,10 +17,15 @@
 
   let fetchedOrgId = $state<string | null>(null);
   let draft = $state<TAiPolicy | null>(null);
+  let learnerChatEnabled = $state<boolean | null>(null);
 
   const saved = $derived(aiSettingsApi.policy?.policy ?? null);
   const configured = $derived(aiSettingsApi.policy?.configured ?? true);
-  const hasUnsavedChanges = $derived(Boolean(draft && saved && JSON.stringify(draft) !== JSON.stringify(saved)));
+  const savedLearnerChatEnabled = $derived(aiTutorApi.orgSettings?.enabled ?? null);
+  const policyChanged = $derived(Boolean(draft && saved && JSON.stringify(draft) !== JSON.stringify(saved)));
+  const learnerChatChanged = $derived(learnerChatEnabled !== null && learnerChatEnabled !== savedLearnerChatEnabled);
+  const hasUnsavedChanges = $derived(policyChanged || learnerChatChanged);
+  const isSaving = $derived(aiSettingsApi.saving || aiTutorApi.saving);
 
   $effect(() => {
     const orgId = $currentOrg.id;
@@ -28,19 +35,39 @@
     void aiSettingsApi.fetchAll().then(() => {
       draft = saved ? { ...saved } : null;
     });
+    void aiTutorApi.fetchOrgSettings().then(() => {
+      learnerChatEnabled = aiTutorApi.orgSettings?.enabled ?? null;
+    });
   });
 
-  async function handleSave() {
-    if (!draft) return;
-    if (!(await aiSettingsApi.updatePolicy(draft)) || !saved) return;
+  async function saveLearnerChat(): Promise<boolean> {
+    if (!learnerChatChanged || learnerChatEnabled === null) return true;
+
+    await aiTutorApi.updateOrgSettings({ enabled: learnerChatEnabled });
+
+    return aiTutorApi.orgSettings?.enabled === learnerChatEnabled;
+  }
+
+  async function savePolicy(): Promise<boolean> {
+    if (!draft || !policyChanged) return true;
+    if (!(await aiSettingsApi.updatePolicy(draft)) || !saved) return false;
 
     const policy = saved;
     draft = { ...policy };
     currentOrg.update((org) => ({ ...org, settings: { ...org.settings, ai: policy } }));
+
+    return true;
+  }
+
+  async function handleSave() {
+    if (!(await savePolicy())) return;
+
+    await saveLearnerChat();
   }
 
   function handleDiscard() {
     if (saved) draft = { ...saved };
+    learnerChatEnabled = savedLearnerChatEnabled;
   }
 </script>
 
@@ -66,7 +93,17 @@
       {/if}
 
       {#if draft}
-        <AiPolicyForm bind:policy={draft} disabled={aiSettingsApi.saving || !configured} />
+        <AiPolicyForm bind:policy={draft} disabled={isSaving || !configured} />
+        {#if aiSettingsApi.policy}
+          <AiModelSettings
+            bind:policy={draft}
+            bind:learnerChatEnabled
+            providers={aiSettingsApi.policy.providers}
+            voices={aiSettingsApi.policy.voices}
+            serverDefaultVoice={aiSettingsApi.policy.serverDefaultVoice}
+            disabled={isSaving || !configured}
+          />
+        {/if}
       {:else}
         <div class="flex flex-col gap-3" aria-busy="true">
           <Skeleton class="h-6 w-48" />
@@ -87,8 +124,8 @@
 
 <Page.SettingsActions
   hasChanges={hasUnsavedChanges}
-  loading={aiSettingsApi.saving}
-  disabled={!draft || aiSettingsApi.saving}
+  loading={isSaving}
+  disabled={!draft || isSaving}
   statusLabel={$t('common.unsaved_changes.label')}
   discardLabel={$t('common.discard')}
   saveLabel={$t('common.save_changes')}

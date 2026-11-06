@@ -48,7 +48,7 @@
   import { refreshExercisePageData } from '$features/course/utils/exercise-page-utils';
   import { getRequestBaseUrl, apiClient } from '$lib/utils/services/api';
   import { openUpgradeModal } from '$lib/utils/store/upgrade-modal';
-  import { isFreePlan } from '$lib/utils/store/org';
+  import { currentOrg, isFreePlan } from '$lib/utils/store/org';
   import { t } from '$lib/utils/functions/translations';
   import { aiAssistantApi } from '$features/ai-assistant/api/ai-assistant.svelte';
   import { profile } from '$lib/utils/store/user';
@@ -125,7 +125,13 @@
   let lastRunStatusSig = $state('');
   let activeConversationId: string | null = $state(null);
   let isLoadingHistory = $state(false);
-  let selectedModel: AgentModelId = $state(DEFAULT_PICKER_MODEL_ID);
+  let pickedModel: AgentModelId | null = $state(null);
+  const orgDefaultModel = $derived.by(() => {
+    const configured = $currentOrg.settings?.ai?.adminAssistantModel;
+
+    return isAgentModelId(configured) ? configured : DEFAULT_PICKER_MODEL_ID;
+  });
+  const selectedModel = $derived(pickedModel ?? orgDefaultModel);
   const paidModelIds = UI_PICKER_MODEL_IDS.filter((id) => !AGENT_MODELS[id].isFree);
 
   function isAgentModelId(value: unknown): value is AgentModelId {
@@ -138,7 +144,7 @@
       return;
     }
 
-    selectedModel = id;
+    pickedModel = id;
 
     try {
       localStorage.setItem(AI_CHAT_MODEL_STORAGE_KEY, id);
@@ -158,7 +164,7 @@
       return;
     }
 
-    selectedModel = DEFAULT_PICKER_MODEL_ID;
+    pickedModel = DEFAULT_PICKER_MODEL_ID;
 
     try {
       localStorage.setItem(AI_CHAT_MODEL_STORAGE_KEY, DEFAULT_PICKER_MODEL_ID);
@@ -1233,7 +1239,7 @@
       const storedModel = localStorage.getItem(AI_CHAT_MODEL_STORAGE_KEY);
 
       if (isAgentModelId(storedModel)) {
-        selectedModel = storedModel;
+        pickedModel = storedModel;
       }
     } catch {
       // localStorage unavailable

@@ -8,7 +8,8 @@ export const ORG_ROUTE_SLUG = '_';
 /** The admin home, where L&D drafts courses with AI. */
 export const ORG_HOME_PATH = '/studio';
 
-const ORG_SECTIONS = /^\/(dash|employees|analytics|media|tags|community|settings|automation|mcp|audience)(\/.*)?$/;
+const ORG_SECTIONS =
+  /^\/(dash|employees|analytics|media|tags|community|settings|automation|mcp|audience|practice)(\/.*)?$/;
 const ORG_EXACT_PAGES = /^\/(courses|courses\/templates|api)\/?$/;
 
 /** The internal `/org/_/...` route for a short admin path, or undefined for every other path. */

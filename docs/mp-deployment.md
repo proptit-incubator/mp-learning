@@ -55,6 +55,19 @@ Reverse proxy phải ghi đè header `X-Forwarded-For` bằng IP thật của ng
 
 Ảnh trong bucket media vốn được phục vụ công khai bởi storage upstream. Không dùng bucket này cho tài liệu mật. Với yêu cầu chỉ truy cập trong mạng doanh nghiệp, đặt cả LMS và storage sau VPN hoặc kiểm soát truy cập mạng của doanh nghiệp. Tài liệu/video cần kiểm thử URL ký số với endpoint HTTPS thực trước khi nghiệm thu.
 
+## Luyện gọi AI
+
+Nhân viên luyện xử lý cuộc gọi tại `/lms/practice`; L&D quản lý tình huống và xem kết quả tại `/practice`. Đặt các biến sau trong `.env` (API):
+
+- `SONIOX_API_KEY`: nhận dạng giọng nói (`SONIOX_MODEL`, mặc định `stt-rt-v6`). Để trống thì micro bị tắt, nhân viên gõ câu trả lời.
+- `TTS_URL`, `TTS_TOKEN`, `TTS_VOICE_ID`: giọng đọc của khách hàng. `TTS_VOICE_ID` là giọng mặc định khi tổ chức chưa chọn giọng. Để trống `TTS_URL` thì khách chỉ trả lời bằng chữ. `TTS_URL` dạng `ws://` gửi token không mã hóa; chỉ dùng trong mạng nội bộ hoặc chuyển sang `wss://`.
+
+Model đóng vai khách hàng, model trợ lý AI của admin, model chat của học viên và giọng mặc định do admin chọn trong **Cài đặt → AI → Model AI**. Mỗi model cần API key của nhà cung cấp tương ứng: `GOOGLE_API_KEY` (gemini-*), `OPENAI_API_KEY` (gpt-*), `ANTHROPIC_API_KEY` (claude-*). Danh sách chỉ hiện model có key.
+
+Ghi âm cuộc gọi do API ghép từ giọng nhân viên và giọng khách hàng, lưu vào bucket documents (`practice-calls/`). Worker `jobs` (cần `ffmpeg`, image `jobs` đã có sẵn) nén file sang Opus khoảng 0,12 MB/phút. Mỗi ngày worker xóa ghi âm quá hạn, mặc định 21 ngày (admin chỉnh 7–90 ngày trong **Cài đặt → AI**); transcript, điểm và đánh giá vẫn giữ.
+
+Âm thanh cuộc gọi đi qua WebSocket `/proxy/practice/calls/{id}/stream`. Dashboard (`node server.js`) chuyển tiếp kết nối này sang API. Reverse proxy phía trước phải cho phép nâng cấp WebSocket, ví dụ nginx: `proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; proxy_read_timeout 1800s;`. Phiên gọi đang diễn ra nằm trong bộ nhớ của tiến trình API, nên chỉ chạy một API hoặc bật sticky session.
+
 ## Tài khoản đầu tiên và nhân viên
 
 1. Mở `/signup` bằng email trong `LMS_ALLOWED_EMAILS`. Danh sách này nên chỉ chứa người được phép bootstrap; không dùng wildcard.

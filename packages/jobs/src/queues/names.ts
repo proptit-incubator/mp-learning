@@ -28,7 +28,8 @@ export const JOB_NAMES = {
     probeMetadata: 'probe-metadata',
     generateThumbnail: 'generate-thumbnail',
     extractAudio: 'extract-audio',
-    compressVideo: 'compress-video'
+    compressVideo: 'compress-video',
+    compressPracticeRecording: 'compress-practice-recording'
   },
   mediaTranscribe: {
     transcribeAudio: 'transcribe-audio'
@@ -68,6 +69,7 @@ export const JOB_NAMES = {
     courseRoleReconcile: 'course-role-reconcile',
     memberActivityReconcile: 'member-activity-reconcile',
     webhookRetention: 'webhook-retention',
-    webhookSweep: 'webhook-sweep'
+    webhookSweep: 'webhook-sweep',
+    practiceRecordingRetention: 'practice-recording-retention'
   }
 } as const;

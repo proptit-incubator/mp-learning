@@ -20,3 +20,4 @@ export * from './media-transcript';
 export * from './youtube-caption';
 export * from './report';
 export * from './webhook';
+export * from './practice';

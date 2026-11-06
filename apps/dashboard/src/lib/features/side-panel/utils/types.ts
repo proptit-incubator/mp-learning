@@ -18,4 +18,7 @@ export interface SidePanelDefinition {
   maxWidth: number;
   /** localStorage key for the panel's last user-resized width. */
   widthStorageKey: string;
+  /** When set, the app top bar shows a button with this label and icon that opens the panel while it is closed. */
+  toggleLabelKey?: string;
+  toggleIcon?: Component;
 }

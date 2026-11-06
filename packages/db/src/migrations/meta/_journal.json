@@ -351,6 +351,13 @@
       "when": 1793800000000,
       "tag": "0052_ai_usage_without_course",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1793936713656,
+      "tag": "0053_practice_calls",
+      "breakpoints": true
     }
   ]
 }

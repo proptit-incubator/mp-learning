@@ -76,3 +76,10 @@ export const ZHlsEncodePayload = z.object({
   actorContext: ZActorContext
 });
 export type THlsEncodePayload = z.infer<typeof ZHlsEncodePayload>;
+
+/** Re-encodes a finished practice call's WAV recording to a small Opus file. */
+export const ZCompressPracticeRecordingPayload = z.object({
+  callId: z.string().uuid(),
+  sourceKey: z.string().min(1)
+});
+export type TCompressPracticeRecordingPayload = z.infer<typeof ZCompressPracticeRecordingPayload>;

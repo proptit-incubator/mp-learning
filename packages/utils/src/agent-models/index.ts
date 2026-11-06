@@ -105,3 +105,30 @@ export const UI_PICKER_MODEL_IDS = [
 ] as const satisfies readonly AgentModelId[];
 
 export const DEFAULT_PICKER_MODEL_ID: AgentModelId = 'gemini-3.1-flash-lite';
+
+/** Models the practice-call customer can run on: every assistant model plus OpenAI's low-latency voice model. */
+export const VOICE_CALL_MODEL_IDS = [...AGENT_MODEL_IDS, 'gpt-6-luna'] as const;
+export type VoiceCallModelId = (typeof VOICE_CALL_MODEL_IDS)[number];
+
+const VOICE_ONLY_MODELS: Record<
+  Exclude<VoiceCallModelId, AgentModelId>,
+  Pick<AgentModelDescriptor, 'provider' | 'label'>
+> = {
+  'gpt-6-luna': { provider: 'openai', label: 'GPT-6 Luna' }
+};
+
+export function getModelProvider(modelId: VoiceCallModelId): AgentModelProvider {
+  return modelId in AGENT_MODELS
+    ? AGENT_MODELS[modelId as AgentModelId].provider
+    : VOICE_ONLY_MODELS[modelId as 'gpt-6-luna'].provider;
+}
+
+export function getModelLabel(modelId: VoiceCallModelId): string {
+  return modelId in AGENT_MODELS
+    ? AGENT_MODELS[modelId as AgentModelId].label
+    : VOICE_ONLY_MODELS[modelId as 'gpt-6-luna'].label;
+}
+
+export const DEFAULT_ADMIN_ASSISTANT_MODEL_ID: AgentModelId = 'claude-haiku-5-5';
+export const DEFAULT_VOICE_CALL_MODEL_ID: VoiceCallModelId = 'gemini-3.5-flash-lite';
+export const DEFAULT_LEARNER_CHAT_MODEL_ID: AgentModelId = 'gemini-3.5-flash-lite';

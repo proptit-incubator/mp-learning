@@ -173,6 +173,12 @@ services:
       # false turns AI off for the whole server; without a provider key AI is off anyway.
       AI_ENABLED: ${AI_ENABLED:-true}
       MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+      SONIOX_API_KEY: ${SONIOX_API_KEY:-}
+      SONIOX_MODEL: ${SONIOX_MODEL:-}
+      SONIOX_MAX_ENDPOINT_DELAY_MS: ${SONIOX_MAX_ENDPOINT_DELAY_MS:-}
+      TTS_URL: ${TTS_URL:-}
+      TTS_TOKEN: ${TTS_TOKEN:-}
+      TTS_VOICE_ID: ${TTS_VOICE_ID:-}
       # Upload size limits (megabytes). Unset = built-in defaults — see .env.example.
       UPLOAD_MAX_DOCUMENT_MB: ${UPLOAD_MAX_DOCUMENT_MB:-}
       UPLOAD_MAX_IMAGE_MB: ${UPLOAD_MAX_IMAGE_MB:-}

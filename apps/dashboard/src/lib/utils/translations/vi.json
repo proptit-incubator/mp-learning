@@ -503,6 +503,24 @@
         "learner_messages": "Số tin nhắn trợ giảng AI mỗi học viên",
         "learner_messages_help": "Số câu hỏi một học viên được gửi trợ giảng AI mỗi tháng. Đặt 0 để học viên không dùng trợ giảng AI."
       },
+      "models": {
+        "heading": "Mô hình AI",
+        "recording_days": "Lưu ghi âm cuộc gọi (ngày)",
+        "recording_days_help": "Quá hạn thì file ghi âm tự xóa; transcript, điểm và đánh giá vẫn giữ. Từ {min} đến {max} ngày.",
+        "description": "Chọn mô hình cho từng tính năng AI. Danh sách chỉ hiện mô hình mà máy chủ có API key.",
+        "no_key": "chưa có API key",
+        "admin_assistant": "Trợ lý AI cho quản trị",
+        "admin_assistant_help": "Dùng cho trợ lý soạn tình huống luyện gọi và là mô hình mặc định khi soạn khóa học bằng AI. Người soạn vẫn đổi được mô hình trong khung chat.",
+        "voice_call": "AI trong luyện gọi",
+        "voice_call_help": "Mô hình đóng vai khách hàng và chấm điểm cuộc gọi. Nên chọn mô hình nhanh để khách trả lời không bị trễ.",
+        "voice": "Giọng khách hàng mặc định",
+        "voice_help": "Dùng cho tình huống chưa chọn giọng riêng.",
+        "voice_server_default": "Mặc định của máy chủ ({voice})",
+        "learner_chat_enabled": "Bật trợ giảng AI cho học viên",
+        "learner_chat_enabled_help": "Học viên hỏi đáp với AI trong bài học. Cùng công tắc với trang Trợ giảng AI.",
+        "learner_chat": "Mô hình trợ giảng AI cho học viên",
+        "learner_chat_help": "Học viên không tự chọn mô hình."
+      },
       "usage": {
         "heading": "Mức dùng tháng này",
         "used_this_month": "Đã dùng / hạn mức",
@@ -745,7 +763,8 @@
     "exit_course": "Thoát khóa học",
     "ai_studio": "Soạn khóa học AI",
     "reports": "Báo cáo",
-    "system": "Hệ thống"
+    "system": "Hệ thống",
+    "practice": "Luyện gọi AI"
   },
   "pricing": {
     "modal": {
@@ -3010,7 +3029,8 @@
     "community": "Hỏi đáp",
     "explore": "Thư viện đào tạo",
     "settings": "Tài khoản",
-    "group_learning": "Học tập"
+    "group_learning": "Học tập",
+    "practice": "Luyện gọi AI"
   },
   "my_learning": {
     "progress": "Đang học",
@@ -4397,6 +4417,294 @@
       "meta_description": "Không xác nhận được email",
       "support_body": "Xin chào, tôi không xác nhận được email (lỗi: {type}). Nhờ anh/chị hỗ trợ.",
       "support_subject": "Hỗ trợ xác nhận email MP Learning"
+    }
+  },
+  "practice": {
+    "assistant": {
+      "title": "Trợ lý AI cho Admin",
+      "subtitle": "Soạn và chỉnh tình huống luyện gọi bằng AI",
+      "intro": "Hãy mô tả tình huống bạn muốn tạo: khách là ai, gặp vấn đề gì, thái độ ra sao. AI soạn bản nháp đầy đủ, bạn mở form để kiểm tra rồi lưu.",
+      "intro_edit": "Bạn muốn chỉnh gì trong tình huống này? AI chỉ sửa đúng phần bạn yêu cầu, sau đó bạn mở form để lưu.",
+      "placeholder": "VD: Khách bị trừ tiền 2 lần khi thanh toán thẻ, rất bực, đòi hoàn tiền ngay",
+      "send": "Gửi",
+      "thinking": "AI đang soạn...",
+      "failed": "Trợ lý AI chưa trả lời được. Hãy thử lại.",
+      "suggestions": {
+        "billing": "Khách hàng nhà mạng bức xúc vì hóa đơn tháng này tăng gấp ba, nghi bị trừ tiền dịch vụ không đăng ký",
+        "cancel": "Khách muốn hủy gói internet vì chuyển nhà, nhân viên cần giữ chân bằng ưu đãi phù hợp",
+        "telesale": "Telesale gọi mời khách mở thẻ tín dụng, khách bận và từ chối ngay câu đầu",
+        "harder": "Tăng độ khó: khách gay gắt hơn, hay ngắt lời",
+        "criteria": "Viết lại tiêu chí chấm cho cụ thể hơn",
+        "opening": "Viết lại câu mở đầu cho tự nhiên như khách thật"
+      },
+      "new": "Soạn tình huống mới",
+      "open": "Trợ lý AI",
+      "context_new": "Đang soạn tình huống mới",
+      "context_edit": "Đang chỉnh:",
+      "draft_label": "Bản nháp của AI",
+      "open_new": "Xem và lưu tình huống",
+      "open_edit": "Xem và lưu thay đổi",
+      "saved": "Đã lưu tình huống “{title}”. Mô tả tình huống tiếp theo để soạn tiếp."
+    },
+    "recording": {
+      "title": "Ghi âm cuộc gọi",
+      "kept_until": "Lưu đến {date}",
+      "deleted": "Bản ghi âm đã tự xóa ngày {date} theo thời hạn lưu trữ.",
+      "unavailable": "Cuộc gọi này không có bản ghi âm."
+    },
+    "page_title": "Luyện gọi cùng khách hàng AI",
+    "difficulty": {
+      "all": "Tất cả",
+      "easy": "Dễ",
+      "medium": "Trung bình",
+      "hard": "Khó"
+    },
+    "catalog": {
+      "title": "Luyện gọi cùng khách hàng AI",
+      "subtitle": "Chọn một tình huống, bạn đóng vai nhân viên, AI đóng vai khách hàng.",
+      "all_topics": "Tất cả chủ đề",
+      "random_title": "Luyện ngẫu nhiên",
+      "random_subtitle": "Bốc nhanh một tình huống bất kỳ",
+      "empty_title": "Chưa có tình huống nào",
+      "empty_description": "L&D chưa thêm tình huống luyện gọi. Hãy quay lại sau.",
+      "empty_filtered": "Không có tình huống nào khớp bộ lọc."
+    },
+    "steps": {
+      "title": "Cách luyện tập",
+      "subtitle": "4 bước đơn giản",
+      "choose": "Chọn một tình huống phù hợp",
+      "start": "Bấm \"Bắt đầu cuộc gọi\"",
+      "talk": "Nói (bật micro) hoặc gõ để trả lời khách",
+      "finish": "Kết thúc, AI chấm điểm và góp ý"
+    },
+    "history": {
+      "title": "Lịch sử luyện tập",
+      "empty": "Bạn chưa thực hiện cuộc gọi nào.",
+      "in_progress": "Chưa kết thúc",
+      "no_score": "Chưa có điểm",
+      "reviewed": "L&D đã nhận xét"
+    },
+    "call": {
+      "status_idle": "Sẵn sàng",
+      "status_connecting": "Đang kết nối",
+      "status_live": "Đang gọi",
+      "status_ended": "Đã kết thúc",
+      "status_failed": "Gián đoạn",
+      "you": "Bạn",
+      "start": "Bắt đầu cuộc gọi",
+      "start_hint": "{name} sẽ nói trước khi cuộc gọi được kết nối. Nên dùng tai nghe để micro không thu lại giọng khách.",
+      "connecting": "Đang kết nối cuộc gọi…",
+      "grading": "Đang chấm điểm cuộc gọi…",
+      "input_placeholder": "Nhập câu trả lời cho khách hàng…",
+      "send": "Gửi",
+      "end": "Kết thúc",
+      "mic_turn_off": "Tắt micro",
+      "mic_turn_on": "Bật micro",
+      "mic_unavailable": "Hệ thống chưa bật nhận dạng giọng nói, hãy gõ câu trả lời",
+      "speaker_mute": "Tắt tiếng khách hàng",
+      "speaker_unmute": "Bật tiếng khách hàng",
+      "retry": "Luyện lại",
+      "choose_another": "Chọn tình huống khác",
+      "reconnect": "Kết nối lại",
+      "end_and_grade": "Kết thúc và chấm điểm",
+      "scenario_missing": "Không tìm thấy tình huống này hoặc tình huống đã bị ẩn.",
+      "back_to_catalog": "Về danh sách tình huống"
+    },
+    "failure": {
+      "connection_lost": "Mất kết nối cuộc gọi. Bạn có thể kết nối lại để tiếp tục.",
+      "refused": "Không mở được cuộc gọi. Cuộc gọi có thể đã kết thúc hoặc hệ thống chưa cấu hình AI.",
+      "replaced": "Cuộc gọi này đang mở ở một tab khác.",
+      "start_failed": "Không bắt đầu được cuộc gọi. Vui lòng thử lại."
+    },
+    "notice": {
+      "MIC_DENIED": "Không dùng được micro. Hãy cho phép trình duyệt truy cập micro hoặc gõ câu trả lời.",
+      "STT_FAILED": "Nhận dạng giọng nói đang gặp lỗi. Hãy gõ câu trả lời.",
+      "TTS_FAILED": "Không phát được giọng khách hàng. Bạn vẫn đọc được lời khách trên màn hình.",
+      "REPLY_FAILED": "Khách hàng AI chưa trả lời được. Hãy nói hoặc gõ lại.",
+      "TIME_LIMIT": "Cuộc gọi đã đạt thời lượng tối đa nên được kết thúc.",
+      "REPLACED": "Cuộc gọi này vừa được mở ở một tab khác.",
+      "dismiss": "Đóng"
+    },
+    "brief": {
+      "title": "Kịch bản đang thực hành",
+      "objective": "Mục tiêu:"
+    },
+    "feedback": {
+      "title": "Kết quả cuộc gọi",
+      "score_suffix": "/100",
+      "criteria": "Chấm theo tiêu chí",
+      "strengths": "Điểm làm tốt",
+      "improvements": "Cần cải thiện",
+      "no_feedback": "Cuộc gọi chưa có lời nào của bạn nên không chấm điểm.",
+      "failed": "Chưa chấm được điểm cho cuộc gọi này.",
+      "not_finished": "Cuộc gọi chưa kết thúc nên chưa có điểm.",
+      "duration": "Thời lượng {duration}",
+      "regrade": "Chấm lại bằng AI"
+    },
+    "review": {
+      "title": "Xem lại cuộc gọi",
+      "empty_transcript": "Cuộc gọi không có nội dung.",
+      "play_from": "Phát ghi âm từ {time}"
+    },
+    "call_info": {
+      "title": "Thông tin cuộc gọi",
+      "date": "Ngày",
+      "time": "Giờ gọi",
+      "duration": "Thời lượng",
+      "not_ended": "chưa kết thúc",
+      "unknown_employee": "Nhân viên không xác định"
+    },
+    "errors": {
+      "load_failed": "Không tải được dữ liệu luyện gọi. Vui lòng thử lại.",
+      "start_failed": "Không bắt đầu được cuộc gọi. Vui lòng thử lại.",
+      "end_failed": "Không kết thúc được cuộc gọi. Vui lòng thử lại.",
+      "call_not_found": "Không tìm thấy cuộc gọi.",
+      "ai_not_configured": "Hệ thống chưa cấu hình AI cho luyện gọi. Hãy liên hệ quản trị viên.",
+      "grade_failed": "Chưa chấm được cuộc gọi. Vui lòng thử lại."
+    },
+    "not_configured": "Hệ thống chưa có khóa API cho model luyện gọi (GOOGLE_API_KEY với Gemini, OPENAI_API_KEY với GPT) nên chưa thể luyện gọi.",
+    "admin": {
+      "title": "Luyện gọi AI",
+      "subtitle": "Tạo tình huống để nhân viên luyện xử lý cuộc gọi với khách hàng AI.",
+      "add": "Thêm tình huống",
+      "tabs": {
+        "scenarios": "Tình huống",
+        "results": "Kết quả luyện tập",
+        "stats": "Thống kê"
+      },
+      "table": {
+        "scenario": "Tình huống",
+        "topic": "Chủ đề",
+        "difficulty": "Độ khó",
+        "calls": "Lượt luyện",
+        "average": "Điểm TB",
+        "published": "Hiển thị",
+        "actions": "Thao tác",
+        "employee": "Nhân viên",
+        "score": "Điểm",
+        "duration": "Thời lượng",
+        "date": "Thời gian",
+        "view": "Xem",
+        "reviewed": "L&D đã nhận xét"
+      },
+      "actions": {
+        "edit": "Sửa",
+        "try": "Gọi thử",
+        "delete": "Xóa",
+        "menu": "Thao tác tình huống",
+        "edit_with_ai": "Sửa với trợ lý AI"
+      },
+      "empty": {
+        "title": "Chưa có tình huống luyện gọi",
+        "description": "Thêm tình huống đầu tiên hoặc bắt đầu từ bộ tình huống mẫu rồi chỉnh lại cho phù hợp."
+      },
+      "results_empty": "Chưa có cuộc gọi luyện tập nào.",
+      "form": {
+        "create_title": "Thêm tình huống",
+        "edit_title": "Sửa tình huống",
+        "general": "Thông tin chung",
+        "title": "Tên tình huống",
+        "title_placeholder": "Khách lớn tuổi không rành thao tác trên ứng dụng",
+        "summary": "Mô tả ngắn",
+        "summary_placeholder": "Hiện trên thẻ tình huống: nhân viên cần làm gì",
+        "topic": "Chủ đề",
+        "topic_placeholder": "CSKH, Telesale…",
+        "difficulty": "Độ khó",
+        "published": "Hiển thị cho nhân viên",
+        "customer": "Khách hàng AI",
+        "customer_description": "AI dựa vào các thông tin này để đóng vai khách hàng.",
+        "customer_name": "Tên và chân dung khách",
+        "customer_name_placeholder": "Cô Thoa – 63 tuổi, đã nghỉ hưu",
+        "persona": "Kịch bản nhập vai",
+        "persona_placeholder": "Bạn là cô Thoa, 63 tuổi, không quen dùng điện thoại thông minh…",
+        "persona_helper": "Nhân viên cũng thấy nội dung này trong khung Kịch bản.",
+        "hidden_context": "Thông tin ẩn",
+        "hidden_context_placeholder": "Điều chỉ khách biết, nhân viên phải khai thác mới ra",
+        "hidden_context_helper": "Chỉ AI thấy, không hiện cho nhân viên.",
+        "opening_line": "Câu mở đầu của khách",
+        "opening_line_placeholder": "Alo, chào cháu…",
+        "opening_line_helper": "Để trống thì AI tự nghĩ câu mở đầu.",
+        "voice": "Giọng đọc",
+        "voice_default": "Mặc định ({voice})",
+        "coaching": "Hướng dẫn và chấm điểm",
+        "objective": "Mục tiêu cho nhân viên",
+        "objective_placeholder": "Hướng dẫn từng bước bằng ngôn ngữ đời thường…",
+        "tip": "Gợi ý",
+        "tip_placeholder": "Mỗi lần chỉ hướng dẫn một thao tác…",
+        "criteria": "Tiêu chí chấm điểm",
+        "criteria_placeholder": "Mỗi dòng một tiêu chí",
+        "criteria_helper": "Để trống thì dùng bộ tiêu chí mặc định: chào hỏi, đồng cảm, khai thác nhu cầu, giải pháp và kết thúc cuộc gọi.",
+        "cancel": "Hủy",
+        "save": "Lưu"
+      },
+      "snackbar": {
+        "created": "Đã thêm tình huống",
+        "updated": "Đã lưu tình huống",
+        "published": "Đã hiện tình huống cho nhân viên",
+        "unpublished": "Đã ẩn tình huống",
+        "deleted": "Đã xóa tình huống",
+        "save_failed": "Không lưu được tình huống. Vui lòng thử lại.",
+        "delete_failed": "Không xóa được tình huống. Vui lòng thử lại.",
+        "samples_added": "Đã thêm {count} tình huống mẫu",
+        "samples_exist": "Các tình huống mẫu đã có sẵn",
+        "samples_failed": "Không thêm được tình huống mẫu. Vui lòng thử lại."
+      },
+      "add_samples": "Thêm tình huống mẫu"
+    },
+    "trainer_review": {
+      "title": "Nhận xét của L&D",
+      "add": "Thêm nhận xét",
+      "edit": "Sửa nhận xét",
+      "empty": "Chưa có nhận xét cho cuộc gọi này.",
+      "score": "Điểm của L&D",
+      "score_helper": "Từ 0 đến 100. Để trống nếu chỉ nhận xét. Điểm này được dùng thay điểm AI trong thống kê.",
+      "comment": "Nhận xét",
+      "comment_placeholder": "Điểm làm tốt, điểm cần sửa và cách nói tốt hơn…",
+      "cancel": "Hủy",
+      "save": "Lưu nhận xét",
+      "saved": "Đã lưu nhận xét",
+      "save_failed": "Không lưu được nhận xét. Vui lòng thử lại.",
+      "by": "{name} · {time}",
+      "unknown_reviewer": "L&D"
+    },
+    "stats": {
+      "my_title": "Thống kê của bạn",
+      "my_empty": "Hoàn thành cuộc gọi đầu tiên để xem thống kê.",
+      "calls": "Lượt luyện",
+      "average": "Điểm TB",
+      "best": "Cao nhất",
+      "minutes": "Phút luyện",
+      "learners": "Nhân viên tham gia",
+      "trend": "Điểm các lần gần đây",
+      "trend_label": "Biểu đồ điểm của {count} cuộc gọi gần nhất",
+      "focus": "Nên luyện thêm",
+      "subtitle": "Chỉ tính các cuộc gọi đã kết thúc. Nếu L&D đã chấm điểm thì dùng điểm của L&D thay điểm AI.",
+      "range_label": "Khoảng thời gian",
+      "range": {
+        "7d": "7 ngày",
+        "30d": "30 ngày",
+        "90d": "90 ngày",
+        "all": "Tất cả"
+      },
+      "reviewed_count": "{count} cuộc gọi L&D đã nhận xét",
+      "best_value": "Cao nhất: {score}",
+      "activity_title": "Lượt luyện theo ngày",
+      "activity_description": "Số cuộc gọi đã kết thúc mỗi ngày",
+      "activity_tooltip": "{date}: {count} lượt · điểm TB {score}",
+      "distribution_title": "Phân bố điểm",
+      "distribution_description": "Số cuộc gọi theo từng khoảng điểm",
+      "distribution_tooltip": "{range} điểm: {count} cuộc gọi",
+      "legend_low": "Dưới 50",
+      "legend_mid": "50–79",
+      "legend_high": "Từ 80",
+      "criteria_title": "Điểm theo tiêu chí",
+      "criteria_description": "Điểm AI trung bình của từng tiêu chí, tiêu chí yếu nhất ở đầu",
+      "graded_count": "{count} lượt chấm",
+      "learners_title": "Kết quả theo nhân viên",
+      "learners_description": "Xếp theo điểm trung bình",
+      "last_call": "Lần gần nhất",
+      "no_calls": "Chưa có cuộc gọi nào trong khoảng thời gian này.",
+      "no_scores": "Chưa có cuộc gọi nào được chấm điểm."
     }
   }
 }

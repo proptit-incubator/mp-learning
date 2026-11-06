@@ -503,6 +503,24 @@
         "learner_messages": "AI tutor messages per learner",
         "learner_messages_help": "How many questions a learner can send the AI tutor each month. Set 0 to turn the AI tutor off for learners."
       },
+      "models": {
+        "heading": "AI models",
+        "recording_days": "Keep call recordings (days)",
+        "recording_days_help": "After this, recordings are deleted automatically; transcripts, scores and reviews stay. {min} to {max} days.",
+        "description": "Choose the model for each AI feature. Only models with an API key on the server are listed.",
+        "no_key": "no API key",
+        "admin_assistant": "Admin AI assistant",
+        "admin_assistant_help": "Used by the practice scenario assistant and as the default for AI course authoring. Authors can still switch models in the chat.",
+        "voice_call": "AI in practice calls",
+        "voice_call_help": "Plays the customer and grades the call. Pick a fast model so the customer replies without delay.",
+        "voice": "Default customer voice",
+        "voice_help": "Used for scenarios that do not pick their own voice.",
+        "voice_server_default": "Server default ({voice})",
+        "learner_chat_enabled": "Turn on the AI tutor for learners",
+        "learner_chat_enabled_help": "Learners chat with AI inside lessons. Same switch as on the AI tutor page.",
+        "learner_chat": "Learner AI tutor model",
+        "learner_chat_help": "Learners cannot choose the model themselves."
+      },
       "usage": {
         "heading": "This month's usage",
         "used_this_month": "Used / limit",
@@ -745,7 +763,8 @@
     "exit_course": "Exit this course",
     "ai_studio": "AI course studio",
     "reports": "Reports",
-    "system": "System"
+    "system": "System",
+    "practice": "AI call practice"
   },
   "pricing": {
     "modal": {
@@ -3010,7 +3029,8 @@
     "community": "Q&A",
     "explore": "Training library",
     "settings": "Account",
-    "group_learning": "Learning"
+    "group_learning": "Learning",
+    "practice": "Call practice"
   },
   "my_learning": {
     "progress": "In progress",
@@ -4397,6 +4417,294 @@
       "meta_description": "Email verification failed",
       "support_body": "Hello, I could not verify my email (error: {type}). Please help.",
       "support_subject": "MP Learning email verification help"
+    }
+  },
+  "practice": {
+    "assistant": {
+      "title": "AI assistant for Admin",
+      "subtitle": "Draft and refine call practice scenarios with AI",
+      "intro": "Describe the scenario you want: who the customer is, what went wrong and how they feel. The AI writes a full draft; open it in the form to review and save.",
+      "intro_edit": "What would you like to change in this scenario? The AI only edits what you ask for; then open the form to save.",
+      "placeholder": "E.g. Customer was charged twice for a card payment, very upset, wants a refund now",
+      "send": "Send",
+      "thinking": "AI is drafting...",
+      "failed": "The AI assistant could not respond. Please try again.",
+      "suggestions": {
+        "billing": "Mobile customer upset that this month's bill tripled, suspects charges for services they never signed up for",
+        "cancel": "Customer wants to cancel home internet after moving; the agent should try to retain them with a fitting offer",
+        "telesale": "Telesales call offering a credit card; the customer is busy and refuses at the first sentence",
+        "harder": "Make it harder: the customer is harsher and interrupts more",
+        "criteria": "Rewrite the grading criteria to be more specific",
+        "opening": "Rewrite the opening line to sound like a real customer"
+      },
+      "new": "New scenario",
+      "open": "AI assistant",
+      "context_new": "Drafting a new scenario",
+      "context_edit": "Editing:",
+      "draft_label": "AI draft",
+      "open_new": "Review and save scenario",
+      "open_edit": "Review and save changes",
+      "saved": "Saved “{title}”. Describe the next scenario to keep going."
+    },
+    "recording": {
+      "title": "Call recording",
+      "kept_until": "Kept until {date}",
+      "deleted": "The recording was deleted on {date} when its retention period ended.",
+      "unavailable": "No recording for this call."
+    },
+    "page_title": "Practice calls with AI customers",
+    "difficulty": {
+      "all": "All",
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "catalog": {
+      "title": "Practice calls with AI customers",
+      "subtitle": "Pick a scenario. You play the agent, AI plays the customer.",
+      "all_topics": "All topics",
+      "random_title": "Random practice",
+      "random_subtitle": "Jump into any scenario",
+      "empty_title": "No scenarios yet",
+      "empty_description": "L&D has not added any practice scenarios. Check back later.",
+      "empty_filtered": "No scenarios match these filters."
+    },
+    "steps": {
+      "title": "How to practice",
+      "subtitle": "4 simple steps",
+      "choose": "Pick a scenario that fits",
+      "start": "Press \"Start call\"",
+      "talk": "Speak (turn on the mic) or type to answer the customer",
+      "finish": "Hang up, AI grades the call and gives feedback"
+    },
+    "history": {
+      "title": "Practice history",
+      "empty": "You have not made any practice calls yet.",
+      "in_progress": "Not finished",
+      "no_score": "No score",
+      "reviewed": "Reviewed by L&D"
+    },
+    "call": {
+      "status_idle": "Ready",
+      "status_connecting": "Connecting",
+      "status_live": "On call",
+      "status_ended": "Ended",
+      "status_failed": "Interrupted",
+      "you": "You",
+      "start": "Start call",
+      "start_hint": "{name} speaks first once the call connects. Use headphones so the mic does not pick up the customer's voice.",
+      "connecting": "Connecting the call…",
+      "grading": "Grading the call…",
+      "input_placeholder": "Type your answer to the customer…",
+      "send": "Send",
+      "end": "Hang up",
+      "mic_turn_off": "Turn off microphone",
+      "mic_turn_on": "Turn on microphone",
+      "mic_unavailable": "Speech recognition is not set up, type your answer instead",
+      "speaker_mute": "Mute the customer",
+      "speaker_unmute": "Unmute the customer",
+      "retry": "Practice again",
+      "choose_another": "Choose another scenario",
+      "reconnect": "Reconnect",
+      "end_and_grade": "Hang up and grade",
+      "scenario_missing": "This scenario does not exist or is hidden.",
+      "back_to_catalog": "Back to scenarios"
+    },
+    "failure": {
+      "connection_lost": "The call connection dropped. Reconnect to continue.",
+      "refused": "The call could not be opened. It may have ended, or AI is not set up.",
+      "replaced": "This call is open in another tab.",
+      "start_failed": "The call could not start. Please try again."
+    },
+    "notice": {
+      "MIC_DENIED": "The microphone is unavailable. Allow microphone access in your browser or type your answer.",
+      "STT_FAILED": "Speech recognition failed. Type your answer instead.",
+      "TTS_FAILED": "The customer's voice could not play. You can still read the customer's words on screen.",
+      "REPLY_FAILED": "The AI customer could not answer. Say or type it again.",
+      "TIME_LIMIT": "The call reached its maximum length and was ended.",
+      "REPLACED": "This call was just opened in another tab.",
+      "dismiss": "Dismiss"
+    },
+    "brief": {
+      "title": "Scenario in practice",
+      "objective": "Objective:"
+    },
+    "feedback": {
+      "title": "Call result",
+      "score_suffix": "/100",
+      "criteria": "Scores by criterion",
+      "strengths": "What went well",
+      "improvements": "To improve",
+      "no_feedback": "You did not say anything in this call, so it was not graded.",
+      "failed": "This call could not be graded.",
+      "not_finished": "The call has not ended, so it has no score yet.",
+      "duration": "Duration {duration}",
+      "regrade": "Grade again with AI"
+    },
+    "review": {
+      "title": "Call review",
+      "empty_transcript": "This call has no conversation.",
+      "play_from": "Play recording from {time}"
+    },
+    "call_info": {
+      "title": "Call details",
+      "date": "Date",
+      "time": "Time",
+      "duration": "Duration",
+      "not_ended": "not ended",
+      "unknown_employee": "Unknown employee"
+    },
+    "errors": {
+      "load_failed": "Practice data could not load. Please try again.",
+      "start_failed": "The call could not start. Please try again.",
+      "end_failed": "The call could not end. Please try again.",
+      "call_not_found": "Call not found.",
+      "ai_not_configured": "AI is not set up for practice calls. Contact your administrator.",
+      "grade_failed": "Could not grade the call. Please try again."
+    },
+    "not_configured": "No API key is set for the practice call model (GOOGLE_API_KEY for Gemini, OPENAI_API_KEY for GPT), so practice calls are unavailable.",
+    "admin": {
+      "title": "AI call practice",
+      "subtitle": "Create scenarios for employees to practise handling calls with AI customers.",
+      "add": "Add scenario",
+      "tabs": {
+        "scenarios": "Scenarios",
+        "results": "Practice results",
+        "stats": "Statistics"
+      },
+      "table": {
+        "scenario": "Scenario",
+        "topic": "Topic",
+        "difficulty": "Difficulty",
+        "calls": "Calls",
+        "average": "Avg. score",
+        "published": "Visible",
+        "actions": "Actions",
+        "employee": "Employee",
+        "score": "Score",
+        "duration": "Duration",
+        "date": "Date",
+        "view": "View",
+        "reviewed": "Reviewed by L&D"
+      },
+      "actions": {
+        "edit": "Edit",
+        "try": "Try a call",
+        "delete": "Delete",
+        "menu": "Scenario actions",
+        "edit_with_ai": "Edit with AI assistant"
+      },
+      "empty": {
+        "title": "No practice scenarios yet",
+        "description": "Add the first scenario, or start from the sample set and adjust it to fit."
+      },
+      "results_empty": "No practice calls yet.",
+      "form": {
+        "create_title": "Add scenario",
+        "edit_title": "Edit scenario",
+        "general": "General",
+        "title": "Scenario name",
+        "title_placeholder": "Elderly customer struggling with the app",
+        "summary": "Short description",
+        "summary_placeholder": "Shown on the scenario card: what the employee must do",
+        "topic": "Topic",
+        "topic_placeholder": "Customer care, Telesales…",
+        "difficulty": "Difficulty",
+        "published": "Visible to employees",
+        "customer": "AI customer",
+        "customer_description": "The AI uses this to play the customer.",
+        "customer_name": "Customer name and profile",
+        "customer_name_placeholder": "Mrs Thoa – 63, retired",
+        "persona": "Role-play script",
+        "persona_placeholder": "You are Mrs Thoa, 63, not used to smartphones…",
+        "persona_helper": "Employees also see this in the Scenario panel.",
+        "hidden_context": "Hidden details",
+        "hidden_context_placeholder": "What only the customer knows until the employee asks",
+        "hidden_context_helper": "Only the AI sees this; employees do not.",
+        "opening_line": "Customer's opening line",
+        "opening_line_placeholder": "Hello, dear…",
+        "opening_line_helper": "Leave empty to let the AI open the call.",
+        "voice": "Voice",
+        "voice_default": "Default ({voice})",
+        "coaching": "Coaching and grading",
+        "objective": "Objective for the employee",
+        "objective_placeholder": "Guide step by step in plain language…",
+        "tip": "Tip",
+        "tip_placeholder": "Give one instruction at a time…",
+        "criteria": "Grading criteria",
+        "criteria_placeholder": "One criterion per line",
+        "criteria_helper": "Leave empty to use the default criteria: greeting, empathy, discovery, solution and closing.",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "snackbar": {
+        "created": "Scenario added",
+        "updated": "Scenario saved",
+        "published": "Scenario visible to employees",
+        "unpublished": "Scenario hidden",
+        "deleted": "Scenario deleted",
+        "save_failed": "The scenario could not be saved. Please try again.",
+        "delete_failed": "The scenario could not be deleted. Please try again.",
+        "samples_added": "Added {count} sample scenarios",
+        "samples_exist": "The sample scenarios are already here",
+        "samples_failed": "The sample scenarios could not be added. Please try again."
+      },
+      "add_samples": "Add sample scenarios"
+    },
+    "trainer_review": {
+      "title": "L&D review",
+      "add": "Add review",
+      "edit": "Edit review",
+      "empty": "No review for this call yet.",
+      "score": "L&D score",
+      "score_helper": "0 to 100. Leave empty to only comment. This score replaces the AI score in statistics.",
+      "comment": "Comment",
+      "comment_placeholder": "What went well, what to fix and a better way to say it…",
+      "cancel": "Cancel",
+      "save": "Save review",
+      "saved": "Review saved",
+      "save_failed": "Could not save the review. Please try again.",
+      "by": "{name} · {time}",
+      "unknown_reviewer": "L&D"
+    },
+    "stats": {
+      "my_title": "Your statistics",
+      "my_empty": "Finish your first call to see statistics.",
+      "calls": "Calls",
+      "average": "Avg score",
+      "best": "Best",
+      "minutes": "Minutes practised",
+      "learners": "Employees practising",
+      "trend": "Recent scores",
+      "trend_label": "Score chart for the last {count} calls",
+      "focus": "Practise more",
+      "subtitle": "Counts ended calls only. When L&D has scored a call, that score replaces the AI score.",
+      "range_label": "Time range",
+      "range": {
+        "7d": "7 days",
+        "30d": "30 days",
+        "90d": "90 days",
+        "all": "All time"
+      },
+      "reviewed_count": "{count} calls reviewed by L&D",
+      "best_value": "Best: {score}",
+      "activity_title": "Calls per day",
+      "activity_description": "Ended calls each day",
+      "activity_tooltip": "{date}: {count} calls · avg score {score}",
+      "distribution_title": "Score distribution",
+      "distribution_description": "Calls per score range",
+      "distribution_tooltip": "Score {range}: {count} calls",
+      "legend_low": "Below 50",
+      "legend_mid": "50–79",
+      "legend_high": "80 and up",
+      "criteria_title": "Scores by criterion",
+      "criteria_description": "Average AI score per criterion, weakest first",
+      "graded_count": "{count} grades",
+      "learners_title": "Results by employee",
+      "learners_description": "Sorted by average score",
+      "last_call": "Last call",
+      "no_calls": "No calls in this time range.",
+      "no_scores": "No graded calls yet."
     }
   }
 }

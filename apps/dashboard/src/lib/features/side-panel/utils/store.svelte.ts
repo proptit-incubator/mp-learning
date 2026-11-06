@@ -3,6 +3,7 @@ import type { SidePanelDefinition, SidePanelScope } from './types';
 
 class SidePanelStore {
   private definitions = new SvelteMap<string, SidePanelDefinition>();
+  private lastPropsById = new Map<string, Record<string, unknown>>();
 
   activePanelId = $state<string | null>(null);
   panelProps = $state<Record<string, unknown>>({});
@@ -14,6 +15,7 @@ class SidePanelStore {
 
   unregister(id: string) {
     this.definitions.delete(id);
+    this.lastPropsById.delete(id);
     if (this.activePanelId === id) this.activePanelId = null;
   }
 
@@ -31,18 +33,25 @@ class SidePanelStore {
     return this.definitions.get(this.activePanelId) ?? null;
   }
 
-  open(id: string, props: Record<string, unknown> = {}) {
+  /** Opens the panel; without `props` it reuses the props it was last opened with. */
+  open(id: string, props?: Record<string, unknown>) {
     if (!this.definitions.has(id)) {
       console.warn(`sidePanel.open: no panel registered with id "${id}"`);
 
       return;
     }
 
+    const nextProps = props ?? this.lastPropsById.get(id) ?? {};
+    this.lastPropsById.set(id, nextProps);
     this.activePanelId = id;
-    this.panelProps = props;
+    this.panelProps = nextProps;
   }
 
-  toggle(id: string, props: Record<string, unknown> = {}) {
+  get toggleable(): SidePanelDefinition[] {
+    return this.list().filter((definition) => definition.toggleLabelKey);
+  }
+
+  toggle(id: string, props?: Record<string, unknown>) {
     if (this.activePanelId === id) {
       this.close();
 

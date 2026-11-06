@@ -26,6 +26,7 @@ import {
 import type { AnswerData } from '@cio/question-types';
 import type { CourseProgressionMode } from '@cio/utils/functions/course-progression';
 import type { EmployeeRole } from '@cio/utils/validation/organization';
+import type { TPracticeFeedback, TPracticeTurn } from '@cio/utils/validation/practice';
 import { LESSON_VERSION_KIND_VALUES } from '@cio/utils/constants/lesson-version';
 import {
   LIVE_SESSION_REMINDER_STATUS_VALUES,
@@ -2435,6 +2436,11 @@ export const organization = pgTable(
         monthlyLimit?: number;
         authorMonthlyLimit?: number | null;
         learnerMonthlyMessages?: number;
+        adminAssistantModel?: string;
+        voiceCallModel?: string;
+        voiceCallVoice?: string | null;
+        voiceCallRecordingDays?: number;
+        learnerChatModel?: string;
       };
       language?: {
         locale?: (typeof locale.enumValues)[number];
@@ -4086,5 +4092,80 @@ export const webhookDelivery = pgTable(
     index('idx_webhook_delivery_webhook_created_at').on(table.webhookId, table.createdAt),
     index('idx_webhook_delivery_status_next_attempt').on(table.status, table.nextAttemptAt),
     index('idx_webhook_delivery_event_id').on(table.eventId)
+  ]
+);
+
+export const practiceScenario = pgTable(
+  'practice_scenario',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organization.id),
+    title: text().notNull(),
+    summary: text().notNull().default(''),
+    topic: text().notNull().default(''),
+    difficulty: varchar({ length: 10 }).notNull().default('MEDIUM'),
+    customerName: text('customer_name').notNull(),
+    persona: text().notNull(),
+    hiddenContext: text('hidden_context').notNull().default(''),
+    objective: text().notNull().default(''),
+    tip: text().notNull().default(''),
+    openingLine: text('opening_line').notNull().default(''),
+    evaluationCriteria: text('evaluation_criteria').notNull().default(''),
+    voiceId: varchar('voice_id', { length: 64 }),
+    isPublished: boolean('is_published').notNull().default(true),
+    createdBy: uuid('created_by').references(() => profile.id),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true, mode: 'string' })
+  },
+  (table) => [
+    index('practice_scenario_org_idx').on(table.organizationId, table.deletedAt),
+    check('practice_scenario_difficulty_check', sql`${table.difficulty} IN ('EASY','MEDIUM','HARD')`),
+    check('practice_scenario_title_check', sql`btrim(${table.title}) <> ''`)
+  ]
+);
+
+export const practiceCall = pgTable(
+  'practice_call',
+  {
+    id: uuid().defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organization.id),
+    scenarioId: uuid('scenario_id')
+      .notNull()
+      .references(() => practiceScenario.id),
+    profileId: uuid('profile_id')
+      .notNull()
+      .references(() => profile.id),
+    status: varchar({ length: 10 }).notNull().default('ACTIVE'),
+    transcript: jsonb()
+      .$type<TPracticeTurn[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    score: integer(),
+    feedback: jsonb().$type<TPracticeFeedback>(),
+    startedAt: timestamp('started_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+    endedAt: timestamp('ended_at', { withTimezone: true, mode: 'string' }),
+    durationSeconds: integer('duration_seconds'),
+    recordingKey: text('recording_key'),
+    recordingContentType: varchar('recording_content_type', { length: 100 }),
+    recordingDeletedAt: timestamp('recording_deleted_at', { withTimezone: true, mode: 'string' }),
+    reviewScore: integer('review_score'),
+    reviewComment: text('review_comment').notNull().default(''),
+    reviewedBy: uuid('reviewed_by').references(() => profile.id),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true, mode: 'string' })
+  },
+  (table) => [
+    index('practice_call_profile_idx').on(table.organizationId, table.profileId, table.startedAt),
+    index('practice_call_scenario_idx').on(table.scenarioId),
+    check('practice_call_status_check', sql`${table.status} IN ('ACTIVE','ENDED')`),
+    check('practice_call_score_check', sql`${table.score} IS NULL OR ${table.score} BETWEEN 0 AND 100`),
+    check(
+      'practice_call_review_score_check',
+      sql`${table.reviewScore} IS NULL OR ${table.reviewScore} BETWEEN 0 AND 100`
+    )
   ]
 );

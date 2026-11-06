@@ -9,6 +9,7 @@ import { JobCanceledError, errorMessage } from '../utils/cancel';
 import { env } from '../config/env';
 import { log } from '../utils/logger';
 import { processExtractAudio, processGenerateThumbnail, processProbeMetadata } from '../processors/media';
+import { processCompressPracticeRecording } from '../processors/practice/recording';
 
 const concurrency = Number.parseInt(env.MEDIA_WORKER_CONCURRENCY ?? '2', 10) || 2;
 const connection = createRedisConnection();
@@ -25,6 +26,8 @@ const worker = new Worker(
         return processGenerateThumbnail(job.data);
       case JOB_NAMES.media.extractAudio:
         return processExtractAudio(job.data);
+      case JOB_NAMES.media.compressPracticeRecording:
+        return processCompressPracticeRecording(job.data);
       default:
         throw new Error(`Unknown media job: ${job.name}`);
     }

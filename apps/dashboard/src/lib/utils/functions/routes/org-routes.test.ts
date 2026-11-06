@@ -8,11 +8,14 @@ describe('orgSectionRoute', () => {
     expect(orgSectionRoute('/courses')).toBe('/org/_/courses');
     expect(orgSectionRoute('/courses/templates')).toBe('/org/_/courses/templates');
     expect(orgSectionRoute('/studio')).toBe('/org/_');
+    expect(orgSectionRoute('/practice')).toBe('/org/_/practice');
+    expect(orgSectionRoute('/practice/calls/abc')).toBe('/org/_/practice/calls/abc');
   });
 
   it('leaves course pages, learner pages and the API proxy alone', () => {
     expect(orgSectionRoute('/courses/5e5007b9-58d3-4b21-aef3-e94af86fdbc0/lessons')).toBeUndefined();
     expect(orgSectionRoute('/lms/mylearning')).toBeUndefined();
+    expect(orgSectionRoute('/lms/practice')).toBeUndefined();
     expect(orgSectionRoute('/api/auth/sign-in/email')).toBeUndefined();
     expect(orgSectionRoute('/login')).toBeUndefined();
   });

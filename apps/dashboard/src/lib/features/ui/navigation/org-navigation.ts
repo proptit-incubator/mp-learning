@@ -4,6 +4,7 @@ import ContactRoundIcon from '@lucide/svelte/icons/contact-round';
 import FolderOpenIcon from '@lucide/svelte/icons/folder-open';
 import LayoutDashboardIcon from '@lucide/svelte/icons/layout-dashboard';
 import MessagesSquareIcon from '@lucide/svelte/icons/messages-square';
+import PhoneCallIcon from '@lucide/svelte/icons/phone-call';
 import PlugIcon from '@lucide/svelte/icons/plug';
 import SettingsIcon from '@lucide/svelte/icons/settings';
 import SparklesIcon from '@lucide/svelte/icons/sparkles';
@@ -115,6 +116,14 @@ export const baseNavConfig: NavItemConfig[] = [
     path: ORG_HOME_PATH,
     icon: SparklesIcon,
     matchPattern: '^/studio/?$'
+  },
+  {
+    group: 'content',
+    titleKey: 'org_navigation.practice',
+    path: '/practice',
+    icon: PhoneCallIcon,
+    supportsDynamicSegment: true,
+    matchPattern: '^/practice(/.*)?$'
   },
   {
     group: 'content',

@@ -86,6 +86,7 @@ describe('internal learning surfaces', () => {
     '/certificate/verify/ABCDEFGH23',
     '/community',
     '/agent/chat',
+    '/practice/calls/123/stream',
     '/public-api/v1/courses',
     '/invite/organization/pending',
     '/organization/team',

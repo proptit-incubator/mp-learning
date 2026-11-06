@@ -10,11 +10,13 @@
   import { isOrgStudent } from '$lib/utils/store/app';
   import { appInitApi } from '$features/app/init.svelte';
   import { AppHeader } from '$features/ui';
+  import { sidePanel, SidePanelRail } from '$features/side-panel';
 
   import { OrgSidebar } from '$features/ui/sidebar/org-sidebar';
   import SettingsSidebar from '$features/ui/sidebar/settings-sidebar.svelte';
 
   let { data, children } = $props();
+  let sidebarProviderElement = $state<HTMLDivElement | null>(null);
   const isSettingsRoute = $derived(/\/settings(?:\/|$)/.test(page.url.pathname));
   const isCoursesList = $derived(/\/courses\/?$/.test(page.url.pathname));
   const contentWidth = $derived(/\/employees\/?$/.test(page.url.pathname) ? 'max-w-[1600px]' : 'max-w-6xl');
@@ -24,6 +26,10 @@
 
     const newUrl = page.url.pathname.replace('*', siteName);
     goto(newUrl + page.url.search);
+  }
+
+  function handleSidePanelWidthPreview(width: number) {
+    sidebarProviderElement?.style.setProperty('--side-panel-width', `${width}px`);
   }
 
   $effect(() => {
@@ -39,14 +45,14 @@
   });
 </script>
 
-<Sidebar.Provider>
+<Sidebar.Provider bind:ref={sidebarProviderElement} style={`--side-panel-width: ${sidePanel.width}px;`}>
   {#if isSettingsRoute}
     <SettingsSidebar />
   {:else}
     <OrgSidebar />
   {/if}
 
-  <Sidebar.Inset>
+  <Sidebar.Inset class="min-w-0">
     {#if isSettingsRoute}
       <div class="flex h-10 items-center px-3 md:hidden">
         <Sidebar.Trigger testId="settings-sidebar-trigger-mobile" />
@@ -72,5 +78,6 @@
       {/if}
     </div>
   </Sidebar.Inset>
+  <SidePanelRail onWidthPreview={handleSidePanelWidthPreview} />
   <ScrollToTop label={$t('common.scroll_to_top')} />
 </Sidebar.Provider>

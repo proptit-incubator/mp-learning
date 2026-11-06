@@ -57,7 +57,7 @@ import {
   type AgentStatus
 } from '@cio/ai-assistant';
 import { createModel, getProviderConfigForProvider, pickAnyConfiguredProvider } from '@cio/ai-assistant/providers';
-import { AGENT_MODELS, DEFAULT_PICKER_MODEL_ID } from '@cio/utils/agent-models';
+import { AGENT_MODELS } from '@cio/utils/agent-models';
 import { buildSystemPrompt, buildContextMessage } from '@cio/ai-assistant/prompt';
 import { trackAgentEvent, AgentEvent } from '@cio/core/utils/tinybird';
 import { redis } from '@cio/core/utils/redis/redis';
@@ -408,11 +408,10 @@ const agentCoreRouter = new Hono()
       const isTeamMember = await isCourseTeamMemberOrOrgAdmin(courseId, user.id);
       const role = isTeamMember ? AgentRole.TEACHER : AgentRole.STUDENT;
 
-      // Students always use the platform default; admins can pick. Forcing the
-      // default avoids exposing premium models to learners and keeps per-message
-      // cost predictable for fair-use accounting.
+      // Learners always use the model the organization chose for them; staff may pick per message.
+      const aiPolicy = await getAiPolicy(orgId);
       const modelId =
-        role === AgentRole.STUDENT ? DEFAULT_PICKER_MODEL_ID : (requestedModel ?? DEFAULT_PICKER_MODEL_ID);
+        role === AgentRole.STUDENT ? aiPolicy.learnerChatModel : (requestedModel ?? aiPolicy.adminAssistantModel);
       const modelDescriptor = AGENT_MODELS[modelId];
       const baseProviderConfig = getProviderConfigForProvider(modelDescriptor.provider as AIProvider);
 

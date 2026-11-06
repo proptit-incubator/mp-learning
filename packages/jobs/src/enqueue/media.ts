@@ -1,7 +1,7 @@
 import { JOB_NAMES, QUEUE_NAMES } from '../queues/names';
 import { QUEUE_DEFAULTS } from '../queues/defaults';
 import { getFlowProducer, getQueue } from '../queues/factories';
-import type { TActorContext } from '../payloads/media';
+import type { TActorContext, TCompressPracticeRecordingPayload } from '../payloads/media';
 
 export interface EnqueueLessonVideoPipelineInput {
   mediaJobId: string;
@@ -200,6 +200,17 @@ export async function enqueueHlsEncode(input: {
     ...QUEUE_DEFAULTS[QUEUE_NAMES.mediaHls],
     jobId: `hls-encode-${input.assetId}`
   });
+
+  return job.id ?? '';
+}
+
+/** Queue the Opus re-encode of a practice call recording; the WAV stays playable until it finishes. */
+export async function enqueueCompressPracticeRecording(payload: TCompressPracticeRecordingPayload): Promise<string> {
+  const job = await getQueue(QUEUE_NAMES.media).add(
+    JOB_NAMES.media.compressPracticeRecording,
+    payload,
+    QUEUE_DEFAULTS[QUEUE_NAMES.media]
+  );
 
   return job.id ?? '';
 }

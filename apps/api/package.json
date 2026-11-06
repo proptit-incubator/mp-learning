@@ -52,6 +52,7 @@
     "@cio/utils": "workspace:*",
     "@getworkbench/hono": "0.2.1",
     "@hono/node-server": "^1.19.7",
+    "@hono/node-ws": "^1.3.1",
     "@hono/standard-validator": "^0.1.5",
     "@hono/zod-validator": "^0.7.6",
     "@scalar/hono-api-reference": "^0.9.18",
@@ -71,6 +72,7 @@
     "playwright-core": "1.57.0",
     "tldts": "^6.1.86",
     "turndown": "^7.2.4",
+    "ws": "^8.22.1",
     "zod": "^4.1.8",
     "zod-openapi": "^5.4.1"
   },
@@ -78,6 +80,7 @@
     "@types/katex": "^0.16.7",
     "@types/node": "^24.10.1",
     "@types/turndown": "^5.0.6",
+    "@types/ws": "^8.18.2",
     "@typescript-eslint/eslint-plugin": "7.0.1",
     "@typescript-eslint/parser": "7.0.1",
     "@vitest/coverage-v8": "^1.2.2",

@@ -275,3 +275,8 @@ export type TWebhookEvent = typeof schema.webhookEvent.$inferSelect;
 export type TNewWebhookEvent = typeof schema.webhookEvent.$inferInsert;
 export type TWebhookDelivery = typeof schema.webhookDelivery.$inferSelect;
 export type TNewWebhookDelivery = typeof schema.webhookDelivery.$inferInsert;
+
+export type TPracticeScenario = typeof schema.practiceScenario.$inferSelect;
+export type TNewPracticeScenario = typeof schema.practiceScenario.$inferInsert;
+export type TPracticeCall = typeof schema.practiceCall.$inferSelect;
+export type TNewPracticeCall = typeof schema.practiceCall.$inferInsert;

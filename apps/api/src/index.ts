@@ -3,6 +3,7 @@ import './instrument';
 
 import { API_PORT } from '@api/constants';
 import { app } from '@api/app';
+import { attachWebSockets } from '@api/utils/websocket';
 import { configureOpenAPI } from '@api/utils/openapi';
 import { connectRedis } from '@cio/core/utils/redis/redis';
 import { env } from '@cio/core/config/env';
@@ -24,7 +25,8 @@ async function startServer() {
     console.log('Verified custom domain origins preloaded');
   });
 
-  serve({ fetch: app.fetch, port: API_PORT });
+  const server = serve({ fetch: app.fetch, port: API_PORT });
+  attachWebSockets(app, server);
 
   if (env.NODE_ENV !== 'production') {
     showRoutes(app, { colorize: true });

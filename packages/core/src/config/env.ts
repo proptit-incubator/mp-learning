@@ -123,7 +123,31 @@ const envSchema = z.object({
   /** Supadata API key for YouTube caption fetching. Leave unset to disable YouTube transcripts. */
   SUPADATA_API_KEY: z.string().optional(),
   /** YouTube caption provider identifier (default 'supadata'). */
-  YOUTUBE_CAPTION_PROVIDER: z.string().optional()
+  YOUTUBE_CAPTION_PROVIDER: z.string().optional(),
+  /** Soniox key for live speech-to-text in practice calls. Unset turns the microphone off; learners can still type. */
+  SONIOX_API_KEY: z.string().optional(),
+  /** Soniox real-time model (default stt-rt-v6). */
+  SONIOX_MODEL: z
+    .string()
+    .optional()
+    .transform((value) => value || 'stt-rt-v6'),
+  /** How long Soniox waits after speech stops before closing an utterance, 500–3000 ms (default 1500). */
+  SONIOX_MAX_ENDPOINT_DELAY_MS: z
+    .string()
+    .optional()
+    .transform((value) => {
+      const parsed = Number(value);
+
+      return Number.isFinite(parsed) && parsed >= 500 && parsed <= 3000 ? Math.trunc(parsed) : 1500;
+    }),
+  /** Text-to-speech WebSocket that voices the AI customer, e.g. ws://host:8765. Unset keeps the customer silent. */
+  TTS_URL: z.string().optional(),
+  TTS_TOKEN: z.string().optional(),
+  /** Voice used when a scenario does not pick one (default vannt). */
+  TTS_VOICE_ID: z
+    .string()
+    .optional()
+    .transform((value) => value || 'vannt')
 });
 
 export const env = envSchema.parse(process.env);

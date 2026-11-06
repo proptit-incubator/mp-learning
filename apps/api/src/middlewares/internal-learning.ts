@@ -25,7 +25,7 @@ const ALLOWED_PATHS = [
   /^\/(?:docs|health)?$/,
   /^\/session\/?$/,
   new RegExp(`^/api/auth/(?:${AUTH_ENDPOINTS.join('|')})/?$`),
-  /^\/(account|employees|course|certificate|hls|transcripts|media|jobs|mail|organization|dash|community|report|internal|agent)(\/|$)/,
+  /^\/(account|employees|course|certificate|hls|transcripts|media|jobs|mail|organization|dash|community|report|internal|agent|practice)(\/|$)/,
   /^\/public-api\/v1(\/|$)/,
   /^\/invite\/organization\/pending\/?$/,
   /^\/admin\/queues(\/|$)/
