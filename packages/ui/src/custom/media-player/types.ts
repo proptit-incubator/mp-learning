@@ -78,6 +78,13 @@ export interface MediaPlayerOptions {
     onClick: () => void;
   };
   /**
+   * HTML5 playback only: CSS selector of an ancestor that goes fullscreen instead of
+   * the player, so host content rendered beside the video (e.g. a transcript) stays visible.
+   */
+  fullscreenContainer?: string;
+  /** Fires when the player enters or leaves fullscreen. */
+  onFullscreenChange?: (isFullscreen: boolean) => void;
+  /**
    * For HLS sources only. Invoked before hls.js (or native HLS) loads the
    * manifest. Use it to mint a short-lived signed cookie that the
    * tenant-router Worker validates when serving segments in Cloud

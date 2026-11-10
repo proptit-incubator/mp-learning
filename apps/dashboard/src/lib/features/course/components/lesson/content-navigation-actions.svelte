@@ -18,7 +18,7 @@
   import { snackbar } from '$features/ui/snackbar/store';
   import type { CourseContentItem } from '$features/course/utils/types';
   import { toggleLessonCompletion } from '$features/course/utils/toggle-lesson-completion';
-  import { getLessonCompletionState } from '$features/course/utils/lesson-completion-state';
+  import { getLessonCompletionState, getLessonWatchedPercent } from '$features/course/utils/lesson-completion-state';
 
   interface Props {
     lessonId?: string;
@@ -107,21 +107,7 @@
   const isLessonComplete = $derived(completionState.isLessonComplete);
   const isLessonLocked = $derived(completionState.isLessonLocked);
   const isVideoWatchLesson = $derived(completionState.isVideoWatchLesson);
-  const watchedPercent = $derived.by(() => {
-    const progress = lessonApi.lesson?.watchProgress;
-    if (progress?.isComplete) return 100;
-
-    if (typeof progress?.watchedPercent === 'number') {
-      return progress.watchedPercent;
-    }
-
-    const durationSeconds = progress?.durationSeconds;
-    if (durationSeconds && durationSeconds > 0) {
-      return Math.min(100, ((progress?.watchedSeconds ?? 0) / durationSeconds) * 100);
-    }
-
-    return 0;
-  });
+  const watchedPercent = $derived(getLessonWatchedPercent(lessonApi.lesson?.watchProgress));
 
   const watchedPercentDisplay = $derived(Math.round(watchedPercent));
 

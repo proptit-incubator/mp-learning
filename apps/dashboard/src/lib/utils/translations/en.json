@@ -1140,7 +1140,7 @@
           "manual_label": "Manual",
           "manual_description": "Students mark the lesson complete themselves.",
           "video_watch_label": "Video watch",
-          "video_watch_description": "The lesson completes automatically after students watch the selected uploaded videos. YouTube and external embeds can't be tracked.",
+          "video_watch_description": "The lesson completes automatically once students watch the selected uploaded videos up to the threshold. Students can't skip ahead past unwatched parts or change the playback speed. YouTube and external embeds can't be tracked.",
           "none_label": "None",
           "none_description": "This lesson does not block course progression.",
           "watch_threshold": "Watch threshold (%)"
@@ -1169,7 +1169,11 @@
         "watch_progress": {
           "status": "Watched {percent}% of the video content",
           "videos_complete": "Watched {percent}% of the required video content ({complete} of {required} videos)",
-          "seek_blocked": "You cannot skip ahead on this video"
+          "seek_blocked": "You cannot skip ahead on this video",
+          "bar_label": "Video watch progress",
+          "threshold_hint": "Watch at least {threshold}% to complete this lesson",
+          "threshold_marker": "Completion threshold: {threshold}%",
+          "completed": "You reached the lesson completion threshold"
         },
         "session": {
           "join": "Join session",

@@ -65,6 +65,7 @@
   import { getOrderedNavigableContent } from '$features/course/utils/content';
   import StudentContentLockedNotice from '$features/course/components/student-content-locked-notice.svelte';
   import LiveSessionCard from '$features/course/components/lesson/live-session-card.svelte';
+  import LessonWatchProgressBar from '$features/course/components/lesson/lesson-watch-progress-bar.svelte';
   import { liveSessionClock } from '$features/course/utils/live-session-phase';
   import { getLiveSessionPhase, type LiveSessionPhase } from '@cio/utils/functions/live-session';
 
@@ -256,6 +257,11 @@
 
   const isMaterialsEmpty = $derived(tabs.every((tab) => tab.badgeValue === 0));
   const hasLessonVideos = $derived((lessonApi.lesson?.videos?.length ?? 0) > 0);
+  const showWatchProgressBar = $derived(
+    hasLessonVideos &&
+      lessonApi.lesson?.completionPolicy === 'video_watch' &&
+      (lessonApi.lesson?.watchProgress?.videosRequired ?? 0) > 0
+  );
 
   let timeoutId: NodeJS.Timeout | undefined;
 
@@ -570,8 +576,12 @@
         {:else if lessonApi.lesson && !isMaterialsEmpty}
           {#key lessonId}
             <div class="mb-20 flex w-full flex-col gap-4" in:fade={{ duration: 150 }}>
+              {#if showWatchProgressBar}
+                <LessonWatchProgressBar />
+              {/if}
+
               <article
-                class="ui:bg-card ui:shadow-card flex w-full flex-col rounded-xl border px-5 py-5 md:px-8 md:py-7"
+                class="ui:bg-card ui:shadow-card flex w-full flex-col rounded-xl border px-3 py-4 sm:px-5 sm:py-5 md:px-8 md:py-7"
               >
                 {#if !hasLessonVideos}
                   <LessonMaterialActions showSummarize {lessonId} alignWithNote />
@@ -583,7 +593,7 @@
               </article>
 
               {#if showLessonComments}
-                <section class="ui:bg-card ui:shadow-card rounded-xl border px-5 py-5 md:px-8">
+                <section class="ui:bg-card ui:shadow-card rounded-xl border px-3 py-4 sm:px-5 sm:py-5 md:px-8">
                   <Comments {lessonId} />
                 </section>
               {/if}
@@ -657,7 +667,9 @@
       {:else if lessonApi.lesson && !isMaterialsEmpty}
         {#key lessonId}
           <div class="mb-20 flex w-full flex-col gap-4" in:fade={{ duration: 150 }}>
-            <article class="ui:bg-card ui:shadow-card flex w-full flex-col rounded-xl border px-5 py-5 md:px-8 md:py-7">
+            <article
+              class="ui:bg-card ui:shadow-card flex w-full flex-col rounded-xl border px-3 py-4 sm:px-5 sm:py-5 md:px-8 md:py-7"
+            >
               {#if !hasLessonVideos}
                 <LessonMaterialActions showSummarize {lessonId} alignWithNote />
               {/if}
@@ -668,7 +680,7 @@
             </article>
 
             {#if showLessonComments}
-              <section class="ui:bg-card ui:shadow-card rounded-xl border px-5 py-5 md:px-8">
+              <section class="ui:bg-card ui:shadow-card rounded-xl border px-3 py-4 sm:px-5 sm:py-5 md:px-8">
                 <Comments {lessonId} />
               </section>
             {/if}

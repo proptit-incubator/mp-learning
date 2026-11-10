@@ -15,6 +15,12 @@
   import { lessonVideoBus } from './lesson-video-bus.svelte';
   import type { TranscriptSegment } from '$features/media/utils/types';
 
+  interface Props {
+    onClose?: () => void;
+  }
+
+  let { onClose = () => sidePanel.close() }: Props = $props();
+
   const activeSource = $derived.by(() => lessonVideoBus.getActiveTranscriptSource());
   const transcript = $derived(activeSource?.transcript ?? null);
   const transcriptLoading = $derived(activeSource?.transcriptLoading ?? false);
@@ -143,12 +149,7 @@
             <PencilIcon size={16} />
           </IconButton>
         {/if}
-        <IconButton
-          onclick={() => sidePanel.close()}
-          variant="outline"
-          size="icon-xs"
-          tooltip={$t('side_panel.close_aria')}
-        >
+        <IconButton onclick={onClose} variant="outline" size="icon-xs" tooltip={$t('side_panel.close_aria')}>
           <XIcon size={16} />
         </IconButton>
       {/if}

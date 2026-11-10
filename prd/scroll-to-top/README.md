@@ -27,7 +27,7 @@ Today there is no way back to the top except manually scrolling. On a phone, aft
 3. **Appears only when both are true:**
    - The scroll container overflows (content is taller than the viewport / container).
    - The user has scrolled past the **show threshold**.
-4. **Show threshold = one viewport height.** `scrollTop >= clientHeight` of the scroll container. See [Threshold recommendation](#threshold-recommendation).
+4. **Show threshold = half a viewport height.** `scrollTop >= 0.5 × clientHeight` of the scroll container. See [Threshold recommendation](#threshold-recommendation).
 5. **Click does one thing:** smooth-scroll that container to `top: 0`. No hash change, no extra menu, no “scroll to previous section”.
 6. **Fixed to the viewport, bottom-right.** Not sticky inside the content column. Hosts that already have bottom chrome (public-course mobile nav, Ask AI bar) pass a clearance so the button sits above that chrome.
 7. **Mount in shells for v1**, not on every leaf page. Visibility is still automatic: short pages inside those shells never show the button.
@@ -35,7 +35,9 @@ Today there is no way back to the top except manually scrolling. On a phone, aft
 
 ## Threshold recommendation
 
-**Show after one viewport of scroll. Hide again below 0.8 viewports.**
+**Show after half a viewport of scroll. Hide again below 0.4 viewports.**
+
+Revised from one viewport: a typical lesson (video + short note) only scrolls ~0.75 of a viewport, so at 1.0 the button never appeared on the lesson pages learners actually use.
 
 | Option | Show when | Verdict |
 | --- | --- | --- |
@@ -44,15 +46,15 @@ Today there is no way back to the top except manually scrolling. On a phone, aft
 | 25–50% of document height | Proportion of *content* | Reject. A long lesson would hide the button until the user is already deep in. |
 | Any overflow (show as soon as `scrollTop > 0`) | First pixel of scroll | Reject. Flickers on tiny overscroll / rubber-banding. |
 
-Hysteresis: **show at 1.0 × viewport, hide at 0.8 × viewport**, so sitting on the boundary does not strobe the button.
+Hysteresis: **show at 0.5 × viewport, hide at 0.4 × viewport**, so sitting on the boundary does not strobe the button.
 
 If the page cannot scroll a full viewport (content is only slightly taller than the window), the button never appears. That matches “only when there is real overflow.”
 
 Constants (implementation must not scatter magic numbers):
 
 ```ts
-export const SCROLL_TO_TOP_SHOW_RATIO = 1;
-export const SCROLL_TO_TOP_HIDE_RATIO = 0.8;
+export const SCROLL_TO_TOP_SHOW_RATIO = 0.5;
+export const SCROLL_TO_TOP_HIDE_RATIO = 0.4;
 ```
 
 Hosts may pass `thresholdPx` only for tests or genuine exceptions. Product default is the ratio above.

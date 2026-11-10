@@ -16,6 +16,7 @@
   import { resolveWatchEnforcedAssetIds, type LessonVideo } from './video-card-utils';
   import { lessonVideoBus } from './lesson-video-bus.svelte';
   import { TRANSCRIPT_PANEL_ID } from './transcript-panel-definition';
+  import TranscriptSidePanel from './transcript-side-panel.svelte';
 
   /**
    * HLS playback flag — set by the upload flow when the asset was encoded
@@ -468,11 +469,41 @@
     lessonVideoBus.hasPlayed = true;
   }
 
+  const FULLSCREEN_STAGE_SELECTOR = '[data-lesson-video-stage]';
+
+  let isFullscreen = $state(false);
+  let isFullscreenTranscriptOpen = $state(false);
+
   function openTranscriptPanel() {
     if (!transcriptAssetId) return;
 
     lessonVideoBus.selectTranscriptSource(transcriptAssetId);
+
+    if (isFullscreen) {
+      isFullscreenTranscriptOpen = !isFullscreenTranscriptOpen;
+      return;
+    }
+
     sidePanel.open(TRANSCRIPT_PANEL_ID);
+  }
+
+  function handleFullscreenChange(nextIsFullscreen: boolean) {
+    isFullscreen = nextIsFullscreen;
+
+    if (nextIsFullscreen) {
+      isFullscreenTranscriptOpen = Boolean(transcriptAssetId) && sidePanel.activePanelId === TRANSCRIPT_PANEL_ID;
+      return;
+    }
+
+    if (isFullscreenTranscriptOpen) {
+      sidePanel.open(TRANSCRIPT_PANEL_ID);
+    }
+    isFullscreenTranscriptOpen = false;
+  }
+
+  function closeFullscreenTranscript() {
+    isFullscreenTranscriptOpen = false;
+    sidePanel.close();
   }
 
   const transcriptPanelControl = $derived(
@@ -485,72 +516,118 @@
   );
 </script>
 
-<div class="w-full">
-  <MediaPlayer
-    source={{
-      type: video.type,
-      url: playbackUrl,
-      hls: isHls,
-      metadata: video.metadata as { thumbnailUrl?: string; title?: string } | undefined,
-      tracks
-    }}
-    options={{
-      maxHeight: '569px',
-      width: '100%',
-      controls: true,
-      playsinline: true,
-      isLearnerView: $isCourseLearnerView,
-      vimeoPrivacyErrorTitle: $t('course.navItem.lessons.materials.tabs.video.add_video.vimeo_privacy_error_title'),
-      vimeoPrivacyErrorDescription: $t(
-        'course.navItem.lessons.materials.tabs.video.add_video.vimeo_privacy_error_description'
-      ),
-      vimeoPrivacyErrorUnlistedHint: $t(
-        'course.navItem.lessons.materials.tabs.video.add_video.vimeo_privacy_error_unlisted_hint'
-      ),
-      vimeoPrivacyErrorDomainPrefix: $t(
-        'course.navItem.lessons.materials.tabs.video.add_video.vimeo_privacy_error_domain_prefix'
-      ),
-      vimeoPrivacyErrorDomainSuffix: $t(
-        'course.navItem.lessons.materials.tabs.video.add_video.vimeo_privacy_error_domain_suffix'
-      ),
-      vimeoPrivacyErrorOtherHint: $t(
-        'course.navItem.lessons.materials.tabs.video.add_video.vimeo_privacy_error_other_hint'
-      ),
-      vimeoRetryLabel: $t('course.navItem.lessons.materials.tabs.video.add_video.vimeo_retry_label'),
-      vimeoLearnerErrorTitle: $t('course.navItem.lessons.materials.tabs.video.add_video.vimeo_learner_error_title'),
-      vimeoLearnerErrorDescription: $t(
-        'course.navItem.lessons.materials.tabs.video.add_video.vimeo_learner_error_description'
-      ),
-      onTimeUpdate: (seconds) => {
-        if (uploadAssetId) {
-          lessonVideoBus.updateTranscriptSource(uploadAssetId, { currentTimeSeconds: seconds });
-        }
+<div class="lesson-video-stage w-full" data-lesson-video-stage>
+  <div class="lesson-video-stage__player min-w-0">
+    <MediaPlayer
+      source={{
+        type: video.type,
+        url: playbackUrl,
+        hls: isHls,
+        metadata: video.metadata as { thumbnailUrl?: string; title?: string } | undefined,
+        tracks
+      }}
+      options={{
+        maxHeight: '569px',
+        width: '100%',
+        controls: true,
+        playsinline: true,
+        isLearnerView: $isCourseLearnerView,
+        vimeoPrivacyErrorTitle: $t('course.navItem.lessons.materials.tabs.video.add_video.vimeo_privacy_error_title'),
+        vimeoPrivacyErrorDescription: $t(
+          'course.navItem.lessons.materials.tabs.video.add_video.vimeo_privacy_error_description'
+        ),
+        vimeoPrivacyErrorUnlistedHint: $t(
+          'course.navItem.lessons.materials.tabs.video.add_video.vimeo_privacy_error_unlisted_hint'
+        ),
+        vimeoPrivacyErrorDomainPrefix: $t(
+          'course.navItem.lessons.materials.tabs.video.add_video.vimeo_privacy_error_domain_prefix'
+        ),
+        vimeoPrivacyErrorDomainSuffix: $t(
+          'course.navItem.lessons.materials.tabs.video.add_video.vimeo_privacy_error_domain_suffix'
+        ),
+        vimeoPrivacyErrorOtherHint: $t(
+          'course.navItem.lessons.materials.tabs.video.add_video.vimeo_privacy_error_other_hint'
+        ),
+        vimeoRetryLabel: $t('course.navItem.lessons.materials.tabs.video.add_video.vimeo_retry_label'),
+        vimeoLearnerErrorTitle: $t('course.navItem.lessons.materials.tabs.video.add_video.vimeo_learner_error_title'),
+        vimeoLearnerErrorDescription: $t(
+          'course.navItem.lessons.materials.tabs.video.add_video.vimeo_learner_error_description'
+        ),
+        onTimeUpdate: (seconds) => {
+          if (uploadAssetId) {
+            lessonVideoBus.updateTranscriptSource(uploadAssetId, { currentTimeSeconds: seconds });
+          }
 
-        if (ownsPlaybackBus()) {
-          lessonVideoBus.currentTimeSeconds = seconds;
-        }
-      },
-      onPlayerReady: (player) => {
-        localSeekFn = (seconds) => {
-          player.currentTime = seconds;
-        };
+          if (ownsPlaybackBus()) {
+            lessonVideoBus.currentTimeSeconds = seconds;
+          }
+        },
+        onPlayerReady: (player) => {
+          localSeekFn = (seconds) => {
+            player.currentTime = seconds;
+          };
 
-        if (ownsPlaybackBus()) {
-          lessonVideoBus.setSeekFn(localSeekFn);
-        }
-      },
-      onFirstPlay: handleFirstPlay,
-      onSourceLoaded: handleSourceLoaded,
-      onBeforeHlsLoad: isHls && uploadAssetId ? () => mintHlsCookie(uploadAssetId) : undefined,
-      transcriptPanelControl,
-      loadingLabel: $t('course.navItem.lessons.materials.tabs.video.loading'),
-      playbackErrorLabel: $t('course.navItem.lessons.materials.tabs.video.playback_error'),
-      playbackReloadLabel: $t('course.navItem.lessons.materials.tabs.video.playback_reload'),
-      onPlaybackReload: handlePlaybackReload,
-      playbackAuthErrorLabel: $t('course.navItem.lessons.materials.tabs.video.playback_auth_error'),
-      playbackAuthActionLabel: $t('course.navItem.lessons.materials.tabs.video.playback_auth_action'),
-      onPlaybackAuthRequired: () => goto(resolve('/login', {})),
-      seekPolicy
-    }}
-  />
+          if (ownsPlaybackBus()) {
+            lessonVideoBus.setSeekFn(localSeekFn);
+          }
+        },
+        onFirstPlay: handleFirstPlay,
+        onSourceLoaded: handleSourceLoaded,
+        onBeforeHlsLoad: isHls && uploadAssetId ? () => mintHlsCookie(uploadAssetId) : undefined,
+        transcriptPanelControl,
+        loadingLabel: $t('course.navItem.lessons.materials.tabs.video.loading'),
+        playbackErrorLabel: $t('course.navItem.lessons.materials.tabs.video.playback_error'),
+        playbackReloadLabel: $t('course.navItem.lessons.materials.tabs.video.playback_reload'),
+        onPlaybackReload: handlePlaybackReload,
+        playbackAuthErrorLabel: $t('course.navItem.lessons.materials.tabs.video.playback_auth_error'),
+        playbackAuthActionLabel: $t('course.navItem.lessons.materials.tabs.video.playback_auth_action'),
+        onPlaybackAuthRequired: () => goto(resolve('/login', {})),
+        seekPolicy,
+        fullscreenContainer: FULLSCREEN_STAGE_SELECTOR,
+        onFullscreenChange: handleFullscreenChange
+      }}
+    />
+  </div>
+
+  {#if isFullscreen && isFullscreenTranscriptOpen}
+    <aside class="lesson-video-stage__transcript ui:bg-background ui:text-foreground flex min-h-0 flex-col">
+      <TranscriptSidePanel onClose={closeFullscreenTranscript} />
+    </aside>
+  {/if}
 </div>
+
+<style>
+  .lesson-video-stage:fullscreen,
+  .lesson-video-stage:global(.plyr--fullscreen-fallback) {
+    display: flex;
+    background: #000;
+  }
+
+  .lesson-video-stage:fullscreen .lesson-video-stage__player,
+  .lesson-video-stage:global(.plyr--fullscreen-fallback) .lesson-video-stage__player {
+    flex: 1 1 0%;
+    height: 100%;
+  }
+
+  .lesson-video-stage:fullscreen .lesson-video-stage__player > :global(div),
+  .lesson-video-stage:global(.plyr--fullscreen-fallback) .lesson-video-stage__player > :global(div) {
+    height: 100%;
+  }
+
+  .lesson-video-stage__transcript {
+    width: min(380px, 40vw);
+    height: 100%;
+  }
+
+  @media (orientation: portrait) {
+    .lesson-video-stage:fullscreen,
+    .lesson-video-stage:global(.plyr--fullscreen-fallback) {
+      flex-direction: column;
+    }
+
+    .lesson-video-stage__transcript {
+      width: 100%;
+      height: 45%;
+    }
+  }
+</style>

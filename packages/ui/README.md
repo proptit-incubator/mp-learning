@@ -731,7 +731,7 @@ When adding a new component to this package, follow these steps:
 
 ## Scroll to top
 
-`ScrollToTop` from `@cio/ui/custom/scroll-to-top` is mounted once in the learner, organization, and authenticated course shells. It stays hidden until the container overflows and the user scrolls one viewport; it hides below 0.8 viewports. The secondary icon button uses smooth scrolling and respects reduced motion.
+`ScrollToTop` from `@cio/ui/custom/scroll-to-top` is mounted once in the learner, organization, and authenticated course shells. It stays hidden until the container overflows and the user scrolls half a viewport; it hides below 0.4 viewports. The secondary icon button uses smooth scrolling and respects reduced motion.
 
 | Prop | Type | Default |
 | --- | --- | --- |

@@ -1140,7 +1140,7 @@
           "manual_label": "Thủ công",
           "manual_description": "Học viên tự đánh dấu hoàn thành bài học.",
           "video_watch_label": "Xem video",
-          "video_watch_description": "Bài học tự động hoàn thành khi học viên xem xong các video tải lên đã chọn. Không theo dõi được video YouTube và nội dung nhúng bên ngoài.",
+          "video_watch_description": "Bài học tự động hoàn thành khi học viên xem đủ ngưỡng các video tải lên đã chọn. Học viên không thể tua nhanh qua phần chưa xem hoặc tăng tốc độ phát. Không theo dõi được video YouTube và nội dung nhúng bên ngoài.",
           "none_label": "Không áp dụng",
           "none_description": "Bài học này không chặn tiến độ học tiếp của khóa học.",
           "watch_threshold": "Ngưỡng xem (%)"
@@ -1169,7 +1169,11 @@
         "watch_progress": {
           "status": "Đã xem {percent}% nội dung video",
           "videos_complete": "Đã xem {percent}% nội dung video bắt buộc ({complete}/{required} video)",
-          "seek_blocked": "Bạn không thể tua nhanh video này"
+          "seek_blocked": "Bạn không thể tua nhanh video này",
+          "bar_label": "Tiến độ xem video",
+          "threshold_hint": "Cần xem tối thiểu {threshold}% để hoàn thành bài học",
+          "threshold_marker": "Ngưỡng hoàn thành: {threshold}%",
+          "completed": "Bạn đã đạt ngưỡng hoàn thành bài học"
         },
         "session": {
           "join": "Tham gia buổi học",

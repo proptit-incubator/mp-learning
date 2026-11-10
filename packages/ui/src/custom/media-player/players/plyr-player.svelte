@@ -37,6 +37,7 @@
   let reloadInFlight = $state(false);
   let timeupdateCleanup: (() => void) | undefined;
   let firstPlayCleanup: (() => void) | undefined;
+  let fullscreenCleanup: (() => void) | undefined;
   let transcriptPanelCleanup: (() => void) | undefined;
   let mediaErrorCleanup: (() => void) | undefined;
   let plyrErrorCleanup: (() => void) | undefined;
@@ -282,6 +283,17 @@
     };
   }
 
+  function attachFullscreenChange(player: Plyr): () => void {
+    const onEnter = () => options.onFullscreenChange?.(true);
+    const onExit = () => options.onFullscreenChange?.(false);
+    player.on('enterfullscreen', onEnter);
+    player.on('exitfullscreen', onExit);
+    return () => {
+      player.off('enterfullscreen', onEnter);
+      player.off('exitfullscreen', onExit);
+    };
+  }
+
   function handlePlaybackFailure(): void {
     if (playbackFailed) return;
 
@@ -365,11 +377,13 @@
   function teardownPlyrInstance(): void {
     timeupdateCleanup?.();
     firstPlayCleanup?.();
+    fullscreenCleanup?.();
     transcriptPanelCleanup?.();
     plyrErrorCleanup?.();
     mediaErrorCleanup?.();
     timeupdateCleanup = undefined;
     firstPlayCleanup = undefined;
+    fullscreenCleanup = undefined;
     transcriptPanelCleanup = undefined;
     plyrErrorCleanup = undefined;
     mediaErrorCleanup = undefined;
@@ -410,6 +424,9 @@
         ratio: '16:9',
         iconUrl: '/plyr.svg',
         iconPrefix: 'plyr',
+        ...(options.fullscreenContainer
+          ? { fullscreen: { enabled: true, iosNative: false, container: options.fullscreenContainer } }
+          : {}),
         ...(options.seekPolicy?.mode === 'locked_until_complete' ? { listeners: { seek: handleSeekAttempt } } : {}),
         ...(qualityConfig
           ? {
@@ -420,6 +437,7 @@
       });
       timeupdateCleanup = attachTimeUpdates(playerInstance, videoElement);
       firstPlayCleanup = attachFirstPlay(playerInstance);
+      fullscreenCleanup = attachFullscreenChange(playerInstance);
       plyrErrorCleanup = attachPlyrErrorHandler(playerInstance);
       playerInstance.on('ready', () => {
         isPlayerReady = true;
@@ -715,7 +733,7 @@
 <svelte:window onblur={handleWindowBlur} />
 
 <div
-  class="ui:relative ui:aspect-video ui:w-full ui:overflow-hidden ui:rounded-md"
+  class="cio-player-frame ui:relative ui:aspect-video ui:w-full ui:overflow-hidden ui:rounded-md"
   style="max-height: {maxHeight}; min-height: {options.minHeight}; height: {options.height};"
 >
   {#if isYouTube && youtubeVideoId}
@@ -804,6 +822,49 @@
      surrounding lesson area instead of looking like a TV bezel around smaller videos. */
   :global(.plyr) {
     --plyr-video-background: var(--muted);
+  }
+  :global(.cio-player-frame) {
+    container-type: inline-size;
+  }
+  @container (max-width: 480px) {
+    :global(.cio-player-frame .plyr__controls) {
+      padding: 6px;
+    }
+    :global(.cio-player-frame .plyr__controls .plyr__control) {
+      padding: 5px;
+    }
+    :global(.cio-player-frame .plyr__volume input[type='range']),
+    :global(.cio-player-frame [data-plyr='pip']) {
+      display: none;
+    }
+    :global(.cio-player-frame .plyr__volume) {
+      min-width: 0;
+      width: auto;
+    }
+  }
+  @container (max-width: 340px) {
+    :global(.cio-player-frame [data-plyr='settings']),
+    :global(.cio-player-frame .plyr__time + .plyr__time) {
+      display: none;
+    }
+  }
+  :global(:fullscreen .cio-player-frame),
+  :global(.plyr--fullscreen-fallback .cio-player-frame) {
+    max-height: none !important;
+    height: 100% !important;
+    aspect-ratio: auto;
+    border-radius: 0;
+  }
+  :global(:fullscreen .cio-player-frame .plyr),
+  :global(.plyr--fullscreen-fallback .cio-player-frame .plyr) {
+    height: 100%;
+    border-radius: 0;
+    --plyr-video-background: #000;
+  }
+  :global(:fullscreen .cio-player-frame .plyr__video-wrapper),
+  :global(.plyr--fullscreen-fallback .cio-player-frame .plyr__video-wrapper) {
+    aspect-ratio: auto !important;
+    height: 100%;
   }
   :global(.plyr__control[data-cio-transcript-panel][hidden]) {
     display: none !important;

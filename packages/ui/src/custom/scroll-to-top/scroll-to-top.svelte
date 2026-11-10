@@ -89,7 +89,7 @@
     <Button
       variant="secondary"
       size="icon-lg"
-      class="ui:rounded-full ui:border ui:shadow-raised"
+      class="ui:size-11 ui:rounded-full ui:border ui:border-border ui:bg-background ui:text-primary ui:shadow-lg ui:hover:bg-muted"
       aria-label={label}
       title={label}
       onclick={scrollToTop}

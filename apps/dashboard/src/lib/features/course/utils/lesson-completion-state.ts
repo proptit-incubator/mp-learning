@@ -53,6 +53,29 @@ export function getLessonCompletionState(input: {
   };
 }
 
+type WatchProgressSnapshot = {
+  isComplete?: boolean | null;
+  watchedPercent?: number | null;
+  watchedSeconds?: number | null;
+  durationSeconds?: number | null;
+};
+
+/** Share of the required video the learner has watched, 0–100. */
+export function getLessonWatchedPercent(progress: WatchProgressSnapshot | null | undefined): number {
+  if (progress?.isComplete) return 100;
+
+  if (typeof progress?.watchedPercent === 'number') {
+    return progress.watchedPercent;
+  }
+
+  const durationSeconds = progress?.durationSeconds;
+  if (durationSeconds && durationSeconds > 0) {
+    return Math.min(100, ((progress?.watchedSeconds ?? 0) / durationSeconds) * 100);
+  }
+
+  return 0;
+}
+
 export function getLessonCompletionToggleLabel(isComplete: boolean): string {
   const markAs = t.get('course.navItem.lessons.mark_as');
   const stateKey = isComplete ? 'course.navItem.lessons.incomplete' : 'course.navItem.lessons.complete';

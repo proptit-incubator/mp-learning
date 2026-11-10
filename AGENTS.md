@@ -618,7 +618,7 @@ Full behavior, threshold, clearance, and mount points: `prd/scroll-to-top/README
 **Rules:**
 
 - Implement and import from `@cio/ui/custom/scroll-to-top` (see that spec if the file is not there yet — add the shared component, do not inline a button in the page).
-- Hidden until the scroll container overflows **and** the user has scrolled at least **one viewport**. Hidden again below 0.8 viewports. Never visible at the top of the page.
+- Hidden until the scroll container overflows **and** the user has scrolled at least **half a viewport**. Hidden again below 0.4 viewports. Never visible at the top of the page.
 - Click only scrolls that container to `top: 0`. Prefer `behavior: 'smooth'`; use instant when `prefers-reduced-motion` is set.
 - Fixed to the **viewport**, bottom-right, icon-only `Button`/`IconButton` with `variant="secondary"`.
 - Pass `label` from the host (`$t('common.scroll_to_top')` in the dashboard). The UI package does not own copy.
