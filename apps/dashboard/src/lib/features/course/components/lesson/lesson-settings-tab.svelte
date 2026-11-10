@@ -186,7 +186,9 @@
   const completionPolicy = $derived(lessonApi.lesson?.completionPolicy ?? 'manual');
   const courseCommentsEnabled = $derived(courseApi.course?.metadata?.commentsEnabled ?? true);
   const lessonCommentsEnabled = $derived(lessonApi.lesson?.commentsEnabled ?? true);
-  const videoWatchThreshold = $derived(lessonApi.lesson?.videoWatchThreshold ?? 95);
+  const videoWatchThreshold = $derived(
+    courseApi.course?.metadata?.videoWatchThreshold ?? lessonApi.lesson?.videoWatchThreshold ?? 95
+  );
   const videos = $derived(lessonApi.lesson?.videos ?? []);
 
   const enforceableVideos = $derived(
@@ -233,6 +235,15 @@
     if (!courseCommentsEnabled) return;
 
     lessonApi.updateLessonState('commentsEnabled', checked);
+  }
+
+  function goToCourseVideoRules() {
+    const courseId = courseApi.course?.id;
+    if (!courseId) return;
+
+    goAndHighlight(ROUTE_NAME.COURSE_SETTINGS, ROUTE_SECTIONS[ROUTE_NAME.COURSE_SETTINGS].VIDEO_RULES, {
+      id: courseId
+    });
   }
 
   function goToCourseCommentsSettings() {
@@ -397,14 +408,15 @@
 
         {#if completionPolicy === 'video_watch'}
           <Field.Field>
-            <NumberField
-              integer
-              min={1}
-              max={100}
-              label={$t('course.navItem.lessons.completion_policy.watch_threshold')}
-              value={videoWatchThreshold}
-              onValueChange={(next) => lessonApi.updateLessonState('videoWatchThreshold', next ?? 95)}
-            />
+            <Field.Label>{$t('course.navItem.lessons.completion_policy.watch_threshold')}</Field.Label>
+            <Field.Description>
+              {$t('course.navItem.lessons.completion_policy.watch_threshold_from_course', {
+                threshold: videoWatchThreshold
+              })}
+              <Button variant="link" class="h-auto p-0" onclick={goToCourseVideoRules}>
+                {$t('course.navItem.lessons.completion_policy.open_course_video_rules')}
+              </Button>
+            </Field.Description>
           </Field.Field>
 
           <Field.Field>

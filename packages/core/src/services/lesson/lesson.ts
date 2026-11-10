@@ -26,7 +26,7 @@ import {
   type LessonById
 } from '@cio/db/queries/lesson';
 import type { TUpdateLessonWatchProgress } from '@cio/utils/validation/lesson';
-import { skipActiveReminderDeliveriesForLesson, touchCourseUpdatedAt } from '@cio/db/queries/course';
+import { getCourseById, skipActiveReminderDeliveriesForLesson, touchCourseUpdatedAt } from '@cio/db/queries/course';
 import { deleteAssetUsagesByTarget } from '@cio/db/queries/assets';
 import { db, type DbOrTxClient } from '@cio/db/drizzle';
 import { enrichLessonWithPresignedUrls } from '../../utils/lesson-media';
@@ -60,11 +60,15 @@ export async function createLesson(
       requestedSlug: data.slug
     });
 
+    const [course] = await getCourseById(courseId);
+    const courseWatchThreshold = (course?.metadata as { videoWatchThreshold?: number } | null)?.videoWatchThreshold;
+
     const lessonData = {
       ...data,
       courseId,
       slug,
-      isUnlocked: data.isUnlocked ?? true
+      isUnlocked: data.isUnlocked ?? true,
+      ...(typeof courseWatchThreshold === 'number' ? { videoWatchThreshold: courseWatchThreshold } : {})
     };
 
     const [lesson] = await db.transaction(async (tx) => {

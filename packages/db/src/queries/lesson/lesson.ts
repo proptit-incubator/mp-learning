@@ -27,6 +27,36 @@ export async function getLessonsByCourseId(courseId: string, dbClient: DbOrTxCli
   }
 }
 
+/**
+ * Lessons of a course with the fields that drive completion and video watch rules,
+ * ordered by section then lesson order.
+ */
+export async function getLessonVideoRulesByCourseId(courseId: string, dbClient: DbOrTxClient = db) {
+  try {
+    return await dbClient
+      .select({
+        id: schema.lesson.id,
+        title: schema.lesson.title,
+        order: schema.lesson.order,
+        sectionId: schema.lesson.sectionId,
+        sectionTitle: schema.courseSection.title,
+        sectionOrder: schema.courseSection.order,
+        completionPolicy: schema.lesson.completionPolicy,
+        videoWatchThreshold: schema.lesson.videoWatchThreshold,
+        videos: schema.lesson.videos
+      })
+      .from(schema.lesson)
+      .leftJoin(schema.courseSection, eq(schema.courseSection.id, schema.lesson.sectionId))
+      .where(eq(schema.lesson.courseId, courseId))
+      .orderBy(asc(schema.courseSection.order), asc(schema.lesson.order));
+  } catch (error) {
+    console.error('getLessonVideoRulesByCourseId error:', error);
+    throw new Error(
+      `Failed to get lesson video rules for course "${courseId}": ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
 export async function getPaginatedLessonsByCourseId(
   courseId: string,
   options: { sectionId?: string; page: number; limit: number }

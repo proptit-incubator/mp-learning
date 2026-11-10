@@ -610,3 +610,10 @@ export type SidebarOutlineEntry =
 /** A lesson or exercise as a contents-page drag zone holds it: `id` is the drag key, `contentId` the item id. */
 export type ContentDndItem = CourseContentItem & { contentId: string };
 export type SidebarDeleteTarget = { kind: 'section'; sectionId: string } | { kind: 'item'; item: CourseContentItem };
+
+export type GetCourseVideoRulesRequest = (typeof classroomio.course)[':courseId']['video-rules']['$get'];
+export type UpdateCourseVideoRulesRequest = (typeof classroomio.course)[':courseId']['video-rules']['$put'];
+export type GetCourseVideoRulesSuccess = Extract<InferResponseType<GetCourseVideoRulesRequest>, { success: true }>;
+export type CourseVideoRules = GetCourseVideoRulesSuccess['data'];
+export type CourseLessonVideoRule = CourseVideoRules['lessons'][number];
+export type CourseLessonCompletionPolicy = CourseLessonVideoRule['completionPolicy'];

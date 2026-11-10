@@ -70,6 +70,7 @@ import { orgTeamMemberMiddleware } from '@api/middlewares/org-team-member';
 import { presignRouter } from '@api/routes/course/presign';
 import { assertMcpAutomationUsageAllowed, recordMcpAutomationUsage } from '@api/services/organization/automation-usage';
 import { sectionRouter } from '@api/routes/course/section';
+import { videoRulesRouter } from '@api/routes/course/video-rules';
 import { submissionRouter } from '@api/routes/course/submission';
 import { updateCourseLandingPageService } from '@cio/core/services/course/landing-page';
 import { zValidator } from '@hono/zod-validator';
@@ -645,4 +646,5 @@ export const courseRouter = new Hono()
   .route('/:courseId/members', membersRouter)
   .route('/:courseId/ai-tutor', courseAiTutorRouter)
   .route('/:courseId/live-session-reminders', liveSessionReminderRouter)
+  .route('/:courseId/video-rules', videoRulesRouter)
   .route('/presign', presignRouter);

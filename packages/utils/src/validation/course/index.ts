@@ -13,3 +13,4 @@ export * from './section';
 export * from './people';
 export * from './live-session-reminder';
 export * from './certificate-register';
+export * from './video-rules';

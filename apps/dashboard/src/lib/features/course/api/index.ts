@@ -12,3 +12,4 @@ export * from './people.svelte';
 export * from './presign.svelte';
 export * from './submission.svelte';
 export * from './live-session-reminder.svelte';
+export * from './video-rules.svelte';

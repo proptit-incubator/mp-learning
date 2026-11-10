@@ -12,6 +12,7 @@
   import ReorderMaterialTabs from '$features/course/components/reorder-material-tabs.svelte';
   import { CourseTagPicker } from '$features/course/components';
   import TemplateSettingsSection from '$features/course/components/template-settings-section.svelte';
+  import CourseVideoRulesSection from '$features/course/components/course-video-rules-section.svelte';
   import ReminderPicker from '$features/course/components/live-session-reminders/reminder-picker.svelte';
   import DeliveryLogSheet from '$features/course/components/live-session-reminders/delivery-log-sheet.svelte';
   import {
@@ -64,6 +65,8 @@
   }
 
   let { hasUnsavedChanges = $bindable(false) }: Props = $props();
+
+  let videoRulesSection: CourseVideoRulesSection | null = $state(null);
   const settings = createCourseSettings();
 
   let isLoading = $state(false);
@@ -257,7 +260,9 @@
         showSuccessToast: !hasTagChanges
       });
 
-      if (courseApi.success && response) {
+      const videoRulesSaved = courseApi.success && response ? await (videoRulesSection?.save() ?? true) : false;
+
+      if (courseApi.success && response && videoRulesSaved) {
         const draftUnchanged =
           JSON.stringify({ settings: $settings, tagIds: [...selectedTagIds].sort(), avatar }) === draftAtSave;
 
@@ -327,6 +332,7 @@
     if (!courseApi.course) return;
 
     setDefault(courseApi.course);
+    videoRulesSection?.discard();
     selectedTagIds = [...initialTagIds];
     avatar = undefined;
     errors = { title: undefined, description: undefined };
@@ -668,6 +674,21 @@
             <Field.Description>{$t('enrollment.recertification.months_helper')}</Field.Description>
           </Field.Field>
         {/if}
+
+        <SettingsSeparator />
+
+        <AttentionHighlight
+          id={ROUTE_SECTIONS[ROUTE_NAME.COURSE_SETTINGS].VIDEO_RULES}
+          scrollBlock="start"
+          class="scroll-mt-24"
+        >
+          <CourseVideoRulesSection
+            bind:this={videoRulesSection}
+            onChange={() => {
+              hasUnsavedChanges = true;
+            }}
+          />
+        </AttentionHighlight>
       </Field.Group>
     </SettingsCard>
   </AttentionHighlight>

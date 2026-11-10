@@ -405,7 +405,8 @@ const ZCourseMetadataFields = z.object({
   sectionDisplay: z.record(z.string(), z.boolean()).optional(),
   isContentGroupingEnabled: z.boolean().optional(),
   progressionMode: z.enum(COURSE_PROGRESSION_MODES).optional(),
-  commentsEnabled: z.boolean().optional()
+  commentsEnabled: z.boolean().optional(),
+  videoWatchThreshold: z.number().int().min(1).max(100).optional()
 });
 
 // Course metadata schema matching the database structure

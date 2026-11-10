@@ -846,6 +846,8 @@ export const course = pgTable(
       progressionMode?: CourseProgressionMode;
       /** Course-wide switch for lesson comments. Missing legacy values are treated as enabled. */
       commentsEnabled?: boolean;
+      /** Watch threshold (%) applied to every video-watch lesson in the course. */
+      videoWatchThreshold?: number;
       /** Per-course AI tutor override; missing fields inherit from org defaults. */
       aiTutor?: {
         inheritFromOrg?: boolean;

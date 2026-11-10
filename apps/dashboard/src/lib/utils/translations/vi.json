@@ -1143,7 +1143,9 @@
           "video_watch_description": "Bài học tự động hoàn thành khi học viên xem đủ ngưỡng các video tải lên đã chọn. Học viên không thể tua nhanh qua phần chưa xem hoặc tăng tốc độ phát. Không theo dõi được video YouTube và nội dung nhúng bên ngoài.",
           "none_label": "Không áp dụng",
           "none_description": "Bài học này không chặn tiến độ học tiếp của khóa học.",
-          "watch_threshold": "Ngưỡng xem (%)"
+          "watch_threshold": "Ngưỡng xem (%)",
+          "watch_threshold_from_course": "Theo cài đặt khóa học: {threshold}%.",
+          "open_course_video_rules": "Chỉnh trong cài đặt khóa học"
         },
         "settings": {
           "comments": {
@@ -2594,6 +2596,28 @@
             "window_passed": "Thời điểm nhắc đã qua khi lời nhắc được lên lịch.",
             "unenrolled": "Học viên không còn ghi danh trong khóa học."
           }
+        },
+        "video_rules": {
+          "title": "Quy tắc hoàn thành bài học & xem video",
+          "description": "Xem và chỉnh quy tắc cho mọi bài học trong khóa ở một chỗ: bài nào bắt buộc, bài nào phải xem video và video nào không được tua.",
+          "load_error": "Không tải được quy tắc xem video của khóa học",
+          "save_error": "Không lưu được quy tắc xem video",
+          "empty": "Khóa học chưa có bài học nào.",
+          "threshold_label": "Ngưỡng xem video (%)",
+          "threshold_helper": "Áp dụng cho mọi bài học yêu cầu xem video trong khóa.",
+          "summary_required": "{required}/{total} bài học bắt buộc",
+          "summary_video_watch": "{count} bài học yêu cầu xem video",
+          "require_all": "Đặt tất cả bài học là bắt buộc",
+          "video_watch_all": "Yêu cầu xem video ở mọi bài có video tải lên",
+          "ungrouped": "Chưa có chương",
+          "required": "Bắt buộc",
+          "complete_when": "Hoàn thành khi",
+          "mode_manual": "Học viên tự đánh dấu hoàn thành",
+          "mode_video_watch": "Xem đủ video, không được tua",
+          "no_uploads": "Bài này chưa có video tải lên",
+          "no_skip": "Không được tua",
+          "not_trackable": "YouTube/nội dung nhúng, không theo dõi được",
+          "pick_video_error": "Chọn ít nhất một video học viên phải xem."
         }
       }
     },

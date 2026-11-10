@@ -1143,7 +1143,9 @@
           "video_watch_description": "The lesson completes automatically once students watch the selected uploaded videos up to the threshold. Students can't skip ahead past unwatched parts or change the playback speed. YouTube and external embeds can't be tracked.",
           "none_label": "None",
           "none_description": "This lesson does not block course progression.",
-          "watch_threshold": "Watch threshold (%)"
+          "watch_threshold": "Watch threshold (%)",
+          "watch_threshold_from_course": "Set by the course: {threshold}%.",
+          "open_course_video_rules": "Change in course settings"
         },
         "settings": {
           "comments": {
@@ -2594,6 +2596,28 @@
             "window_passed": "The reminder time had already passed when it was scheduled.",
             "unenrolled": "The student is no longer enrolled."
           }
+        },
+        "video_rules": {
+          "title": "Lesson completion & video watch rules",
+          "description": "See and edit the rules for every lesson in this course in one place: which lessons are required, which need the video watched, and which videos cannot be skipped.",
+          "load_error": "Couldn't load the course video rules",
+          "save_error": "Couldn't save the video rules",
+          "empty": "This course has no lessons yet.",
+          "threshold_label": "Video watch threshold (%)",
+          "threshold_helper": "Applies to every lesson in this course that requires watching video.",
+          "summary_required": "{required}/{total} lessons required",
+          "summary_video_watch": "{count} lessons require watching video",
+          "require_all": "Make every lesson required",
+          "video_watch_all": "Require video watching on every lesson with uploaded video",
+          "ungrouped": "No section",
+          "required": "Required",
+          "complete_when": "Complete when",
+          "mode_manual": "Student marks it complete",
+          "mode_video_watch": "Video watched, no skipping",
+          "no_uploads": "This lesson has no uploaded video",
+          "no_skip": "No skipping",
+          "not_trackable": "YouTube/embed, can't be tracked",
+          "pick_video_error": "Pick at least one video students must watch."
         }
       }
     },

@@ -16,6 +16,7 @@ export const ROUTE_SECTIONS = {
   [ROUTE_NAME.COURSE_SETTINGS]: {
     PUBLISH: 'publish',
     COMPLETION_RULES: 'completion-rules',
+    VIDEO_RULES: 'video-rules',
     COURSE_COMMENTS: 'course-comments'
   },
 
