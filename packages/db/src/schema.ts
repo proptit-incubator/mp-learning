@@ -28,6 +28,7 @@ import type { CourseProgressionMode } from '@cio/utils/functions/course-progress
 import type { EmployeeRole } from '@cio/utils/validation/organization';
 import type { TPracticeFeedback, TPracticeTurn } from '@cio/utils/validation/practice';
 import { LESSON_VERSION_KIND_VALUES } from '@cio/utils/constants/lesson-version';
+import type { LessonSlide } from '@cio/utils/functions/slide-embed';
 import {
   LIVE_SESSION_REMINDER_STATUS_VALUES,
   type TLiveSessionReminderSkipReason
@@ -1115,23 +1116,7 @@ export const lesson = pgTable(
     note: varchar(),
     videoUrl: varchar('video_url'),
     slideUrl: varchar('slide_url'),
-    slides: jsonb().default([]).$type<
-      {
-        id: string;
-        src: string;
-        platform:
-          | 'google-slides'
-          | 'canva'
-          | 'powerpoint'
-          | 'keynote'
-          | 'figma'
-          | 'prezi'
-          | 'pitch'
-          | 'gamma'
-          | 'slideshare'
-          | 'beautiful';
-      }[]
-    >(),
+    slides: jsonb().default([]).$type<LessonSlide[]>(),
     courseId: uuid('course_id').notNull(),
     id: uuid()
       .default(sql`gen_random_uuid()`)

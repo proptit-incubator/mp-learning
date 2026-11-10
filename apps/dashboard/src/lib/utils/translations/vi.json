@@ -690,6 +690,7 @@
       "slot_type": {
         "lesson_video": "Video bài học",
         "lesson_document": "Tài liệu bài học",
+        "lesson_slide": "Slide bài học",
         "unknown": "Tệp đính kèm"
       },
       "table": {
@@ -1311,7 +1312,7 @@
               "remove_slide": "Xóa slide",
               "menu_aria": "Thao tác với slide",
               "empty_title": "Chưa có slide nào",
-              "empty_description": "Nhúng Google Slides, Canva, PowerPoint, Keynote, Figma, Prezi, Pitch, Gamma, SlideShare hoặc Beautiful.ai",
+              "empty_description": "Tải lên tệp PDF/PowerPoint từ máy, hoặc nhúng Google Slides, Canva, PowerPoint, Keynote, Figma, Prezi, Pitch, Gamma, SlideShare, Beautiful.ai",
               "frame_title": "{platform} ({index}/{total})",
               "add_slide": {
                 "title": "Thêm slide",
@@ -1386,6 +1387,34 @@
                   "step_2": "Nhấn Get Embed Code.",
                   "step_3": "Dán mã nhúng iframe vào đây."
                 }
+              },
+              "upload": {
+                "label": "Tải lên từ máy",
+                "title": "Tải slide từ máy tính",
+                "hint": "PDF hoặc PowerPoint (.pptx)",
+                "step_1": "Xuất bài trình chiếu ra PDF để hiển thị tốt nhất, hoặc dùng trực tiếp tệp PowerPoint (.pptx).",
+                "step_2": "Kéo thả tệp vào ô bên dưới hoặc nhấn để chọn tệp.",
+                "step_3": "Chờ tải lên xong rồi nhấn Thêm slide.",
+                "drag_drop": "Kéo thả tệp slide vào đây hoặc nhấn để chọn",
+                "up_to_size": "PDF hoặc PPTX, tối đa {size}",
+                "uploading": "Đang tải lên…",
+                "ready": "Tệp đã tải lên, nhấn Thêm slide để hoàn tất.",
+                "cancel": "Hủy tải lên",
+                "replace": "Chọn tệp khác",
+                "file_type_error": "Chỉ nhận tệp PDF hoặc PowerPoint (.pptx).",
+                "file_size_error": "Tệp vượt quá dung lượng tối đa {size}.",
+                "upload_error": "Không tải được slide lên. Vui lòng thử lại.",
+                "upgrade": "Tổ chức chưa bật tính năng tải tệp lên",
+                "pptx_notice": "Tệp PowerPoint hiển thị qua trình xem Office Online của Microsoft, nên Microsoft sẽ tải tệp qua một đường liên kết tạm thời. Hãy xuất ra PDF nếu bài giảng chứa nội dung nội bộ."
+              },
+              "viewer": {
+                "loading": "Đang tải slide…",
+                "load_error": "Không tải được slide. Vui lòng tải lại trang.",
+                "previous": "Trang trước",
+                "next": "Trang sau",
+                "page": "{current} / {total}",
+                "fullscreen": "Toàn màn hình",
+                "exit_fullscreen": "Thoát toàn màn hình"
               }
             },
             "settings": {

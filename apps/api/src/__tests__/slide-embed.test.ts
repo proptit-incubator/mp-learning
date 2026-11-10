@@ -2,10 +2,14 @@ import { describe, expect, it } from 'vitest';
 import {
   createSlideEmbed,
   extractIframeSrc,
+  getOfficeViewerSrc,
+  getUploadedSlideFileType,
   isAllowedSlideEmbedSrc,
   parseSlideEmbed,
-  resolveLessonSlides
+  resolveLessonSlides,
+  type UploadedSlide
 } from '@cio/utils/functions';
+import { ZLessonSlide } from '@cio/utils/validation/lesson';
 
 describe('slide embed parsing', () => {
   it('extracts src from a full iframe and ignores width and height', () => {
@@ -86,5 +90,42 @@ describe('slide embed parsing', () => {
     if (figma.ok) {
       expect(figma.src).toContain('embed-host=classroomio');
     }
+  });
+});
+
+describe('uploaded slides', () => {
+  const uploadedSlide: UploadedSlide = {
+    id: 'uploaded-1',
+    src: 'https://storage.example.com/documents/org/deck.pdf?signature=abc',
+    platform: 'upload',
+    key: 'org/deck.pdf',
+    name: 'Deck.pdf',
+    size: 2048,
+    fileType: 'pdf'
+  };
+
+  it('keeps uploaded slides alongside embeds when resolving lesson slides', () => {
+    const canvaSlide = createSlideEmbed('https://www.canva.com/design/DAFDemo/view', 'canva-1');
+    const slides = resolveLessonSlides([uploadedSlide, canvaSlide!]);
+
+    expect(slides.map((slide) => slide.id)).toEqual(['uploaded-1', 'canva-1']);
+  });
+
+  it('validates uploaded slides and rejects unsupported file types', () => {
+    expect(ZLessonSlide.safeParse(uploadedSlide).success).toBe(true);
+    expect(ZLessonSlide.safeParse({ ...uploadedSlide, fileType: 'exe' }).success).toBe(false);
+    expect(ZLessonSlide.safeParse({ ...uploadedSlide, key: '' }).success).toBe(false);
+  });
+
+  it('detects PDF and PPTX files by MIME type or extension', () => {
+    expect(getUploadedSlideFileType({ name: 'deck.pdf', type: 'application/pdf' })).toBe('pdf');
+    expect(getUploadedSlideFileType({ name: 'Deck.PPTX', type: '' })).toBe('pptx');
+    expect(getUploadedSlideFileType({ name: 'deck.ppt', type: 'application/vnd.ms-powerpoint' })).toBeNull();
+  });
+
+  it('encodes the file URL for the Office Online viewer', () => {
+    expect(getOfficeViewerSrc('https://storage.example.com/deck.pptx?a=1&b=2')).toBe(
+      'https://view.officeapps.live.com/op/embed.aspx?src=https%3A%2F%2Fstorage.example.com%2Fdeck.pptx%3Fa%3D1%26b%3D2'
+    );
   });
 });

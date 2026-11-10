@@ -9,14 +9,17 @@
     SlideEmbedCard,
     SlideEmbedFrame,
     SlideEmbedPicker,
-    type SlideEmbed,
+    type LessonSlide,
     type SlideEmbedPickerLabels,
     type SlidePlatformId
   } from '@cio/ui';
-  import { resolveLessonSlides, SLIDE_PLATFORM_BY_ID, SLIDE_PLATFORM_IDS } from '@cio/utils/functions';
+  import { isUploadedSlide, resolveLessonSlides, SLIDE_PLATFORM_BY_ID, SLIDE_PLATFORM_IDS } from '@cio/utils/functions';
   import { t } from '$lib/utils/functions/translations';
   import MODES from '$lib/utils/constants/mode';
   import PresentationIcon from '@lucide/svelte/icons/presentation';
+  import { SlideUploader } from './slide-uploader.svelte';
+  import UploadSlide from './upload-slide.svelte';
+  import UploadedSlideViewer from './uploaded-slide-viewer.svelte';
 
   interface Props {
     mode?: (typeof MODES)[keyof typeof MODES];
@@ -26,9 +29,15 @@
 
   let pickerOpen = $state(false);
   let pickerCanAdd = $state(false);
+  let uploadSelected = $state(true);
+  let isAddingUpload = $state(false);
   let slidePicker = $state<{ submit: () => void } | null>(null);
   let openDeleteSlideModal = $state(false);
   let slideIndexToDelete = $state<number | null>(null);
+
+  const slideUploader = new SlideUploader();
+
+  const canAddSlide = $derived(uploadSelected ? slideUploader.isReady && !isAddingUpload : pickerCanAdd);
 
   const slides = $derived(resolveLessonSlides(lessonApi.lesson?.slides, lessonApi.lesson?.slideUrl));
 
@@ -67,15 +76,10 @@
     menuAria: t.get('course.navItem.lessons.materials.tabs.slide.menu_aria')
   });
 
-  function persistSlides(nextSlides: SlideEmbed[]) {
-    const firstSrc = nextSlides[0]?.src || '';
-
-    lessonApi.updateLessonState('slides', nextSlides);
-    lessonApi.updateLessonState('slideUrl', firstSrc);
-  }
-
-  function getSlideFrameTitle(slide: SlideEmbed, index: number) {
-    const platformName = SLIDE_PLATFORM_BY_ID[slide.platform]?.name ?? slide.platform;
+  function getSlideFrameTitle(slide: LessonSlide, index: number) {
+    const platformName = isUploadedSlide(slide)
+      ? slide.name
+      : (SLIDE_PLATFORM_BY_ID[slide.platform]?.name ?? slide.platform);
 
     return t.get('course.navItem.lessons.materials.tabs.slide.frame_title', {
       platform: platformName,
@@ -84,9 +88,45 @@
     });
   }
 
-  function handleAdd(slide: SlideEmbed) {
-    persistSlides([...slides, slide]);
+  function handleAdd(slide: LessonSlide) {
+    lessonApi.setLessonSlides([...slides, slide]);
+    closePicker();
+  }
+
+  async function addUploadedSlide() {
+    isAddingUpload = true;
+
+    const slide = await slideUploader.finalize(lessonApi.lesson?.id, slides.length);
+
+    isAddingUpload = false;
+
+    if (slide) handleAdd(slide);
+  }
+
+  function submitPicker() {
+    if (uploadSelected) {
+      void addUploadedSlide();
+      return;
+    }
+
+    slidePicker?.submit();
+  }
+
+  function closePicker() {
     pickerOpen = false;
+    uploadSelected = true;
+  }
+
+  function handlePickerOpenChange(isOpen: boolean) {
+    if (isOpen) {
+      pickerOpen = true;
+      return;
+    }
+
+    if (slideUploader.isUploading || isAddingUpload) return;
+
+    slideUploader.reset();
+    closePicker();
   }
 
   function requestRemoveSlide(index: number) {
@@ -100,10 +140,7 @@
       return;
     }
 
-    const remainingSlides = slides.slice();
-
-    remainingSlides.splice(slideIndexToDelete, 1);
-    persistSlides(remainingSlides);
+    void lessonApi.removeLessonSlide(slides, slideIndexToDelete);
     slideIndexToDelete = null;
     openDeleteSlideModal = false;
   }
@@ -128,7 +165,7 @@
     />
   {/if}
 
-  <Dialog.Root bind:open={pickerOpen}>
+  <Dialog.Root open={pickerOpen} onOpenChange={handlePickerOpenChange}>
     <Dialog.Content class="ui:flex flex h-[min(720px,90dvh)] min-h-0 max-w-4xl! flex-col overflow-hidden">
       <Dialog.Header class="shrink-0">
         <Dialog.Title>{$t('course.navItem.lessons.materials.tabs.slide.add_slide.title')}</Dialog.Title>
@@ -137,14 +174,20 @@
         <SlideEmbedPicker
           bind:this={slidePicker}
           bind:canAdd={pickerCanAdd}
+          bind:uploadSelected
+          uploadLabel={$t('course.navItem.lessons.materials.tabs.slide.upload.label')}
           hideAddButton
           class="ui:min-h-0 ui:flex-1 ui:overflow-hidden"
           labels={pickerLabels}
           onAdd={handleAdd}
-        />
+        >
+          {#snippet upload()}
+            <UploadSlide uploader={slideUploader} />
+          {/snippet}
+        </SlideEmbedPicker>
       {/if}
       <Dialog.Footer sticky class="shrink-0">
-        <Button size="sm" disabled={!pickerCanAdd} onclick={() => slidePicker?.submit()}>
+        <Button size="sm" disabled={!canAddSlide} loading={isAddingUpload} onclick={submitPicker}>
           {$t('course.navItem.lessons.materials.tabs.slide.button')}
         </Button>
       </Dialog.Footer>
@@ -156,7 +199,11 @@
   <div class="w-full">
     {#each slides as slide, index (slide.id)}
       <div class="{index < slides.length - 1 ? 'mb-5' : ''} w-full overflow-hidden">
-        <SlideEmbedFrame src={slide.src} title={getSlideFrameTitle(slide, index)} />
+        {#if isUploadedSlide(slide)}
+          <UploadedSlideViewer {slide} title={getSlideFrameTitle(slide, index)} />
+        {:else}
+          <SlideEmbedFrame src={slide.src} title={getSlideFrameTitle(slide, index)} />
+        {/if}
       </div>
     {/each}
   </div>

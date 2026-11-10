@@ -690,6 +690,7 @@
       "slot_type": {
         "lesson_video": "Lesson video",
         "lesson_document": "Lesson document",
+        "lesson_slide": "Lesson slide",
         "unknown": "Attachment"
       },
       "table": {
@@ -1311,7 +1312,7 @@
               "remove_slide": "Remove slide",
               "menu_aria": "Slide actions",
               "empty_title": "No slides yet",
-              "empty_description": "Embed Google Slides, Canva, PowerPoint, Keynote, Figma, Prezi, Pitch, Gamma, SlideShare, or Beautiful.ai",
+              "empty_description": "Upload a PDF or PowerPoint file, or embed Google Slides, Canva, PowerPoint, Keynote, Figma, Prezi, Pitch, Gamma, SlideShare, Beautiful.ai",
               "frame_title": "{platform} ({index} of {total})",
               "add_slide": {
                 "title": "Add a slide",
@@ -1386,6 +1387,34 @@
                   "step_2": "Click Get Embed Code.",
                   "step_3": "Paste the iframe embed code here."
                 }
+              },
+              "upload": {
+                "label": "Upload from computer",
+                "title": "Upload slides from your computer",
+                "hint": "PDF or PowerPoint (.pptx)",
+                "step_1": "Export your deck to PDF for the best result, or use the PowerPoint (.pptx) file directly.",
+                "step_2": "Drag the file into the box below, or click to choose it.",
+                "step_3": "Wait for the upload to finish, then click Add slide.",
+                "drag_drop": "Drag your slide file here or click to choose",
+                "up_to_size": "PDF or PPTX, up to {size}",
+                "uploading": "Uploading…",
+                "ready": "File uploaded. Click Add slide to finish.",
+                "cancel": "Cancel upload",
+                "replace": "Choose another file",
+                "file_type_error": "Only PDF or PowerPoint (.pptx) files are accepted.",
+                "file_size_error": "The file is larger than the {size} limit.",
+                "upload_error": "Could not upload the slides. Please try again.",
+                "upgrade": "File upload is not enabled for this organization",
+                "pptx_notice": "PowerPoint files are shown with Microsoft Office Online, so Microsoft fetches the file through a temporary link. Export to PDF if the lesson contains internal content."
+              },
+              "viewer": {
+                "loading": "Loading slides…",
+                "load_error": "Could not load the slides. Please reload the page.",
+                "previous": "Previous page",
+                "next": "Next page",
+                "page": "{current} / {total}",
+                "fullscreen": "Full screen",
+                "exit_fullscreen": "Exit full screen"
               }
             },
             "settings": {

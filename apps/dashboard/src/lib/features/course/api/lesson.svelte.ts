@@ -52,6 +52,7 @@ import type { TLocale } from '@cio/db/types';
 import { get } from 'svelte/store';
 import { mapZodErrorsToTranslations } from '$lib/utils/validation';
 import { mediaApi } from '$features/media/api';
+import { isUploadedSlide, type LessonSlide } from '@cio/utils/functions';
 import { profile } from '$lib/utils/store/user';
 import { snackbar } from '$features/ui/snackbar/store';
 
@@ -890,6 +891,34 @@ export class LessonApi extends BaseApiWithErrors {
       documents: documents.filter((_d, i) => i !== documentIndex)
     };
     this.markDirty();
+  }
+
+  /**
+   * Replaces the lesson slides, keeping the legacy `slideUrl` on the first embedded slide.
+   */
+  setLessonSlides(slides: LessonSlide[]) {
+    const firstEmbed = slides.find((slide) => !isUploadedSlide(slide));
+
+    this.updateLessonState('slides', slides);
+    this.updateLessonState('slideUrl', firstEmbed?.src || '');
+  }
+
+  /**
+   * Removes a slide and detaches its uploaded file from the lesson.
+   */
+  async removeLessonSlide(slides: LessonSlide[], slideIndex: number) {
+    const removedSlide = slides[slideIndex];
+
+    if (removedSlide && isUploadedSlide(removedSlide) && removedSlide.assetId && this.lesson?.id) {
+      await mediaApi.detachAsset(removedSlide.assetId, {
+        targetType: 'lesson',
+        targetId: this.lesson.id,
+        slotType: 'lesson_slide',
+        position: slideIndex
+      });
+    }
+
+    this.setLessonSlides(slides.filter((_slide, index) => index !== slideIndex));
   }
 
   /**

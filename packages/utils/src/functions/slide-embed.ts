@@ -19,6 +19,30 @@ export type SlideEmbed = {
   platform: SlidePlatformId;
 };
 
+export const UPLOADED_SLIDE_PLATFORM = 'upload';
+
+export const UPLOADED_SLIDE_FILE_TYPES = ['pdf', 'pptx'] as const;
+
+export type UploadedSlideFileType = (typeof UPLOADED_SLIDE_FILE_TYPES)[number];
+
+export const UPLOADED_SLIDE_MIME_TYPES: Record<UploadedSlideFileType, string> = {
+  pdf: 'application/pdf',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+};
+
+export type UploadedSlide = {
+  id: string;
+  src: string;
+  platform: typeof UPLOADED_SLIDE_PLATFORM;
+  key: string;
+  name: string;
+  size: number;
+  fileType: UploadedSlideFileType;
+  assetId?: string;
+};
+
+export type LessonSlide = SlideEmbed | UploadedSlide;
+
 export type SlideEmbedParseResult =
   | { ok: true; src: string; platform: SlidePlatformId }
   | { ok: false; reason: 'empty' | 'invalid' | 'unsupported' };
@@ -322,9 +346,36 @@ export function createSlideEmbed(rawInput: string, id?: string): SlideEmbed | nu
   };
 }
 
-export function resolveLessonSlides(slides: SlideEmbed[] | null | undefined, slideUrl?: string | null): SlideEmbed[] {
+export function isUploadedSlide(slide: LessonSlide): slide is UploadedSlide {
+  return slide.platform === UPLOADED_SLIDE_PLATFORM;
+}
+
+/**
+ * Returns the slide file type for a PDF or PPTX file, matching on MIME type first and file extension second.
+ */
+export function getUploadedSlideFileType(file: { name: string; type: string }): UploadedSlideFileType | null {
+  const byMimeType = UPLOADED_SLIDE_FILE_TYPES.find((fileType) => UPLOADED_SLIDE_MIME_TYPES[fileType] === file.type);
+
+  if (byMimeType) return byMimeType;
+
+  const extension = file.name.split('.').pop()?.toLowerCase();
+
+  return UPLOADED_SLIDE_FILE_TYPES.find((fileType) => fileType === extension) ?? null;
+}
+
+export function getOfficeViewerSrc(fileUrl: string): string {
+  return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`;
+}
+
+function isRenderableSlide(slide: LessonSlide): boolean {
+  if (isUploadedSlide(slide)) return Boolean(slide.key);
+
+  return isAllowedSlideEmbedSrc(slide.src);
+}
+
+export function resolveLessonSlides(slides: LessonSlide[] | null | undefined, slideUrl?: string | null): LessonSlide[] {
   if (Array.isArray(slides) && slides.length > 0) {
-    return slides.filter((slide) => isAllowedSlideEmbedSrc(slide.src));
+    return slides.filter(isRenderableSlide);
   }
 
   if (!slideUrl?.trim()) return [];

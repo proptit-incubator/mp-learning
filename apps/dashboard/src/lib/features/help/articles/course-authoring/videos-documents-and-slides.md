@@ -1,6 +1,6 @@
 ---
 title: Video, tài liệu và slide
-description: Thêm video tải lên hoặc từ YouTube, đính kèm tài liệu, nhúng slide và quản lý bản chép lời của video.
+description: Thêm video tải lên hoặc từ YouTube, đính kèm tài liệu, tải lên hoặc nhúng slide và quản lý bản chép lời của video.
 order: 5
 audience: L&D, Admin
 ---
@@ -45,7 +45,19 @@ Tài liệu hiện trong mục **Tệp đính kèm** của bài học. Học vi�
 
 ## Thêm slide
 
-Tab **Slide** nhúng bài trình chiếu từ Google Slides, Canva, PowerPoint, Keynote, Figma, Prezi, Pitch, Gamma, SlideShare hoặc Beautiful.ai.
+Tab **Slide** nhận tệp trình chiếu tải lên từ máy, hoặc nhúng bài trình chiếu từ Google Slides, Canva, PowerPoint, Keynote, Figma, Prezi, Pitch, Gamma, SlideShare hoặc Beautiful.ai.
+
+### Tải lên từ máy
+
+1. Ở tab **Slide**, nhấn **Thêm slide**. Mục **Tải lên từ máy** được chọn sẵn.
+2. Kéo thả tệp PDF hoặc PowerPoint (.pptx) vào ô tải lên, hoặc nhấn để chọn tệp. Giới hạn dung lượng hiện trong ô tải lên.
+3. Chờ tải lên xong, rồi nhấn **Thêm slide**.
+
+Slide PDF hiện ngay trong bài học: học viên chuyển trang bằng nút mũi tên hoặc phím ← →, và có thể xem toàn màn hình.
+
+> **Lưu ý:** Tệp PowerPoint (.pptx) được hiển thị qua trình xem Office Online của Microsoft, nên Microsoft sẽ tải tệp qua một đường liên kết tạm thời. Với bài giảng có nội dung nội bộ, hãy xuất bài trình chiếu ra PDF trước khi tải lên.
+
+### Nhúng từ nền tảng
 
 1. Ở tab **Slide**, nhấn **Thêm slide**.
 2. Chọn nền tảng. Ô **Tìm nền tảng** giúp tìm nhanh. Hướng dẫn từng bước của nền tảng đó hiện ngay trong hộp thoại.

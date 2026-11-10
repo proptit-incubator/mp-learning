@@ -462,11 +462,13 @@ export class MediaApi extends BaseApiWithErrors {
   }
 
   /**
-   * Creates the asset for an uploaded document and attaches it to the lesson when `lessonId` is given.
+   * Creates the asset for an uploaded document and attaches it to the lesson when `lessonId` is given,
+   * in the `lesson_document` slot unless `slotType` says otherwise.
    */
   async registerUploadedDocument(params: {
     lessonId?: string;
     position?: number;
+    slotType?: 'lesson_document' | 'lesson_slide';
     fileKey: string;
     documentUrl: string;
     fileName: string;
@@ -497,7 +499,7 @@ export class MediaApi extends BaseApiWithErrors {
       await this.attachAsset(asset.id, {
         targetType: 'lesson',
         targetId: params.lessonId,
-        slotType: 'lesson_document',
+        slotType: params.slotType ?? 'lesson_document',
         position: params.position
       });
     }

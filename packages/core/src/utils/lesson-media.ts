@@ -1,4 +1,5 @@
 import { dedupe } from '@cio/utils';
+import { isUploadedSlide } from '@cio/utils/functions/slide-embed';
 import { enrichObjectsWithUrls, extractKeysFromObjects } from './presigned-urls';
 import { generateDocumentDownloadPresignedUrls, generateVideoDownloadPresignedUrls } from './s3';
 
@@ -10,6 +11,7 @@ import { queueVimeoBackfill } from '../services/assets/assets';
 // Extract types from schema
 type LessonVideo = NonNullable<TLesson['videos']>[number];
 type LessonDocument = NonNullable<TLesson['documents']>[number];
+type LessonSlide = NonNullable<TLesson['slides']>[number];
 
 function mapProviderToVideoType(provider: string): LessonVideo['type'] {
   if (provider === 'youtube') return 'youtube';
@@ -139,8 +141,20 @@ function applyCanonicalDocumentMetadata(
   });
 }
 
+function getUploadedSlideKeys(slides: LessonSlide[]): string[] {
+  return slides.filter(isUploadedSlide).map((slide) => slide.key);
+}
+
+function enrichUploadedSlidesWithUrls(slides: LessonSlide[], urls: Record<string, string>): LessonSlide[] {
+  return slides.map((slide) => {
+    if (!isUploadedSlide(slide) || !urls[slide.key]) return slide;
+
+    return { ...slide, src: urls[slide.key] };
+  });
+}
+
 /**
- * Enriches lesson with presigned URLs for videos and documents
+ * Enriches lesson with presigned URLs for videos, documents and uploaded slides
  * @param lesson Lesson to enrich
  * @returns Lesson with presigned URLs added
  */
@@ -164,9 +178,11 @@ export async function enrichLessonWithPresignedUrls(lesson: LessonById): Promise
 
   const videoKeys = extractKeysFromObjects(canonicalVideos.filter((video) => video.type === 'upload'));
   const docKeys = extractKeysFromObjects(canonicalDocuments);
+  const slides = lesson.slides || [];
+  const slideKeys = getUploadedSlideKeys(slides);
 
   // If no presigned URLs are needed, return lesson with canonical metadata applied
-  if (videoKeys.length === 0 && docKeys.length === 0) {
+  if (videoKeys.length === 0 && docKeys.length === 0 && slideKeys.length === 0) {
     return {
       ...lesson,
       videos: canonicalVideos,
@@ -175,14 +191,16 @@ export async function enrichLessonWithPresignedUrls(lesson: LessonById): Promise
   }
 
   // Generate presigned URLs in parallel
-  const [videoUrls, docUrls] = await Promise.all([
+  const [videoUrls, docUrls, slideUrls] = await Promise.all([
     generateVideoDownloadPresignedUrls(videoKeys),
-    generateDocumentDownloadPresignedUrls(docKeys)
+    generateDocumentDownloadPresignedUrls(docKeys),
+    generateDocumentDownloadPresignedUrls(slideKeys)
   ]);
 
   return {
     ...lesson,
     videos: enrichObjectsWithUrls<LessonVideo>(canonicalVideos, videoUrls),
-    documents: enrichObjectsWithUrls<LessonDocument>(canonicalDocuments, docUrls)
+    documents: enrichObjectsWithUrls<LessonDocument>(canonicalDocuments, docUrls),
+    slides: enrichUploadedSlidesWithUrls(slides, slideUrls)
   };
 }

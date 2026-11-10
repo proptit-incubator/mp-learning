@@ -105,7 +105,14 @@ export {
   SlidePlatformIcon,
   DEFAULT_SLIDE_EMBED_PICKER_LABELS
 } from './custom/slide-embed';
-export type { SlideEmbed, SlideEmbedCardLabels, SlideEmbedPickerLabels, SlidePlatformId } from './custom/slide-embed';
+export type {
+  LessonSlide,
+  SlideEmbed,
+  SlideEmbedCardLabels,
+  SlideEmbedPickerLabels,
+  SlidePlatformId,
+  UploadedSlide
+} from './custom/slide-embed';
 export { AttentionHighlight, type AttentionHighlightProps } from './custom/attention-highlight';
 export { CircularProgress } from './custom/circular-progress';
 export { ScrollToTop } from './custom/scroll-to-top';

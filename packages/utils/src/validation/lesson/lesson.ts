@@ -1,7 +1,13 @@
 import * as z from 'zod';
 
 import { ALLOWED_CONTENT_TYPES } from '../constants';
-import { getSlidePlatformByHost, isAllowedSlideEmbedSrc, SLIDE_PLATFORM_IDS } from '../../functions/slide-embed';
+import {
+  getSlidePlatformByHost,
+  isAllowedSlideEmbedSrc,
+  SLIDE_PLATFORM_IDS,
+  UPLOADED_SLIDE_FILE_TYPES,
+  UPLOADED_SLIDE_PLATFORM
+} from '../../functions/slide-embed';
 import { MAX_SESSION_DURATION_MINUTES, MIN_SESSION_DURATION_MINUTES } from '../../functions/live-session';
 import { isAllowedHref } from '../shared/safe-href';
 import { ZSlug } from '../shared/slug';
@@ -35,7 +41,7 @@ export const ZLessonVideoItem = z.object({
 });
 export type TLessonVideoItem = z.infer<typeof ZLessonVideoItem>;
 
-export const ZLessonSlide = z
+export const ZLessonEmbedSlide = z
   .object({
     id: z.string().min(1),
     src: z
@@ -56,6 +62,19 @@ export const ZLessonSlide = z
     },
     { message: 'Slide platform does not match embed source', path: ['platform'] }
   );
+
+export const ZLessonUploadedSlide = z.object({
+  id: z.string().min(1),
+  src: z.url(),
+  platform: z.literal(UPLOADED_SLIDE_PLATFORM),
+  key: z.string().min(1),
+  name: z.string().min(1),
+  size: z.number().int().min(0),
+  fileType: z.enum(UPLOADED_SLIDE_FILE_TYPES),
+  assetId: z.string().optional()
+});
+
+export const ZLessonSlide = z.union([ZLessonEmbedSlide, ZLessonUploadedSlide]);
 export type TLessonSlide = z.infer<typeof ZLessonSlide>;
 
 export const ZLessonRecordingUrl = z.url({ protocol: /^https?$/, message: 'Recording link must be an http(s) URL' });

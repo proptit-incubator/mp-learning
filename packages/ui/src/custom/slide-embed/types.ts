@@ -1,6 +1,6 @@
-import type { SlideEmbed, SlidePlatformId } from '@cio/utils/functions';
+import type { LessonSlide, SlideEmbed, SlidePlatformId, UploadedSlide } from '@cio/utils/functions';
 
-export type { SlideEmbed, SlidePlatformId };
+export type { LessonSlide, SlideEmbed, SlidePlatformId, UploadedSlide };
 
 export type SlideEmbedPlatformCopy = {
   hint: string;

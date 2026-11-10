@@ -6,9 +6,11 @@
     type SlideEmbed,
     type SlidePlatformId
   } from '@cio/utils/functions';
+  import type { Snippet } from 'svelte';
   import CheckIcon from '@lucide/svelte/icons/check';
   import ExternalLinkIcon from '@lucide/svelte/icons/external-link';
   import SearchIcon from '@lucide/svelte/icons/search';
+  import UploadIcon from '@lucide/svelte/icons/upload';
   import { Button } from '../../base/button';
   import { Input } from '../../base/input';
   import { TextareaField } from '../textarea-field';
@@ -26,6 +28,9 @@
     onAdd?: (slide: SlideEmbed) => void;
     hideAddButton?: boolean;
     canAdd?: boolean;
+    uploadLabel?: string;
+    upload?: Snippet;
+    uploadSelected?: boolean;
     class?: string;
   }
 
@@ -35,6 +40,9 @@
     onAdd,
     hideAddButton = false,
     canAdd = $bindable(false),
+    uploadLabel = '',
+    upload,
+    uploadSelected = $bindable(false),
     class: className = ''
   }: Props = $props();
 
@@ -77,7 +85,13 @@
   });
 
   function selectPlatform(platformId: SlidePlatformId) {
+    uploadSelected = false;
     selectedId = platformId;
+    rawEmbed = '';
+  }
+
+  function selectUpload() {
+    uploadSelected = true;
     rawEmbed = '';
   }
 
@@ -122,8 +136,28 @@
       class="ui:flex ui:max-h-72 ui:min-h-0 ui:flex-col ui:gap-0.5 ui:overflow-auto ui:md:max-h-none ui:md:flex-1"
       aria-label="Slide platforms"
     >
+      {#if upload}
+        <button
+          type="button"
+          class={cn(
+            'ui:flex ui:w-full ui:cursor-pointer ui:items-center ui:gap-2.5 ui:rounded-md ui:px-2 ui:py-1.5 ui:text-left ui:text-sm',
+            uploadSelected ? 'ui:bg-secondary ui:text-secondary-foreground' : 'ui:text-foreground ui:hover:bg-muted/60'
+          )}
+          aria-pressed={uploadSelected}
+          onclick={selectUpload}
+        >
+          <span
+            class="ui:bg-primary/10 ui:text-primary ui:inline-flex ui:size-7 ui:shrink-0 ui:items-center ui:justify-center ui:rounded-md"
+            aria-hidden="true"
+          >
+            <UploadIcon class="custom ui:text-primary ui:size-4" />
+          </span>
+          <span class="ui:leading-tight">{uploadLabel}</span>
+        </button>
+        <div class="ui:border-border ui:my-1 ui:border-t" role="separator"></div>
+      {/if}
       {#each filteredPlatforms as platform (platform.id)}
-        {@const isActive = platform.id === selectedId}
+        {@const isActive = !uploadSelected && platform.id === selectedId}
 
         <button
           type="button"
@@ -142,7 +176,9 @@
   </div>
 
   <div class="ui:flex ui:min-h-0 ui:min-w-0 ui:flex-1 ui:flex-col ui:gap-4 ui:overflow-auto ui:p-4 ui:sm:p-6">
-    {#if !selectedPlatform}
+    {#if uploadSelected && upload}
+      {@render upload()}
+    {:else if !selectedPlatform}
       <div
         class="ui:text-muted-foreground ui:flex ui:flex-1 ui:items-center ui:justify-center ui:text-center ui:text-sm"
       >

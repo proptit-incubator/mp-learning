@@ -7,6 +7,11 @@ export const FILE_UPLOAD_SUPPORTED_TYPES = [
   },
   { value: 'application/msword', label: 'DOC (.doc)', aliases: ['doc', '.doc'] },
   {
+    value: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    label: 'PPTX (.pptx)',
+    aliases: ['pptx', '.pptx']
+  },
+  {
     value: 'text/csv',
     label: 'CSV (.csv)',
     aliases: ['csv', '.csv', 'application/csv', 'application/vnd.ms-excel']
