@@ -1,57 +1,20 @@
 import { get } from 'svelte/store';
-import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { snackbar } from '$features/ui/snackbar/store';
 import { accountApi } from '$features/account/api/account.svelte';
 import { currentOrg, getOrgPublicOrigin } from '$lib/utils/store/org';
-
-interface OpenCoursePreviewOptions {
-  courseId: string;
-  courseSlug?: string | null;
-  currentOrgDomain?: string;
-}
+import { getCourseShareUrl } from './course-share-url';
 
 interface ViewAsStudentOptions {
   courseId?: string | null;
   currentOrgDomain?: string;
 }
 
-/** Absolute URL for the org-site public course page (`/course/{slug}`). Client-only. */
-export function getPublicCoursePageUrl(courseSlug: string, currentOrgDomain = ''): string {
-  if (typeof window === 'undefined') {
-    return '';
-  }
+/** Opens the course as learners see it in a new tab. Client-only. */
+export function openCoursePreview({ courseId }: { courseId: string }) {
+  if (!courseId || typeof window === 'undefined') return false;
 
-  const trimmedDomain = currentOrgDomain?.trim();
-  const origin = trimmedDomain || getOrgPublicOrigin(get(currentOrg));
-
-  return new URL(resolve(`/course/${courseSlug}`, {}), origin).toString();
-}
-
-export function openCoursePreview({ courseId, courseSlug, currentOrgDomain = '' }: OpenCoursePreviewOptions) {
-  if (courseId && typeof window !== 'undefined') {
-    const coursePath = resolve(`/courses/${courseId}/lessons`, {});
-    window.open(coursePath, '_blank', 'noopener,noreferrer');
-    return true;
-  }
-
-  if (!courseSlug) {
-    snackbar.info('course.header.preview_missing_slug');
-
-    if (courseId) {
-      goto(resolve(`/courses/${courseId}/settings`, {}));
-    }
-
-    return false;
-  }
-
-  const link = getPublicCoursePageUrl(courseSlug, currentOrgDomain);
-
-  if (!link) {
-    return false;
-  }
-
-  window.open(link, '_blank', 'noopener,noreferrer');
+  window.open(resolve(`/courses/${courseId}/lessons`, {}), '_blank', 'noopener,noreferrer');
   return true;
 }
 
@@ -92,12 +55,12 @@ export async function viewAsStudent({ courseId, currentOrgDomain = '' }: ViewAsS
   return true;
 }
 
-export async function copyPublicCoursePageUrl(courseSlug: string, currentOrgDomain = '') {
-  const url = getPublicCoursePageUrl(courseSlug, currentOrgDomain);
-
-  if (!url) {
+export async function copyCourseShareUrl(courseId: string) {
+  if (typeof window === 'undefined') {
     return false;
   }
+
+  const url = getCourseShareUrl(courseId, window.location.origin);
 
   try {
     await navigator.clipboard.writeText(url);
@@ -105,7 +68,7 @@ export async function copyPublicCoursePageUrl(courseSlug: string, currentOrgDoma
 
     return true;
   } catch (error) {
-    console.error('copyPublicCoursePageUrl error:', error);
+    console.error('copyCourseShareUrl error:', error);
     snackbar.error('snackbar.public_course.url_copy_failed');
 
     return false;

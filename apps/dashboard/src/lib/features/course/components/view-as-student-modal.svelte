@@ -3,23 +3,22 @@
   import { Button } from '@cio/ui/base/button';
   import * as Dialog from '@cio/ui/base/dialog';
   import { t } from '$lib/utils/functions/translations';
-  import { copyPublicCoursePageUrl, viewAsStudent } from '$features/course/utils/course-preview';
+  import { copyCourseShareUrl, viewAsStudent } from '$features/course/utils/course-preview';
 
   interface Props {
     open?: boolean;
     courseId?: string | null;
-    courseSlug?: string | null;
     currentOrgDomain?: string;
   }
 
-  let { open = $bindable(false), courseId = null, courseSlug = null, currentOrgDomain = '' }: Props = $props();
+  let { open = $bindable(false), courseId = null, currentOrgDomain = '' }: Props = $props();
 
   let isNavigating = $state(false);
 
   async function handleCopyLink() {
-    if (!courseSlug) return;
+    if (!courseId) return;
 
-    await copyPublicCoursePageUrl(courseSlug, currentOrgDomain);
+    await copyCourseShareUrl(courseId);
   }
 
   async function handleGoToLms() {
@@ -56,7 +55,7 @@
     </div>
 
     <Dialog.Footer>
-      <Button variant="secondary" onclick={handleCopyLink} disabled={!courseSlug || isNavigating}>
+      <Button variant="secondary" onclick={handleCopyLink} disabled={!courseId || isNavigating}>
         {$t('course.view_as_student.copy_link')}
       </Button>
       <Button variant="default" onclick={handleGoToLms} disabled={!courseId} loading={isNavigating}>

@@ -39,6 +39,7 @@
   import { Button } from '@cio/ui/base/button';
 
   import { createCourseSettings } from '$features/course/utils/settings-store';
+  import { getCourseShareUrl } from '$features/course/utils/course-share-url';
   import Copy from '@lucide/svelte/icons/copy';
   import * as Alert from '@cio/ui/base/alert';
   import LockOpenIcon from '@lucide/svelte/icons/lock-open';
@@ -400,9 +401,7 @@
 
   const hasAnyTagsCreated = $derived(tagApi.tagGroups.some((group) => group.tags.length > 0));
 
-  const courseLink = $derived(
-    courseApi.course?.id ? new URL(`/courses/${courseApi.course.id}/lessons`, $page.url.origin).toString() : '#'
-  );
+  const courseLink = $derived(courseApi.course?.id ? getCourseShareUrl(courseApi.course.id, $page.url.origin) : '#');
 
   // Completion rules change the certificate settings, which the API only accepts on plans with certificates.
   const areCompletionRulesLocked = $derived($isFreePlan);

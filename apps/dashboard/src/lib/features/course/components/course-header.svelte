@@ -120,6 +120,5 @@
 <ViewAsStudentModal
   bind:open={viewAsStudentOpen}
   courseId={courseApi.course?.id}
-  courseSlug={courseApi.course?.slug}
   currentOrgDomain={$currentOrgDomain}
 />
