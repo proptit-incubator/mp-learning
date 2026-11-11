@@ -45,4 +45,4 @@ Dùng **Sổ chứng chỉ** để lọc chứng chỉ sắp hết hiệu lực,
 
 Tắt công tắc **Học lại định kỳ** rồi **Lưu thay đổi**. Những lần hoàn thành sau đó không còn hết hạn.
 
-> **Lưu ý:** Lần hoàn thành đã ghi trước khi tắt vẫn giữ ngày hết hiệu lực cũ. Khi tới ngày đó, lượt giao hiện **Hết hiệu lực**, nhưng hệ thống không mở kỳ học lại vì khóa đã tắt tính năng. Vì vậy hãy cân nhắc kỹ trước khi tắt học lại định kỳ cho khóa đã có người hoàn thành.
+Lần hoàn thành gần nhất của mỗi người cũng thành vĩnh viễn: ngày hết hiệu lực được bỏ, và người đang **Hết hiệu lực** trở lại **Hoàn thành**. Các kỳ cũ trong lịch sử vẫn giữ nguyên.

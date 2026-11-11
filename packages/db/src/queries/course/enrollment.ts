@@ -221,6 +221,27 @@ export async function waiveEnrollment(
   return row ?? null;
 }
 
+export async function cancelEnrollmentWaiver(enrollmentId: string, client: DbOrTxClient = db) {
+  const [row] = await client
+    .update(schema.courseEnrollment)
+    .set({
+      status: 'ACTIVE',
+      waivedBy: null,
+      waiverReason: null,
+      waiverExpiresAt: null,
+      updatedAt: new Date().toISOString()
+    })
+    .where(and(eq(schema.courseEnrollment.id, enrollmentId), eq(schema.courseEnrollment.status, 'WAIVED')))
+    .returning();
+  return row ?? null;
+}
+
+/** Whether an enrollment still binds the learner: active, or waived until a date that has passed. */
+function enrollmentInForceSql(alias: string) {
+  const a = sql.raw(alias);
+  return sql`(${a}.status = 'ACTIVE' or (${a}.status = 'WAIVED' and ${a}.waiver_expires_at is not null and ${a}.waiver_expires_at <= now()))`;
+}
+
 export async function updateEnrollmentDueDate(enrollmentId: string, dueDate: string | null, client: DbOrTxClient = db) {
   const [row] = await client
     .update(schema.courseEnrollment)
@@ -496,6 +517,19 @@ export async function recordCourseCompletion(
   return row ?? null;
 }
 
+/**
+ * Makes every learner's latest completion of a course permanent, for when the course stops requiring
+ * recertification. Earlier cycles keep their history. Returns how many completions were changed.
+ */
+export async function clearLatestCompletionExpiry(courseId: string, client: DbOrTxClient = db) {
+  const rows = await client.execute<{ id: string }>(sql`update course_completion_record ccr set valid_until = null
+    where ccr.course_id = ${courseId} and ccr.valid_until is not null
+      and ccr.cycle_number = (select max(latest.cycle_number) from course_completion_record latest
+        where latest.course_id = ccr.course_id and latest.profile_id = ccr.profile_id)
+    returning ccr.id`);
+  return rows.length;
+}
+
 function addMonths(isoDate: string, months: number) {
   const date = new Date(isoDate);
   date.setUTCMonth(date.getUTCMonth() + months);
@@ -528,7 +562,7 @@ export async function listAssignedEnrollmentsForReminder(
     join employee e on e.id = ce.employee_id and e.status = 'ACTIVE'
     join organizationmember om on om.id = e.member_id and om.status = 'ACTIVE' and om.profile_id is not null
     join course co on co.id = ce.course_id and co.status = 'ACTIVE' and co.is_published = true
-    where ce.kind = 'ASSIGNED' and ce.status = 'ACTIVE' and ce.due_date is not null
+    where ce.kind = 'ASSIGNED' and ${enrollmentInForceSql('ce')} and ce.due_date is not null
       and ${enrollmentStateSql('ce')} in ('not_started', 'in_progress', 'overdue', 'expired')
       and (((ce.due_date at time zone 'Asia/Ho_Chi_Minh')::date - (now() at time zone 'Asia/Ho_Chi_Minh')::date) in ${sql`(${sql.join(
         offsets.map((value) => sql`${value}`),
@@ -571,7 +605,7 @@ export async function listEnrollmentsToReopen(client: DbOrTxClient = db) {
     join groupmember gm on gm.group_id = co.group_id and gm.profile_id = om.profile_id
     join lateral (select ccr.valid_until, ccr.reopened_at from course_completion_record ccr
       where ccr.course_id = ce.course_id and ccr.profile_id = om.profile_id order by ccr.cycle_number desc limit 1) latest on true
-    where ce.status = 'ACTIVE' and latest.valid_until is not null and latest.valid_until <= now()
+    where ${enrollmentInForceSql('ce')} and latest.valid_until is not null and latest.valid_until <= now()
       and latest.reopened_at is null
     order by ce.course_id, om.profile_id, (ce.kind = 'ASSIGNED') desc`);
   return rows.map((row) => ({ ...row, validUntil: new Date(row.validUntil).toISOString() }));

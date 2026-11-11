@@ -37,6 +37,7 @@ import { db } from '@cio/db/drizzle';
 import * as schema from '@cio/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { skipRemovedOffsetReminderDeliveries } from '@cio/db/queries/course/live-session-reminder';
+import { clearLatestCompletionExpiry } from '@cio/db/queries/course/enrollment';
 import { getProfileById } from '@cio/db/queries/auth';
 import {
   countActiveStudents,
@@ -382,6 +383,10 @@ export async function updateCourse(
     if (data.metadata?.liveSessionReminderOffsetsMinutes !== undefined) {
       const keptOffsets = resolveLiveSessionReminderOffsets(updated.metadata?.liveSessionReminderOffsetsMinutes);
       await skipRemovedOffsetReminderDeliveries(courseId, keptOffsets, dbClient);
+    }
+
+    if (currentCourse.recertificationMonths && !updated.recertificationMonths) {
+      await clearLatestCompletionExpiry(courseId, dbClient);
     }
 
     if (data.status !== undefined) {
