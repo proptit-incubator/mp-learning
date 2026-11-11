@@ -1,5 +1,8 @@
 import { ContentType, ROLE } from '@cio/utils/constants';
-import { assertStudentCanAccessContent } from '@cio/core/services/course/progression';
+import {
+  annotateCourseContentWithProgression,
+  assertStudentCanAccessContent
+} from '@cio/core/services/course/progression';
 import { getCourseById, getCourseProgress } from '@cio/db/queries/course/course';
 import { getCourseContentItems } from '@cio/db/queries/course/content';
 import { areCourseContentRefsInCourse, type TCourseContentRefs } from '@cio/db/queries/course/content-scope';
@@ -71,4 +74,31 @@ export async function assertEnrolledStudentContentAccess(params: {
     contentRows: contentItems,
     isContentGroupingEnabled
   });
+}
+
+/**
+ * Ids of the lessons and exercises `profileId` cannot open yet in `courseId`, because they are locked or sit behind
+ * sequential progression. Empty for anyone who is not a learner in the course.
+ */
+export async function getLockedContentIds(courseId: string, profileId: string): Promise<Set<string>> {
+  const [courseRow, progress, contentRows] = await Promise.all([
+    getCourseById(courseId),
+    getCourseProgress(courseId, profileId),
+    getCourseContentItems(courseId, profileId)
+  ]);
+  const course = courseRow[0];
+  if (!course || progress.roleId !== ROLE.STUDENT) return new Set();
+
+  const annotated = await annotateCourseContentWithProgression({
+    courseId,
+    profileId,
+    roleId: progress.roleId,
+    progressionMode: course.metadata?.progressionMode ?? 'free',
+    contentRows,
+    isContentGroupingEnabled: course.metadata?.isContentGroupingEnabled ?? DEFAULT_CONTENT_GROUPING
+  });
+  const items = annotated.grouped ? annotated.sections.flatMap((section) => section.items) : annotated.items;
+  const lockedItems = items.filter((item) => item.accessible === false);
+
+  return new Set(lockedItems.map((item) => item.id));
 }

@@ -15,7 +15,7 @@ import { getStudentSubmissionReview } from '@api/services/submission/student-sub
 import { AppError } from '@api/utils/errors';
 import { AgentEvent, trackAgentEvent } from '@cio/core/utils/tinybird';
 import { verifyExerciseBelongsToCourse, verifyLessonBelongsToCourse } from '@cio/core/services/agent/chat-context';
-import { assertEnrolledStudentContentAccess } from '@api/services/course/access';
+import { assertEnrolledStudentContentAccess, getLockedContentIds } from '@api/services/course/access';
 import { ContentType } from '@cio/utils/constants/content';
 
 /**
@@ -150,13 +150,20 @@ export function buildStudentAgentTools(orgId: string, userId: string, courseId: 
   return {
     list_course_outline: tool({
       description:
-        'List the course outline in course order: sections with their lessons and exercises, and lessons or exercises outside any section in their place. The courseId is automatically scoped — do not pass it. Returns titles and ids only.',
+        'List the course outline in course order: sections with their lessons and exercises, and lessons or exercises outside any section in their place. The courseId is automatically scoped — do not pass it. Returns titles, ids and whether each item is still locked for the learner. Locked items cannot be read; do not describe or summarize them, only tell the learner to finish the earlier content first.',
       inputSchema: listCourseOutlineParam,
       execute: async () => {
         return executeStudentTool('list_course_outline', { orgId, userId, courseId }, async () => {
-          const outline = await getCourseOutlineSummary(courseId);
+          const [outline, lockedIds] = await Promise.all([
+            getCourseOutlineSummary(courseId),
+            getLockedContentIds(courseId, userId)
+          ]);
+          const withLock = <T extends { id: string }>(item: T) => ({ ...item, locked: lockedIds.has(item.id) });
+          const outlineWithLocks = outline.map((entry) =>
+            entry.kind === 'section' ? { ...entry, items: entry.items.map(withLock) } : withLock(entry)
+          );
 
-          return { outline };
+          return { outline: outlineWithLocks };
         });
       }
     }),
