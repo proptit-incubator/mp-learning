@@ -534,7 +534,7 @@ describe.skipIf(!hasDatabase)('course template database integrity', () => {
     }
   });
 
-  it('stops a free org on its second template and rejects cloning one', async () => {
+  it('has no template limit on MP Learning, rejects cloning a template and copies a course as a draft', async () => {
     const { db } = await import('@db/drizzle');
     const schema = await import('@db/schema');
     const organization = await db
@@ -565,17 +565,38 @@ describe.skipIf(!hasDatabase)('course template database integrity', () => {
           slug: `live-course-${orgId}`
         })
         .returning();
-      courseIds.push(template.id, course.id);
+      const [published] = await db
+        .insert(schema.course)
+        .values({
+          title: 'Published course',
+          description: 'Published',
+          groupId: group.id,
+          isPublished: true,
+          slug: `published-course-${orgId}`
+        })
+        .returning();
+      courseIds.push(template.id, course.id, published.id);
 
-      await expect(convertCourseToTemplate(course.id, orgId)).rejects.toMatchObject({
-        code: ErrorCodes.UPGRADE_REQUIRED,
-        statusCode: 403
-      });
-      const [stillCourse] = await db
+      await convertCourseToTemplate(course.id, orgId);
+      const [converted] = await db
         .select({ isTemplate: schema.course.isTemplate })
         .from(schema.course)
         .where(eq(schema.course.id, course.id));
-      expect(stillCourse.isTemplate).toBe(false);
+      expect(converted.isTemplate).toBe(true);
+
+      const [profile] = await db.select({ id: schema.profile.id }).from(schema.profile).limit(1);
+      const copy = await cloneCourse(published.id, {
+        title: 'Published course copy',
+        userId: profile.id,
+        slug: `published-copy-${orgId}`,
+        organizationId: orgId
+      });
+      courseIds.push(copy.id);
+      const [copied] = await db
+        .select({ isPublished: schema.course.isPublished })
+        .from(schema.course)
+        .where(eq(schema.course.id, copy.id));
+      expect(copied.isPublished).toBe(false);
 
       const admin = appAs(orgId, ROLE.ADMIN);
       const clone = await admin.request(`/course/${template.id}/clone`, {
@@ -609,6 +630,14 @@ describe.skipIf(!hasDatabase)('course template database integrity', () => {
     } finally {
       if (courseIds.length > 0) {
         await db.delete(schema.course).where(inArray(schema.course.id, courseIds));
+      }
+      const groups = await db
+        .select({ id: schema.group.id })
+        .from(schema.group)
+        .where(eq(schema.group.organizationId, orgId));
+      const groupIds = groups.map((group) => group.id);
+      if (groupIds.length > 0) {
+        await db.delete(schema.groupmember).where(inArray(schema.groupmember.groupId, groupIds));
       }
       await db.delete(schema.group).where(eq(schema.group.organizationId, orgId));
       await db.delete(schema.organization).where(eq(schema.organization.id, orgId));

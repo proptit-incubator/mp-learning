@@ -313,7 +313,7 @@ async function cloneCourseWithClient(
       slug: options.slug ?? null,
       metadata: metadataWithoutReviews(courseCopy.metadata),
       bannerImage: courseCopy.bannerImage,
-      isPublished: options.isPublished ?? courseCopy.isPublished,
+      isPublished: options.isPublished ?? false,
       certificate: courseCopy.certificate,
       status: courseCopy.status,
       recertificationMonths: courseCopy.recertificationMonths

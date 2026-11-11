@@ -15,7 +15,7 @@ Khi cần một khóa gần giống khóa đã có, bạn không phải soạn l
 
 Bản sao có đủ chương, bài học, bài tập, câu hỏi, ảnh bìa và cài đặt của khóa gốc. Bản sao không có học viên, bài nộp hay bảng tin của khóa gốc, và luôn tắt tự đăng ký.
 
-> **Lưu ý:** Bản sao giữ trạng thái xuất bản của khóa gốc. Nhân bản một khóa đang xuất bản sẽ cho ra một khóa cũng đang xuất bản. Hãy kiểm tra lại công tắc **Xuất bản khóa học** của bản sao trước khi chỉnh sửa.
+> **Lưu ý:** Bản sao luôn ở trạng thái chưa xuất bản, kể cả khi khóa gốc đang xuất bản. Chỉnh sửa xong, bật **Xuất bản khóa học** để nhân viên thấy bản sao.
 
 ## Lưu khóa thành mẫu
 
