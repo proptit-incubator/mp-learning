@@ -10,7 +10,9 @@
   import { get } from 'svelte/store';
   import { user } from '$lib/utils/store/user';
   import { setTheme } from '$lib/utils/functions/theme';
-  import { activateLocale, ensureTranslations } from '$lib/utils/functions/translations';
+  import { activateLocale, ensureTranslations, t } from '$lib/utils/functions/translations';
+  import { translateUiLabels } from '$lib/utils/functions/ui-labels';
+  import { setUiLabels } from '@cio/ui/tools';
   import { authClient } from '$lib/utils/services/auth/client';
   import merge from 'lodash/merge';
   import { MetaTags } from 'svelte-meta-tags';
@@ -27,6 +29,10 @@
   setUploadLimitsContext(data.uploadLimits);
 
   const metaTags = $derived(merge(data.baseMetaTags, page.data.pageMetaTags));
+
+  $effect(() => {
+    setUiLabels(translateUiLabels($t));
+  });
 
   onMount(() => {
     if (data?.locals?.user) {

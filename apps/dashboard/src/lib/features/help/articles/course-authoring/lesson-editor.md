@@ -26,27 +26,25 @@ Thanh công cụ phía trên ô ghi chú có các nút định dạng quen thu�
 
 Gõ `/` trong ô ghi chú để mở menu chèn nhanh, gồm ba nhóm: định dạng (tiêu đề, trích dẫn, khối mã, danh sách), kiểu khung nổi bật, và chèn (ảnh, video, âm thanh, iframe, bảng, công thức, đường kẻ ngang).
 
-> **Lưu ý:** Tên các nút trong trình soạn thảo hiện đang hiển thị bằng tiếng Anh, ví dụ *Callout style*, *Inline expression*, *Embed (iframe)*.
-
 ## Khung nổi bật
 
 Dùng khung nổi bật để làm nổi một lưu ý, mẹo hoặc cảnh báo.
 
 1. Đặt con trỏ vào đoạn văn cần đóng khung.
-2. Mở menu kiểu khung (nút *Callout style* cạnh nút trích dẫn), hoặc gõ `/`.
-3. Chọn một kiểu: *Info*, *Tip*, *Important*, *Warning* hoặc *Highlight*. Chọn *Default* để bỏ khung.
+2. Mở menu kiểu khung (nút **Kiểu hộp ghi chú** cạnh nút trích dẫn), hoặc gõ `/`.
+3. Chọn một kiểu: **Thông tin**, **Mẹo**, **Quan trọng**, **Cảnh báo** hoặc **Nổi bật**. Chọn **Mặc định** để bỏ khung.
 
 ## Công thức toán
 
 Công thức được viết bằng cú pháp LaTeX.
 
-- Công thức trên dòng: chọn nút *Inline expression*. Nếu bạn đang bôi đen một đoạn chữ, đoạn đó được dùng làm công thức. Cách nhanh hơn là gõ `$$a^2 + b^2 = c^2$$`, công thức sẽ tự hiện khi bạn gõ xong cặp `$$` thứ hai.
-- Công thức riêng một dòng: chọn nút *Block expression*.
+- Công thức trên dòng: chọn nút **Công thức trong dòng**. Nếu bạn đang bôi đen một đoạn chữ, đoạn đó được dùng làm công thức. Cách nhanh hơn là gõ `$$a^2 + b^2 = c^2$$`, công thức sẽ tự hiện khi bạn gõ xong cặp `$$` thứ hai.
+- Công thức riêng một dòng: chọn nút **Khối công thức**.
 
 ## Bảng và nội dung nhúng
 
 - **Bảng**: nút bảng chèn bảng 3 x 3. Nhấn lại nút khi con trỏ đang trong bảng để xóa bảng.
-- **Nhúng trang web**: chọn *Embed (iframe)* rồi dán đường dẫn, ví dụ biểu mẫu khảo sát hoặc bản đồ.
+- **Nhúng trang web**: chọn **Nhúng trang (iframe)** rồi dán đường dẫn, ví dụ biểu mẫu khảo sát hoặc bản đồ.
 - **Ảnh**: tải ảnh lên hoặc dán đường dẫn ảnh.
 
 > **Mẹo:** Video chèn trong ghi chú chỉ để xem. Nếu cần theo dõi học viên đã xem hết video hay chưa, hãy thêm video ở tab **Video** và dùng quy tắc hoàn thành **Xem video**.
