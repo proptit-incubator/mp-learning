@@ -19,7 +19,7 @@ Quản lý không giữ vai trò thấy phiên bản thu hẹp, xem [Báo cáo �
 Bốn thẻ đầu trang mô tả tình hình tại thời điểm xem, không phụ thuộc kỳ hoạt động:
 
 - **Nhân viên được giao khóa**: số nhân viên có ít nhất một lượt giao, trên tổng số nhân viên đang hoạt động.
-- **Tỷ lệ hoàn thành**: số lượt **Hoàn thành** chia cho tổng số lượt giao.
+- **Tỷ lệ hoàn thành**: số lượt **Hoàn thành** chia cho số lượt giao không được miễn.
 - **Chưa bắt đầu**: số lượt giao chưa có bài học hay bài tập nào xong.
 - **Đào tạo bắt buộc quá hạn**: số lượt giao đã quá hạn mà chưa hoàn thành.
 
@@ -60,4 +60,4 @@ Cách lọc:
 
 Chi tiết định dạng xem [Xuất dữ liệu](/help/reports/export-data).
 
-> **Lưu ý:** Lượt **Miễn** vẫn nằm trong tổng số lượt giao khi tính **Tỷ lệ hoàn thành**, nên tỷ lệ có thể thấp hơn bạn nghĩ nếu miễn nhiều.
+> **Lưu ý:** Lượt **Miễn** không được tính khi tính **Tỷ lệ hoàn thành**: tỷ lệ là số lượt hoàn thành chia cho số lượt giao không được miễn.

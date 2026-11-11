@@ -60,6 +60,29 @@ describe('training report definitions', () => {
     expect(getLearningAnalyticsActivity).toHaveBeenCalledWith('org-1', ORGANIZATION_SCOPE, 90, {});
   });
 
+  it('leaves waived assignments out of the completion rate', async () => {
+    const snapshot = await getLearningAnalyticsSnapshot('org-1', ORGANIZATION_SCOPE, {});
+    vi.mocked(getLearningAnalyticsSnapshot).mockResolvedValue({
+      ...snapshot,
+      assignments: 10,
+      waived: 2,
+      completed: 2
+    });
+
+    const report = await getLearningAnalytics('org-1', 'actor-1', 30);
+
+    expect(report.completionRate).toBe(25);
+  });
+
+  it('reports no completion rate when every assignment is waived', async () => {
+    const snapshot = await getLearningAnalyticsSnapshot('org-1', ORGANIZATION_SCOPE, {});
+    vi.mocked(getLearningAnalyticsSnapshot).mockResolvedValue({ ...snapshot, assignments: 3, waived: 3, completed: 0 });
+
+    const report = await getLearningAnalytics('org-1', 'actor-1', 30);
+
+    expect(report.completionRate).toBeNull();
+  });
+
   it('reports no completion rate when no learning is assigned', async () => {
     vi.mocked(getLearningAnalyticsSnapshot).mockResolvedValue({
       employees: 1,

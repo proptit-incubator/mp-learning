@@ -34,8 +34,9 @@ export async function getLearningAnalytics(
     getLearningAnalyticsSnapshot(orgId, scope, filter),
     getLearningAnalyticsActivity(orgId, scope, days, filter)
   ]);
+  const assignmentsToComplete = snapshot.assignments - snapshot.waived;
   const completionRate =
-    snapshot.assignments > 0 ? Math.round((snapshot.completed / snapshot.assignments) * 100) : null;
+    assignmentsToComplete > 0 ? Math.round((snapshot.completed / assignmentsToComplete) * 100) : null;
   const unassignedEmployees = snapshot.employees - snapshot.enrolledEmployees;
   const generatedAt = new Date().toISOString();
 

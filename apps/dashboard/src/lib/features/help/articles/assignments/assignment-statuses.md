@@ -56,4 +56,4 @@ Trạng thái **Hết hiệu lực** chỉ xuất hiện ở khóa bật **Học
 - Khóa nhân viên **Tự đăng ký** vẫn có trạng thái trong hồ sơ, nhưng không được tính vào số liệu đào tạo bắt buộc của báo cáo.
 - Nhân viên tạm khóa hoặc đã nghỉ việc không được tính trong báo cáo, dù lượt giao của họ vẫn còn.
 
-> **Lưu ý:** Trong báo cáo, **Tỷ lệ hoàn thành** chỉ đếm lượt **Hoàn thành**. Lượt **Miễn** vẫn nằm trong tổng số lượt giao nên làm tỷ lệ thấp đi một chút.
+> **Lưu ý:** Trong báo cáo, **Tỷ lệ hoàn thành** là số lượt **Hoàn thành** chia cho số lượt giao không được miễn. Lượt **Miễn** không làm tỷ lệ thấp đi.
