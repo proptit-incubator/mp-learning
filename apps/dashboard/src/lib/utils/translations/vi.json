@@ -998,7 +998,8 @@
             "label": "URL tài liệu (không bắt buộc)",
             "hint": "Hệ thống sẽ đọc trang này để nội dung khóa học sát với sản phẩm thực tế."
           }
-        }
+        },
+        "answers_summary": "Đây là câu trả lời của tôi cho mẫu khóa học:"
       },
       "attach": "Đính kèm tài liệu",
       "attach_hint": "Đính kèm quy trình, chính sách… (PDF, Word, PowerPoint; tối đa 5 tệp) để AI soạn khóa học dựa trên đó",

@@ -427,7 +427,7 @@
   ): string {
     const template = getCourseTemplate(templateId);
     const registryById = new Map((template?.fields ?? []).map((field) => [field.id, field]));
-    const lines: string[] = ['Here are my answers for the course template:'];
+    const lines: string[] = [t.get('course.creator.template.answers_summary')];
     const seen = new Set<string>();
 
     for (const field of fields) {

@@ -998,7 +998,8 @@
             "label": "Documentation URL (optional)",
             "hint": "We'll read this site to ground the course in your real product."
           }
-        }
+        },
+        "answers_summary": "Here are my answers for the course template:"
       },
       "attach": "Attach documents",
       "attach_hint": "Attach procedures, policies… (PDF, Word, PowerPoint; up to 5 files) for the AI to build the course from",

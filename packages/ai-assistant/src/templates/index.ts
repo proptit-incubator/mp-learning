@@ -105,54 +105,54 @@ export const COURSE_TEMPLATES = [
     id: 'product_101',
     promptTemplate:
       'Create a [Product Name] 101 course that teaches our customers the fundamentals of using the product end-to-end.',
-    formTitle: 'Tell us about your product',
+    formTitle: 'Giới thiệu về sản phẩm',
     fields: [
       {
         id: 'product_name',
         type: 'text',
-        label: 'Product name',
+        label: 'Tên sản phẩm',
         required: true,
-        placeholder: 'e.g. Acme CRM'
+        placeholder: 'VD: Acme CRM'
       },
       {
         id: 'product_summary',
         type: 'textarea',
-        label: 'In one or two sentences, what does the product do?',
+        label: 'Sản phẩm làm gì? (một hoặc hai câu)',
         required: true,
-        placeholder: 'e.g. Acme CRM is a sales pipeline tool for B2B teams.'
+        placeholder: 'VD: Acme CRM là công cụ quản lý phễu bán hàng cho đội kinh doanh B2B.'
       },
       {
         id: 'audience',
         type: 'text',
-        label: 'Who is the audience?',
+        label: 'Học viên là ai?',
         required: true,
-        placeholder: 'e.g. Account executives at SMB sales teams'
+        placeholder: 'VD: Nhân viên kinh doanh phụ trách khách hàng doanh nghiệp nhỏ'
       },
       {
         id: 'outcome',
         type: 'textarea',
-        label: 'What should learners be able to do after the course?',
+        label: 'Học xong, học viên làm được gì?',
         required: true,
-        placeholder: 'e.g. Build a pipeline, log calls, run reports'
+        placeholder: 'VD: Tạo phễu bán hàng, ghi nhận cuộc gọi, xem báo cáo'
       },
       {
         id: 'depth',
         type: 'select',
-        label: 'How deep should the course go?',
+        label: 'Khóa học sâu đến mức nào?',
         required: true,
         options: [
-          { value: 'balanced', label: 'Balanced — typical 101, ~6 sections, moderate depth' },
-          { value: 'light', label: 'Light — essentials only, ~4 sections, shorter lessons' },
+          { value: 'balanced', label: 'Vừa phải — khóa nhập môn, khoảng 6 chương, độ sâu vừa' },
+          { value: 'light', label: 'Ngắn gọn — chỉ phần cốt lõi, khoảng 4 chương, bài học ngắn' },
           {
             value: 'deep_doc',
-            label: 'Deep (documentation-grounded) — ~10 sections, in-depth lessons sourced from the docs'
+            label: 'Chuyên sâu (dựa trên tài liệu) — khoảng 10 chương, bài học chi tiết lấy từ tài liệu'
           }
         ]
       },
       {
         id: 'documentation_url',
         type: 'url',
-        label: 'Documentation URL (optional)',
+        label: 'Đường dẫn tài liệu (không bắt buộc)',
         required: false,
         placeholder: 'https://docs.your-product.com'
       }
@@ -184,37 +184,37 @@ If the user chose 'skip_template_form', ask the questions from the registry one 
   {
     id: 'product_onboarding',
     promptTemplate: 'Create a [Product Name] onboarding training that gets new users productive in their first week.',
-    formTitle: 'Tell us about your onboarding goals',
+    formTitle: 'Mục tiêu hội nhập',
     fields: [
       {
         id: 'product_name',
         type: 'text',
-        label: 'Product name',
+        label: 'Tên sản phẩm',
         required: true,
-        placeholder: 'e.g. Acme CRM'
+        placeholder: 'VD: Acme CRM'
       },
       {
         id: 'audience',
         type: 'select',
-        label: 'Who is being onboarded?',
+        label: 'Ai là người hội nhập?',
         required: true,
         options: [
-          { value: 'new_customer', label: 'New external customer' },
-          { value: 'new_hire', label: 'New internal hire / team member' },
-          { value: 'partner', label: 'Partner / reseller' }
+          { value: 'new_customer', label: 'Khách hàng mới' },
+          { value: 'new_hire', label: 'Nhân viên mới' },
+          { value: 'partner', label: 'Đối tác / đại lý' }
         ]
       },
       {
         id: 'outcome',
         type: 'textarea',
-        label: 'By the end of week one, what should they be able to do unaided?',
+        label: 'Sau tuần đầu tiên, họ tự làm được những gì?',
         required: true,
-        placeholder: 'e.g. Set up their workspace, invite teammates, run their first campaign'
+        placeholder: 'VD: Thiết lập không gian làm việc, mời đồng nghiệp, chạy chiến dịch đầu tiên'
       },
       {
         id: 'documentation_url',
         type: 'url',
-        label: 'Documentation URL (optional)',
+        label: 'Đường dẫn tài liệu (không bắt buộc)',
         required: false,
         placeholder: 'https://docs.your-product.com'
       }
@@ -243,40 +243,39 @@ If 'skip_template_form', ask the registry questions one at a time in plain text 
   {
     id: 'expert_on_x',
     promptTemplate: 'Create a course that turns learners into experts on [Topic].',
-    formTitle: 'Tell us about the topic',
+    formTitle: 'Giới thiệu về chủ đề',
     fields: [
       {
         id: 'topic',
         type: 'text',
-        label: 'Topic or niche',
+        label: 'Chủ đề hoặc lĩnh vực',
         required: true,
-        placeholder: 'e.g. PostgreSQL performance tuning'
+        placeholder: 'VD: Tối ưu hiệu năng PostgreSQL'
       },
       {
         id: 'expertise_level',
         type: 'select',
-        label: 'What level of expertise is the target?',
+        label: 'Mục tiêu đạt trình độ nào?',
         required: true,
         options: [
-          { value: 'practitioner', label: 'Confident practitioner (working knowledge)' },
-          { value: 'expert', label: 'Domain expert (deep, can teach others)' },
-          { value: 'specialist', label: 'Specialist (can solve novel problems unaided)' }
+          { value: 'practitioner', label: 'Thành thạo (dùng được trong công việc)' },
+          { value: 'expert', label: 'Chuyên gia (hiểu sâu, hướng dẫn được người khác)' },
+          { value: 'specialist', label: 'Chuyên viên đầu ngành (tự giải quyết vấn đề mới)' }
         ]
       },
       {
         id: 'outcome',
         type: 'textarea',
-        label: 'What specific things should an expert in this topic be able to do?',
+        label: 'Một chuyên gia về chủ đề này cần làm được những việc cụ thể nào?',
         required: true,
-        placeholder:
-          'e.g. Diagnose and fix slow queries, design indexes from scratch, choose between OLTP and OLAP architectures'
+        placeholder: 'VD: Tìm và sửa truy vấn chậm, thiết kế chỉ mục từ đầu, chọn giữa kiến trúc OLTP và OLAP'
       },
       {
         id: 'documentation_url',
         type: 'url',
-        label: 'Reference documentation URL (optional)',
+        label: 'Đường dẫn tài liệu tham khảo (không bắt buộc)',
         required: false,
-        placeholder: 'https://docs.example.com or a reputable reference site'
+        placeholder: 'https://docs.example.com hoặc một trang tham khảo uy tín'
       }
     ],
     coreInstructions: `You are running the Expert on X template. The teacher wants a depth course that genuinely makes a learner an expert on a specific topic or niche, not a surface-level overview.
