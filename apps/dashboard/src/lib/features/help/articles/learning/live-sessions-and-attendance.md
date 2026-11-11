@@ -9,7 +9,7 @@ Một số bài học là buổi học trực tuyến: bộ phận đào tạo �
 
 ## Tìm buổi học sắp tới
 
-- Trên **Tổng quan**, mục **Buổi học trực tuyến** liệt kê các buổi sắp diễn ra trong mọi khóa của bạn, buổi gần nhất ở trên.
+- Trên **Tổng quan**, mục **Buổi học trực tuyến** liệt kê các buổi sắp diễn ra trong mọi khóa của bạn, buổi gần nhất ở trên. Buổi học nằm ở bài học bạn chưa mở được thì không hiện ở đây.
 - Trong khóa học, mở bài học là buổi học trực tuyến để xem thẻ buổi học.
 
 ## Trước giờ học

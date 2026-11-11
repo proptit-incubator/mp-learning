@@ -78,10 +78,12 @@ function applyAccessToContent(
     const exercisePolicy = exercisePolicyById.get(item.id);
     const accessible = access?.accessible ?? true;
     const recordingUrl = accessible ? item.recordingUrl : null;
+    const callUrl = accessible ? item.callUrl : null;
 
     return {
       ...item,
       recordingUrl,
+      callUrl,
       accessible,
       lockReason: access?.lockReason ?? null,
       completionPolicy: lessonPolicy?.completionPolicy ?? exercisePolicy?.completionPolicy ?? null,

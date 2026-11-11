@@ -1,4 +1,5 @@
 import { listCourseLibrary } from './course/library';
+import { hideLockedUpcomingSessions } from './course/upcoming-session-access';
 import { emitOrganizationMemberWebhookEvent } from '@cio/core/services/webhook/emit';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import type { OrgAudienceMember, OrgAudiencePagination, OrgAudienceQuery } from '@api/types/org';
@@ -417,7 +418,9 @@ export async function getOrganizationNavCounts(orgId: string, userId: string, us
  */
 export async function getUserEnrolledCourses(orgId: string, userId: string) {
   try {
-    return getEnrolledCourses({ orgId, profileId: userId });
+    const courses = await getEnrolledCourses({ orgId, profileId: userId });
+
+    return hideLockedUpcomingSessions(courses, userId);
   } catch (error) {
     if (error instanceof AppError) throw error;
     throw new AppError(
