@@ -1,4 +1,4 @@
-import { WEBHOOK_DEFAULT_EVENT_TYPES, WEBHOOK_EVENT_TYPES } from '@cio/utils/constants/webhook';
+import { WEBHOOK_DEFAULT_EVENT_TYPES, WEBHOOK_SUBSCRIBABLE_EVENT_TYPES } from '@cio/utils/constants/webhook';
 import type { BadgeVariant } from '@cio/ui/base/badge';
 
 import type { Webhook, WebhookDeliveryStatus, WebhookFormFields, WebhookHealth } from './types';
@@ -6,11 +6,16 @@ import type { Webhook, WebhookDeliveryStatus, WebhookFormFields, WebhookHealth }
 export const WEBHOOK_DELIVERIES_PAGE_SIZE = 10;
 
 export const WEBHOOK_EVENT_GROUPS = [
-  { key: 'organization', eventTypes: WEBHOOK_EVENT_TYPES.filter((type) => type.startsWith('organization.')) },
-  { key: 'course', eventTypes: WEBHOOK_EVENT_TYPES.filter((type) => type.startsWith('course.')) },
+  {
+    key: 'organization',
+    eventTypes: WEBHOOK_SUBSCRIBABLE_EVENT_TYPES.filter((type) => type.startsWith('organization.'))
+  },
+  { key: 'course', eventTypes: WEBHOOK_SUBSCRIBABLE_EVENT_TYPES.filter((type) => type.startsWith('course.')) },
   {
     key: 'learning',
-    eventTypes: WEBHOOK_EVENT_TYPES.filter((type) => type.startsWith('lesson.') || type.startsWith('exercise.'))
+    eventTypes: WEBHOOK_SUBSCRIBABLE_EVENT_TYPES.filter(
+      (type) => type.startsWith('lesson.') || type.startsWith('exercise.')
+    )
   }
 ] as const;
 
@@ -44,6 +49,10 @@ export function getDefaultWebhookFormFields(): WebhookFormFields {
   };
 }
 
+function subscribableEventTypes(webhook: Webhook) {
+  return webhook.eventTypes.filter((eventType) => WEBHOOK_SUBSCRIBABLE_EVENT_TYPES.some((type) => type === eventType));
+}
+
 export function toWebhookFormFields(webhook: Webhook): WebhookFormFields {
   return {
     name: webhook.name,
@@ -51,17 +60,17 @@ export function toWebhookFormFields(webhook: Webhook): WebhookFormFields {
     secret: '',
     verifySsl: webhook.verifySsl,
     eventMode: webhook.eventMode,
-    eventTypes: webhook.eventMode === 'all' ? [...WEBHOOK_DEFAULT_EVENT_TYPES] : [...webhook.eventTypes],
+    eventTypes: webhook.eventMode === 'all' ? [...WEBHOOK_DEFAULT_EVENT_TYPES] : subscribableEventTypes(webhook),
     isActive: webhook.isActive
   };
 }
 
 export function getWebhookEventsLabelCount(webhook: Webhook): number {
-  return webhook.eventMode === 'all' ? WEBHOOK_EVENT_TYPES.length : webhook.eventTypes.length;
+  return getWebhookEventTypes(webhook).length;
 }
 
 export function getWebhookEventTypes(webhook: Webhook): readonly string[] {
-  return webhook.eventMode === 'all' ? WEBHOOK_EVENT_TYPES : webhook.eventTypes;
+  return webhook.eventMode === 'all' ? WEBHOOK_SUBSCRIBABLE_EVENT_TYPES : subscribableEventTypes(webhook);
 }
 
 export function getWebhookDisplayHealth(webhook: Webhook): WebhookHealth | 'retrying' {

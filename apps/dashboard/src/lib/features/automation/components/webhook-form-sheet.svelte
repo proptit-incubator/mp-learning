@@ -8,7 +8,7 @@
   import * as Sheet from '@cio/ui/base/sheet';
   import { Switch } from '@cio/ui/base/switch';
   import { InputField } from '@cio/ui/custom/input-field';
-  import { WEBHOOK_EVENT_TYPES } from '@cio/utils/constants/webhook';
+  import { WEBHOOK_SUBSCRIBABLE_EVENT_TYPES } from '@cio/utils/constants/webhook';
 
   import { webhookApi } from '$features/automation/api/webhook.svelte';
   import type { Webhook, WebhookFormFields } from '$features/automation/utils/types';
@@ -57,11 +57,11 @@
   }
 
   function toggleAllEvents(isChecked: boolean) {
-    fields.eventTypes = isChecked ? [...WEBHOOK_EVENT_TYPES] : [];
+    fields.eventTypes = isChecked ? [...WEBHOOK_SUBSCRIBABLE_EVENT_TYPES] : [];
     webhookApi.clearError('eventTypes');
   }
 
-  const allEventsSelection = $derived(getEventGroupSelection(fields.eventTypes, WEBHOOK_EVENT_TYPES));
+  const allEventsSelection = $derived(getEventGroupSelection(fields.eventTypes, WEBHOOK_SUBSCRIBABLE_EVENT_TYPES));
 
   async function handleSave() {
     const result = webhook ? await webhookApi.update(webhook.id, fields) : await webhookApi.create(fields);
@@ -169,7 +169,7 @@
                 <span class="ui:text-muted-foreground ml-auto text-xs">
                   {$t(`${T}.form.events_selected`, {
                     selected: fields.eventTypes.length,
-                    total: WEBHOOK_EVENT_TYPES.length
+                    total: WEBHOOK_SUBSCRIBABLE_EVENT_TYPES.length
                   })}
                 </span>
               </Field.Field>

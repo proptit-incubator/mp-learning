@@ -23,8 +23,19 @@ export const WEBHOOK_EVENT_TYPES = [
 ] as const;
 export type TWebhookEventType = (typeof WEBHOOK_EVENT_TYPES)[number];
 
-export const WEBHOOK_DEFAULT_EVENT_TYPES: readonly TWebhookEventType[] = [
+const WEBHOOK_RETIRED_EVENT_TYPES: readonly TWebhookEventType[] = [
+  'course.invite.created',
   'course.invite.accepted',
+  'course.invite.revoked',
+  'course.payment_request.created'
+];
+
+/** Events MP Learning emits and offers for subscription. The retired ones stay valid in stored endpoints only. */
+export const WEBHOOK_SUBSCRIBABLE_EVENT_TYPES: readonly TWebhookEventType[] = WEBHOOK_EVENT_TYPES.filter(
+  (eventType) => !WEBHOOK_RETIRED_EVENT_TYPES.includes(eventType)
+);
+
+export const WEBHOOK_DEFAULT_EVENT_TYPES: readonly TWebhookEventType[] = [
   'course.member.added',
   'course.completed',
   'course.certificate.issued',

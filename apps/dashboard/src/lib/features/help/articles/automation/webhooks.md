@@ -29,9 +29,9 @@ Mỗi tổ chức có tối đa 20 webhook. URL không được trỏ tới `loc
 | **Khóa học** | `course.member.added`, `course.member.removed`, `course.completed`, `course.certificate.issued`, `course.submission.created`, `course.submission.status_changed`, `course.published`, `course.unpublished` |
 | **Tiến độ học tập** | `lesson.completion.updated`, `exercise.completion.updated`, `lesson.session.scheduled` |
 
-Webhook mới chọn sẵn năm sự kiện: `course.member.added`, `course.completed`, `course.certificate.issued`, `course.submission.created` và `course.invite.accepted`.
+Webhook mới chọn sẵn bốn sự kiện: `course.member.added`, `course.completed`, `course.certificate.issued` và `course.submission.created`.
 
-> **Lưu ý:** Danh sách trong biểu mẫu còn có `course.invite.created`, `course.invite.accepted`, `course.invite.revoked` và `course.payment_request.created`. MP Learning hiện không phát các sự kiện này; đừng dựa vào chúng.
+> **Lưu ý:** Webhook tạo trước đây có thể còn lưu `course.invite.*` hoặc `course.payment_request.created`. MP Learning không phát các sự kiện này nên biểu mẫu không còn hiện chúng; khi bạn lưu lại webhook, chúng được bỏ đi.
 
 ## Payload
 
