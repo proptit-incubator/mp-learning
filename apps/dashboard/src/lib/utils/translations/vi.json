@@ -2125,6 +2125,9 @@
             "settings_max_attempts_unlimited": "Không giới hạn",
             "settings_max_attempts_helper": "Để trống nếu không giới hạn số lần làm lại.",
             "settings_answer_visibility": "Hiện đáp án đúng",
+            "settings_answer_visibility_after_completion": "Sau khi hoàn thành",
+            "settings_answer_visibility_after_submit": "Ngay sau khi nộp",
+            "settings_answer_visibility_never": "Không bao giờ",
             "settings_answer_visibility_helper": "Trước đó, học viên chỉ thấy điểm, không thấy câu nào đúng hay sai."
           }
         },

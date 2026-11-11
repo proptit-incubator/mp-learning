@@ -42,13 +42,11 @@ Khi bạn lưu bài tập dùng quy tắc **Đạt**, hệ thống có thể h�
 
 Ô **Hiện đáp án đúng** quyết định khi nào học viên thấy câu nào đúng, câu nào sai. Trước thời điểm đó, học viên chỉ thấy điểm. Có ba lựa chọn:
 
-- Sau khi hoàn thành (mặc định): đáp án hiện khi học viên đã đạt, hoặc đã dùng hết số lần làm. Bài chỉ cho làm một lần thì đáp án hiện ngay sau lần nộp đó.
+- Sau khi hoàn thành (mặc định): đáp án hiện khi học viên đã đạt, hoặc đã dùng hết số lần làm. Bài chỉ cho làm một lần thì đáp án hiện ngay sau lần nộp đó. Bài không giới hạn số lần làm và dùng quy tắc **Đã nộp** thì đáp án hiện sau lần nộp đầu tiên, vì lúc đó bài tập đã hoàn thành.
 - Ngay sau khi nộp: đáp án hiện từ lần nộp đầu tiên.
 - Không bao giờ: học viên không bao giờ thấy đáp án.
 
 Khi đáp án còn ẩn, học viên thấy thông báo **Đáp án đang được ẩn**.
-
-> **Lưu ý:** Nếu bài tập không giới hạn số lần làm và dùng quy tắc **Đã nộp**, lựa chọn mặc định sẽ không bao giờ hiện đáp án, vì học viên luôn còn lượt làm. Hãy đặt **Số lần làm tối đa** hoặc chọn hiện đáp án ngay sau khi nộp.
 
 ## Bài tập và tiến độ khóa học
 

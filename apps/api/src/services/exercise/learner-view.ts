@@ -24,11 +24,12 @@ export function canRevealAnswers(rules: AnswerRevealRules, attemptsUsed: number)
   if (attemptsUsed === 0 || rules.answerVisibility === 'never') return false;
   if (rules.answerVisibility === 'after_submit') return true;
 
+  const hasUnlimitedAttempts = rules.allowMultipleAttempts && rules.maxAttempts === null;
   const attemptsExhausted =
     !rules.allowMultipleAttempts || (rules.maxAttempts !== null && attemptsUsed >= rules.maxAttempts);
-  const hasPassed = rules.completionPolicy === 'passed' && rules.isComplete;
+  const completionCountsAsDone = rules.completionPolicy === 'passed' || hasUnlimitedAttempts;
 
-  return attemptsExhausted || hasPassed;
+  return attemptsExhausted || (rules.isComplete && completionCountsAsDone);
 }
 
 function remainingAttempts(rules: AnswerRevealRules, attemptsUsed: number): number | null {

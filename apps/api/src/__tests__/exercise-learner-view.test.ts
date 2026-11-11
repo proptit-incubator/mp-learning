@@ -48,7 +48,19 @@ describe('canRevealAnswers', () => {
     ['a failed attempt with retakes left', {}, 1, false],
     ['the last allowed attempt', { maxAttempts: 2 }, 2, true],
     ['a single-attempt exercise', { allowMultipleAttempts: false }, 1, true],
-    ['a submitted-policy exercise with retakes left', { completionPolicy: 'submitted', isComplete: true }, 1, false]
+    [
+      'a submitted-policy exercise with retakes left',
+      { completionPolicy: 'submitted', isComplete: true, maxAttempts: 3 },
+      1,
+      false
+    ],
+    [
+      'a submitted-policy exercise with unlimited retakes',
+      { completionPolicy: 'submitted', isComplete: true },
+      1,
+      true
+    ],
+    ['an unlimited exercise not yet complete', { completionPolicy: 'submitted' }, 1, false]
   ] as const)('handles %s', (_label, overrides, attemptsUsed, expected) => {
     expect(canRevealAnswers({ ...rules, ...overrides }, attemptsUsed)).toBe(expected);
   });

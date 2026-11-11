@@ -2125,6 +2125,9 @@
             "settings_max_attempts_unlimited": "Unlimited",
             "settings_max_attempts_helper": "Leave empty for unlimited retakes.",
             "settings_answer_visibility": "Show correct answers",
+            "settings_answer_visibility_after_completion": "After completion",
+            "settings_answer_visibility_after_submit": "Right after submitting",
+            "settings_answer_visibility_never": "Never",
             "settings_answer_visibility_helper": "Until then, learners see their score but not which answers were correct."
           }
         },
