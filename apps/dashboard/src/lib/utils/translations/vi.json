@@ -2358,7 +2358,7 @@
           "signature_upload_in_progress": "Vui lòng đợi tải ảnh chữ ký xong rồi mới lưu.",
           "save_failed": "Không lưu được thiết kế chứng chỉ. Hãy kiểm tra lại thông tin và thử lại.",
           "id_format": "Định dạng mã chứng chỉ",
-          "id_format_hint": "Dùng '{'seq'}' cho bốn chữ số cuối, '{'year'}' cho năm cấp, '{'month'}' cho tháng.",
+          "id_format_hint": "Dùng '{'seq'}' cho mã tra cứu 10 ký tự của chứng chỉ, '{'year'}', '{'month'}' và '{'day'}' cho năm, tháng và ngày cấp.",
           "accent_hint": "Màu nhấn được dùng cho đường kẻ tên người nhận, con dấu và phần tiêu đề nổi bật của mẫu.",
           "templates_hint": "Mẫu được hiển thị bằng cùng công cụ tạo tệp PDF và PNG khi tải xuống.",
           "download_pdf": "Tải PDF",

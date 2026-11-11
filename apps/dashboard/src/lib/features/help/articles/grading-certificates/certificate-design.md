@@ -24,7 +24,7 @@ Trình chỉnh sửa có bốn mục ở cột bên trái. Bản **Xem trước 
   - **Tiêu đề phụ**: dòng nhỏ dưới tiêu đề, mặc định là "Hoàn thành khóa đào tạo".
   - **Mô tả thay thế**: để trống thì chứng chỉ dùng mô tả của khóa học.
   - **Người ký**: bật **Hiện người ký 1** hoặc **Hiện người ký 2**, rồi nhập tên và chức danh. Ở mục **Ảnh chữ ký**, tải ảnh chữ ký lên nếu muốn. Ảnh này không bắt buộc.
-  - **Định dạng mã chứng chỉ**: cách in mã trên chứng chỉ. `{seq}` là mã chứng chỉ 10 ký tự. Bạn có thể thêm `{year}` và `{month}` (năm, tháng cấp).
+  - **Định dạng mã chứng chỉ**: cách in mã trên chứng chỉ. `{seq}` là mã chứng chỉ 10 ký tự. Bạn có thể thêm `{year}`, `{month}` và `{day}` (năm, tháng và ngày cấp).
 - **Màu nhấn**: chọn một trong sáu màu. Màu này dùng cho đường kẻ dưới tên người nhận, con dấu và tiêu đề nổi bật.
 - **Xuất**: **Tải PDF**, **Tải PNG** hoặc **In** bản xem thử. Bản này dùng tên của bạn làm người nhận.
 

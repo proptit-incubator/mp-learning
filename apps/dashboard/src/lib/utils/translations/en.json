@@ -2358,7 +2358,7 @@
           "signature_upload_in_progress": "Wait for the signature upload to finish before saving.",
           "save_failed": "Could not save the certificate design. Check the form and try again.",
           "id_format": "Certificate ID format",
-          "id_format_hint": "Use '{'seq'}' for the last four digits, '{'year'}' for the issue year, '{'month'}' for the month.",
+          "id_format_hint": "Use '{'seq'}' for the certificate's 10-character verification code, and '{'year'}', '{'month'}' and '{'day'}' for the issue date.",
           "accent_hint": "Accent color appears on the recipient rule, stamps, and the template's headline highlight.",
           "templates_hint": "Templates render with the same renderer used for the downloaded PDF and PNG.",
           "download_pdf": "Download PDF",
