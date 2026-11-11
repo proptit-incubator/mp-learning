@@ -31,7 +31,7 @@ export const ZGetCommunity = z.object({
 export const ZCommunityQuestionUpdate = z.object({
   title: z.string().min(1, 'title is required'),
   body: z.string().min(1, 'body is required'),
-  courseId: z.string().min(1).optional()
+  courseId: z.string().min(1, 'courseId is required')
 });
 
 // --- comment

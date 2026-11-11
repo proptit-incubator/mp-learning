@@ -146,8 +146,8 @@ export async function createQuestion({
 
 export async function editQuestion({ id, title, body, courseId }: Partial<TCommunityQuestion>) {
   try {
-    if (!id) {
-      throw new AppError('Question ID is required', ErrorCodes.UPDATE_COMMUNITY_QUESTION_FAILED, 400);
+    if (!id || !courseId) {
+      throw new AppError('Question ID and Course ID are required', ErrorCodes.UPDATE_COMMUNITY_QUESTION_FAILED, 400);
     }
     const result = await editCommunityQuestion({ id, title, body, courseId });
 

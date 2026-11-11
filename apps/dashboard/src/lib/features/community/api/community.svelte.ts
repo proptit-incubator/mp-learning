@@ -286,7 +286,7 @@ class CommunityApi extends BaseApiWithErrors {
     const result = ZCommunityQuestionUpdate.safeParse({
       title: fields.title,
       body: fields.body,
-      courseId: fields.courseId || undefined
+      courseId: fields.courseId || ''
     });
 
     if (!result.success) {
