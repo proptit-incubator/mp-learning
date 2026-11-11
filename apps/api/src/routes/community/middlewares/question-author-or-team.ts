@@ -2,7 +2,7 @@ import { Context, Next } from 'hono';
 
 import { ErrorCodes } from '@api/utils/errors';
 import { getQuestionAuthorAndCourse } from '@cio/db/queries/community';
-import { isCourseTeamMemberOrOrgAdmin } from '@cio/db/queries/group';
+import { canModerateCommunityContent } from './can-moderate';
 
 /**
  * Middleware to check if user is question author OR tutor/admin in course
@@ -48,7 +48,7 @@ export const questionAuthorOrTeamMiddleware = async (c: Context, next: Next) => 
     }
 
     const isAuthor = question.authorId === user.id;
-    const isTeamMember = await isCourseTeamMemberOrOrgAdmin(question.courseId, user.id);
+    const isTeamMember = isAuthor || (await canModerateCommunityContent(question, user.id));
 
     if (!isAuthor && !isTeamMember) {
       return c.json(

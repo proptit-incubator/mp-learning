@@ -23,7 +23,7 @@ Mỗi câu hỏi hiện số bình chọn, người hỏi, khóa học liên qua
 4. Viết nội dung câu hỏi ở ô soạn thảo bên dưới. Bạn có thể định dạng chữ, chèn liên kết.
 5. Nhấn **Đăng**.
 
-Nên chọn khóa học ngay khi đăng: câu hỏi chưa gắn khóa học sẽ không sửa được về sau.
+Chọn khóa học giúp người khác tìm câu hỏi dễ hơn. Câu hỏi chưa gắn khóa học vẫn sửa được, và bạn có thể chọn khóa khi sửa.
 
 > **Mẹo:** Tìm trước xem đã có ai hỏi điều tương tự chưa. Câu hỏi có tiêu đề rõ ràng và gắn đúng khóa học sẽ được trả lời nhanh hơn.
 
