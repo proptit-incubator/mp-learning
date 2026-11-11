@@ -5,7 +5,7 @@ export type LessonCompletionState = {
   isLessonComplete: boolean;
   isLessonLocked: boolean;
   isVideoWatchLesson: boolean;
-  canToggleCompletion: boolean;
+  canMarkComplete: boolean;
 };
 
 type CompletionContentItem = {
@@ -45,11 +45,13 @@ export function getLessonCompletionState(input: {
     input.contentItem?.completionPolicy
   );
 
+  const isLessonComplete = input.contentItem?.isComplete ?? false;
+
   return {
-    isLessonComplete: input.contentItem?.isComplete ?? false,
+    isLessonComplete,
     isLessonLocked,
     isVideoWatchLesson,
-    canToggleCompletion: Boolean(isLesson && !isLessonLocked && !isVideoWatchLesson)
+    canMarkComplete: Boolean(isLesson && !isLessonLocked && !isVideoWatchLesson && !isLessonComplete)
   };
 }
 
@@ -76,9 +78,6 @@ export function getLessonWatchedPercent(progress: WatchProgressSnapshot | null |
   return 0;
 }
 
-export function getLessonCompletionToggleLabel(isComplete: boolean): string {
-  const markAs = t.get('course.navItem.lessons.mark_as');
-  const stateKey = isComplete ? 'course.navItem.lessons.incomplete' : 'course.navItem.lessons.complete';
-
-  return `${markAs} ${t.get(stateKey)}`;
+export function getMarkCompleteLabel(): string {
+  return `${t.get('course.navItem.lessons.mark_as')} ${t.get('course.navItem.lessons.complete')}`;
 }

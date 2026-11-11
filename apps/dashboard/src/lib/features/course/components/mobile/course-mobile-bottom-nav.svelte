@@ -15,10 +15,7 @@
   import { getStudentContentLockReason } from '$features/ai-assistant/utils/content-ask-ai-bar';
   import { getStudentContentLockTitleKey } from '$features/course/utils/content-lock-utils';
   import { toggleLessonCompletion } from '$features/course/utils/toggle-lesson-completion';
-  import {
-    getLessonCompletionState,
-    getLessonCompletionToggleLabel
-  } from '$features/course/utils/lesson-completion-state';
+  import { getLessonCompletionState, getMarkCompleteLabel } from '$features/course/utils/lesson-completion-state';
   import { ContentType } from '@cio/utils/constants/content';
   import { CircleCheckIcon } from '$features/ui/icons';
   import { t } from '$lib/utils/functions/translations';
@@ -61,9 +58,8 @@
       loadedLesson: lessonApi.lesson
     })
   );
-  const showCompleteToggle = $derived(completionState.canToggleCompletion);
-  const isLessonComplete = $derived(completionState.isLessonComplete);
-  const completeToggleLabel = $derived(getLessonCompletionToggleLabel(isLessonComplete));
+  const showCompleteToggle = $derived(completionState.canMarkComplete);
+  const completeToggleLabel = $derived(getMarkCompleteLabel());
 
   function getNavigableLockReason(target: CourseContentItem | null) {
     if (!target) {
@@ -93,8 +89,8 @@
     goto(resolve(route, {}));
   }
 
-  async function handleToggleComplete() {
-    if (!activeItem || activeItem.type !== ContentType.Lesson || isMarkingComplete) {
+  async function handleMarkComplete() {
+    if (!activeItem || activeItem.type !== ContentType.Lesson || activeItem.isComplete || isMarkingComplete) {
       return;
     }
 
@@ -130,13 +126,11 @@
         type="button"
         variant="secondary"
         size="icon-sm"
-        class={isLessonComplete ? 'ui:text-primary' : ''}
         disabled={isMarkingComplete}
-        aria-pressed={isLessonComplete}
         aria-label={completeToggleLabel}
-        onclick={() => handleToggleComplete()}
+        onclick={() => handleMarkComplete()}
       >
-        <CircleCheckIcon size={18} filled={isLessonComplete} />
+        <CircleCheckIcon size={18} />
       </Button>
     {/if}
   {/snippet}
