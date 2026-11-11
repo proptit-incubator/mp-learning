@@ -64,9 +64,9 @@ describe('reserveMcpAutomationUsage', () => {
     mocks.getActiveOrganizationPlan.mockResolvedValue(null);
   });
 
-  it("reserves a slot with the plan's per-key and per-org limits for the category", async () => {
+  it('reserves a slot with the Enterprise per-key and per-org limits a self-hosted org gets', async () => {
     mocks.reserveOrganizationAutomationUsage.mockResolvedValue('reservation-id');
-    const { perKey, perOrg } = getMcpAutomationLimits('BASIC').rateLimits;
+    const { perKey, perOrg } = getMcpAutomationLimits('ENTERPRISE').rateLimits;
 
     const reservationId = await reserveMcpAutomationUsage(automationKey, 'write', 'pending POST');
 

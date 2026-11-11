@@ -111,50 +111,15 @@ describe('webhook service', () => {
   });
 
   describe('plan entitlement', () => {
-    it('rejects a BASIC org on every operation before touching any webhook data', async () => {
-      allowPlan('BASIC');
+    it.each([['BASIC'], ['EARLY_ADOPTER'], [null]])(
+      'allows a self-hosted MP Learning org whatever plan row it carries (%s)',
+      async (planName) => {
+        vi.mocked(getActiveOrganizationPlan).mockResolvedValue((planName ? { planName } : null) as never);
+        vi.mocked(listWebhookEndpoints).mockResolvedValue([buildEndpoint()]);
 
-      const operations = [
-        () => listWebhooksService(orgId),
-        () => getWebhookService(orgId, webhookId),
-        () =>
-          createWebhookService(
-            orgId,
-            'profile-1',
-            ZCreateWebhook.parse({ name: 'x', payloadUrl: 'https://a.example.com', eventTypes: ['course.completed'] })
-          ),
-        () => updateWebhookService(orgId, webhookId, 'profile-1', {}),
-        () => regenerateWebhookSecretService(orgId, webhookId, 'profile-1'),
-        () => deleteWebhookService(orgId, webhookId),
-        () => sendTestWebhookService(orgId, webhookId),
-        () => listWebhookDeliveriesService(orgId, webhookId, { page: 1, limit: 10 }),
-        () => getWebhookDeliveryService(orgId, webhookId, 'whd_1'),
-        () => redeliverWebhookService(orgId, webhookId, 'whd_1')
-      ];
-
-      for (const operation of operations) {
-        await expect(operation()).rejects.toMatchObject({ statusCode: 403, code: 'UPGRADE_REQUIRED' });
+        await expect(listWebhooksService(orgId)).resolves.toHaveLength(1);
       }
-
-      expect(createWebhookEndpointWithinLimit).not.toHaveBeenCalled();
-      expect(getWebhookEndpoint).not.toHaveBeenCalled();
-      expect(listWebhookEndpoints).not.toHaveBeenCalled();
-      expect(deleteWebhookEndpoint).not.toHaveBeenCalled();
-      expect(updateWebhookEndpoint).not.toHaveBeenCalled();
-      expect(requeueWebhookDelivery).not.toHaveBeenCalled();
-    });
-
-    it('rejects an org with no active plan', async () => {
-      vi.mocked(getActiveOrganizationPlan).mockResolvedValue(null as never);
-
-      await expect(listWebhooksService(orgId)).rejects.toMatchObject({ statusCode: 403 });
-    });
-
-    it('rejects Early Adopter, which only unlocks webhooks on the cloud', async () => {
-      allowPlan('EARLY_ADOPTER');
-
-      await expect(listWebhooksService(orgId)).rejects.toMatchObject({ statusCode: 403 });
-    });
+    );
 
     it('allows Enterprise orgs', async () => {
       vi.mocked(getActiveOrganizationPlan).mockResolvedValue({ planName: 'ENTERPRISE' } as never);
