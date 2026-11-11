@@ -484,6 +484,10 @@
     "ai": {
       "title": "AI",
       "subtitle": "Turn AI on or off for the whole organization and set monthly limits.",
+      "admin_only": {
+        "title": "Only Admins manage AI",
+        "description": "Turning AI on or off and setting its limits is up to an Admin. Contact your organization's Admin if something needs to change."
+      },
       "not_configured": {
         "title": "The server has no AI",
         "description": "The server has no AI provider API key, or runs with AI_ENABLED=false. Operations need to configure the server before AI can be turned on here."

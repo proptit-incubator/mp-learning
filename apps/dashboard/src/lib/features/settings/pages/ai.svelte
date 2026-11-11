@@ -3,6 +3,7 @@
   import * as Alert from '@cio/ui/base/alert';
   import { Skeleton } from '@cio/ui/base/skeleton';
   import ServerOffIcon from '@lucide/svelte/icons/server-off';
+  import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
   import type { TAiPolicy } from '@cio/utils/validation/agent';
   import { UnsavedChanges } from '$features/ui';
   import AiModelSettings from '$features/settings/components/ai/ai-model-settings.svelte';
@@ -84,40 +85,48 @@
 <Page.Body>
   {#snippet child()}
     <div class="flex w-full flex-col gap-8">
-      {#if !configured}
+      {#if $isOrgAdmin === false}
         <Alert.Root>
-          <ServerOffIcon />
-          <Alert.Title>{$t('settings.ai.not_configured.title')}</Alert.Title>
-          <Alert.Description>{$t('settings.ai.not_configured.description')}</Alert.Description>
+          <ShieldAlertIcon />
+          <Alert.Title>{$t('settings.ai.admin_only.title')}</Alert.Title>
+          <Alert.Description>{$t('settings.ai.admin_only.description')}</Alert.Description>
         </Alert.Root>
-      {/if}
-
-      {#if draft}
-        <AiPolicyForm bind:policy={draft} disabled={isSaving || !configured} />
-        {#if aiSettingsApi.policy}
-          <AiModelSettings
-            bind:policy={draft}
-            bind:learnerChatEnabled
-            providers={aiSettingsApi.policy.providers}
-            voices={aiSettingsApi.policy.voices}
-            serverDefaultVoice={aiSettingsApi.policy.serverDefaultVoice}
-            disabled={isSaving || !configured}
-          />
-        {/if}
       {:else}
-        <div class="flex flex-col gap-3" aria-busy="true">
-          <Skeleton class="h-6 w-48" />
-          <Skeleton class="h-24 w-full" />
-          <Skeleton class="h-40 w-full" />
-        </div>
-      {/if}
+        {#if !configured}
+          <Alert.Root>
+            <ServerOffIcon />
+            <Alert.Title>{$t('settings.ai.not_configured.title')}</Alert.Title>
+            <Alert.Description>{$t('settings.ai.not_configured.description')}</Alert.Description>
+          </Alert.Root>
+        {/if}
 
-      <section class="flex flex-col gap-4" aria-labelledby="ai-usage-heading">
-        <h2 id="ai-usage-heading" class="text-lg font-semibold tracking-tight">{$t('settings.ai.usage.heading')}</h2>
-        <UsageSummaryCards usage={aiSettingsApi.usage} />
-        <UsageChart usage={aiSettingsApi.usage} />
-        <TeamLeaderboard leaderboard={aiSettingsApi.leaderboard} authorLimit={saved?.authorMonthlyLimit ?? null} />
-      </section>
+        {#if draft}
+          <AiPolicyForm bind:policy={draft} disabled={isSaving || !configured} />
+          {#if aiSettingsApi.policy}
+            <AiModelSettings
+              bind:policy={draft}
+              bind:learnerChatEnabled
+              providers={aiSettingsApi.policy.providers}
+              voices={aiSettingsApi.policy.voices}
+              serverDefaultVoice={aiSettingsApi.policy.serverDefaultVoice}
+              disabled={isSaving || !configured}
+            />
+          {/if}
+        {:else}
+          <div class="flex flex-col gap-3" aria-busy="true">
+            <Skeleton class="h-6 w-48" />
+            <Skeleton class="h-24 w-full" />
+            <Skeleton class="h-40 w-full" />
+          </div>
+        {/if}
+
+        <section class="flex flex-col gap-4" aria-labelledby="ai-usage-heading">
+          <h2 id="ai-usage-heading" class="text-lg font-semibold tracking-tight">{$t('settings.ai.usage.heading')}</h2>
+          <UsageSummaryCards usage={aiSettingsApi.usage} />
+          <UsageChart usage={aiSettingsApi.usage} />
+          <TeamLeaderboard leaderboard={aiSettingsApi.leaderboard} authorLimit={saved?.authorMonthlyLimit ?? null} />
+        </section>
+      {/if}
     </div>
   {/snippet}
 </Page.Body>

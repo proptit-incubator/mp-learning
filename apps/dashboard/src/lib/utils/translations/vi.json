@@ -484,6 +484,10 @@
     "ai": {
       "title": "AI",
       "subtitle": "Bật hoặc tắt AI cho cả tổ chức và đặt hạn mức dùng hằng tháng.",
+      "admin_only": {
+        "title": "Chỉ Admin quản lý AI",
+        "description": "Bật hoặc tắt AI và đặt hạn mức là việc của Admin. Nếu cần đổi, hãy liên hệ Admin của tổ chức."
+      },
       "not_configured": {
         "title": "Máy chủ chưa có AI",
         "description": "Máy chủ chưa có khóa API của nhà cung cấp AI, hoặc đang chạy với AI_ENABLED=false. Bộ phận vận hành cần cấu hình máy chủ trước, sau đó bạn mới bật được AI ở đây."
