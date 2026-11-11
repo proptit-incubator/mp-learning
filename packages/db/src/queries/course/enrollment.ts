@@ -518,15 +518,22 @@ export async function recordCourseCompletion(
 }
 
 /**
- * Makes every learner's latest completion of a course permanent, for when the course stops requiring
- * recertification. Earlier cycles keep their history. Returns how many completions were changed.
+ * Makes every learner's latest completion of a course permanent, together with the certificate issued for it, for
+ * when the course stops requiring recertification. Earlier cycles keep their history. Returns how many completions
+ * were changed.
  */
 export async function clearLatestCompletionExpiry(courseId: string, client: DbOrTxClient = db) {
-  const rows = await client.execute<{ id: string }>(sql`update course_completion_record ccr set valid_until = null
-    where ccr.course_id = ${courseId} and ccr.valid_until is not null
-      and ccr.cycle_number = (select max(latest.cycle_number) from course_completion_record latest
-        where latest.course_id = ccr.course_id and latest.profile_id = ccr.profile_id)
-    returning ccr.id`);
+  const rows = await client.execute<{ id: string }>(sql`with cleared as (
+      update course_completion_record ccr set valid_until = null
+      where ccr.course_id = ${courseId} and ccr.valid_until is not null
+        and ccr.cycle_number = (select max(latest.cycle_number) from course_completion_record latest
+          where latest.course_id = ccr.course_id and latest.profile_id = ccr.profile_id)
+      returning ccr.id
+    ), certificates as (
+      update course_certificate_issue cci set expires_at = null
+      where cci.course_completion_record_id in (select id from cleared)
+    )
+    select id from cleared`);
   return rows.length;
 }
 

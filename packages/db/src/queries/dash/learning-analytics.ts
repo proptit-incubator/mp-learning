@@ -402,16 +402,13 @@ export async function getRecentLearningCompletions(
   const rows = await dbClient.execute<LearningCompletionRow & { total: number }>(sql`
     WITH ${population}
     SELECT emp.profile_id AS "profileId", emp.fullname, emp.avatar_url AS "avatarUrl", ac.id AS "courseId",
-      ac.title AS "courseTitle", latest.completed_at AS "completedAt", COUNT(*) OVER ()::int AS total
+      ac.title AS "courseTitle", cci.issued_at AS "completedAt", COUNT(*) OVER ()::int AS total
     FROM enrollments en
     JOIN employees emp ON emp.employee_id = en.employee_id
     JOIN active_courses ac ON ac.id = en.course_id
-    JOIN LATERAL (
-      SELECT completed_at FROM course_completion_record
-      WHERE course_id = en.course_id AND profile_id = en.profile_id
-      ORDER BY cycle_number DESC LIMIT 1
-    ) latest ON true
-    ORDER BY latest.completed_at DESC
+    JOIN course_certificate_issue cci ON cci.course_id = en.course_id AND cci.profile_id = en.profile_id
+    WHERE cci.status <> 'revoked' AND (cci.expires_at IS NULL OR cci.expires_at > now())
+    ORDER BY cci.issued_at DESC
     LIMIT ${limit}
   `);
   const list = [...rows] as Array<LearningCompletionRow & { total: number }>;

@@ -3,9 +3,8 @@ import { learningAnalyticsRouter } from './learning-analytics';
 import { ZDashAnalyticsRange, ZDashCourseFunnel, ZDashStats, ZLoginActivity } from '@cio/utils/validation/dash';
 import { authMiddleware } from '@api/middlewares/auth';
 import { getCurrentUserLoginStreak, getOrganisationAnalytics, getStudentLoginActivity } from '@api/services/dash';
-import { resolveLearningAnalyticsScope } from '@api/services/learning-analytics';
+import { assertOrganizationReportViewer, resolveLearningAnalyticsScope } from '@api/services/learning-analytics';
 import { handleError } from '@api/utils/errors';
-import { orgAdminMiddleware } from '@api/middlewares/org-admin';
 import { orgMemberMiddleware } from '@api/middlewares/org-member';
 import { zValidator } from '@hono/zod-validator';
 import { getCountryBreakdown, getCourseFunnel, getLandingStats, getTopCoursesByViews } from '@api/services/analytics';
@@ -25,11 +24,12 @@ export const dashAnalyticsRouter = new Hono()
       return handleError(c, error, 'Failed to load organisation analytics');
     }
   })
-  .get('/login-activity', authMiddleware, orgAdminMiddleware, zValidator('query', ZLoginActivity), async (c) => {
+  .get('/login-activity', authMiddleware, orgMemberMiddleware, zValidator('query', ZLoginActivity), async (c) => {
     try {
       const { days } = c.req.valid('query');
-      const orgId = c.req.header('cio-org-id')!;
+      const orgId = c.get('orgId')!;
 
+      await assertOrganizationReportViewer(orgId, c.get('user')!.id);
       const result = await getStudentLoginActivity(orgId, days);
 
       return c.json({ success: true, data: result }, 200);

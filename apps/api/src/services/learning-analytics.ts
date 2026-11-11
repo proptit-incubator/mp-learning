@@ -23,6 +23,12 @@ export async function resolveLearningAnalyticsScope(orgId: string, actorId: stri
   throw new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403);
 }
 
+/** Throws 403 unless the actor may see organization-wide reports (Admin, L&D or HR). */
+export async function assertOrganizationReportViewer(orgId: string, actorId: string): Promise<void> {
+  const access = await getEmployeeAccess(orgId, actorId);
+  if (!access?.canViewOrgReports) throw new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403);
+}
+
 export async function getLearningAnalytics(
   orgId: string,
   actorId: string,

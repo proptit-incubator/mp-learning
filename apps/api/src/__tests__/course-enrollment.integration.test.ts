@@ -411,7 +411,9 @@ integration('course enrollment on isolated PostgreSQL', () => {
         message: '',
         sendEmail: false
       });
-      await completeExpiredCycle(course.id);
+      const { cycle } = await completeExpiredCycle(course.id);
+      const { issueCourseCertificate, verifyCertificate } = await import('@api/services/course/certificate');
+      const certificate = await issueCourseCertificate(course.id, learnerId, cycle.completedAt);
       const [row] = await enrollment.listCourseEnrollments(course.id);
       const stateBefore = await stateOf(row.id);
 
@@ -419,6 +421,7 @@ integration('course enrollment on isolated PostgreSQL', () => {
 
       expect(stateBefore).toBe('expired');
       expect(await stateOf(row.id)).toBe('completed');
+      expect((await verifyCertificate(certificate!.code)).state).toBe('valid');
       expect((await enrollment.listEnrollmentsToReopen()).some((item) => item.courseId === course.id)).toBe(false);
     });
 

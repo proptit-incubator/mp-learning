@@ -16,6 +16,7 @@ vi.mock('@api/services/dash', () => ({
 }));
 
 vi.mock('@api/services/learning-analytics', () => ({
+  assertOrganizationReportViewer: vi.fn().mockResolvedValue(undefined),
   resolveLearningAnalyticsScope: vi.fn().mockResolvedValue({ kind: 'organization' })
 }));
 
@@ -27,7 +28,8 @@ vi.mock('@api/services/analytics', () => ({
 }));
 
 import { getOrganisationAnalytics, getStudentLoginActivity } from '@api/services/dash';
-import { resolveLearningAnalyticsScope } from '@api/services/learning-analytics';
+import { assertOrganizationReportViewer, resolveLearningAnalyticsScope } from '@api/services/learning-analytics';
+import { AppError, ErrorCodes } from '@api/utils/errors';
 import { getCountryBreakdown, getCourseFunnel, getLandingStats } from '@api/services/analytics';
 import { dashAnalyticsRouter } from '@api/routes/dash';
 
@@ -70,6 +72,19 @@ describe('dash analytics routes read the org verified by the middleware', () => 
     await get(`/login-activity?orgId=${OTHER_ORG}`);
 
     expect(getStudentLoginActivity).toHaveBeenCalledWith(OWN_ORG, 90);
+  });
+
+  it('/login-activity is open to organization report viewers and refused to others', async () => {
+    const allowed = await get(`/login-activity?orgId=${OWN_ORG}`);
+    vi.mocked(assertOrganizationReportViewer).mockRejectedValueOnce(
+      new AppError('Unauthorized', ErrorCodes.FORBIDDEN, 403)
+    );
+    const refused = await get(`/login-activity?orgId=${OWN_ORG}`);
+
+    expect(allowed.status).toBe(200);
+    expect(assertOrganizationReportViewer).toHaveBeenCalledWith(OWN_ORG, 'user-1');
+    expect(refused.status).toBe(403);
+    expect(getStudentLoginActivity).toHaveBeenCalledTimes(1);
   });
 
   it('still rejects a header org the user does not belong to', async () => {

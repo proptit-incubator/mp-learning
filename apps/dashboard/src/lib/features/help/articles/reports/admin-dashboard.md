@@ -13,17 +13,17 @@ Trang **Tổng quan** (`/dash`) là trang đầu tiên của khu vực quản tr
 |---|---|---|
 | **Nhân viên** | Số nhân viên đang hoạt động có ít nhất một lượt **Được giao** còn hiệu lực | Mở trang **Nhân viên** |
 | **Khóa học** | Số khóa học trong tổ chức, gồm cả khóa chưa xuất bản, không tính khóa mẫu và khóa đã xóa | Mở trang **Khóa học** |
-| **Chứng chỉ đã cấp** | Số lượt giao đã có ít nhất một lần hoàn thành | Mở **Phân tích** |
+| **Chứng chỉ đã cấp** | Số chứng chỉ còn hiệu lực của các lượt giao: chưa hết hạn và chưa bị thu hồi | Mở **Phân tích** |
 
 Các số này dùng cùng cách tính với [Phân tích đào tạo](/help/reports/training-analytics): chỉ tính nhân viên đang hoạt động và lượt **Được giao**. Khóa nhân viên tự đăng ký không được tính.
 
-> **Lưu ý:** Thẻ **Chứng chỉ đã cấp** thực chất đếm số lần hoàn thành khóa được giao, kể cả khóa không cấp chứng chỉ và kết quả đã hết hiệu lực. Để đếm đúng chứng chỉ, hãy dùng **Sổ chứng chỉ**.
+> **Lưu ý:** Thẻ **Chứng chỉ đã cấp** chỉ đếm khóa được giao. Chứng chỉ của khóa tự đăng ký, chứng chỉ đã hết hạn và chứng chỉ đã thu hồi xem ở **Sổ chứng chỉ**.
 
 ## Hoạt động đăng nhập của học viên
 
 Biểu đồ cho biết các ngày trong tuần có nhiều nhân viên đăng nhập nhất trong 90 ngày qua. Mỗi người chỉ được tính một lần mỗi ngày, nên biểu đồ phản ánh số người hoạt động, không phải số lần đăng nhập. Tài khoản Admin và L&D không được tính.
 
-> **Lưu ý:** Biểu đồ này hiện chỉ tải được dữ liệu cho người giữ vai trò **Quản trị hệ thống**. Người chỉ giữ vai trò L&D sẽ thấy **Chưa có dữ liệu đăng nhập**.
+> **Lưu ý:** Biểu đồ có dữ liệu cho người giữ vai trò Admin, L&D hoặc HR. Quản lý không có vai trò nào trong số này sẽ thấy **Chưa có dữ liệu đăng nhập**.
 
 ## Khóa học nổi bật
 
@@ -36,7 +36,7 @@ Năm khóa có nhiều nhân viên được giao nhất. Mỗi dòng hiện số
 
 ## Chứng chỉ mới cấp
 
-Năm lần hoàn thành gần nhất, kèm tên nhân viên, tên khóa và ngày. Bấm vào tên khóa để mở khóa.
+Năm chứng chỉ còn hiệu lực được cấp gần nhất, kèm tên nhân viên, tên khóa và ngày cấp. Bấm vào tên khóa để mở khóa.
 
 ## Khi số liệu không hiện
 

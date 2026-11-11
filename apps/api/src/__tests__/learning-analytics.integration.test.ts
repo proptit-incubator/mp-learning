@@ -11,6 +11,7 @@ import {
   getRecentLearningCompletions
 } from '@cio/db/queries/dash/learning-analytics';
 import { listEmployeeEnrollments } from '@cio/db/queries/course/enrollment';
+import { ensureLatestCycleCertificate } from '@cio/db/queries/course/certificate-issue';
 
 const ORGANIZATION_SCOPE = { kind: 'organization' } as const;
 
@@ -187,7 +188,7 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
     });
   });
 
-  it('lists the latest completion of each assignment for the overview', async () => {
+  it('lists only certificates still in force for the overview', async () => {
     await withRollback(async (transaction) => {
       const { organizationId, profileId, employeeId } = await createPopulation(transaction);
       const { courseId, memberId } = await createCourse(transaction, organizationId, employeeId);
@@ -206,9 +207,31 @@ describe.skipIf(process.env.MP_ANALYTICS_DB_TESTS !== 'true')('internal learning
         },
         transaction
       );
-      const completions = await getRecentLearningCompletions(organizationId, ORGANIZATION_SCOPE, 5, transaction);
-      expect(completions.total).toBe(1);
-      expect(completions.recent[0]).toMatchObject({ courseId, profileId, fullname: 'Learner' });
+      const withoutCertificate = await getRecentLearningCompletions(organizationId, ORGANIZATION_SCOPE, 5, transaction);
+      const issuedAt = new Date().toISOString();
+      const certificate = await ensureLatestCycleCertificate(
+        courseId,
+        profileId,
+        { code: randomUUID().slice(0, 12), issuedAt },
+        transaction
+      );
+      const withCertificate = await getRecentLearningCompletions(organizationId, ORGANIZATION_SCOPE, 5, transaction);
+      await transaction
+        .update(schema.courseCertificateIssue)
+        .set({ expiresAt: '2020-01-01T00:00:00.000Z' })
+        .where(eq(schema.courseCertificateIssue.id, certificate!.id));
+      const afterExpiry = await getRecentLearningCompletions(organizationId, ORGANIZATION_SCOPE, 5, transaction);
+      await transaction
+        .update(schema.courseCertificateIssue)
+        .set({ expiresAt: null, status: 'revoked' })
+        .where(eq(schema.courseCertificateIssue.id, certificate!.id));
+      const afterRevocation = await getRecentLearningCompletions(organizationId, ORGANIZATION_SCOPE, 5, transaction);
+
+      expect(withoutCertificate.total).toBe(0);
+      expect(withCertificate.total).toBe(1);
+      expect(withCertificate.recent[0]).toMatchObject({ courseId, profileId, fullname: 'Learner' });
+      expect(afterExpiry.total).toBe(0);
+      expect(afterRevocation.total).toBe(0);
     });
   });
 
