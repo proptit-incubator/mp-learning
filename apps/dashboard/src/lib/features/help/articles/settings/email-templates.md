@@ -51,6 +51,6 @@ Bấm **Khôi phục mặc định đã dịch** để bỏ phần đã sửa v�
 
 Góc phải trang ghi **Gửi bằng** kèm ngôn ngữ của mẫu đang sửa. Bấm **Đổi** để tới mục ngôn ngữ trong [Cấu hình đào tạo](/help/settings/learning-portal-settings).
 
-> **Lưu ý:** Email gửi đi dùng ngôn ngữ mặc định của tổ chức khi bật **Bắt buộc học viên dùng ngôn ngữ này**. Khi chưa bật, email luôn gửi bằng tiếng Việt, nhưng trang này lại mở bản English để sửa. Để chắc chắn bạn sửa đúng bản được gửi đi, hãy chọn **Tiếng Việt** và bật **Bắt buộc học viên dùng ngôn ngữ này**, rồi kiểm tra dòng **Gửi bằng** ghi **Tiếng Việt**.
+> **Lưu ý:** Email gửi đi dùng ngôn ngữ mặc định của tổ chức khi bật **Bắt buộc học viên dùng ngôn ngữ này**. Khi chưa bật, email luôn gửi bằng tiếng Việt, và trang này cũng mở bản tiếng Việt để sửa. Dòng **Gửi bằng** luôn cho biết bản bạn đang sửa là bản được gửi đi.
 
 > **Mẹo:** Muốn ngừng gửi một loại email thay vì sửa nội dung, dùng [Thông báo email](/help/settings/email-notifications).

@@ -8,7 +8,6 @@
     EMPLOYEE_EMAIL_IDS,
     STUDENT_EMAIL_LINKS,
     STUDENT_EMAIL_VARIABLES,
-    isEmailLocale,
     isEmployeeEmailId,
     type StudentEmailId
   } from '@cio/utils/email';
@@ -29,6 +28,7 @@
   import { TextEditor, UnsavedChanges, UpgradeBanner } from '$features/ui';
   import { profile } from '$lib/utils/store/user';
   import { studentEmailTemplatesApi } from '../api/student-email-templates.svelte';
+  import { getEmailTemplateLocale } from '../utils/email-template-locale';
   import { t } from '$lib/utils/functions/translations';
   import { LANGUAGE } from '$lib/utils/constants/translation';
   import { currentOrg, currentOrgPath, isFreePlan } from '$lib/utils/store/org';
@@ -62,11 +62,7 @@
     }
   ] as const;
 
-  const selectedLocale = $derived(
-    $currentOrg.settings?.language?.enforced && isEmailLocale($currentOrg.settings.language.locale)
-      ? $currentOrg.settings.language.locale
-      : 'en'
-  );
+  const selectedLocale = $derived(getEmailTemplateLocale($currentOrg.settings?.language));
   const currentCopy = $derived(STUDENT_EMAIL_CATALOG[selectedLocale].templates[selectedTemplate]);
   const currentOverride = $derived(studentEmailTemplatesApi.drafts[selectedTemplate]?.[selectedLocale]);
   const editorContent = $derived(currentOverride?.content ?? currentCopy.body);
