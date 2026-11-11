@@ -21,7 +21,7 @@ export const ZNewCommunityQuestion = z.object({
 export const ZCreateCommunityQuestion = z.object({
   body: z.string().min(1),
   title: z.string().min(1),
-  courseId: z.string().optional()
+  courseId: z.string().min(1)
 });
 
 export const ZGetCommunity = z.object({

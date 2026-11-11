@@ -3521,6 +3521,12 @@
     "image_upload": {
       "invalid_extension": "This image format is not supported.",
       "invalid_type": "This file is not an image."
+    },
+    "community": {
+      "courseId": {
+        "too_small": "Choose a course for your question.",
+        "invalid_type": "Choose a course for your question."
+      }
     }
   },
   "ai_assistant": {
