@@ -1,5 +1,6 @@
 import { db } from '@cio/db/drizzle';
 import {
+  cancelEnrollmentWaiver as cancelEnrollmentWaiverRow,
   createEnrollments,
   findEmployeeByProfile,
   getEnrollmentById,
@@ -275,6 +276,15 @@ export async function waiveEnrollment(
 
   await invalidateOrgStats(context.organizationId);
   return waived;
+}
+
+export async function cancelEnrollmentWaiver(courseId: string, enrollmentId: string, actorId: string) {
+  const { context } = await requireCourseEnrollment(courseId, enrollmentId, actorId);
+  const restored = await cancelEnrollmentWaiverRow(enrollmentId);
+  if (!restored) throw new AppError('Only waived assignments can be restored', ErrorCodes.CONFLICT, 409);
+
+  await invalidateOrgStats(context.organizationId);
+  return restored;
 }
 
 export async function changeEnrollmentDueDate(

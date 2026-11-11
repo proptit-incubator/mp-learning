@@ -15,6 +15,8 @@ export type UpdateEnrollmentDueDateRequest =
   (typeof classroomio.course)[':courseId']['members']['enrollments'][':enrollmentId']['$patch'];
 export type WaiveEnrollmentRequest =
   (typeof classroomio.course)[':courseId']['members']['enrollments'][':enrollmentId']['waive']['$post'];
+export type CancelEnrollmentWaiverRequest =
+  (typeof classroomio.course)[':courseId']['members']['enrollments'][':enrollmentId']['waive']['$delete'];
 export type RevokeEnrollmentRequest =
   (typeof classroomio.course)[':courseId']['members']['enrollments'][':enrollmentId']['$delete'];
 export type AvailableCourseEmployeesRequest = (typeof classroomio.course)[':courseId']['members']['available']['$get'];

@@ -22,7 +22,7 @@ Thư **Cấp quyền truy cập khóa học** có tên khóa, lời nhắn bạn
 
 Hệ thống quét mỗi ngày lúc 08:00 giờ Việt Nam. Một lượt giao nhận email nhắc khi đủ các điều kiện:
 
-- Là lượt **Được giao**, có hạn hoàn thành, chưa được miễn và chưa bị thu hồi.
+- Là lượt **Được giao**, có hạn hoàn thành, không đang được miễn (miễn đã qua ngày hết miễn thì vẫn nhắc) và chưa bị thu hồi.
 - Chưa hoàn thành (trạng thái **Chưa bắt đầu**, **Đang học**, **Quá hạn** hoặc **Hết hiệu lực**).
 - Nhân viên **Đang hoạt động** và đã kích hoạt tài khoản.
 - Khóa học đã xuất bản.

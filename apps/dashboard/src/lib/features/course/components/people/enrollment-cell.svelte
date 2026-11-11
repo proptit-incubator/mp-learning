@@ -65,6 +65,13 @@
     onChanged?.();
   }
 
+  async function cancelWaiver() {
+    if (!primary) return;
+    const result = await api.cancelEnrollmentWaiver(courseId, primary.id);
+    if (!result) return;
+    onChanged?.();
+  }
+
   async function revoke() {
     if (!primary) return;
     const result = await api.revokeEnrollment(courseId, primary.id);
@@ -104,6 +111,13 @@
                   waiveExpires = '';
                   waiveDialogOpen = true;
                 }}>{$t('enrollment.actions.waive')}</DropdownMenu.Item
+              >
+            {:else if primary.status === 'WAIVED'}
+              <DropdownMenu.Item
+                onclick={(event) => {
+                  event.stopPropagation();
+                  cancelWaiver();
+                }}>{$t('enrollment.actions.cancel_waiver')}</DropdownMenu.Item
               >
             {/if}
           {/if}

@@ -4330,6 +4330,7 @@
       "waived": "Exempt"
     },
     "actions": {
+      "cancel_waiver": "Remove waiver",
       "change_due": "Change due date",
       "waive": "Exempt",
       "revoke": "Revoke",

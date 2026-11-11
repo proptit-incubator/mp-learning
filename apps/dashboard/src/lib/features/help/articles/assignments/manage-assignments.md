@@ -29,16 +29,18 @@ Lượt giao đang **Quá hạn** sẽ quay lại trạng thái theo tiến đ�
 
 ## Miễn
 
-Dùng khi nhân viên không cần học khóa này, ví dụ đã có chứng chỉ bên ngoài. Chỉ có với lượt **Được giao** chưa từng được miễn.
+Dùng khi nhân viên không cần học khóa này, ví dụ đã có chứng chỉ bên ngoài. Chỉ có với lượt **Được giao** đang không được miễn.
 
 1. Chọn **Miễn**.
 2. Nhập **Lý do miễn** (bắt buộc).
 3. Nếu chỉ miễn tạm thời, chọn ngày ở **Hết miễn vào (tùy chọn)**.
 4. Bấm **Miễn**.
 
-Lượt giao chuyển sang trạng thái **Miễn**. Nhân viên không nhận email nhắc hạn cho lượt giao này nữa. Khi qua ngày hết miễn, báo cáo lại tính lượt giao theo tiến độ và hạn như bình thường, nhưng email nhắc hạn không tự bật lại.
+Lượt giao chuyển sang trạng thái **Miễn**. Nhân viên không nhận email nhắc hạn cho lượt giao này nữa. Khi qua ngày hết miễn, lượt giao được tính theo tiến độ và hạn như bình thường, và email nhắc hạn gửi lại theo lịch.
 
-> **Lưu ý:** Hiện chưa có nút hủy miễn. Nếu miễn nhầm, hãy **Thu hồi** lượt giao rồi giao lại khóa cho người đó. Tiến độ cũ vẫn được giữ.
+## Bỏ miễn
+
+Nếu miễn nhầm, hoặc muốn nhân viên học lại trước ngày hết miễn, chọn **Bỏ miễn**. Lượt giao trở lại tính theo tiến độ và hạn, lý do miễn được xóa, và email nhắc hạn gửi lại theo lịch. Sau khi bỏ miễn, bạn có thể **Miễn** lại nếu cần.
 
 ## Thu hồi
 

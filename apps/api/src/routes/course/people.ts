@@ -31,6 +31,7 @@ import {
 } from '@cio/utils/validation/course/enrollment';
 import {
   assignCourseLearners,
+  cancelEnrollmentWaiver,
   changeEnrollmentDueDate,
   listCourseEnrollments,
   revokeEnrollment,
@@ -92,6 +93,20 @@ export const membersRouter = new Hono()
         return c.json({ success: true, data });
       } catch (error) {
         return handleError(c, error, 'Failed to waive enrollment');
+      }
+    }
+  )
+  .delete(
+    '/enrollments/:enrollmentId/waive',
+    authMiddleware,
+    zValidator('param', ZCourseEnrollmentParam),
+    async (c) => {
+      try {
+        const { courseId, enrollmentId } = c.req.valid('param');
+        const data = await cancelEnrollmentWaiver(courseId, enrollmentId, c.get('user')!.id);
+        return c.json({ success: true, data });
+      } catch (error) {
+        return handleError(c, error, 'Failed to cancel enrollment waiver');
       }
     }
   )

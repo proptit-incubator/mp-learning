@@ -16,7 +16,12 @@ import { toPeopleRequestQuery } from '$features/course/utils/people-utils';
 import type { TAddCourseMembers } from '@cio/utils/validation/course/people';
 import { snackbar } from '$features/ui/snackbar/store';
 import { t } from '$lib/utils/functions/translations';
-import type { RevokeEnrollmentRequest, UpdateEnrollmentDueDateRequest, WaiveEnrollmentRequest } from '../utils/types';
+import type {
+  CancelEnrollmentWaiverRequest,
+  RevokeEnrollmentRequest,
+  UpdateEnrollmentDueDateRequest,
+  WaiveEnrollmentRequest
+} from '../utils/types';
 
 /**
  * API class for course members operations
@@ -43,6 +48,18 @@ export class PeopleApi extends BaseApiWithErrors {
           json
         }),
       logContext: 'waiving an enrollment',
+      onSuccess: () => snackbar.success('enrollment.saved'),
+      onError: () => snackbar.error('enrollment.failed')
+    });
+  }
+
+  async cancelEnrollmentWaiver(courseId: string, enrollmentId: string) {
+    return this.execute<CancelEnrollmentWaiverRequest>({
+      requestFn: () =>
+        classroomio.course[':courseId'].members.enrollments[':enrollmentId'].waive.$delete({
+          param: { courseId, enrollmentId }
+        }),
+      logContext: 'cancelling an enrollment waiver',
       onSuccess: () => snackbar.success('enrollment.saved'),
       onError: () => snackbar.error('enrollment.failed')
     });

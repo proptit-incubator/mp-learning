@@ -23,6 +23,7 @@ integration('course enrollment on isolated PostgreSQL', () => {
   let courseQueries: typeof import('@cio/db/queries/course');
   let employeeQueries: typeof import('@cio/db/queries/organization');
   let analytics: typeof import('@cio/db/queries/dash/learning-analytics');
+  let updateCourse: (typeof import('@cio/core/services/course/course'))['updateCourse'];
   let organizationId: string;
   let learnerId: string;
   let actorId: string;
@@ -44,6 +45,7 @@ integration('course enrollment on isolated PostgreSQL', () => {
     courseQueries = await import('@cio/db/queries/course');
     employeeQueries = await import('@cio/db/queries/organization');
     analytics = await import('@cio/db/queries/dash/learning-analytics');
+    updateCourse = (await import('@cio/core/services/course/course')).updateCourse;
     await database.db
       .insert(database.role)
       .values([
@@ -401,6 +403,25 @@ integration('course enrollment on isolated PostgreSQL', () => {
       expect(stillStored.state).toBe('expired');
     });
 
+    it('makes the latest completion permanent when recertification is turned off', async () => {
+      const course = await createCourse({ recertificationMonths: 12 });
+      await service.assignCourses(organizationId, actorId, {
+        courseIds: [course.id],
+        employeeIds: [employeeId],
+        message: '',
+        sendEmail: false
+      });
+      await completeExpiredCycle(course.id);
+      const [row] = await enrollment.listCourseEnrollments(course.id);
+      const stateBefore = await stateOf(row.id);
+
+      await updateCourse(course.id, { recertificationMonths: null });
+
+      expect(stateBefore).toBe('expired');
+      expect(await stateOf(row.id)).toBe('completed');
+      expect((await enrollment.listEnrollmentsToReopen()).some((item) => item.courseId === course.id)).toBe(false);
+    });
+
     it('also reopens expired completions of self-enrolled learners', async () => {
       const course = await createCourse({ recertificationMonths: 12 });
       await service.selfEnroll(organizationId, course.id, { id: learnerId, email });
@@ -410,6 +431,46 @@ integration('course enrollment on isolated PostgreSQL', () => {
 
       expect(toReopen.filter((row) => row.courseId === course.id)).toEqual([expect.objectContaining({ kind: 'SELF' })]);
     });
+  });
+
+  it('reminds again once a waiver has ended and restores a cancelled waiver', async () => {
+    const course = await createCourse();
+    await service.assignCourses(organizationId, actorId, {
+      courseIds: [course.id],
+      employeeIds: [employeeId],
+      dueDate: '2020-01-01T00:00:00.000Z',
+      message: '',
+      sendEmail: false
+    });
+    const [row] = await enrollment.listCourseEnrollments(course.id);
+    const remindedIds = async () =>
+      (await enrollment.listAssignedEnrollmentsForReminder({ daysBefore: [7], includeOverdue: true })).map(
+        (item) => item.enrollmentId
+      );
+
+    await service.waiveEnrollment(course.id, row.id, actorId, {
+      reason: 'Short leave',
+      expiresAt: '2099-01-01T00:00:00.000Z'
+    });
+    const remindedDuringWaiver = await remindedIds();
+    await database.db
+      .update(database.courseEnrollment)
+      .set({ waiverExpiresAt: '2021-01-01T00:00:00.000Z' })
+      .where(database.eq(database.courseEnrollment.id, row.id));
+    const remindedAfterWaiver = await remindedIds();
+    const stateAfterWaiver = await stateOf(row.id);
+
+    expect(remindedDuringWaiver).not.toContain(row.id);
+    expect(remindedAfterWaiver).toContain(row.id);
+    expect(stateAfterWaiver).toBe('overdue');
+
+    const restored = await service.cancelEnrollmentWaiver(course.id, row.id, actorId);
+
+    expect(restored).toMatchObject({ status: 'ACTIVE', waiverReason: null, waiverExpiresAt: null, waivedBy: null });
+    await expect(service.cancelEnrollmentWaiver(course.id, row.id, actorId)).rejects.toMatchObject({
+      statusCode: 409
+    });
+    expect(await stateOf(row.id)).toBe('overdue');
   });
 
   it('revokes access without deleting the membership and counts assignments in analytics', async () => {

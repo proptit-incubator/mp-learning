@@ -4330,6 +4330,7 @@
       "waived": "Miễn"
     },
     "actions": {
+      "cancel_waiver": "Bỏ miễn",
       "change_due": "Đổi hạn",
       "waive": "Miễn",
       "revoke": "Thu hồi",
