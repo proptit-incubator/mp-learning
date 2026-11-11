@@ -155,9 +155,9 @@
       <Table.Header>
         <Table.Row>
           <Table.Head class="w-1/4">{$t('course.navItem.attendance.student')}</Table.Head>
-          {#each lessonItems as _lesson, index}
-            <Table.Head class="text-center"
-              >{$t('course.navItem.attendance.lesson')} 0{getLectureNo(index + 1)}</Table.Head
+          {#each lessonItems as lesson, index (lesson.id)}
+            <Table.Head class="text-center" title={lesson.title}
+              >{$t('course.navItem.attendance.lesson')} {getLectureNo(index + 1)}</Table.Head
             >
           {/each}
         </Table.Row>
