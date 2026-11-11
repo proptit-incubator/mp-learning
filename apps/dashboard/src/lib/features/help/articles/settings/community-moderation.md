@@ -44,7 +44,7 @@ Người báo cáo thấy **Cảm ơn bạn. Báo cáo sẽ được xem xét.**
 
 ## Báo cáo đi đâu
 
-MP Learning chưa có trang duyệt báo cáo. Mỗi báo cáo được gửi qua email tới hộp thư kiểm duyệt cài đặt trên máy chủ. Email gồm lý do, đoạn trích nội dung và đường dẫn tới nội dung đó.
+MP Learning chưa có trang duyệt báo cáo. Mỗi báo cáo được gửi qua email tới các tài khoản L&D đang hoạt động. Nếu tổ chức chưa có L&D, email gửi tới Admin. Email gồm lý do, đoạn trích nội dung và đường dẫn tới nội dung đó.
 
 Khi nhận email báo cáo:
 
@@ -52,4 +52,4 @@ Khi nhận email báo cáo:
 2. Nếu vi phạm, xóa nội dung theo các bước ở trên.
 3. Nếu cần, trao đổi riêng với người viết hoặc báo cho HR.
 
-> **Lưu ý:** Hãy nhờ bộ phận IT xác nhận hộp thư kiểm duyệt là địa chỉ nội bộ của công ty. Nếu chưa cài, báo cáo sẽ gửi tới một địa chỉ mặc định bên ngoài MP Transformation. Xem [Liên hệ hỗ trợ](/help/support/contact-support).
+> **Lưu ý:** Bộ phận IT có thể cài thêm một hộp thư kiểm duyệt chung trên máy chủ. Khi đó hộp thư này cũng nhận mọi báo cáo. Xem [Liên hệ hỗ trợ](/help/support/contact-support).

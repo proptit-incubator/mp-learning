@@ -6,7 +6,7 @@ import {
   updateContentReport
 } from '@cio/db/queries/report';
 import { resolveReportTarget, type ResolvedReportTarget } from '@cio/db/queries/report/targets';
-import { getOrganizationById } from '@cio/db/queries/organization';
+import { getOrganizationById, listTrainingStaffEmails } from '@cio/db/queries/organization';
 import { isUserCourseMemberOrOrgAdmin } from '@cio/db/queries/group';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import { isUniqueConstraintViolation } from '@cio/utils/errors';
@@ -21,7 +21,6 @@ import type {
 } from '@cio/utils/validation/report';
 
 const HIGH_PRIORITY_REASONS = new Set<TContentReportReason>(['hate_speech', 'sexual_content', 'violence']);
-const DEFAULT_MODERATION_EMAIL = 'help@classroomio.com';
 const EXCERPT_MAX_LENGTH = 280;
 
 function toAbsoluteContentUrl(path: string | null | undefined): string | undefined {
@@ -88,11 +87,13 @@ async function notifyModerators(input: {
   excerpt: string;
   contentUrl?: string;
 }) {
-  const moderationEmail = env.MODERATION_EMAIL || DEFAULT_MODERATION_EMAIL;
-
   try {
+    const staffEmails = await listTrainingStaffEmails(input.orgId);
+    const recipients = [...new Set([...staffEmails, env.MODERATION_EMAIL].filter((email) => !!email))] as string[];
+    if (recipients.length === 0) return;
+
     await enqueueTransactionalEmail('contentReportAlert', {
-      to: moderationEmail,
+      to: recipients,
       fields: {
         reportId: input.reportId,
         reason: input.reason,
