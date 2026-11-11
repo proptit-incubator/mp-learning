@@ -4328,7 +4328,7 @@
       "title": "Retake periodically",
       "description": "A completion stays valid for a set number of months. When it expires, assigned learners must complete the course again.",
       "months_label": "Valid for (months)",
-      "months_helper": "Learners are reminded 30 days before it expires and get 30 days to retake.",
+      "months_helper": "When a completion expires, the assignee gets a recertification email and has 30 days to retake the course.",
       "every": "Retake every {months} months"
     },
     "assign_subtitle_course": "Choose who should complete \"{course}\". People who already have it are skipped.",

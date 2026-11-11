@@ -35,7 +35,7 @@ Trong kỳ học lại, lượt giao có trạng thái **Hết hiệu lực**. N
 
 Người được giao cũng nhận email nhắc hạn của kỳ học lại như mọi lượt giao có hạn, xem [Nhắc hạn và email thông báo](/help/assignments/reminders-and-emails).
 
-> **Lưu ý:** Dòng gợi ý dưới ô **Hiệu lực (tháng)** ghi rằng người học được nhắc 30 ngày trước khi hết hiệu lực. Hiện hệ thống chưa gửi email trước ngày hết hiệu lực. Email đầu tiên là thư **Đến kỳ học lại** gửi khi kỳ mới được mở. Hạn học lại 30 ngày thì đúng như mô tả.
+> **Lưu ý:** Hệ thống chưa gửi email trước ngày hết hiệu lực. Email đầu tiên là thư **Đến kỳ học lại**, gửi khi kỳ mới được mở.
 
 ## Theo dõi người sắp hết hiệu lực
 

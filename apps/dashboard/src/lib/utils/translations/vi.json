@@ -4328,7 +4328,7 @@
       "title": "Học lại định kỳ",
       "description": "Kết quả hoàn thành có hiệu lực trong số tháng nhất định. Khi hết hiệu lực, người được giao phải học lại.",
       "months_label": "Hiệu lực (tháng)",
-      "months_helper": "Người học được nhắc 30 ngày trước khi hết hiệu lực và có 30 ngày để học lại.",
+      "months_helper": "Khi hết hiệu lực, người được giao nhận email Đến kỳ học lại và có 30 ngày để học lại.",
       "every": "Học lại mỗi {months} tháng"
     },
     "assign_subtitle_course": "Chọn những người cần hoàn thành \"{course}\". Người đã được giao sẽ được bỏ qua.",
