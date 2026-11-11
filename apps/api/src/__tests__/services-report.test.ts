@@ -31,7 +31,7 @@ const submit = () =>
   submitContentReport({
     orgId: 'org-1',
     reporterId: 'reporter-1',
-    payload: { targetType: 'community_question', targetId: 'question-1', reason: 'spam' }
+    payload: { targetType: 'community_question', targetId: 'question-1', reason: 'spam', details: undefined }
   });
 
 describe('submitContentReport', () => {

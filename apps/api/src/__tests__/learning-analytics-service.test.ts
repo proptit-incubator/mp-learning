@@ -11,7 +11,7 @@ vi.mock('@cio/db/queries/dash', () => ({
 }));
 vi.mock('@cio/db/queries/organization', () => ({ getEmployeeAccess: vi.fn() }));
 
-const ORGANIZATION_SCOPE = { kind: 'organization' };
+const ORGANIZATION_SCOPE = { kind: 'organization' } as const;
 
 function grantAccess(roles: EmployeeRole[], facts: { isManager?: boolean } = {}) {
   vi.mocked(getEmployeeAccess).mockResolvedValue({
