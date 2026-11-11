@@ -14,7 +14,7 @@ import {
   upsertCreditBalance
 } from '@cio/db/queries/agent';
 import type { UsageLeaderboardRow } from '@cio/db/queries/agent';
-import { getActiveOrganizationPlan } from '@cio/db/queries/organization';
+import { getEffectiveOrgPlanName } from '../organization/plan';
 import { resolveAiPolicy, type TAiPolicy, type TAiPolicyUpdate } from '@cio/utils/validation/agent';
 
 import { AppError } from '@cio/utils/errors';
@@ -210,9 +210,7 @@ export async function recordFlatCostUnits(
 }
 
 export async function getOrgPlanName(orgId: string): Promise<string> {
-  const activePlan = await getActiveOrganizationPlan(orgId);
-
-  return activePlan?.planName ?? 'BASIC';
+  return getEffectiveOrgPlanName(orgId);
 }
 
 export async function isOrgOnPaidPlan(orgId: string): Promise<boolean> {

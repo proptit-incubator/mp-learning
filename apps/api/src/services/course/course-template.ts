@@ -18,7 +18,7 @@ import {
 import { invalidateOrgStats } from '@cio/core/utils/redis/org-stats-cache';
 import { generateUniqueCourseSlug } from '@cio/core/services/course/landing-page';
 import { env } from '@cio/core/config/env';
-import { getActiveOrganizationPlan } from '@cio/db/queries/organization';
+import { getEffectiveOrgPlanName } from '@cio/core/services/organization/plan';
 import { isSelfEnrollmentAllowed } from '@cio/utils/functions';
 import type { CourseProgressionMode } from '@cio/utils/functions/course-progression';
 import { getPlanLimit } from '@cio/utils/plans';
@@ -29,8 +29,8 @@ import { AppError, ErrorCodes } from '@api/utils/errors';
 import { cloneCourse } from '@api/services/course/clone';
 
 async function assertTemplateCapacity(orgId: string, dbClient: DbOrTxClient = db) {
-  const plan = await getActiveOrganizationPlan(orgId, dbClient);
-  const limit = getPlanLimit('templates', plan?.planName);
+  const planName = await getEffectiveOrgPlanName(orgId, dbClient);
+  const limit = getPlanLimit('templates', planName);
   if (!Number.isFinite(limit)) return;
 
   const used = await countOrgTemplates(orgId, dbClient);
@@ -38,7 +38,7 @@ async function assertTemplateCapacity(orgId: string, dbClient: DbOrTxClient = db
     capturePlanLimitReached({
       orgId,
       limitType: 'templates',
-      plan: plan?.planName,
+      plan: planName,
       limit,
       current: used,
       blocked: true

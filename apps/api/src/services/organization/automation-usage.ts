@@ -1,5 +1,6 @@
 import { env } from '@cio/core/config/env';
 import { capturePlanLimitReached } from '@cio/core/services/posthog';
+import { getEffectiveOrgPlanName } from '@cio/core/services/organization/plan';
 import { AppError, ErrorCodes } from '@api/utils/errors';
 import {
   countActiveOrganizationApiKeys,
@@ -7,7 +8,6 @@ import {
   countOrganizationAutomationUsageSinceByKey,
   completeOrganizationAutomationUsage,
   createOrganizationAutomationUsage,
-  getActiveOrganizationPlan,
   listRecentOrganizationAutomationUsage,
   releaseOrganizationAutomationUsage,
   reserveOrganizationAutomationUsage
@@ -51,8 +51,7 @@ function getMinuteWindowStart(date: Date = new Date()) {
 }
 
 async function getOrganizationPlanName(orgId: string): Promise<TPlan> {
-  const activePlan = await getActiveOrganizationPlan(orgId);
-  return (activePlan?.planName as TPlan | null) ?? 'BASIC';
+  return getEffectiveOrgPlanName(orgId);
 }
 
 export async function assertOrganizationAutomationKeyCreationAllowed(

@@ -1,10 +1,10 @@
-import { getActiveOrganizationPlan } from '@cio/db/queries/organization';
 import { canUsePublicApi } from '@cio/utils/plans';
 
 import { env } from '../../config/env';
+import { getEffectiveOrgPlanName } from '../organization/plan';
 
 export async function hasWebhookEntitlement(organizationId: string): Promise<boolean> {
-  const activePlan = await getActiveOrganizationPlan(organizationId);
+  const planName = await getEffectiveOrgPlanName(organizationId);
 
-  return canUsePublicApi(activePlan?.planName ?? null, env.PUBLIC_IS_SELFHOSTED === 'true');
+  return canUsePublicApi(planName, env.PUBLIC_IS_SELFHOSTED === 'true');
 }
