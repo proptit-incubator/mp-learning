@@ -24,7 +24,7 @@ Chỉnh các phần dưới đây rồi bấm **Lưu thay đổi**. Bấm **Bỏ
 - **Phong cách trợ giảng**: **Khích lệ** (mặc định), **Thân thiện**, **Trang trọng**, **Gợi mở (Socrates)** hoặc **Tùy chỉnh**. Chọn **Tùy chỉnh** để tự mô tả giọng điệu trong ô **Phong cách tùy chỉnh**.
 - **Độ dài câu trả lời**: **Ngắn (1–3 câu)**, **Vừa (1–2 đoạn ngắn)** (mặc định) hoặc **Dài (giải thích có cấu trúc)**.
 - **Lời chào**: hiện phía trên câu trả lời đầu tiên của mỗi cuộc trò chuyện mới.
-- **Ghi chú cuối câu trả lời**: thêm vào cuối mỗi câu trả lời để học viên nhớ trợ giảng không phải người thật.
+- **Ghi chú cuối câu trả lời**: thêm vào cuối mỗi câu trả lời để học viên nhớ trợ giảng không phải người thật. Mặc định là "Mình là trợ giảng AI, không thay thế bộ phận đào tạo." Trợ giảng trả lời bằng tiếng Việt, trừ khi học viên viết bằng ngôn ngữ khác.
 
 ### Nên nói · không nên nói
 

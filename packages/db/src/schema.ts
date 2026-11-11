@@ -2597,7 +2597,7 @@ export const organization = pgTable(
         customPersona: '',
         responseLength: 'medium',
         welcomeMessage: '',
-        disclaimerFooter: 'I am an AI tutor, not your instructor.',
+        disclaimerFooter: 'Mình là trợ giảng AI, không thay thế bộ phận đào tạo.',
         thingsToSay: '',
         thingsNotToSay: '',
         forbiddenTopics: [],
