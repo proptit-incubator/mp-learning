@@ -1,15 +1,11 @@
 import { db, type DbOrTxClient } from '@db/drizzle';
 import { sql, type SQL } from 'drizzle-orm';
 import { foldVietnamese, VIETNAMESE_ACCENTED, VIETNAMESE_PLAIN } from '@cio/utils/functions/vietnamese';
-import { ROLE } from '@cio/utils/constants';
 import { enrollmentStateSql, type EnrollmentState } from '../course/enrollment';
 import { submissionMeetsCompletionPolicySql } from '../course/progression';
 import { reportingLineSql } from '../organization/employees';
 
-export type LearningAnalyticsScope =
-  | { kind: 'organization' }
-  | { kind: 'courses'; teamProfileId: string }
-  | { kind: 'reports'; managerEmployeeId: string };
+export type LearningAnalyticsScope = { kind: 'organization' } | { kind: 'reports'; managerEmployeeId: string };
 
 export type LearningStateCounts = Record<EnrollmentState, number>;
 
@@ -101,33 +97,15 @@ const STATE_COUNT_COLUMNS = sql`
   COUNT(*) FILTER (WHERE ls.state = 'expired')::int AS expired,
   COUNT(*) FILTER (WHERE ls.state = 'waived')::int AS waived`;
 
-export function teamCourseSql(courseAlias: string, teamProfileId: string) {
-  return sql`EXISTS (
-    SELECT 1 FROM groupmember tm
-    WHERE tm.group_id = ${sql.raw(courseAlias)}.group_id AND tm.profile_id = ${teamProfileId}
-      AND tm.role_id IN (${ROLE.ADMIN}, ${ROLE.TUTOR})
-  )`;
-}
-
-function scopedCourseFilter(scope: LearningAnalyticsScope) {
-  return scope.kind === 'courses' ? sql`AND ${teamCourseSql('c', scope.teamProfileId)}` : sql``;
-}
-
 function scopedEmployeeFilter(scope: LearningAnalyticsScope) {
   if (scope.kind === 'reports') return sql`AND e.id IN ${reportingLineSql(scope.managerEmployeeId)}`;
-  if (scope.kind === 'courses') {
-    return sql`AND e.id IN (
-      SELECT ce.employee_id FROM course_enrollment ce JOIN course tc ON tc.id = ce.course_id
-      WHERE ce.status <> 'REVOKED' AND ${teamCourseSql('tc', scope.teamProfileId)}
-    )`;
-  }
 
   return sql``;
 }
 
 /**
  * Active courses, active employees and their live ASSIGNED enrollments with computed state, narrowed to `scope`
- * (the whole org, the courses a tutor teaches, or a manager's reporting line) and to `filter`.
+ * (the whole org or a manager's reporting line) and to `filter`.
  */
 function departmentFilter(filter: LearningAnalyticsFilter) {
   if (!filter.departmentId) return sql``;
@@ -141,7 +119,6 @@ function learningPopulation(orgId: string, scope: LearningAnalyticsScope, filter
       SELECT c.id, c.title, c.is_published, c.group_id, c.recertification_months
       FROM course c JOIN "group" g ON g.id = c.group_id
       WHERE g.organization_id = ${orgId} AND c.status = 'ACTIVE' AND c.is_template = false
-        ${scopedCourseFilter(scope)}
     ),
     employees AS (
       SELECT e.id AS employee_id, om.profile_id, e.fullname, e.employee_code, e.department_id,

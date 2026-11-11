@@ -1,7 +1,7 @@
 import { sql, type SQL } from 'drizzle-orm';
 import { db, type DbOrTxClient } from '@db/drizzle';
 import { foldVietnamese, VIETNAMESE_ACCENTED, VIETNAMESE_PLAIN } from '@cio/utils/functions/vietnamese';
-import { teamCourseSql, type LearningAnalyticsScope } from '../dash/learning-analytics';
+import type { LearningAnalyticsScope } from '../dash/learning-analytics';
 import { reportingLineSql } from '../organization/employees';
 
 export type CertificateRegisterState = 'valid' | 'expiring' | 'expired' | 'revoked';
@@ -39,7 +39,6 @@ export type CertificateRegisterSummary = Record<CertificateRegisterState, number
 
 function scopeFilter(scope: LearningAnalyticsScope) {
   if (scope.kind === 'reports') return sql`AND e.id IN ${reportingLineSql(scope.managerEmployeeId)}`;
-  if (scope.kind === 'courses') return sql`AND ${teamCourseSql('c', scope.teamProfileId)}`;
   return sql``;
 }
 

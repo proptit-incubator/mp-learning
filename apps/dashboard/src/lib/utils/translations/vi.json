@@ -4058,7 +4058,6 @@
     "assignment_states": "Trạng thái các lượt học",
     "assignment_definition": "Mỗi lượt giao một khóa học cho một nhân viên còn hiệu lực được tính một lần. Không tính các khóa nhân viên tự đăng ký.",
     "scope": {
-      "courses": "Chỉ hiển thị các khóa học bạn phụ trách và học viên của các khóa đó.",
       "reports": "Chỉ hiển thị nhân viên thuộc quyền quản lý của bạn, kể cả cấp dưới gián tiếp."
     },
     "completed": "Đã hoàn thành",

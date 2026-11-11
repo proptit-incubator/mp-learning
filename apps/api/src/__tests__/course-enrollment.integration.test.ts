@@ -584,43 +584,5 @@ integration('course enrollment on isolated PostgreSQL', () => {
       expect(snapshot.employees).toBe(2);
       expect(reportedEmployees).toEqual([employeeId]);
     });
-
-    it('limits a tutor report to the courses they teach and their learners', async () => {
-      const taught = await createCourse({ title: 'Taught' });
-      const other = await createCourse({ title: 'Other' });
-      const outsider = await createLearner();
-      const tutorId = randomUUID();
-      await createProfile(tutorId);
-      await database.db
-        .insert(database.groupmember)
-        .values({ groupId: taught.groupId!, profileId: tutorId, roleId: 2 });
-      await service.assignCourses(organizationId, actorId, {
-        courseIds: [taught.id],
-        employeeIds: [employeeId],
-        message: '',
-        sendEmail: false
-      });
-      await service.assignCourses(organizationId, actorId, {
-        courseIds: [other.id],
-        employeeIds: [outsider.employee.id],
-        message: '',
-        sendEmail: false
-      });
-
-      const snapshot = await analytics.getLearningAnalyticsSnapshot(organizationId, {
-        kind: 'courses',
-        teamProfileId: tutorId
-      });
-
-      expect(snapshot.courses.map((course) => course.id)).toEqual([taught.id]);
-      expect(snapshot.employees).toBe(1);
-      const assignments = await analytics.getLearningAssignments(
-        organizationId,
-        { kind: 'courses', teamProfileId: tutorId },
-        {},
-        { page: 1, limit: 25 }
-      );
-      expect(assignments.rows.map((row) => row.employeeId)).toEqual([employeeId]);
-    });
   });
 });

@@ -4058,7 +4058,6 @@
     "assignment_states": "Course assignment status",
     "assignment_definition": "Each active assignment of a course to an employee counts once. Self-enrolled learning is not included.",
     "scope": {
-      "courses": "Showing only the courses you teach and their learners.",
       "reports": "Showing only employees in your reporting line, including indirect reports."
     },
     "completed": "Completed",

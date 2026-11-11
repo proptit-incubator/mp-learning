@@ -13,12 +13,11 @@ vi.mock('@cio/db/queries/organization', () => ({ getEmployeeAccess: vi.fn() }));
 
 const ORGANIZATION_SCOPE = { kind: 'organization' };
 
-function grantAccess(roles: EmployeeRole[], facts: { isManager?: boolean; teachesCourses?: boolean } = {}) {
+function grantAccess(roles: EmployeeRole[], facts: { isManager?: boolean } = {}) {
   vi.mocked(getEmployeeAccess).mockResolvedValue({
     roles,
     employeeId: 'employee-1',
     isManager: facts.isManager ?? false,
-    teachesCourses: facts.teachesCourses ?? false,
     ...getEmployeeCapabilities(roles)
   });
 }
@@ -114,8 +113,7 @@ describe('training report definitions', () => {
     ['L&D', ['LND'], {}, ORGANIZATION_SCOPE],
     ['HR', ['HR'], {}, ORGANIZATION_SCOPE],
     ['L&D who also manages a team', ['LND'], { isManager: true }, ORGANIZATION_SCOPE],
-    ['a department manager', [], { isManager: true }, { kind: 'reports', managerEmployeeId: 'employee-1' }],
-    ['a course team member', [], { teachesCourses: true }, { kind: 'courses', teamProfileId: 'actor-1' }]
+    ['a department manager', [], { isManager: true }, { kind: 'reports', managerEmployeeId: 'employee-1' }]
   ] as const)('narrows the report of %s to their scope', async (_label, roles, facts, scope) => {
     grantAccess([...roles], facts);
 

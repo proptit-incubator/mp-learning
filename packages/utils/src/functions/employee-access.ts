@@ -9,8 +9,8 @@ export type EmployeeCapabilities = {
 };
 
 /**
- * Maps the roles an employee holds to what they may do. Department managers and course team members get their
- * narrower rights from their reporting line and course membership, not from a role.
+ * Maps the roles an employee holds to what they may do. Department managers get their narrower rights from their
+ * reporting line, not from a role.
  */
 export function getEmployeeCapabilities(roles: readonly EmployeeRole[]): EmployeeCapabilities {
   const isAdmin = roles.includes('ADMIN');

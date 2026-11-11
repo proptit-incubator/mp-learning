@@ -23,9 +23,7 @@
   const canSeeEmployees = $derived(
     Boolean(access && (access.canManagePeople || access.canAssignTraining || access.isManager))
   );
-  const canSeeLearningReport = $derived(
-    Boolean(access && (access.canViewOrgReports || access.isManager || access.teachesCourses))
-  );
+  const canSeeLearningReport = $derived(Boolean(access && (access.canViewOrgReports || access.isManager)));
   const learningReportTitle = $derived(
     access?.isManager && !access.canViewOrgReports ? 'learning_analytics.my_team_title' : 'learning_analytics.title'
   );

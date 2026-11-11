@@ -140,24 +140,11 @@ export async function getEmployeeAccess(orgId: string, profileId: string, client
         .from(schema.employee)
         .where(and(eq(schema.employee.managerId, staff.id), sql`${schema.employee.status} <> 'LEFT'`))
     : [];
-  const [taught] = await client
-    .select({ value: count() })
-    .from(schema.groupmember)
-    .innerJoin(schema.course, eq(schema.course.groupId, schema.groupmember.groupId))
-    .innerJoin(schema.group, eq(schema.group.id, schema.course.groupId))
-    .where(
-      and(
-        eq(schema.groupmember.profileId, profileId),
-        eq(schema.group.organizationId, orgId),
-        inArray(schema.groupmember.roleId, [1, 2])
-      )
-    );
 
   return {
     roles,
     employeeId: staff?.id ?? null,
     isManager: (reports?.value ?? 0) > 0,
-    teachesCourses: (taught?.value ?? 0) > 0,
     ...getEmployeeCapabilities(roles)
   };
 }
